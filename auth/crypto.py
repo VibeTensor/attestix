@@ -142,9 +142,22 @@ def load_or_create_signing_key(
     return private_key, did
 
 
+def _normalize_for_signing(obj):
+    """Recursively normalize all strings to NFC Unicode form for consistent signing."""
+    import unicodedata
+    if isinstance(obj, str):
+        return unicodedata.normalize("NFC", obj)
+    elif isinstance(obj, dict):
+        return {_normalize_for_signing(k): _normalize_for_signing(v) for k, v in obj.items()}
+    elif isinstance(obj, list):
+        return [_normalize_for_signing(x) for x in obj]
+    return obj
+
+
 def sign_json_payload(private_key: Ed25519PrivateKey, payload: dict) -> str:
-    """Sign a JSON payload (canonical form) and return base64url signature."""
-    canonical = json.dumps(payload, sort_keys=True, separators=(",", ":"))
+    """Sign a JSON payload (canonical NFC-normalized form) and return base64url signature."""
+    normalized = _normalize_for_signing(payload)
+    canonical = json.dumps(normalized, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
     sig_bytes = sign_message(private_key, canonical.encode("utf-8"))
     return base64.urlsafe_b64encode(sig_bytes).decode("ascii")
 
@@ -153,6 +166,7 @@ def verify_json_signature(
     public_key: Ed25519PublicKey, payload: dict, signature_b64: str
 ) -> bool:
     """Verify a JSON payload signature."""
-    canonical = json.dumps(payload, sort_keys=True, separators=(",", ":"))
+    normalized = _normalize_for_signing(payload)
+    canonical = json.dumps(normalized, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
     sig_bytes = base64.urlsafe_b64decode(signature_b64)
     return verify_signature(public_key, sig_bytes, canonical.encode("utf-8"))

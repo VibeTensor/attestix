@@ -11,8 +11,6 @@ from typing import Dict, List, Optional
 from auth.crypto import load_or_create_signing_key, sign_json_payload
 from config import load_compliance, save_compliance
 from errors import ErrorCategory, log_and_format_error
-from services.identity_service import IdentityService
-from services.credential_service import CredentialService
 
 
 VALID_RISK_CATEGORIES = {"minimal", "limited", "high", "unacceptable"}
@@ -33,8 +31,24 @@ class ComplianceService:
 
     def __init__(self):
         self._private_key, self._server_did = load_or_create_signing_key()
-        self._identity_svc = IdentityService()
-        self._credential_svc = CredentialService()
+        self._identity_svc = None
+        self._credential_svc = None
+
+    @property
+    def identity_svc(self):
+        """Lazy-load to prevent circular imports."""
+        if self._identity_svc is None:
+            from services.identity_service import IdentityService
+            self._identity_svc = IdentityService()
+        return self._identity_svc
+
+    @property
+    def credential_svc(self):
+        """Lazy-load to prevent circular imports."""
+        if self._credential_svc is None:
+            from services.credential_service import CredentialService
+            self._credential_svc = CredentialService()
+        return self._credential_svc
 
     def create_compliance_profile(
         self,
@@ -53,8 +67,14 @@ class ComplianceService:
                     f"Must be one of: {', '.join(sorted(VALID_RISK_CATEGORIES))}"
                 }
 
+            if risk_category == "unacceptable":
+                return {
+                    "error": "Unacceptable-risk AI systems are prohibited under the EU AI Act "
+                    "(Article 5). Cannot create a compliance profile for prohibited systems."
+                }
+
             # Verify agent exists
-            agent = self._identity_svc.get_identity(agent_id)
+            agent = self.identity_svc.get_identity(agent_id)
             if not agent:
                 return {"error": f"Agent {agent_id} not found"}
 
@@ -104,7 +124,7 @@ class ComplianceService:
             save_compliance(data)
 
             # Link compliance profile to UAIT
-            self._identity_svc.update_compliance_ref(agent_id, profile_id)
+            self.identity_svc.update_compliance_ref(agent_id, profile_id)
 
             return profile
         except Exception as e:
@@ -209,6 +229,34 @@ class ComplianceService:
                     "Use record_conformity_assessment first."
                 }
 
+            # Validate required Annex V fields
+            missing_fields = []
+            if not profile["ai_system"].get("intended_purpose", "").strip():
+                missing_fields.append("intended_purpose")
+            if not profile["transparency"].get("obligations", "").strip():
+                missing_fields.append("transparency_obligations")
+            if profile["risk_category"] == "high":
+                if not profile["transparency"].get("human_oversight_measures", "").strip():
+                    missing_fields.append("human_oversight_measures")
+                # Re-validate: high-risk requires third-party assessment
+                data_check = load_compliance()
+                assess_id = profile["conformity"]["assessment_id"]
+                if assess_id:
+                    assessment = next(
+                        (a for a in data_check["assessments"] if a["assessment_id"] == assess_id),
+                        None
+                    )
+                    if assessment and assessment.get("assessment_type") != "third_party":
+                        return {
+                            "error": "High-risk AI systems require third_party conformity assessment (Article 43). "
+                            "Current assessment is self-assessment."
+                        }
+            if missing_fields:
+                return {
+                    "error": f"Cannot generate declaration: missing required fields: {', '.join(missing_fields)}. "
+                    "Update the compliance profile first."
+                }
+
             declaration_id = f"decl:{uuid.uuid4().hex[:12]}"
             now = datetime.now(timezone.utc).isoformat()
 
@@ -248,7 +296,7 @@ class ComplianceService:
             save_compliance(data)
 
             # Issue a Verifiable Credential for this declaration
-            self._credential_svc.issue_credential(
+            self.credential_svc.issue_credential(
                 subject_id=agent_id,
                 credential_type="EUAIActComplianceCredential",
                 issuer_name=profile["provider"]["name"],

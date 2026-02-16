@@ -113,7 +113,7 @@ class ReputationService:
                 cat = i.get("category", "general")
                 if cat not in categories:
                     categories[cat] = {"success": 0, "failure": 0, "partial": 0, "timeout": 0, "total": 0}
-                categories[cat][i["outcome"]] = categories[cat].get(i["outcome"], 0) + 1
+                categories[cat][i["outcome"]] += 1
                 categories[cat]["total"] += 1
 
             return {

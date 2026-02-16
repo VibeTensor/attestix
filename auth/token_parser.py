@@ -25,8 +25,8 @@ class TokenType(str, Enum):
 DID_PATTERN = re.compile(r"^did:[a-z0-9]+:.+$", re.IGNORECASE)
 URL_PATTERN = re.compile(r"^https?://.+$", re.IGNORECASE)
 JWT_PATTERN = re.compile(r"^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$")
-# API keys: hex strings >= 32 chars, or alphanumeric with dashes/underscores >= 20 chars
-API_KEY_PATTERN = re.compile(r"^[A-Fa-f0-9]{32,}$|^[A-Za-z0-9_-]{20,}$")
+# API keys: hex strings >= 32 chars, or mixed-case alphanumeric with dashes/underscores >= 32 chars
+API_KEY_PATTERN = re.compile(r"^[A-Fa-f0-9]{32,}$|^(?=.*[A-Z])(?=.*[a-z0-9])[A-Za-z0-9_-]{32,}$")
 
 
 def detect_token_type(token: str) -> TokenType:

@@ -30,8 +30,16 @@ from errors import ErrorCategory, log_and_format_error
 class IdentityService:
     """Manages UAIT lifecycle."""
 
+    # Fields excluded from signature (mutable after creation)
+    MUTABLE_FIELDS = {"signature", "revoked", "revocation_reason", "revoked_at",
+                      "reputation_score", "eu_compliance"}
+
     def __init__(self):
         self._private_key, self._server_did = load_or_create_signing_key()
+
+    def _signable_payload(self, uait: dict) -> dict:
+        """Extract only immutable fields for signing/verification."""
+        return {k: v for k, v in uait.items() if k not in self.MUTABLE_FIELDS}
 
     @property
     def server_did(self) -> str:
@@ -80,8 +88,8 @@ class IdentityService:
             "signature": None,
         }
 
-        # Sign the UAIT (exclude signature field itself)
-        signable = {k: v for k, v in uait.items() if k != "signature"}
+        # Sign only immutable fields
+        signable = self._signable_payload(uait)
         uait["signature"] = sign_json_payload(self._private_key, signable)
 
         # Persist
@@ -153,17 +161,23 @@ class IdentityService:
         else:
             checks["not_expired"] = True
 
-        # Check signature
+        # Check signature (only immutable fields)
         signature = agent.get("signature")
         if signature:
-            signable = {k: v for k, v in agent.items() if k != "signature"}
+            signable = self._signable_payload(agent)
             try:
                 server_pub = did_key_to_public_key(self._server_did)
                 checks["signature_valid"] = verify_json_signature(
                     server_pub, signable, signature
                 )
-            except Exception:
+            except ValueError as e:
                 checks["signature_valid"] = False
+                checks["signature_error"] = f"Key error: {e}"
+            except Exception as e:
+                checks["signature_valid"] = False
+                checks["signature_error"] = str(e)
+                log_and_format_error("verify_identity", e, ErrorCategory.CRYPTO,
+                                     agent_id=agent_id)
         else:
             checks["signature_valid"] = False
 
@@ -226,7 +240,7 @@ class IdentityService:
         skills = []
         for cap in agent.get("capabilities", []):
             skills.append({
-                "id": hashlib.md5(cap.encode()).hexdigest()[:8],
+                "id": hashlib.sha256(cap.encode()).hexdigest()[:8],
                 "name": cap,
                 "description": f"Capability: {cap}",
             })
@@ -258,20 +272,35 @@ class IdentityService:
     def _to_did_document(self, agent: dict) -> dict:
         """Convert UAIT to W3C DID Document format."""
         did = agent["issuer"].get("did", f"did:aura:{agent['agent_id']}")
+        # Get public key multibase for the server DID
+        pub_multibase = None
+        if did.startswith("did:key:z"):
+            try:
+                from auth.crypto import did_key_to_public_key, public_key_to_bytes
+                import base58
+                pub_key = did_key_to_public_key(did)
+                pub_multibase = "z" + base58.b58encode(
+                    public_key_to_bytes(pub_key)
+                ).decode("ascii")
+            except Exception:
+                pass
+
+        vm = {
+            "id": f"{did}#key-1",
+            "type": "Ed25519VerificationKey2020",
+            "controller": did,
+        }
+        if pub_multibase:
+            vm["publicKeyMultibase"] = pub_multibase
+
         return {
             "@context": [
                 "https://www.w3.org/ns/did/v1",
-                "https://w3id.org/security/suites/ed2519-2020/v1",
+                "https://w3id.org/security/suites/ed25519-2020/v1",
             ],
             "id": did,
             "controller": did,
-            "verificationMethod": [
-                {
-                    "id": f"{did}#key-1",
-                    "type": "Ed25519VerificationKey2020",
-                    "controller": did,
-                }
-            ],
+            "verificationMethod": [vm],
             "authentication": [f"{did}#key-1"],
             "service": [
                 {

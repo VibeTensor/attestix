@@ -2,11 +2,14 @@
 
 import json
 import os
+import shutil
 import sys
+import time
 from pathlib import Path
 from typing import Optional
 
 from dotenv import load_dotenv
+from filelock import FileLock
 
 PROJECT_DIR = Path(__file__).parent
 ENV_FILE = PROJECT_DIR / ".env"
@@ -37,85 +40,106 @@ UAIT_VERSION = "0.1.0"
 DEFAULT_EXPIRY_DAYS = int(_get_env("DEFAULT_EXPIRY_DAYS", default="365"))
 
 
+# --- Safe JSON storage helpers ---
+
+def _safe_load(filepath: Path, default: dict) -> dict:
+    """Load JSON with file locking and corruption recovery."""
+    lock = FileLock(str(filepath) + ".lock", timeout=5)
+    with lock:
+        if not filepath.exists():
+            return default.copy()
+        try:
+            with open(filepath, "r") as f:
+                return json.load(f)
+        except (json.JSONDecodeError, ValueError) as e:
+            # Try backup
+            backup = filepath.with_suffix(".json.bak")
+            if backup.exists():
+                try:
+                    with open(backup, "r") as f:
+                        print(f"WARNING: Recovered {filepath.name} from backup",
+                              file=sys.stderr)
+                        return json.load(f)
+                except (json.JSONDecodeError, ValueError):
+                    pass
+            # Move corrupted file aside, start fresh
+            corrupted = filepath.with_suffix(f".corrupted.{int(time.time())}")
+            shutil.move(str(filepath), str(corrupted))
+            print(f"ERROR: Corrupted {filepath.name} moved to {corrupted.name}. "
+                  f"Starting fresh.", file=sys.stderr)
+            return default.copy()
+
+
+def _safe_save(filepath: Path, data: dict):
+    """Save JSON with file locking and atomic write."""
+    lock = FileLock(str(filepath) + ".lock", timeout=5)
+    with lock:
+        # Backup existing file
+        if filepath.exists():
+            backup = filepath.with_suffix(".json.bak")
+            shutil.copy2(str(filepath), str(backup))
+        # Write to temp file, then atomic rename
+        temp = filepath.with_suffix(".json.tmp")
+        with open(temp, "w") as f:
+            json.dump(data, f, indent=2)
+        temp.replace(filepath)
+
+
 # --- Identity storage ---
 
 def load_identities() -> dict:
-    if not IDENTITIES_FILE.exists():
-        return {"agents": []}
-    with open(IDENTITIES_FILE, "r") as f:
-        return json.load(f)
+    return _safe_load(IDENTITIES_FILE, {"agents": []})
 
 
 def save_identities(data: dict):
-    with open(IDENTITIES_FILE, "w") as f:
-        json.dump(data, f, indent=2)
+    _safe_save(IDENTITIES_FILE, data)
 
 
 # --- Reputation storage ---
 
 def load_reputation() -> dict:
-    if not REPUTATION_FILE.exists():
-        return {"interactions": [], "scores": {}}
-    with open(REPUTATION_FILE, "r") as f:
-        return json.load(f)
+    return _safe_load(REPUTATION_FILE, {"interactions": [], "scores": {}})
 
 
 def save_reputation(data: dict):
-    with open(REPUTATION_FILE, "w") as f:
-        json.dump(data, f, indent=2)
+    _safe_save(REPUTATION_FILE, data)
 
 
 # --- Delegation storage ---
 
 def load_delegations() -> dict:
-    if not DELEGATIONS_FILE.exists():
-        return {"delegations": []}
-    with open(DELEGATIONS_FILE, "r") as f:
-        return json.load(f)
+    return _safe_load(DELEGATIONS_FILE, {"delegations": []})
 
 
 def save_delegations(data: dict):
-    with open(DELEGATIONS_FILE, "w") as f:
-        json.dump(data, f, indent=2)
+    _safe_save(DELEGATIONS_FILE, data)
 
 
 # --- Compliance storage ---
 
 def load_compliance() -> dict:
-    if not COMPLIANCE_FILE.exists():
-        return {"profiles": [], "assessments": [], "declarations": []}
-    with open(COMPLIANCE_FILE, "r") as f:
-        return json.load(f)
+    return _safe_load(COMPLIANCE_FILE, {"profiles": [], "assessments": [], "declarations": []})
 
 
 def save_compliance(data: dict):
-    with open(COMPLIANCE_FILE, "w") as f:
-        json.dump(data, f, indent=2)
+    _safe_save(COMPLIANCE_FILE, data)
 
 
 # --- Credential storage ---
 
 def load_credentials() -> dict:
-    if not CREDENTIALS_FILE.exists():
-        return {"credentials": []}
-    with open(CREDENTIALS_FILE, "r") as f:
-        return json.load(f)
+    return _safe_load(CREDENTIALS_FILE, {"credentials": []})
 
 
 def save_credentials(data: dict):
-    with open(CREDENTIALS_FILE, "w") as f:
-        json.dump(data, f, indent=2)
+    _safe_save(CREDENTIALS_FILE, data)
 
 
 # --- Provenance storage ---
 
 def load_provenance() -> dict:
-    if not PROVENANCE_FILE.exists():
-        return {"entries": [], "audit_log": []}
-    with open(PROVENANCE_FILE, "r") as f:
-        return json.load(f)
+    return _safe_load(PROVENANCE_FILE, {"entries": [], "audit_log": []})
 
 
 def save_provenance(data: dict):
-    with open(PROVENANCE_FILE, "w") as f:
-        json.dump(data, f, indent=2)
+    _safe_save(PROVENANCE_FILE, data)

@@ -7,6 +7,13 @@ import json
 from typing import Optional
 
 
+def _validate_required(params: dict) -> str:
+    for name, value in params.items():
+        if not value or (isinstance(value, str) and not value.strip()):
+            return json.dumps({"error": f"{name} cannot be empty"})
+    return ""
+
+
 def register(mcp):
     """Register provenance tools with the MCP server."""
 
@@ -31,6 +38,10 @@ def register(mcp):
             contains_personal_data: Whether dataset contains personal data (GDPR).
             data_governance_measures: Description of data quality/governance measures.
         """
+        err = _validate_required({"agent_id": agent_id, "dataset_name": dataset_name})
+        if err:
+            return err
+
         from services.cache import get_service
         from services.provenance_service import ProvenanceService
 

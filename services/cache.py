@@ -35,6 +35,17 @@ def get_service(
         instance, created_at = _cache[cache_key]
         if now - created_at < ttl:
             return instance
+        # Remove expired entry
+        del _cache[cache_key]
+
+    # Periodic cleanup: remove all expired entries when cache grows large
+    if len(_cache) > 50:
+        expired_keys = [
+            k for k, (_, created_at) in _cache.items()
+            if now - created_at >= DEFAULT_TTL
+        ]
+        for k in expired_keys:
+            del _cache[k]
 
     instance = service_class(**kwargs)
     _cache[cache_key] = (instance, now)

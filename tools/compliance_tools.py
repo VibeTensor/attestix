@@ -6,6 +6,13 @@ EU AI Act compliance profiles, conformity assessments, and declarations.
 import json
 
 
+def _validate_required(params: dict) -> str:
+    for name, value in params.items():
+        if not value or (isinstance(value, str) and not value.strip()):
+            return json.dumps({"error": f"{name} cannot be empty"})
+    return ""
+
+
 def register(mcp):
     """Register compliance tools with the MCP server."""
 
@@ -24,12 +31,17 @@ def register(mcp):
 
         Args:
             agent_id: The AURA agent ID (e.g., aura:abc123...).
-            risk_category: EU AI Act risk level: minimal, limited, high, or unacceptable.
+            risk_category: EU AI Act risk level: minimal, limited, or high.
             provider_name: Name of the AI system provider/company.
             intended_purpose: What the AI system is designed to do.
             transparency_obligations: How transparency requirements are met.
             human_oversight_measures: Human oversight mechanisms in place (required for high-risk).
         """
+        err = _validate_required({"agent_id": agent_id, "risk_category": risk_category,
+                                   "provider_name": provider_name})
+        if err:
+            return err
+
         from services.cache import get_service
         from services.compliance_service import ComplianceService
 

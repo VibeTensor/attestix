@@ -19,6 +19,17 @@ class AgentCardService:
         """Fetch /.well-known/agent.json from a URL."""
         try:
             url = base_url.rstrip("/")
+
+            # SSRF protection: require https and block private domains
+            if not url.startswith("https://"):
+                return {"error": "Only HTTPS URLs are supported for agent discovery"}
+            from urllib.parse import urlparse
+            parsed = urlparse(url)
+            blocked = {"localhost", "127.0.0.1", "0.0.0.0", "[::1]", "169.254.169.254"}
+            if parsed.hostname and (parsed.hostname.lower() in blocked
+                                     or parsed.hostname.endswith(".local")):
+                return {"error": f"Blocked: cannot discover agents on private domains"}
+
             agent_json_url = f"{url}/.well-known/agent.json"
 
             with httpx.Client(timeout=10, follow_redirects=True) as client:
@@ -31,6 +42,9 @@ class AgentCardService:
                 "agent_card": card,
                 "parsed": self.parse_agent_card(card),
             }
+        except httpx.TimeoutException:
+            return {"error": f"Timeout fetching agent card from {base_url}",
+                    "retry_suggested": True}
         except httpx.HTTPStatusError as e:
             return {
                 "error": f"HTTP {e.response.status_code} fetching {agent_json_url}",
@@ -107,10 +121,12 @@ class AgentCardService:
             skills: List of skill dicts with id, name, description.
             version: Agent version string.
         """
+        import hashlib
         if skills is None:
             skills = []
 
         card = {
+            "id": f"aura-{hashlib.sha256(url.encode()).hexdigest()[:16]}",
             "name": name,
             "description": description,
             "url": url,
@@ -121,6 +137,13 @@ class AgentCardService:
                 "stateTransitionHistory": False,
             },
             "skills": skills,
+            "endpoints": [
+                {
+                    "url": f"{url.rstrip('/')}/tasks",
+                    "protocol": "https",
+                    "method": "POST",
+                }
+            ],
             "provider": {
                 "organization": "AURA Protocol",
             },

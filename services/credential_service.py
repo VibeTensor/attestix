@@ -20,7 +20,7 @@ from errors import ErrorCategory, log_and_format_error
 
 # W3C VC contexts
 VC_CONTEXT = [
-    "https://www.w3.org/ns/credentials/v2",
+    "https://www.w3.org/2018/credentials/v1",
     "https://w3id.org/security/suites/ed25519-2020/v1",
 ]
 
@@ -229,6 +229,7 @@ class CredentialService:
         agent_id: str,
         credential_ids: List[str],
         audience_did: str = "",
+        challenge: str = "",
     ) -> dict:
         """Bundle multiple VCs into a Verifiable Presentation for a verifier."""
         try:
@@ -255,9 +256,11 @@ class CredentialService:
             }
 
             if audience_did:
-                vp["audience"] = audience_did
+                vp["domain"] = audience_did
+            if challenge:
+                vp["challenge"] = challenge
 
-            # Sign the presentation
+            # Sign the presentation (includes challenge/domain for replay protection)
             proof_payload = {k: v for k, v in vp.items() if k != "proof"}
             signature = sign_json_payload(self._private_key, proof_payload)
 
@@ -268,6 +271,10 @@ class CredentialService:
                 "proofPurpose": "authentication",
                 "proofValue": signature,
             }
+            if challenge:
+                vp["proof"]["challenge"] = challenge
+            if audience_did:
+                vp["proof"]["domain"] = audience_did
 
             return vp
         except Exception as e:

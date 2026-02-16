@@ -21,6 +21,7 @@ from auth.crypto import (
 from config import UNIVERSAL_RESOLVER_URL
 from errors import ErrorCategory, log_and_format_error
 
+import base58
 import base64
 
 
@@ -53,21 +54,20 @@ class DIDService:
             private_key, public_key = generate_ed25519_keypair()
             did = public_key_to_did_key(public_key)
 
+            pub_bytes = public_key_to_bytes(public_key)
+            pub_multibase = "z" + base58.b58encode(pub_bytes).decode("ascii")
             priv_b64 = base64.urlsafe_b64encode(
                 private_key_to_bytes(private_key)
             ).decode("ascii")
-            pub_b64 = base64.urlsafe_b64encode(
-                public_key_to_bytes(public_key)
-            ).decode("ascii")
 
-            did_document = self._build_did_key_document(did)
+            did_document = self._build_did_key_document(did, pub_multibase)
 
             return {
                 "did": did,
                 "did_document": did_document,
                 "keypair": {
                     "algorithm": "Ed25519",
-                    "public_key_b64": pub_b64,
+                    "public_key_multibase": pub_multibase,
                     "private_key_b64": priv_b64,
                     "note": "Store private key securely. Never share it.",
                 },
@@ -91,9 +91,8 @@ class DIDService:
             did = f"did:web:{domain}{did_path}"
 
             private_key, public_key = generate_ed25519_keypair()
-            pub_b64 = base64.urlsafe_b64encode(
-                public_key_to_bytes(public_key)
-            ).decode("ascii")
+            pub_bytes = public_key_to_bytes(public_key)
+            pub_multibase = "z" + base58.b58encode(pub_bytes).decode("ascii")
             priv_b64 = base64.urlsafe_b64encode(
                 private_key_to_bytes(private_key)
             ).decode("ascii")
@@ -101,7 +100,7 @@ class DIDService:
             did_document = {
                 "@context": [
                     "https://www.w3.org/ns/did/v1",
-                    "https://w3id.org/security/suites/ed2519-2020/v1",
+                    "https://w3id.org/security/suites/ed25519-2020/v1",
                 ],
                 "id": did,
                 "controller": did,
@@ -110,7 +109,7 @@ class DIDService:
                         "id": f"{did}#key-1",
                         "type": "Ed25519VerificationKey2020",
                         "controller": did,
-                        "publicKeyBase64": pub_b64,
+                        "publicKeyMultibase": pub_multibase,
                     }
                 ],
                 "authentication": [f"{did}#key-1"],
@@ -129,7 +128,7 @@ class DIDService:
                 "hosting_url": hosting_url,
                 "keypair": {
                     "algorithm": "Ed25519",
-                    "public_key_b64": pub_b64,
+                    "public_key_multibase": pub_multibase,
                     "private_key_b64": priv_b64,
                     "note": "Store private key securely.",
                 },
@@ -151,45 +150,59 @@ class DIDService:
         """Locally resolve did:key to DID Document."""
         try:
             public_key = did_key_to_public_key(did)
-            pub_b64 = base64.urlsafe_b64encode(
-                public_key_to_bytes(public_key)
-            ).decode("ascii")
+            pub_bytes = public_key_to_bytes(public_key)
+            pub_multibase = "z" + base58.b58encode(pub_bytes).decode("ascii")
         except ValueError as e:
             return {"error": str(e), "did": did}
 
-        return self._build_did_key_document(did, pub_b64)
+        return self._build_did_key_document(did, pub_multibase)
 
     def _build_did_key_document(
-        self, did: str, pub_b64: Optional[str] = None
+        self, did: str, pub_multibase: Optional[str] = None
     ) -> dict:
         """Build a DID Document for a did:key."""
-        doc = {
+        vm = {
+            "id": f"{did}#key-1",
+            "type": "Ed25519VerificationKey2020",
+            "controller": did,
+        }
+        if pub_multibase:
+            vm["publicKeyMultibase"] = pub_multibase
+
+        return {
             "@context": [
                 "https://www.w3.org/ns/did/v1",
-                "https://w3id.org/security/suites/ed2519-2020/v1",
+                "https://w3id.org/security/suites/ed25519-2020/v1",
             ],
             "id": did,
             "controller": did,
-            "verificationMethod": [
-                {
-                    "id": f"{did}#key-1",
-                    "type": "Ed25519VerificationKey2020",
-                    "controller": did,
-                }
-            ],
+            "verificationMethod": [vm],
             "authentication": [f"{did}#key-1"],
             "assertionMethod": [f"{did}#key-1"],
         }
-        if pub_b64:
-            doc["verificationMethod"][0]["publicKeyBase64"] = pub_b64
-        return doc
 
     def _resolve_did_web(self, did: str) -> dict:
         """Resolve did:web by fetching the DID Document from the web."""
         try:
-            # did:web:example.com:path -> https://example.com/path/did.json
-            parts = did.replace("did:web:", "").split(":")
+            # Validate format: did:web:<domain>(:<path>)*
+            import re
+            raw = did.replace("did:web:", "")
+            if not re.match(r"^[a-z0-9._-]+(?::[a-z0-9._-]+)*$", raw, re.IGNORECASE):
+                return {"error": f"Invalid did:web format: {did}"}
+
+            parts = raw.split(":")
             domain = parts[0]
+
+            # SSRF protection: block private/local domains
+            blocked = {"localhost", "127.0.0.1", "0.0.0.0", "[::1]", "169.254.169.254"}
+            if domain.lower() in blocked or domain.endswith(".local"):
+                return {"error": f"Blocked: cannot resolve private domain {domain}"}
+
+            # Reject path traversal
+            for p in parts[1:]:
+                if ".." in p or p.startswith("."):
+                    return {"error": f"Invalid path in did:web: {did}"}
+
             path = "/".join(parts[1:]) if len(parts) > 1 else ".well-known"
             url = f"https://{domain}/{path}/did.json"
 
@@ -197,6 +210,10 @@ class DIDService:
                 resp = client.get(url)
                 resp.raise_for_status()
                 return resp.json()
+        except httpx.TimeoutException:
+            return {"error": f"Timeout resolving {did}", "retry_suggested": True}
+        except httpx.HTTPStatusError as e:
+            return {"error": f"HTTP {e.response.status_code} resolving {did}"}
         except Exception as e:
             return {
                 "error": log_and_format_error(

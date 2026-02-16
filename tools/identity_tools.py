@@ -4,6 +4,14 @@ import json
 from typing import Optional
 
 
+def _validate_required(params: dict) -> str:
+    """Return error JSON if any required param is empty, else empty string."""
+    for name, value in params.items():
+        if not value or (isinstance(value, str) and not value.strip()):
+            return json.dumps({"error": f"{name} cannot be empty"})
+    return ""
+
+
 def register(mcp):
     """Register identity tools with the MCP server."""
 
@@ -28,6 +36,10 @@ def register(mcp):
             issuer_name: Who issued this identity.
             expiry_days: Days until expiry (default 365).
         """
+        err = _validate_required({"display_name": display_name})
+        if err:
+            return err
+
         from services.cache import get_service
         from services.identity_service import IdentityService
 

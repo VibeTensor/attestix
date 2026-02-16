@@ -18,6 +18,12 @@ compliance.json
 credentials.json
 provenance.json
 
+# File locks and backups
+*.lock
+*.json.bak
+*.json.tmp
+*.corrupted.*
+
 # Logs
 *.log
 aura_errors.log

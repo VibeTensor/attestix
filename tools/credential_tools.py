@@ -7,6 +7,13 @@ import json
 from typing import Optional
 
 
+def _validate_required(params: dict) -> str:
+    for name, value in params.items():
+        if not value or (isinstance(value, str) and not value.strip()):
+            return json.dumps({"error": f"{name} cannot be empty"})
+    return ""
+
+
 def register(mcp):
     """Register credential tools with the MCP server."""
 
@@ -27,6 +34,12 @@ def register(mcp):
             claims_json: JSON string of credential claims (e.g., {"compliant": true, "risk_level": "high"}).
             expiry_days: Days until credential expires (default 365).
         """
+        err = _validate_required({"subject_agent_id": subject_agent_id,
+                                   "credential_type": credential_type,
+                                   "issuer_name": issuer_name, "claims_json": claims_json})
+        if err:
+            return err
+
         from services.cache import get_service
         from services.credential_service import CredentialService
 
@@ -122,6 +135,7 @@ def register(mcp):
         agent_id: str,
         credential_ids: str,
         audience_did: str = "",
+        challenge: str = "",
     ) -> str:
         """Bundle multiple Verifiable Credentials into a Verifiable Presentation.
 
@@ -131,6 +145,7 @@ def register(mcp):
             agent_id: The AURA agent ID (holder/presenter).
             credential_ids: Comma-separated credential URNs to include.
             audience_did: DID of the intended verifier (optional).
+            challenge: Nonce provided by the verifier for replay protection (optional).
         """
         from services.cache import get_service
         from services.credential_service import CredentialService
@@ -144,5 +159,6 @@ def register(mcp):
             agent_id=agent_id,
             credential_ids=ids,
             audience_did=audience_did,
+            challenge=challenge,
         )
         return json.dumps(result, indent=2, default=str)

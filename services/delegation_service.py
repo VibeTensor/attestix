@@ -6,6 +6,7 @@ with capability attenuation.
 """
 
 import json
+import secrets
 import time
 from datetime import datetime, timezone
 from typing import List, Optional
@@ -34,6 +35,7 @@ class DelegationService:
         audience_agent_id: str,
         capabilities: List[str],
         expiry_hours: int = 24,
+        parent_token: Optional[str] = None,
     ) -> dict:
         """Create a UCAN-style delegation JWT.
 
@@ -42,20 +44,24 @@ class DelegationService:
             audience_agent_id: The agent receiving capabilities.
             capabilities: List of capability strings being delegated.
             expiry_hours: How long the delegation is valid.
+            parent_token: Optional parent delegation token for chaining.
         """
         try:
             now = int(time.time())
             exp = now + (expiry_hours * 3600)
+            jti = secrets.token_urlsafe(16)
 
             payload = {
-                "iss": issuer_agent_id,
+                "iss": self._server_did,
                 "aud": audience_agent_id,
                 "sub": audience_agent_id,
                 "iat": now,
                 "exp": exp,
                 "nbf": now,
+                "jti": jti,
                 "cap": capabilities,
-                "prf": [],  # proof chain (empty for root delegation)
+                "delegator": issuer_agent_id,
+                "prf": [parent_token] if parent_token else [],
                 "aura_version": "0.1.0",
                 "typ": "ucan/delegation",
             }
@@ -74,6 +80,7 @@ class DelegationService:
 
             # Record delegation
             delegation_record = {
+                "jti": jti,
                 "token": token,
                 "issuer": issuer_agent_id,
                 "audience": audience_agent_id,
@@ -102,7 +109,7 @@ class DelegationService:
     def verify_delegation(self, token: str) -> dict:
         """Verify a UCAN delegation token.
 
-        Checks: signature validity, expiry, and structure.
+        Checks: signature validity, expiry, revocation, and structure.
         """
         try:
             # Get server public key for verification
@@ -115,11 +122,21 @@ class DelegationService:
                 options={"verify_aud": False},
             )
 
+            # Check revocation by jti
+            jti = claims.get("jti")
+            if jti:
+                data = load_delegations()
+                for d in data["delegations"]:
+                    if d.get("jti") == jti and d.get("revoked"):
+                        return {"valid": False, "reason": "Token has been revoked"}
+
             return {
                 "valid": True,
-                "issuer": claims.get("iss"),
+                "jti": jti,
+                "delegator": claims.get("delegator"),
                 "audience": claims.get("aud"),
                 "capabilities": claims.get("cap", []),
+                "proof_chain": claims.get("prf", []),
                 "issued_at": datetime.fromtimestamp(
                     claims["iat"], tz=timezone.utc
                 ).isoformat(),
