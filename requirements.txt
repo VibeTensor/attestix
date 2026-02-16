@@ -1,0 +1,18 @@
+# AURA Protocol - Agent Unified Registry & Authentication
+# MCP Server for cross-protocol agent identity bridging
+
+# MCP Framework
+mcp[cli]>=1.8.0
+
+# Cryptography
+cryptography>=44.0.0
+PyJWT[crypto]>=2.9.0
+base58>=2.1.1
+
+# HTTP client
+httpx>=0.28.0
+
+# Utilities
+python-dotenv>=1.1.0
+nest-asyncio>=1.6.0
+python-json-logger>=3.3.0

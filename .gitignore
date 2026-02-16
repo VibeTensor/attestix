@@ -1,0 +1,27 @@
+# Environment & secrets
+.env
+.signing_key.json
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+*.egg-info/
+
+# Data files (generated at runtime)
+identities.json
+reputation.json
+delegations.json
+compliance.json
+credentials.json
+provenance.json
+
+# Logs
+*.log
+aura_errors.log
+
+# IDE
+.vscode/
+.idea/
