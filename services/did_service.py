@@ -30,26 +30,34 @@ class DIDService:
 
     def _store_keypair(self, keypair_id: str, priv_b64: str, pub_multibase: str, did: str):
         """Store a generated keypair locally (never return private keys in tool responses)."""
+        import shutil
+        from datetime import datetime, timezone
+        from filelock import FileLock
         from config import PROJECT_DIR
+
         keypair_file = PROJECT_DIR / ".keypairs.json"
-        data = {}
-        if keypair_file.exists():
-            try:
-                with open(keypair_file, "r") as f:
-                    data = json.load(f)
-            except (json.JSONDecodeError, ValueError):
-                data = {}
-        data[keypair_id] = {
-            "did": did,
-            "algorithm": "Ed25519",
-            "public_key_multibase": pub_multibase,
-            "private_key_b64": priv_b64,
-            "created_at": __import__("datetime").datetime.now(
-                __import__("datetime").timezone.utc
-            ).isoformat(),
-        }
-        with open(keypair_file, "w") as f:
-            json.dump(data, f, indent=2)
+        lock = FileLock(str(keypair_file) + ".lock", timeout=5)
+
+        with lock:
+            data = {}
+            if keypair_file.exists():
+                try:
+                    with open(keypair_file, "r") as f:
+                        data = json.load(f)
+                except (json.JSONDecodeError, ValueError):
+                    data = {}
+            data[keypair_id] = {
+                "did": did,
+                "algorithm": "Ed25519",
+                "public_key_multibase": pub_multibase,
+                "private_key_b64": priv_b64,
+                "created_at": datetime.now(timezone.utc).isoformat(),
+            }
+            # Atomic write: temp file then rename
+            temp = keypair_file.with_suffix(".json.tmp")
+            with open(temp, "w") as f:
+                json.dump(data, f, indent=2)
+            temp.replace(keypair_file)
 
     def resolve_did(self, did: str) -> dict:
         """Resolve a DID to its DID Document.
@@ -212,16 +220,17 @@ class DIDService:
             # Validate format: did:web:<domain>(:<path>)*
             import re
             raw = did.replace("did:web:", "")
-            if not re.match(r"^[a-z0-9._-]+(?::[a-z0-9._-]+)*$", raw, re.IGNORECASE):
+            if not re.match(r"^[a-z0-9._-]+(?::[a-z0-9._-]+)*$", raw):
                 return {"error": f"Invalid did:web format: {did}"}
 
             parts = raw.split(":")
             domain = parts[0]
 
-            # SSRF protection: block private/local domains
-            blocked = {"localhost", "127.0.0.1", "0.0.0.0", "[::1]", "169.254.169.254"}
-            if domain.lower() in blocked or domain.endswith(".local"):
-                return {"error": f"Blocked: cannot resolve private domain {domain}"}
+            # SSRF protection: block private/local/reserved IPs
+            from auth.ssrf import validate_url_host
+            ssrf_err = validate_url_host(domain)
+            if ssrf_err:
+                return {"error": ssrf_err}
 
             # Reject path traversal
             for p in parts[1:]:
@@ -250,6 +259,9 @@ class DIDService:
     def _resolve_universal(self, did: str) -> dict:
         """Resolve any DID via the Universal Resolver."""
         try:
+            import re
+            if not re.match(r"^did:[a-z0-9]+:[a-zA-Z0-9._:%-]+$", did):
+                return {"error": f"Invalid DID format: {did}"}
             url = f"{UNIVERSAL_RESOLVER_URL}{did}"
             with httpx.Client(timeout=15) as client:
                 resp = client.get(url)

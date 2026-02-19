@@ -57,7 +57,7 @@ class CredentialService:
             now = datetime.now(timezone.utc)
             expires = now + timedelta(days=expiry_days)
 
-            vc_type = credential_type if credential_type in CREDENTIAL_TYPES else credential_type
+            vc_type = credential_type
             credential = {
                 "@context": VC_CONTEXT,
                 "id": cred_id,
@@ -141,7 +141,7 @@ class CredentialService:
             else:
                 checks["signature_valid"] = False
 
-            valid = all(checks.values())
+            valid = all(v for v in checks.values() if isinstance(v, bool))
             return {
                 "valid": valid,
                 "credential_id": credential_id,

@@ -36,18 +36,20 @@ class ComplianceService:
 
     @property
     def identity_svc(self):
-        """Lazy-load to prevent circular imports."""
+        """Lazy-load via shared cache to prevent circular imports."""
         if self._identity_svc is None:
+            from services.cache import get_service
             from services.identity_service import IdentityService
-            self._identity_svc = IdentityService()
+            self._identity_svc = get_service(IdentityService)
         return self._identity_svc
 
     @property
     def credential_svc(self):
-        """Lazy-load to prevent circular imports."""
+        """Lazy-load via shared cache to prevent circular imports."""
         if self._credential_svc is None:
+            from services.cache import get_service
             from services.credential_service import CredentialService
-            self._credential_svc = CredentialService()
+            self._credential_svc = get_service(CredentialService)
         return self._credential_svc
 
     def create_compliance_profile(

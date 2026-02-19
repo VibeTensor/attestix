@@ -1,25 +1,28 @@
 """Merkle tree implementation for audit log batch anchoring.
 
-Uses SHA-256 hashing. Constructs a binary Merkle tree from a list of
-leaf hashes (audit log entry hashes) and returns the root hash.
+Uses SHA-256 hashing with domain separation (0x00 prefix for leaves,
+0x01 prefix for internal nodes) to prevent second-preimage attacks.
+Follows the Certificate Transparency (RFC 6962) convention.
 """
 
 import hashlib
 import json
 from typing import List, Tuple
 
+# Domain separation prefixes (RFC 6962 Section 2.1)
+_LEAF_PREFIX = b"\x00"
+_NODE_PREFIX = b"\x01"
+
 
 def hash_leaf(data: dict) -> bytes:
-    """SHA-256 hash of a canonical JSON representation of a dict."""
+    """SHA-256 hash of a canonical JSON representation with leaf domain prefix."""
     canonical = json.dumps(data, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
-    return hashlib.sha256(canonical.encode("utf-8")).digest()
+    return hashlib.sha256(_LEAF_PREFIX + canonical.encode("utf-8")).digest()
 
 
 def hash_pair(left: bytes, right: bytes) -> bytes:
-    """SHA-256 hash of two concatenated hashes (sorted for consistency)."""
-    if left > right:
-        left, right = right, left
-    return hashlib.sha256(left + right).digest()
+    """SHA-256 hash of two child hashes with internal node domain prefix."""
+    return hashlib.sha256(_NODE_PREFIX + left + right).digest()
 
 
 def build_merkle_tree(leaves: List[bytes]) -> Tuple[bytes, List[List[bytes]]]:

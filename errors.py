@@ -68,4 +68,7 @@ def log_and_format_error(
 
     if user_message:
         return f"Error [{cat}]: {user_message}"
-    return f"Error [{cat}] in {function_name}: {str(error)}"
+    # Sanitize: only return the exception type, not the full message
+    # (which may contain file paths, private keys, or internal details)
+    err_type = type(error).__name__
+    return f"Error [{cat}] in {function_name}: {err_type}. Check server logs for details."

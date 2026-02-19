@@ -75,10 +75,9 @@ class DelegationService:
                 },
             )
 
-            # Record delegation
+            # Record delegation (token omitted from persistent storage for security)
             delegation_record = {
                 "jti": jti,
-                "token": token,
                 "issuer": issuer_agent_id,
                 "audience": audience_agent_id,
                 "capabilities": capabilities,

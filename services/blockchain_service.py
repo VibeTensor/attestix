@@ -8,6 +8,7 @@ Optional: works only when EVM_PRIVATE_KEY is set in .env.
 
 import hashlib
 import json
+import threading
 import uuid
 from datetime import datetime, timezone
 from typing import Dict, List, Optional, Tuple
@@ -51,6 +52,7 @@ class BlockchainService:
         self._network = _get_env("BASE_NETWORK", "sepolia")
         self._configured = False
         self._init_error = None
+        self._tx_lock = threading.Lock()
         self._try_init()
 
     def _try_init(self):
@@ -170,21 +172,24 @@ class BlockchainService:
                 "0x0000000000000000000000000000000000000000"
             )
 
-            tx = self._schema_registry.functions.register(
-                ATTESTIX_SCHEMA,
-                zero_addr,
-                True,
-            ).build_transaction({
-                "from": self._account.address,
-                "nonce": self._w3.eth.get_transaction_count(self._account.address),
-                "gas": 200000,
-                "maxFeePerGas": self._w3.eth.gas_price * 2,
-                "maxPriorityFeePerGas": self._w3.eth.max_priority_fee,
-                "chainId": NETWORKS[self._network]["chain_id"],
-            })
+            with self._tx_lock:
+                tx = self._schema_registry.functions.register(
+                    ATTESTIX_SCHEMA,
+                    zero_addr,
+                    True,
+                ).build_transaction({
+                    "from": self._account.address,
+                    "nonce": self._w3.eth.get_transaction_count(
+                        self._account.address, "pending"
+                    ),
+                    "gas": 200000,
+                    "maxFeePerGas": self._w3.eth.gas_price * 2,
+                    "maxPriorityFeePerGas": self._w3.eth.max_priority_fee,
+                    "chainId": NETWORKS[self._network]["chain_id"],
+                })
 
-            signed = self._account.sign_transaction(tx)
-            tx_hash = self._w3.eth.send_raw_transaction(signed.raw_transaction)
+                signed = self._account.sign_transaction(tx)
+                tx_hash = self._w3.eth.send_raw_transaction(signed.raw_transaction)
             receipt = self._w3.eth.wait_for_transaction_receipt(tx_hash, timeout=60)
 
             if receipt["status"] != 1:
@@ -282,20 +287,23 @@ class BlockchainService:
                 ),
             )
 
-            tx = self._eas_contract.functions.attest(
-                attestation_request
-            ).build_transaction({
-                "from": self._account.address,
-                "nonce": self._w3.eth.get_transaction_count(self._account.address),
-                "gas": 300000,
-                "maxFeePerGas": self._w3.eth.gas_price * 2,
-                "maxPriorityFeePerGas": self._w3.eth.max_priority_fee,
-                "chainId": NETWORKS[self._network]["chain_id"],
-                "value": 0,
-            })
+            with self._tx_lock:
+                tx = self._eas_contract.functions.attest(
+                    attestation_request
+                ).build_transaction({
+                    "from": self._account.address,
+                    "nonce": self._w3.eth.get_transaction_count(
+                        self._account.address, "pending"
+                    ),
+                    "gas": 300000,
+                    "maxFeePerGas": self._w3.eth.gas_price * 2,
+                    "maxPriorityFeePerGas": self._w3.eth.max_priority_fee,
+                    "chainId": NETWORKS[self._network]["chain_id"],
+                    "value": 0,
+                })
 
-            signed = self._account.sign_transaction(tx)
-            tx_hash = self._w3.eth.send_raw_transaction(signed.raw_transaction)
+                signed = self._account.sign_transaction(tx)
+                tx_hash = self._w3.eth.send_raw_transaction(signed.raw_transaction)
             receipt = self._w3.eth.wait_for_transaction_receipt(tx_hash, timeout=120)
 
             if receipt["status"] != 1:
@@ -304,13 +312,19 @@ class BlockchainService:
                 }
 
             # Extract attestation UID from Attested event log
+            # EAS Attested event: Attested(address indexed recipient, address indexed attester, bytes32 uid, bytes32 indexed schema)
+            # uid is in the data field (non-indexed), not in topics
             attestation_uid = "unknown"
             if receipt["logs"]:
-                log = receipt["logs"][0]
-                if len(log.get("topics", [])) > 1:
-                    attestation_uid = "0x" + log["topics"][1].hex()
-                elif log.get("data"):
-                    attestation_uid = "0x" + log["data"].hex()[:64]
+                for log in receipt["logs"]:
+                    data_hex = log.get("data", b"")
+                    if isinstance(data_hex, bytes) and len(data_hex) >= 32:
+                        attestation_uid = "0x" + data_hex[:32].hex()
+                        break
+                    elif isinstance(data_hex, str) and len(data_hex) >= 66:
+                        clean = data_hex.replace("0x", "")
+                        attestation_uid = "0x" + clean[:64]
+                        break
 
             anchor_id = f"anchor:{uuid.uuid4().hex[:12]}"
             now = datetime.now(timezone.utc).isoformat()
@@ -392,10 +406,13 @@ class BlockchainService:
                         uid_bytes
                     ).call()
 
+                    revocation_time = on_chain[4] if len(on_chain) > 4 else 0
                     results.append({
                         **anchor,
                         "on_chain_valid": is_valid,
                         "on_chain_time": on_chain[2],
+                        "on_chain_revocation_time": revocation_time,
+                        "on_chain_revoked": revocation_time != 0,
                         "on_chain_attester": on_chain[7],
                     })
                 else:
@@ -532,9 +549,11 @@ class BlockchainService:
             gas_price = self._w3.eth.gas_price
             max_priority_fee = self._w3.eth.max_priority_fee
             balance = self._w3.eth.get_balance(self._account.address)
-            estimated_gas = 250000
+            estimated_gas = 300000  # matches actual tx gas limit
 
-            estimated_cost_wei = estimated_gas * gas_price
+            # Use EIP-1559 max fee (gas_price * 2) for worst-case estimate
+            max_fee = gas_price * 2
+            estimated_cost_wei = estimated_gas * max_fee
             estimated_cost_eth = self._w3.from_wei(estimated_cost_wei, "ether")
             balance_eth = self._w3.from_wei(balance, "ether")
 

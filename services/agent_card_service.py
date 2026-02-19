@@ -20,15 +20,15 @@ class AgentCardService:
         try:
             url = base_url.rstrip("/")
 
-            # SSRF protection: require https and block private domains
+            # SSRF protection: require https and block private/reserved IPs
             if not url.startswith("https://"):
                 return {"error": "Only HTTPS URLs are supported for agent discovery"}
             from urllib.parse import urlparse
+            from auth.ssrf import validate_url_host
             parsed = urlparse(url)
-            blocked = {"localhost", "127.0.0.1", "0.0.0.0", "[::1]", "169.254.169.254"}
-            if parsed.hostname and (parsed.hostname.lower() in blocked
-                                     or parsed.hostname.endswith(".local")):
-                return {"error": f"Blocked: cannot discover agents on private domains"}
+            ssrf_err = validate_url_host(parsed.hostname or "")
+            if ssrf_err:
+                return {"error": ssrf_err}
 
             agent_json_url = f"{url}/.well-known/agent.json"
 

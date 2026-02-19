@@ -41,6 +41,13 @@ class IdentityService:
         """Extract only immutable fields for signing/verification."""
         return {k: v for k, v in uait.items() if k not in self.MUTABLE_FIELDS}
 
+    @staticmethod
+    def _mask_token(token: str) -> str:
+        """Mask sensitive tokens before storage. Keep first/last 4 chars for debugging."""
+        if not token or len(token) < 12:
+            return token
+        return token[:4] + "..." + token[-4:]
+
     @property
     def server_did(self) -> str:
         return self._server_did
@@ -72,7 +79,7 @@ class IdentityService:
             "display_name": display_name,
             "description": description,
             "source_protocol": source_protocol,
-            "identity_token": identity_token,
+            "identity_token": self._mask_token(identity_token),
             "token_info": token_info,
             "capabilities": capabilities or [],
             "issuer": {
@@ -170,18 +177,16 @@ class IdentityService:
                 checks["signature_valid"] = verify_json_signature(
                     server_pub, signable, signature
                 )
-            except ValueError as e:
+            except ValueError:
                 checks["signature_valid"] = False
-                checks["signature_error"] = f"Key error: {e}"
             except Exception as e:
                 checks["signature_valid"] = False
-                checks["signature_error"] = str(e)
                 log_and_format_error("verify_identity", e, ErrorCategory.CRYPTO,
                                      agent_id=agent_id)
         else:
             checks["signature_valid"] = False
 
-        valid = all(checks.values())
+        valid = all(v for v in checks.values() if isinstance(v, bool))
         return {
             "valid": valid,
             "agent_id": agent_id,

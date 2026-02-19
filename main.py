@@ -29,10 +29,11 @@ builtins.print = _stderr_print
 import nest_asyncio
 from mcp.server.fastmcp import FastMCP
 
+from config import LOG_FILE
 from errors import setup_logging
 
 # Initialize logging
-setup_logging()
+setup_logging(log_file=str(LOG_FILE))
 
 # Create MCP server
 mcp = FastMCP("attestix")
