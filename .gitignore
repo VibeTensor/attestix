@@ -18,6 +18,8 @@ delegations.json
 compliance.json
 credentials.json
 provenance.json
+anchors.json
+.blockchain_config.json
 
 # File locks and backups
 *.lock

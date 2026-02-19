@@ -19,6 +19,8 @@ DELEGATIONS_FILE = PROJECT_DIR / "delegations.json"
 COMPLIANCE_FILE = PROJECT_DIR / "compliance.json"
 CREDENTIALS_FILE = PROJECT_DIR / "credentials.json"
 PROVENANCE_FILE = PROJECT_DIR / "provenance.json"
+ANCHORS_FILE = PROJECT_DIR / "anchors.json"
+BLOCKCHAIN_CONFIG_FILE = PROJECT_DIR / ".blockchain_config.json"
 LOG_FILE = PROJECT_DIR / "attestix_errors.log"
 SIGNING_KEY_FILE = PROJECT_DIR / ".signing_key.json"
 
@@ -143,3 +145,13 @@ def load_provenance() -> dict:
 
 def save_provenance(data: dict):
     _safe_save(PROVENANCE_FILE, data)
+
+
+# --- Anchor storage ---
+
+def load_anchors() -> dict:
+    return _safe_load(ANCHORS_FILE, {"anchors": []})
+
+
+def save_anchors(data: dict):
+    _safe_save(ANCHORS_FILE, data)

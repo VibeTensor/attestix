@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "attestix"
-version = "0.1.0"
+version = "0.2.0"
 description = "Attestix - Attestation infrastructure for AI agents. Identity, compliance, and verifiable credentials."
 readme = "README.md"
 license = {file = "LICENSE"}
@@ -47,6 +47,7 @@ dependencies = [
     "nest-asyncio>=1.6.0",
     "python-json-logger>=3.3.0",
     "filelock>=3.13.0",
+    "web3>=7.0.0",
 ]
 
 [project.urls]
@@ -59,7 +60,7 @@ Issues = "https://github.com/VibeTensor/attestix/issues"
 attestix = "main:main"
 
 [tool.setuptools]
-packages = ["auth", "services", "tools"]
+packages = ["auth", "blockchain", "services", "tools"]
 py-modules = ["main", "config", "errors"]
 
 [tool.setuptools.package-data]

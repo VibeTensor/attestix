@@ -3,7 +3,7 @@
 MCP server for cross-protocol agent identity bridging,
 delegation chains, reputation scoring, and EU AI Act compliance.
 
-36 tools across 8 modules:
+42 tools across 9 modules:
   - Identity (7): create, resolve, verify, translate, list, get, revoke
   - Agent Cards (3): parse, generate, discover
   - DID (3): resolve_did, create_did_key, create_did_web
@@ -12,6 +12,7 @@ delegation chains, reputation scoring, and EU AI Act compliance.
   - Compliance (6): create_profile, get_profile, get_status, record_assessment, generate_declaration, list_profiles
   - Credentials (6): issue, verify, revoke, get, list, create_presentation
   - Provenance (5): record_training_data, record_model_lineage, log_action, get_provenance, get_audit_trail
+  - Blockchain (6): anchor_identity, anchor_credential, verify_anchor, anchor_audit_batch, get_anchor_status, estimate_anchor_cost
 """
 
 import asyncio
@@ -39,7 +40,7 @@ mcp = FastMCP("attestix")
 # Register tool modules
 from tools import (
     identity_tools, agent_card_tools, did_tools, delegation_tools, reputation_tools,
-    compliance_tools, credential_tools, provenance_tools,
+    compliance_tools, credential_tools, provenance_tools, blockchain_tools,
 )
 
 identity_tools.register(mcp)
@@ -50,8 +51,9 @@ reputation_tools.register(mcp)
 compliance_tools.register(mcp)
 credential_tools.register(mcp)
 provenance_tools.register(mcp)
+blockchain_tools.register(mcp)
 
-print(f"Attestix MCP server loaded: 36 tools registered", file=sys.stderr)
+print(f"Attestix MCP server loaded: 42 tools registered", file=sys.stderr)
 
 
 def main():

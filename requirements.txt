@@ -12,6 +12,9 @@ base58>=2.1.1
 # HTTP client
 httpx>=0.28.0
 
+# Blockchain (optional, for on-chain anchoring)
+web3>=7.0.0
+
 # Utilities
 python-dotenv>=1.1.0
 nest-asyncio>=1.6.0

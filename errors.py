@@ -22,6 +22,7 @@ class ErrorCategory(str, Enum):
     COMPLIANCE = "COMPLIANCE"
     CREDENTIAL = "CREDENTIAL"
     PROVENANCE = "PROVENANCE"
+    BLOCKCHAIN = "BLOCKCHAIN"
 
 
 def setup_logging(log_file: str = "attestix_errors.log"):
