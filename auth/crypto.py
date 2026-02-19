@@ -1,4 +1,4 @@
-"""Ed25519 cryptographic operations for AURA Protocol.
+"""Ed25519 cryptographic operations for Attestix.
 
 Handles key generation, signing, verification, and did:key creation.
 """
@@ -133,7 +133,7 @@ def load_or_create_signing_key(
             private_key_to_bytes(private_key)
         ).decode("ascii"),
         "algorithm": "Ed25519",
-        "note": "AURA Protocol server signing key. Do NOT share.",
+        "note": "Attestix server signing key. Do NOT share.",
     }
 
     with open(key_path, "w") as f:

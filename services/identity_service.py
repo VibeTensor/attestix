@@ -1,4 +1,4 @@
-"""Core identity service for AURA Protocol.
+"""Core identity service for Attestix.
 
 Manages Unified Agent Identity Tokens (UAITs): create, read, list,
 revoke, verify, and sign operations.
@@ -56,7 +56,7 @@ class IdentityService:
         expiry_days: Optional[int] = None,
     ) -> dict:
         """Create a new UAIT from any identity source."""
-        agent_id = f"aura:{uuid.uuid4().hex[:16]}"
+        agent_id = f"attestix:{uuid.uuid4().hex[:16]}"
         now = datetime.now(timezone.utc)
         exp_days = expiry_days if expiry_days is not None else DEFAULT_EXPIRY_DAYS
         expires_at = (now + timedelta(days=exp_days)).isoformat()
@@ -245,24 +245,33 @@ class IdentityService:
                 "description": f"Capability: {cap}",
             })
 
+        agent_url = f"attestix://{agent['agent_id']}"
         return {
+            "id": hashlib.sha256(agent["agent_id"].encode()).hexdigest()[:16],
             "name": agent["display_name"],
             "description": agent.get("description", ""),
-            "url": f"aura://{agent['agent_id']}",
+            "url": agent_url,
             "version": agent.get("version", UAIT_VERSION),
             "capabilities": {
                 "streaming": False,
                 "pushNotifications": False,
             },
             "skills": skills,
+            "endpoints": [
+                {
+                    "url": f"{agent_url}/tasks",
+                    "protocol": "attestix",
+                    "method": "POST",
+                }
+            ],
             "provider": {
                 "organization": agent["issuer"].get("name", ""),
             },
             "authentication": {
-                "schemes": ["aura-uait"],
+                "schemes": ["attestix-uait"],
                 "credentials": agent["agent_id"],
             },
-            "_aura_metadata": {
+            "_attestix_metadata": {
                 "agent_id": agent["agent_id"],
                 "source_protocol": agent.get("source_protocol"),
                 "reputation_score": agent.get("reputation_score"),
@@ -271,16 +280,17 @@ class IdentityService:
 
     def _to_did_document(self, agent: dict) -> dict:
         """Convert UAIT to W3C DID Document format."""
-        did = agent["issuer"].get("did", f"did:aura:{agent['agent_id']}")
+        did = agent["issuer"].get("did", f"did:attestix:{agent['agent_id']}")
         # Get public key multibase for the server DID
         pub_multibase = None
         if did.startswith("did:key:z"):
             try:
-                from auth.crypto import did_key_to_public_key, public_key_to_bytes
+                from auth.crypto import did_key_to_public_key, public_key_to_bytes, ED25519_MULTICODEC_PREFIX
                 import base58
                 pub_key = did_key_to_public_key(did)
+                pub_bytes = public_key_to_bytes(pub_key)
                 pub_multibase = "z" + base58.b58encode(
-                    public_key_to_bytes(pub_key)
+                    ED25519_MULTICODEC_PREFIX + pub_bytes
                 ).decode("ascii")
             except Exception:
                 pass
@@ -304,8 +314,8 @@ class IdentityService:
             "authentication": [f"{did}#key-1"],
             "service": [
                 {
-                    "id": f"{did}#aura",
-                    "type": "AURAIdentity",
+                    "id": f"{did}#attestix",
+                    "type": "AttestixIdentity",
                     "serviceEndpoint": {
                         "agent_id": agent["agent_id"],
                         "display_name": agent["display_name"],
@@ -319,12 +329,12 @@ class IdentityService:
         """Convert UAIT to OAuth 2.0 token claims."""
         return {
             "sub": agent["agent_id"],
-            "iss": agent["issuer"].get("did", "aura-protocol"),
+            "iss": agent["issuer"].get("did", "attestix"),
             "name": agent["display_name"],
             "scope": " ".join(agent.get("capabilities", [])),
             "iat": agent.get("created_at"),
             "exp": agent.get("expires_at"),
-            "aura_version": agent.get("version"),
+            "attestix_version": agent.get("version"),
             "source_protocol": agent.get("source_protocol"),
         }
 

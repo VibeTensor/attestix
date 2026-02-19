@@ -1,1 +1,1 @@
-"""Identity resolution, delegation, and reputation services for AURA Protocol."""
+"""Identity resolution, delegation, and reputation services for Attestix."""

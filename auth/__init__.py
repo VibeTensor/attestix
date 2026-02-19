@@ -1,1 +1,1 @@
-"""Authentication and cryptographic modules for AURA Protocol."""
+"""Authentication and cryptographic modules for Attestix."""

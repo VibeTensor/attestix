@@ -1,6 +1,7 @@
 # Environment & secrets
 .env
 .signing_key.json
+.keypairs.json
 
 # Python
 __pycache__/
@@ -26,7 +27,14 @@ provenance.json
 
 # Logs
 *.log
-aura_errors.log
+attestix_errors.log
+
+# MkDocs build output
+site/
+
+# Distribution
+dist/
+build/
 
 # IDE
 .vscode/

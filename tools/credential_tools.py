@@ -1,6 +1,6 @@
-"""Credential MCP tools for AURA Protocol (6 tools).
+"""Credential MCP tools for Attestix (6 tools).
 
-W3C Verifiable Credentials (VC Data Model 2.0) issuance and verification.
+W3C Verifiable Credentials (VC Data Model 1.1) issuance and verification.
 """
 
 import json
@@ -28,7 +28,7 @@ def register(mcp):
         """Issue a W3C Verifiable Credential with Ed25519Signature2020 proof.
 
         Args:
-            subject_agent_id: The AURA agent ID this credential is about.
+            subject_agent_id: The Attestix agent ID this credential is about.
             credential_type: Credential type (e.g., EUAIActComplianceCredential, AgentIdentityCredential).
             issuer_name: Name of the issuing authority.
             claims_json: JSON string of credential claims (e.g., {"compliant": true, "risk_level": "high"}).
@@ -142,7 +142,7 @@ def register(mcp):
         Creates a signed VP that an agent can present to a verifier to prove compliance.
 
         Args:
-            agent_id: The AURA agent ID (holder/presenter).
+            agent_id: The Attestix agent ID (holder/presenter).
             credential_ids: Comma-separated credential URNs to include.
             audience_did: DID of the intended verifier (optional).
             challenge: Nonce provided by the verifier for replay protection (optional).

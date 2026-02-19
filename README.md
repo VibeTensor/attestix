@@ -1,8 +1,8 @@
-# AURA Protocol
+# Attestix
 
-**Agent Unified Registry & Authentication Protocol**
+**Attestation Infrastructure for AI Agents**
 
-The compliance identity layer for the EU AI Act era. AURA gives every AI agent a verifiable identity, proves its regulatory compliance, tracks its provenance, and scores its trustworthiness -- all locally, vendor-neutrally, and natively within MCP.
+The compliance identity layer for the EU AI Act era. Attestix gives every AI agent a verifiable identity, proves its regulatory compliance, tracks its provenance, and scores its trustworthiness -- all locally, vendor-neutrally, and natively within MCP.
 
 ---
 
@@ -18,13 +18,13 @@ Meanwhile, agent identity is fragmenting across walled gardens:
 - **Google A2A** -- communication protocol, not identity/compliance
 - **ERC-8004** -- requires Ethereum blockchain
 
-No single tool combines **agent identity + EU AI Act compliance + verifiable credentials** in one protocol. AURA fills this gap.
+No single tool combines **agent identity + EU AI Act compliance + verifiable credentials** in one protocol. Attestix fills this gap.
 
 ---
 
-## What AURA Does
+## What Attestix Does
 
-AURA is an MCP server providing 36 tools across 8 modules:
+Attestix is an MCP server providing 36 tools across 8 modules:
 
 ### Phase 1 -- Identity & Trust (19 tools)
 
@@ -41,7 +41,7 @@ AURA is an MCP server providing 36 tools across 8 modules:
 | Module | Tools | Purpose |
 |--------|-------|---------|
 | **Compliance** | 6 | Risk categorization, conformity assessments (Article 43), Annex V declarations |
-| **Credentials** | 6 | W3C Verifiable Credentials (VC Data Model 2.0) with Ed25519Signature2020 proofs |
+| **Credentials** | 6 | W3C Verifiable Credentials (VC Data Model 1.1) with Ed25519Signature2020 proofs |
 | **Provenance** | 5 | Training data provenance (Article 10), model lineage (Article 11), audit trail (Article 12) |
 
 ---
@@ -58,7 +58,7 @@ AURA is an MCP server providing 36 tools across 8 modules:
                          |                              |
                          +--------- GAP ----------------+
                                      |
-                              AURA Protocol
+                              Attestix
                          Agent-level compliance
                        Cryptographic VC proofs
                         Vendor-neutral DIDs
@@ -67,12 +67,12 @@ AURA is an MCP server providing 36 tools across 8 modules:
 
 ### Competitive Gap Map
 
-| Capability | Credo AI | Vanta | Okta | Entra | AWS | A2A | ERC-8004 | Dock.io | **AURA** |
+| Capability | Credo AI | Vanta | Okta | Entra | AWS | A2A | ERC-8004 | Dock.io | **Attestix** |
 |-----------|---------|-------|------|-------|-----|-----|----------|---------|---------|
 | Agent Identity (DID) | - | - | - | - | - | - | On-chain | Yes | **Yes** |
 | EU AI Act Compliance | Yes | Yes | - | - | - | - | - | - | **Yes** |
 | W3C Verifiable Credentials | - | - | - | - | - | - | - | Yes | **Yes** |
-| Compliance-as-a-VC | - | - | - | - | - | - | - | - | **Only AURA** |
+| Compliance-as-a-VC | - | - | - | - | - | - | - | - | **Only Attestix** |
 | Reputation Scoring | - | - | - | - | - | - | On-chain | - | **Yes** |
 | Delegation Chains | - | - | OAuth | OAuth | IAM | - | - | - | **UCAN** |
 | Training Data Provenance | - | - | - | - | - | - | - | - | **Yes** |
@@ -86,7 +86,7 @@ AURA is an MCP server providing 36 tools across 8 modules:
 ## Architecture
 
 ```
-aura-protocol/
+attestix/
   auth/
     crypto.py          # Ed25519 signing, did:key creation, signature verification
     token_parser.py    # Auto-detect JWT, DID, API key, URL tokens
@@ -126,10 +126,18 @@ aura-protocol/
 
 ## Quick Start
 
-### Prerequisites
+### Install from PyPI
 
 ```bash
-pip install mcp[cli] cryptography base58 python-dotenv nest-asyncio python-json-logger httpx
+pip install attestix
+```
+
+Or install from source:
+
+```bash
+git clone https://github.com/VibeTensor/attestix.git
+cd attestix
+pip install -r requirements.txt
 ```
 
 ### Run Standalone
@@ -145,16 +153,26 @@ Add to your Claude Code config (`~/.claude.json`):
 ```json
 {
   "mcpServers": {
-    "aura-protocol": {
+    "attestix": {
       "type": "stdio",
-      "command": "path/to/.venv/Scripts/python.exe",
-      "args": ["path/to/aura-protocol/main.py"]
+      "command": "python",
+      "args": ["/path/to/attestix/main.py"]
     }
   }
 }
 ```
 
-Restart Claude Code. You now have 36 AURA tools available.
+Restart Claude Code. You now have 36 Attestix tools available.
+
+### Run Examples
+
+```bash
+python examples/01_basic_identity.py        # Create and verify an agent identity
+python examples/02_full_compliance.py        # Full EU AI Act compliance workflow
+python examples/03_delegation_chain.py       # UCAN-style capability delegation
+python examples/04_verifiable_credentials.py # W3C VC issuance and verification
+python examples/05_audit_trail.py            # Article 12 audit logging
+```
 
 ---
 
@@ -171,7 +189,7 @@ create_agent_identity(
   description="AI-assisted medical diagnosis for clinical decision support",
   issuer_name="VibeTensor Inc."
 )
---> agent_id: aura:f9bdb7a94ccb40f1
+--> agent_id: attestix:f9bdb7a94ccb40f1
 --> eu_compliance: null
 ```
 
@@ -179,7 +197,7 @@ create_agent_identity(
 
 ```
 record_training_data(
-  agent_id="aura:f9bdb7a94ccb40f1",
+  agent_id="attestix:f9bdb7a94ccb40f1",
   dataset_name="PubMed Central Open Access",
   license="CC-BY-4.0",
   contains_personal_data=false,
@@ -191,7 +209,7 @@ record_training_data(
 
 ```
 record_model_lineage(
-  agent_id="aura:f9bdb7a94ccb40f1",
+  agent_id="attestix:f9bdb7a94ccb40f1",
   base_model="claude-opus-4-6",
   base_model_provider="Anthropic",
   fine_tuning_method="LoRA + RLHF with physician feedback",
@@ -203,7 +221,7 @@ record_model_lineage(
 
 ```
 create_compliance_profile(
-  agent_id="aura:f9bdb7a94ccb40f1",
+  agent_id="attestix:f9bdb7a94ccb40f1",
   risk_category="high",
   provider_name="VibeTensor Inc.",
   intended_purpose="Medical diagnosis assistance",
@@ -216,7 +234,7 @@ create_compliance_profile(
 ### 5. Check Compliance Status (Gap Analysis)
 
 ```
-get_compliance_status(agent_id="aura:f9bdb7a94ccb40f1")
+get_compliance_status(agent_id="attestix:f9bdb7a94ccb40f1")
 --> completion_pct: 75.0%
 --> missing: ["conformity_assessment_passed", "declaration_of_conformity_issued"]
 ```
@@ -227,13 +245,13 @@ High-risk systems require third-party assessment. Self-assessment is blocked:
 
 ```
 record_conformity_assessment(
-  agent_id="aura:f9bdb7a94ccb40f1",
+  agent_id="attestix:f9bdb7a94ccb40f1",
   assessment_type="self", ...
 )
 --> ERROR: "High-risk AI systems require third_party conformity assessment (Article 43)."
 
 record_conformity_assessment(
-  agent_id="aura:f9bdb7a94ccb40f1",
+  agent_id="attestix:f9bdb7a94ccb40f1",
   assessment_type="third_party",
   assessor_name="TUV Rheinland AG",
   result="pass",
@@ -245,7 +263,7 @@ record_conformity_assessment(
 ### 7. Generate Declaration of Conformity (Annex V)
 
 ```
-generate_declaration_of_conformity(agent_id="aura:f9bdb7a94ccb40f1")
+generate_declaration_of_conformity(agent_id="attestix:f9bdb7a94ccb40f1")
 --> Annex V declaration with 10 required fields
 --> Auto-issues EUAIActComplianceCredential (W3C Verifiable Credential)
 ```
@@ -253,7 +271,7 @@ generate_declaration_of_conformity(agent_id="aura:f9bdb7a94ccb40f1")
 ### 8. Verify Full Compliance
 
 ```
-get_compliance_status(agent_id="aura:f9bdb7a94ccb40f1")
+get_compliance_status(agent_id="attestix:f9bdb7a94ccb40f1")
 --> compliant: true
 --> completion_pct: 100.0%
 --> eu_compliance: "comp:14f05fb98b20" (linked on UAIT)
@@ -263,7 +281,7 @@ get_compliance_status(agent_id="aura:f9bdb7a94ccb40f1")
 
 ```
 create_verifiable_presentation(
-  agent_id="aura:f9bdb7a94ccb40f1",
+  agent_id="attestix:f9bdb7a94ccb40f1",
   credential_ids="urn:uuid:7161cb5e-...",
   audience_did="did:web:eu-regulator.europa.eu"
 )
@@ -380,7 +398,7 @@ create_verifiable_presentation(
 
 ### Phase 3 -- Blockchain Anchoring (Planned)
 
-AURA's Ed25519 signatures can be anchored on-chain for tamper-proof verification without moving core operations to the blockchain.
+Attestix's Ed25519 signatures can be anchored on-chain for tamper-proof verification without moving core operations to the blockchain.
 
 | Off-Chain (Current) | On-Chain (Planned) |
 |---------------------|-------------------|
@@ -400,19 +418,48 @@ Target chain: **Base (Ethereum L2)** -- sub-$0.01 gas costs, ERC-8004 compatibil
 
 ---
 
+## Documentation
+
+| Document | Description |
+|----------|-------------|
+| [Getting Started](docs/getting-started.md) | Installation and first identity in 5 minutes |
+| [EU AI Act Compliance](docs/eu-ai-act-compliance.md) | Step-by-step compliance workflow |
+| [Risk Classification](docs/risk-classification.md) | How to determine your AI system's risk category |
+| [Concepts](docs/concepts.md) | UAIT, DID, VC, VP, UCAN, Ed25519 explained |
+| [API Reference](docs/api-reference.md) | All 36 tools with full parameter tables |
+| [Integration Guide](docs/integration-guide.md) | LangChain, CrewAI, AutoGen, MCP client patterns |
+| [FAQ](docs/faq.md) | Common questions answered |
+
+---
+
+## Important Disclaimer
+
+Attestix generates machine-readable, cryptographically signed compliance documentation for AI agents. It is a documentation and evidence tooling system.
+
+**Attestix does not replace legal counsel, notified body assessments, or official regulatory submissions.** The declarations and artifacts produced by Attestix are structured evidence to support your compliance process, not legally binding regulatory filings on their own. Always consult qualified legal professionals for compliance decisions.
+
+---
+
 ## Security
 
 - **Ed25519** signatures on all UAITs, VCs, assessments, declarations, and audit entries
 - **did:key** identifiers derived from server signing key
+- Private keys never returned in tool responses (stored locally)
 - Signing key stored in `.signing_key.json` (excluded from git)
 - No external API calls required for core operations
-- All sensitive files excluded via `.gitignore`: `.env`, `.signing_key.json`, runtime data files
+- All sensitive files excluded via `.gitignore`: `.env`, `.signing_key.json`, `.keypairs.json`, runtime data files
+
+---
+
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for development setup and guidelines.
 
 ---
 
 ## License
 
-Private. Contact VibeTensor Inc. for licensing inquiries.
+Apache License 2.0. See [LICENSE](LICENSE) for details.
 
 ---
 

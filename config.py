@@ -1,4 +1,4 @@
-"""Configuration management for AURA Protocol MCP server."""
+"""Configuration management for Attestix MCP server."""
 
 import json
 import os
@@ -19,7 +19,7 @@ DELEGATIONS_FILE = PROJECT_DIR / "delegations.json"
 COMPLIANCE_FILE = PROJECT_DIR / "compliance.json"
 CREDENTIALS_FILE = PROJECT_DIR / "credentials.json"
 PROVENANCE_FILE = PROJECT_DIR / "provenance.json"
-LOG_FILE = PROJECT_DIR / "aura_errors.log"
+LOG_FILE = PROJECT_DIR / "attestix_errors.log"
 SIGNING_KEY_FILE = PROJECT_DIR / ".signing_key.json"
 
 load_dotenv(ENV_FILE)

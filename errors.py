@@ -1,4 +1,4 @@
-"""Centralized error handling and logging for AURA Protocol."""
+"""Centralized error handling and logging for Attestix."""
 
 import sys
 import logging
@@ -6,7 +6,7 @@ from enum import Enum
 from typing import Optional, Union
 from pythonjsonlogger import json as jsonlogger
 
-logger = logging.getLogger("aura-protocol")
+logger = logging.getLogger("attestix")
 
 
 class ErrorCategory(str, Enum):
@@ -24,7 +24,7 @@ class ErrorCategory(str, Enum):
     PROVENANCE = "PROVENANCE"
 
 
-def setup_logging(log_file: str = "aura_errors.log"):
+def setup_logging(log_file: str = "attestix_errors.log"):
     """Configure dual logging: stderr (human-readable) + file (JSON structured)."""
     logger.setLevel(logging.DEBUG)
 

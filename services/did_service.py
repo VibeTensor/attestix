@@ -1,4 +1,4 @@
-"""DID resolution service for AURA Protocol.
+"""DID resolution service for Attestix.
 
 Supports:
 - did:key (local resolution, Ed25519)
@@ -27,6 +27,29 @@ import base64
 
 class DIDService:
     """Resolves and creates DID documents."""
+
+    def _store_keypair(self, keypair_id: str, priv_b64: str, pub_multibase: str, did: str):
+        """Store a generated keypair locally (never return private keys in tool responses)."""
+        from config import PROJECT_DIR
+        keypair_file = PROJECT_DIR / ".keypairs.json"
+        data = {}
+        if keypair_file.exists():
+            try:
+                with open(keypair_file, "r") as f:
+                    data = json.load(f)
+            except (json.JSONDecodeError, ValueError):
+                data = {}
+        data[keypair_id] = {
+            "did": did,
+            "algorithm": "Ed25519",
+            "public_key_multibase": pub_multibase,
+            "private_key_b64": priv_b64,
+            "created_at": __import__("datetime").datetime.now(
+                __import__("datetime").timezone.utc
+            ).isoformat(),
+        }
+        with open(keypair_file, "w") as f:
+            json.dump(data, f, indent=2)
 
     def resolve_did(self, did: str) -> dict:
         """Resolve a DID to its DID Document.
@@ -62,15 +85,16 @@ class DIDService:
 
             did_document = self._build_did_key_document(did, pub_multibase)
 
+            # Store keypair locally instead of returning private key in tool response
+            keypair_id = f"keypair:{did.split(':')[-1][:16]}"
+            self._store_keypair(keypair_id, priv_b64, pub_multibase, did)
+
             return {
                 "did": did,
                 "did_document": did_document,
-                "keypair": {
-                    "algorithm": "Ed25519",
-                    "public_key_multibase": pub_multibase,
-                    "private_key_b64": priv_b64,
-                    "note": "Store private key securely. Never share it.",
-                },
+                "keypair_id": keypair_id,
+                "public_key_multibase": pub_multibase,
+                "note": "Private key stored locally in .keypairs.json. Use keypair_id to reference it.",
             }
         except Exception as e:
             return {
@@ -122,16 +146,17 @@ class DIDService:
             else:
                 hosting_url = f"https://{domain}/.well-known/did.json"
 
+            # Store keypair locally instead of returning private key in tool response
+            keypair_id = f"keypair:{domain}:{did.split(':')[-1][:8]}"
+            self._store_keypair(keypair_id, priv_b64, pub_multibase, did)
+
             return {
                 "did": did,
                 "did_document": did_document,
                 "hosting_url": hosting_url,
-                "keypair": {
-                    "algorithm": "Ed25519",
-                    "public_key_multibase": pub_multibase,
-                    "private_key_b64": priv_b64,
-                    "note": "Store private key securely.",
-                },
+                "keypair_id": keypair_id,
+                "public_key_multibase": pub_multibase,
+                "note": "Private key stored locally in .keypairs.json. Use keypair_id to reference it.",
                 "instructions": (
                     f"Host the did_document JSON at {hosting_url} "
                     f"to make this DID resolvable."

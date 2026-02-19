@@ -1,4 +1,4 @@
-"""DID operation MCP tools for AURA Protocol (3 tools)."""
+"""DID operation MCP tools for Attestix (3 tools)."""
 
 import json
 

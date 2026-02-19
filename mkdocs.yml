@@ -1,0 +1,65 @@
+site_name: Attestix
+site_description: Attestation infrastructure for AI agents - Identity, compliance, and verifiable credentials
+site_url: https://vibetensor.github.io/attestix/
+repo_url: https://github.com/VibeTensor/attestix
+repo_name: VibeTensor/attestix
+
+theme:
+  name: material
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: indigo
+      accent: deep purple
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: indigo
+      accent: deep purple
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.expand
+    - navigation.top
+    - search.highlight
+    - search.suggest
+    - content.code.copy
+  icon:
+    repo: fontawesome/brands/github
+
+markdown_extensions:
+  - tables
+  - admonition
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+  - toc:
+      permalink: true
+
+nav:
+  - Home: index.md
+  - Getting Started: getting-started.md
+  - Guides:
+      - EU AI Act Compliance: eu-ai-act-compliance.md
+      - Risk Classification: risk-classification.md
+      - Integration Guide: integration-guide.md
+  - Reference:
+      - API Reference: api-reference.md
+      - Concepts: concepts.md
+      - FAQ: faq.md
+  - Project:
+      - Roadmap: roadmap.md
+      - Changelog: changelog.md
+      - Contributing: contributing.md
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/VibeTensor/attestix

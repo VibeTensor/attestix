@@ -1,4 +1,4 @@
-"""Compliance MCP tools for AURA Protocol (6 tools).
+"""Compliance MCP tools for Attestix (6 tools).
 
 EU AI Act compliance profiles, conformity assessments, and declarations.
 """
@@ -30,7 +30,7 @@ def register(mcp):
         Categorizes the AI system by risk level and tracks all compliance obligations.
 
         Args:
-            agent_id: The AURA agent ID (e.g., aura:abc123...).
+            agent_id: The Attestix agent ID (e.g., attestix:abc123...).
             risk_category: EU AI Act risk level: minimal, limited, or high.
             provider_name: Name of the AI system provider/company.
             intended_purpose: What the AI system is designed to do.
@@ -61,7 +61,7 @@ def register(mcp):
         """Get the EU AI Act compliance profile for an agent.
 
         Args:
-            agent_id: The AURA agent ID.
+            agent_id: The Attestix agent ID.
         """
         from services.cache import get_service
         from services.compliance_service import ComplianceService
@@ -79,7 +79,7 @@ def register(mcp):
         Shows completion percentage and lists completed vs missing requirements.
 
         Args:
-            agent_id: The AURA agent ID.
+            agent_id: The Attestix agent ID.
         """
         from services.cache import get_service
         from services.compliance_service import ComplianceService
@@ -102,7 +102,7 @@ def register(mcp):
         High-risk systems require third_party assessment. Limited/minimal can use self-assessment.
 
         Args:
-            agent_id: The AURA agent ID.
+            agent_id: The Attestix agent ID.
             assessment_type: self or third_party.
             assessor_name: Name of the assessor or notified body.
             result: Assessment result: pass, conditional, or fail.
@@ -131,7 +131,7 @@ def register(mcp):
         as cryptographic proof of compliance.
 
         Args:
-            agent_id: The AURA agent ID.
+            agent_id: The Attestix agent ID.
         """
         from services.cache import get_service
         from services.compliance_service import ComplianceService

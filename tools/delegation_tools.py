@@ -1,4 +1,4 @@
-"""Delegation MCP tools for AURA Protocol (3 tools)."""
+"""Delegation MCP tools for Attestix (3 tools)."""
 
 import json
 from typing import Optional
@@ -17,8 +17,8 @@ def register(mcp):
         """Create a UCAN-style delegation token granting capabilities from one agent to another.
 
         Args:
-            issuer_agent_id: The agent granting capabilities (AURA agent ID).
-            audience_agent_id: The agent receiving capabilities (AURA agent ID).
+            issuer_agent_id: The agent granting capabilities (Attestix agent ID).
+            audience_agent_id: The agent receiving capabilities (Attestix agent ID).
             capabilities: Comma-separated list of capabilities to delegate.
             expiry_hours: Hours until the delegation expires (default 24).
         """

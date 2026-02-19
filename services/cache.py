@@ -1,4 +1,4 @@
-"""Service instance cache with TTL for AURA Protocol.
+"""Service instance cache with TTL for Attestix.
 
 Reuses the pattern from productivity-mcp: singleton service instances
 with a configurable time-to-live to avoid stale state.

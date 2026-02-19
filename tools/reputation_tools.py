@@ -1,4 +1,4 @@
-"""Reputation MCP tools for AURA Protocol (3 tools)."""
+"""Reputation MCP tools for Attestix (3 tools)."""
 
 import json
 
@@ -43,7 +43,7 @@ def register(mcp):
         Returns a recency-weighted score from 0.0 to 1.0 with category breakdown.
 
         Args:
-            agent_id: The AURA agent ID to check.
+            agent_id: The Attestix agent ID to check.
         """
         from services.cache import get_service
         from services.reputation_service import ReputationService

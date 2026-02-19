@@ -1,0 +1,66 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "attestix"
+version = "0.1.0"
+description = "Attestix - Attestation infrastructure for AI agents. Identity, compliance, and verifiable credentials."
+readme = "README.md"
+license = {file = "LICENSE"}
+requires-python = ">=3.10"
+authors = [
+    {name = "VibeTensor Inc.", email = "hello@vibetensor.com"},
+]
+keywords = [
+    "attestix",
+    "ai-agents",
+    "agent-identity",
+    "attestation",
+    "verifiable-credentials",
+    "eu-ai-act",
+    "mcp",
+    "did",
+    "ucan",
+    "compliance",
+    "ed25519",
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: Apache Software License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Security :: Cryptography",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+dependencies = [
+    "mcp[cli]>=1.8.0",
+    "cryptography>=44.0.0",
+    "PyJWT[crypto]>=2.9.0",
+    "base58>=2.1.1",
+    "httpx>=0.28.0",
+    "python-dotenv>=1.1.0",
+    "nest-asyncio>=1.6.0",
+    "python-json-logger>=3.3.0",
+    "filelock>=3.13.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/VibeTensor/attestix"
+Documentation = "https://vibetensor.github.io/attestix/"
+Repository = "https://github.com/VibeTensor/attestix"
+Issues = "https://github.com/VibeTensor/attestix/issues"
+
+[project.scripts]
+attestix = "main:main"
+
+[tool.setuptools]
+packages = ["auth", "services", "tools"]
+py-modules = ["main", "config", "errors"]
+
+[tool.setuptools.package-data]
+"*" = ["*.json"]

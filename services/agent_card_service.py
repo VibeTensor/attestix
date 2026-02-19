@@ -1,4 +1,4 @@
-"""A2A Agent Card service for AURA Protocol.
+"""A2A Agent Card service for Attestix.
 
 Handles fetching, parsing, and generating Google A2A Agent Cards
 (the /.well-known/agent.json standard).
@@ -126,7 +126,7 @@ class AgentCardService:
             skills = []
 
         card = {
-            "id": f"aura-{hashlib.sha256(url.encode()).hexdigest()[:16]}",
+            "id": f"attestix-{hashlib.sha256(url.encode()).hexdigest()[:16]}",
             "name": name,
             "description": description,
             "url": url,
@@ -145,7 +145,7 @@ class AgentCardService:
                 }
             ],
             "provider": {
-                "organization": "AURA Protocol",
+                "organization": "Attestix",
             },
             "authentication": {
                 "schemes": ["bearer"],

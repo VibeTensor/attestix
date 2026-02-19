@@ -1,4 +1,4 @@
-"""Reputation and trust scoring service for AURA Protocol.
+"""Reputation and trust scoring service for Attestix.
 
 Records agent interactions and computes recency-weighted trust scores
 with exponential decay (30-day half-life).

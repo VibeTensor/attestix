@@ -1,5 +1,5 @@
-# AURA Protocol - Agent Unified Registry & Authentication
-# MCP Server for cross-protocol agent identity bridging
+# Attestix - Attestation Infrastructure for AI Agents
+# MCP Server for agent identity, compliance, and verifiable credentials
 
 # MCP Framework
 mcp[cli]>=1.8.0
@@ -16,3 +16,4 @@ httpx>=0.28.0
 python-dotenv>=1.1.0
 nest-asyncio>=1.6.0
 python-json-logger>=3.3.0
+filelock>=3.13.0

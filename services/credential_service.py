@@ -1,6 +1,6 @@
-"""Credential service for AURA Protocol.
+"""Credential service for Attestix.
 
-Issues, verifies, and manages W3C Verifiable Credentials (VC Data Model 2.0)
+Issues, verifies, and manages W3C Verifiable Credentials (VC Data Model 1.1)
 with Ed25519Signature2020 proofs.
 """
 
@@ -37,6 +37,9 @@ CREDENTIAL_TYPES = {
 class CredentialService:
     """Manages W3C Verifiable Credentials with Ed25519 proofs."""
 
+    # Fields excluded from signing (mutable after issuance)
+    MUTABLE_FIELDS = {"proof", "credentialStatus"}
+
     def __init__(self):
         self._private_key, self._server_did = load_or_create_signing_key()
 
@@ -70,15 +73,15 @@ class CredentialService:
                     **claims,
                 },
                 "credentialStatus": {
-                    "type": "AuraRevocationStatus",
+                    "type": "AttestixRevocationStatus",
                     "revoked": False,
                     "revocation_reason": None,
                     "revoked_at": None,
                 },
             }
 
-            # Create Ed25519Signature2020 proof
-            proof_payload = {k: v for k, v in credential.items() if k != "proof"}
+            # Create Ed25519Signature2020 proof (exclude mutable fields)
+            proof_payload = {k: v for k, v in credential.items() if k not in self.MUTABLE_FIELDS}
             signature = sign_json_payload(self._private_key, proof_payload)
 
             credential["proof"] = {
@@ -126,7 +129,7 @@ class CredentialService:
             proof = cred.get("proof", {})
             proof_value = proof.get("proofValue")
             if proof_value:
-                proof_payload = {k: v for k, v in cred.items() if k != "proof"}
+                proof_payload = {k: v for k, v in cred.items() if k not in self.MUTABLE_FIELDS}
                 try:
                     issuer_did = cred.get("issuer", {}).get("id", self._server_did)
                     pub_key = did_key_to_public_key(issuer_did)
@@ -160,7 +163,7 @@ class CredentialService:
             for cred in data["credentials"]:
                 if cred.get("id") == credential_id:
                     cred["credentialStatus"] = {
-                        "type": "AuraRevocationStatus",
+                        "type": "AttestixRevocationStatus",
                         "revoked": True,
                         "revocation_reason": reason,
                         "revoked_at": datetime.now(timezone.utc).isoformat(),

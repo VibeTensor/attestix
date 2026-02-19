@@ -1,1 +1,1 @@
-"""MCP tool registration modules for AURA Protocol."""
+"""MCP tool registration modules for Attestix."""

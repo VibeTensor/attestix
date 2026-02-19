@@ -1,4 +1,4 @@
-"""Provenance service for AURA Protocol.
+"""Provenance service for Attestix.
 
 Manages training data provenance, model lineage tracking, and
 Article 12 EU AI Act automatic action logging (audit trail).

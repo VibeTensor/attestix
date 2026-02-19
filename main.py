@@ -1,4 +1,4 @@
-"""AURA Protocol - Agent Unified Registry & Authentication Protocol
+"""Attestix - Attestation Infrastructure for AI Agents
 
 MCP server for cross-protocol agent identity bridging,
 delegation chains, reputation scoring, and EU AI Act compliance.
@@ -34,7 +34,7 @@ from errors import setup_logging
 setup_logging()
 
 # Create MCP server
-mcp = FastMCP("aura-protocol")
+mcp = FastMCP("attestix")
 
 # Register tool modules
 from tools import (
@@ -51,7 +51,7 @@ compliance_tools.register(mcp)
 credential_tools.register(mcp)
 provenance_tools.register(mcp)
 
-print(f"AURA Protocol MCP server loaded: 36 tools registered", file=sys.stderr)
+print(f"Attestix MCP server loaded: 36 tools registered", file=sys.stderr)
 
 
 def main():

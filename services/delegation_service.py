@@ -1,4 +1,4 @@
-"""UCAN-style delegation service for AURA Protocol.
+"""UCAN-style delegation service for Attestix.
 
 Creates, verifies, and manages JWT-based delegation tokens
 following the UCAN (User Controlled Authorization Networks) pattern
@@ -25,9 +25,6 @@ class DelegationService:
 
     def __init__(self):
         self._private_key, self._server_did = load_or_create_signing_key()
-        # EdDSA signing requires the raw seed bytes for PyJWT
-        from auth.crypto import private_key_to_bytes
-        self._private_key_bytes = private_key_to_bytes(self._private_key)
 
     def create_delegation(
         self,
@@ -62,7 +59,7 @@ class DelegationService:
                 "cap": capabilities,
                 "delegator": issuer_agent_id,
                 "prf": [parent_token] if parent_token else [],
-                "aura_version": "0.1.0",
+                "attestix_version": "0.1.0",
                 "typ": "ucan/delegation",
             }
 

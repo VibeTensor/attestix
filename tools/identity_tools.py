@@ -1,4 +1,4 @@
-"""Identity management MCP tools for AURA Protocol (7 tools)."""
+"""Identity management MCP tools for Attestix (7 tools)."""
 
 import json
 from typing import Optional
@@ -81,7 +81,7 @@ def register(mcp):
         """Verify a UAIT: check existence, revocation, expiry, and signature.
 
         Args:
-            agent_id: The AURA agent ID (e.g., aura:abc123...).
+            agent_id: The Attestix agent ID (e.g., attestix:abc123...).
         """
         from services.cache import get_service
         from services.identity_service import IdentityService
@@ -98,7 +98,7 @@ def register(mcp):
         """Convert a UAIT to another identity format.
 
         Args:
-            agent_id: The AURA agent ID to translate.
+            agent_id: The Attestix agent ID to translate.
             target_format: One of: a2a_agent_card, did_document, oauth_claims, summary.
         """
         from services.cache import get_service
@@ -139,7 +139,7 @@ def register(mcp):
         """Get full UAIT details for a specific agent.
 
         Args:
-            agent_id: The AURA agent ID.
+            agent_id: The Attestix agent ID.
         """
         from services.cache import get_service
         from services.identity_service import IdentityService
@@ -155,7 +155,7 @@ def register(mcp):
         """Revoke a UAIT, marking it as no longer valid.
 
         Args:
-            agent_id: The AURA agent ID to revoke.
+            agent_id: The Attestix agent ID to revoke.
             reason: Why this identity is being revoked.
         """
         from services.cache import get_service
