@@ -1,0 +1,22 @@
+version: 0.2
+
+phases:
+  install:
+    runtime-versions:
+      python: 3.12
+    commands:
+      - pip install -e ".[test,blockchain]"
+
+  build:
+    commands:
+      - echo "=== Attestix Full Test Suite ==="
+      - python -m pytest tests/ -v --tb=short -m "not live_blockchain" --color=yes
+      - echo "=== Test Suite Complete ==="
+
+  post_build:
+    commands:
+      - echo "=== Smoke Tests ==="
+      - python -c "from auth.crypto import generate_ed25519_keypair, sign_message, verify_signature, public_key_to_did_key; k,p=generate_ed25519_keypair(); s=sign_message(k,b'test'); assert verify_signature(p,s,b'test'); d=public_key_to_did_key(p); print(f'Crypto OK - DID {d[:30]}...')"
+      - python -c "from blockchain.merkle import build_merkle_tree; levels=build_merkle_tree(['a','b','c']); print(f'Merkle OK - root {levels[-1][0][:16]}...')"
+      - python -c "from auth.ssrf import validate_url_host; assert validate_url_host('127.0.0.1') is not None; assert validate_url_host('localhost') is not None; print('SSRF OK')"
+      - echo "=== All Validations Complete ==="

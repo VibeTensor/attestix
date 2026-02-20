@@ -131,6 +131,50 @@ def register(mcp):
         return json.dumps(results, indent=2, default=str)
 
     @mcp.tool()
+    async def verify_credential_external(credential_json: str) -> str:
+        """Verify a Verifiable Credential provided as raw JSON.
+
+        Use this when you receive a VC from another party and need to validate it
+        without it being in local storage. Checks signature, expiry, and structure.
+
+        Args:
+            credential_json: The full W3C Verifiable Credential as a JSON string.
+        """
+        from services.cache import get_service
+        from services.credential_service import CredentialService
+
+        svc = get_service(CredentialService)
+        try:
+            credential = json.loads(credential_json)
+        except json.JSONDecodeError:
+            return json.dumps({"error": "Invalid JSON in credential_json"})
+
+        result = svc.verify_credential_external(credential)
+        return json.dumps(result, indent=2, default=str)
+
+    @mcp.tool()
+    async def verify_presentation(presentation_json: str) -> str:
+        """Verify a Verifiable Presentation provided as raw JSON.
+
+        Validates the VP signature, checks domain/challenge for replay protection,
+        and verifies each contained credential.
+
+        Args:
+            presentation_json: The full W3C Verifiable Presentation as a JSON string.
+        """
+        from services.cache import get_service
+        from services.credential_service import CredentialService
+
+        svc = get_service(CredentialService)
+        try:
+            presentation = json.loads(presentation_json)
+        except json.JSONDecodeError:
+            return json.dumps({"error": "Invalid JSON in presentation_json"})
+
+        result = svc.verify_presentation(presentation)
+        return json.dumps(result, indent=2, default=str)
+
+    @mcp.tool()
     async def create_verifiable_presentation(
         agent_id: str,
         credential_ids: str,

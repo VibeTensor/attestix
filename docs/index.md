@@ -14,7 +14,7 @@ Meanwhile, agent identity is fragmenting across walled gardens (Microsoft Entra,
 
 ## What Attestix Does
 
-36 MCP tools across 8 modules:
+42+ MCP tools across 9 modules:
 
 | Module | Tools | Purpose |
 |--------|-------|---------|
@@ -26,6 +26,7 @@ Meanwhile, agent identity is fragmenting across walled gardens (Microsoft Entra,
 | **Compliance** | 6 | EU AI Act risk profiles, conformity assessments, Annex V declarations |
 | **Credentials** | 6 | W3C Verifiable Credentials with Ed25519Signature2020 proofs |
 | **Provenance** | 5 | Training data provenance, model lineage, audit trail |
+| **Blockchain** | 6 | Anchor artifact hashes to Base L2 via EAS, Merkle batch anchoring |
 
 ## Quick Start
 

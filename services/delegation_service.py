@@ -56,7 +56,7 @@ class DelegationService:
                 "exp": exp,
                 "nbf": now,
                 "jti": jti,
-                "cap": capabilities,
+                "att": capabilities,
                 "delegator": issuer_agent_id,
                 "prf": [parent_token] if parent_token else [],
                 "attestix_version": "0.1.0",
@@ -70,7 +70,7 @@ class DelegationService:
                 algorithm="EdDSA",
                 headers={
                     "typ": "JWT",
-                    "ucv": "0.10.0",  # UCAN version
+                    "ucv": "0.9.0",  # UCAN version
                     "alg": "EdDSA",
                 },
             )
@@ -131,7 +131,7 @@ class DelegationService:
                 "jti": jti,
                 "delegator": claims.get("delegator"),
                 "audience": claims.get("aud"),
-                "capabilities": claims.get("cap", []),
+                "capabilities": claims.get("att", []),
                 "proof_chain": claims.get("prf", []),
                 "issued_at": datetime.fromtimestamp(
                     claims["iat"], tz=timezone.utc
@@ -152,6 +152,37 @@ class DelegationService:
                 "reason": log_and_format_error(
                     "verify_delegation", e, ErrorCategory.DELEGATION,
                 ),
+            }
+
+    def revoke_delegation(self, jti: str, reason: str = "") -> dict:
+        """Revoke a delegation by its JTI (JWT ID).
+
+        Args:
+            jti: The unique identifier of the delegation token.
+            reason: Why this delegation is being revoked.
+        """
+        try:
+            data = load_delegations()
+            for d in data["delegations"]:
+                if d.get("jti") == jti:
+                    if d.get("revoked"):
+                        return {"error": f"Delegation {jti} is already revoked"}
+                    d["revoked"] = True
+                    d["revocation_reason"] = reason
+                    d["revoked_at"] = datetime.now(timezone.utc).isoformat()
+                    save_delegations(data)
+                    return {
+                        "revoked": True,
+                        "jti": jti,
+                        "reason": reason,
+                    }
+            return {"error": f"Delegation {jti} not found"}
+        except Exception as e:
+            return {
+                "error": log_and_format_error(
+                    "revoke_delegation", e, ErrorCategory.DELEGATION,
+                    jti=jti,
+                )
             }
 
     def list_delegations(

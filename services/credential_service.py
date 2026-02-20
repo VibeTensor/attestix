@@ -9,6 +9,7 @@ from datetime import datetime, timedelta, timezone
 from typing import Dict, List, Optional
 
 from auth.crypto import (
+    did_key_fragment,
     load_or_create_signing_key,
     sign_json_payload,
     verify_json_signature,
@@ -73,7 +74,8 @@ class CredentialService:
                     **claims,
                 },
                 "credentialStatus": {
-                    "type": "AttestixRevocationStatus",
+                    "id": f"{cred_id}#status",
+                    "type": "RevocationList2021Status",
                     "revoked": False,
                     "revocation_reason": None,
                     "revoked_at": None,
@@ -87,7 +89,7 @@ class CredentialService:
             credential["proof"] = {
                 "type": "Ed25519Signature2020",
                 "created": now.isoformat(),
-                "verificationMethod": f"{self._server_did}#key-1",
+                "verificationMethod": f"{self._server_did}{did_key_fragment(self._server_did)}",
                 "proofPurpose": "assertionMethod",
                 "proofValue": signature,
             }
@@ -163,7 +165,8 @@ class CredentialService:
             for cred in data["credentials"]:
                 if cred.get("id") == credential_id:
                     cred["credentialStatus"] = {
-                        "type": "AttestixRevocationStatus",
+                        "id": f"{credential_id}#status",
+                        "type": "RevocationList2021Status",
                         "revoked": True,
                         "revocation_reason": reason,
                         "revoked_at": datetime.now(timezone.utc).isoformat(),
@@ -270,7 +273,7 @@ class CredentialService:
             vp["proof"] = {
                 "type": "Ed25519Signature2020",
                 "created": now.isoformat(),
-                "verificationMethod": f"{self._server_did}#key-1",
+                "verificationMethod": f"{self._server_did}{did_key_fragment(self._server_did)}",
                 "proofPurpose": "authentication",
                 "proofValue": signature,
             }
@@ -284,6 +287,158 @@ class CredentialService:
             msg = log_and_format_error(
                 "create_verifiable_presentation", e, ErrorCategory.CREDENTIAL,
                 agent_id=agent_id,
+            )
+            return {"error": msg}
+
+    def verify_presentation(self, presentation: dict) -> dict:
+        """Verify a Verifiable Presentation: check holder signature, domain, challenge,
+        and verify each contained credential."""
+        try:
+            checks = {}
+
+            # Check VP structure
+            vp_types = presentation.get("type", [])
+            if "VerifiablePresentation" not in vp_types:
+                return {"valid": False, "reason": "Not a VerifiablePresentation"}
+
+            checks["structure_valid"] = True
+            holder = presentation.get("holder", "")
+
+            # Verify VP proof/signature
+            proof = presentation.get("proof", {})
+            proof_value = proof.get("proofValue")
+            if proof_value:
+                proof_payload = {k: v for k, v in presentation.items() if k != "proof"}
+                try:
+                    vm = proof.get("verificationMethod", "")
+                    # Extract DID from verification method (remove fragment)
+                    issuer_did = vm.split("#")[0] if "#" in vm else self._server_did
+                    pub_key = did_key_to_public_key(issuer_did)
+                    checks["vp_signature_valid"] = verify_json_signature(
+                        pub_key, proof_payload, proof_value
+                    )
+                except Exception:
+                    checks["vp_signature_valid"] = False
+            else:
+                checks["vp_signature_valid"] = False
+
+            # Check challenge (replay protection)
+            if proof.get("challenge"):
+                checks["challenge_present"] = True
+            if proof.get("domain"):
+                checks["domain_present"] = True
+
+            # Verify each contained credential
+            credentials = presentation.get("verifiableCredential", [])
+            checks["credential_count"] = len(credentials)
+            checks["credentials_valid"] = True
+
+            for i, cred in enumerate(credentials):
+                cred_proof = cred.get("proof", {})
+                cred_proof_value = cred_proof.get("proofValue")
+                if cred_proof_value:
+                    cred_payload = {
+                        k: v for k, v in cred.items() if k not in self.MUTABLE_FIELDS
+                    }
+                    try:
+                        vm = cred_proof.get("verificationMethod", "")
+                        issuer_did = vm.split("#")[0] if "#" in vm else self._server_did
+                        pub_key = did_key_to_public_key(issuer_did)
+                        cred_valid = verify_json_signature(
+                            pub_key, cred_payload, cred_proof_value
+                        )
+                        if not cred_valid:
+                            checks["credentials_valid"] = False
+                    except Exception:
+                        checks["credentials_valid"] = False
+                else:
+                    checks["credentials_valid"] = False
+
+                # Check credential subject matches holder
+                subject = cred.get("credentialSubject", {}).get("id")
+                if subject != holder:
+                    checks["holder_matches_subjects"] = False
+
+            if "holder_matches_subjects" not in checks:
+                checks["holder_matches_subjects"] = True
+
+            valid = all(
+                v for v in checks.values()
+                if isinstance(v, bool)
+            )
+            return {
+                "valid": valid,
+                "holder": holder,
+                "credential_count": len(credentials),
+                "checks": checks,
+            }
+        except Exception as e:
+            msg = log_and_format_error(
+                "verify_presentation", e, ErrorCategory.CREDENTIAL,
+            )
+            return {"error": msg}
+
+    def verify_credential_external(self, credential: dict) -> dict:
+        """Verify a credential provided as raw JSON (for external verifiers).
+
+        Does not require the credential to be in local storage.
+        """
+        try:
+            checks = {}
+
+            # Check structure
+            vc_types = credential.get("type", [])
+            if "VerifiableCredential" not in vc_types:
+                return {"valid": False, "reason": "Not a VerifiableCredential"}
+            checks["structure_valid"] = True
+
+            # Check revocation (if we have it locally)
+            cred_id = credential.get("id")
+            local_cred = self._find_credential(cred_id) if cred_id else None
+            if local_cred:
+                status = local_cred.get("credentialStatus", {})
+                checks["not_revoked"] = not status.get("revoked", False)
+            else:
+                checks["not_revoked"] = True  # Cannot check, assume valid
+
+            # Check expiry
+            exp_str = credential.get("expirationDate")
+            if exp_str:
+                exp_dt = datetime.fromisoformat(exp_str)
+                checks["not_expired"] = datetime.now(timezone.utc) < exp_dt
+            else:
+                checks["not_expired"] = True
+
+            # Verify signature
+            proof = credential.get("proof", {})
+            proof_value = proof.get("proofValue")
+            if proof_value:
+                proof_payload = {
+                    k: v for k, v in credential.items() if k not in self.MUTABLE_FIELDS
+                }
+                try:
+                    vm = proof.get("verificationMethod", "")
+                    issuer_did = vm.split("#")[0] if "#" in vm else ""
+                    pub_key = did_key_to_public_key(issuer_did)
+                    checks["signature_valid"] = verify_json_signature(
+                        pub_key, proof_payload, proof_value
+                    )
+                except Exception:
+                    checks["signature_valid"] = False
+            else:
+                checks["signature_valid"] = False
+
+            valid = all(v for v in checks.values() if isinstance(v, bool))
+            return {
+                "valid": valid,
+                "credential_id": cred_id,
+                "type": vc_types,
+                "subject": credential.get("credentialSubject", {}).get("id"),
+                "checks": checks,
+            }
+        except Exception as e:
+            msg = log_and_format_error(
+                "verify_credential_external", e, ErrorCategory.CREDENTIAL,
             )
             return {"error": msg}
 

@@ -4,6 +4,8 @@ Manages training data provenance, model lineage tracking, and
 Article 12 EU AI Act automatic action logging (audit trail).
 """
 
+import hashlib
+import json
 import uuid
 from datetime import datetime, timezone
 from typing import Dict, List, Optional
@@ -19,8 +21,29 @@ VALID_ACTION_TYPES = {"inference", "delegation", "data_access", "external_call"}
 class ProvenanceService:
     """Manages training data provenance, model lineage, and audit trails."""
 
+    # Genesis hash for the first entry in a chain
+    GENESIS_HASH = "0" * 64
+
     def __init__(self):
         self._private_key, self._server_did = load_or_create_signing_key()
+
+    @staticmethod
+    def _chain_hash(previous_hash: str, entry_data: dict) -> str:
+        """Compute SHA-256 hash linking this entry to the previous one.
+
+        Creates a tamper-evident chain: modifying any earlier entry
+        invalidates all subsequent hashes.
+        """
+        canonical = json.dumps(entry_data, sort_keys=True, separators=(",", ":"))
+        combined = f"{previous_hash}:{canonical}"
+        return hashlib.sha256(combined.encode("utf-8")).hexdigest()
+
+    def _get_last_chain_hash(self, audit_log: list, agent_id: str) -> str:
+        """Get the chain_hash of the last audit entry for this agent."""
+        for entry in reversed(audit_log):
+            if entry["agent_id"] == agent_id and "chain_hash" in entry:
+                return entry["chain_hash"]
+        return self.GENESIS_HASH
 
     def record_training_data(
         self,
@@ -138,10 +161,15 @@ class ProvenanceService:
                 "logged_by": self._server_did,
             }
 
+            # Hash-chain: link this entry to the previous one for tamper evidence
+            data = load_provenance()
+            prev_hash = self._get_last_chain_hash(data["audit_log"], agent_id)
+            log_entry["prev_hash"] = prev_hash
+            log_entry["chain_hash"] = self._chain_hash(prev_hash, log_entry)
+
             signable = {k: v for k, v in log_entry.items() if k != "signature"}
             log_entry["signature"] = sign_json_payload(self._private_key, signable)
 
-            data = load_provenance()
             data["audit_log"].append(log_entry)
             save_provenance(data)
 

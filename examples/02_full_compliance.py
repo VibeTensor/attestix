@@ -46,16 +46,16 @@ def main():
             "source_url": "https://www.ncbi.nlm.nih.gov/pmc/tools/openftlist/",
             "license": "CC-BY-4.0",
             "contains_personal_data": False,
-            "data_categories": "medical_literature,peer_reviewed",
-            "data_governance_measures": "Peer-reviewed articles only. Quality-checked for relevance. Bias review for demographic representation.",
+            "data_categories": ["medical_literature", "peer_reviewed"],
+            "data_governance_measures": "Peer-reviewed articles only. Quality-checked for relevance.",
         },
         {
             "dataset_name": "MIMIC-IV Clinical Database",
             "source_url": "https://physionet.org/content/mimiciv/",
             "license": "PhysioNet Credentialed Health Data License 1.5.0",
             "contains_personal_data": True,
-            "data_categories": "clinical_records,de_identified",
-            "data_governance_measures": "De-identified per HIPAA Safe Harbor. IRB approval obtained. Access restricted to credentialed researchers.",
+            "data_categories": ["clinical_records", "de_identified"],
+            "data_governance_measures": "De-identified per HIPAA Safe Harbor. IRB approval obtained.",
         },
     ]
 
@@ -70,13 +70,13 @@ def main():
         base_model="claude-opus-4-6",
         base_model_provider="Anthropic",
         fine_tuning_method="LoRA + RLHF with board-certified physician feedback",
-        evaluation_metrics_json=json.dumps({
+        evaluation_metrics={
             "diagnostic_accuracy": 0.94,
             "sensitivity": 0.91,
             "specificity": 0.96,
             "auc_roc": 0.97,
             "f1_score": 0.93,
-        }),
+        },
     )
     print(f"  Model: {lineage['base_model']} by {lineage['base_model_provider']}")
     print(f"  Entry ID: {lineage['entry_id'][:16]}...")
@@ -87,13 +87,13 @@ def main():
         agent_id=agent_id,
         risk_category="high",
         provider_name="HealthTech Corp.",
-        intended_purpose="AI-assisted medical diagnosis for clinical decision support in radiology. Analyzes medical imaging and patient data to suggest potential diagnoses for physician review.",
-        transparency_obligations="System clearly discloses AI-generated content. Provides confidence scores with every suggestion. Shows reasoning chain. Informs patients that AI is assisting.",
-        human_oversight_measures="All diagnoses require attending physician approval before delivery to patients. Flagged cases automatically escalated to senior radiologist. Override mechanism always available. System cannot prescribe treatment.",
+        intended_purpose="AI-assisted medical diagnosis for clinical decision support in radiology.",
+        transparency_obligations="System clearly discloses AI-generated content. Provides confidence scores.",
+        human_oversight_measures="All diagnoses require attending physician approval before delivery.",
     )
     print(f"  Profile ID: {profile['profile_id']}")
     print(f"  Risk Category: {profile['risk_category']}")
-    print(f"  Obligations: {len(profile.get('obligations', []))} required items")
+    print(f"  Obligations: {len(profile.get('required_obligations', []))} required items")
 
     # Step 5: Check Compliance Status (Gap Analysis)
     print("\n=== Step 5: Gap Analysis ===\n")
@@ -122,7 +122,7 @@ def main():
         assessment_type="third_party",
         assessor_name="TUV Rheinland AG",
         result="pass",
-        findings="System meets all Annex III requirements for medical AI. Minor recommendation: increase test coverage for rare conditions in pediatric radiology.",
+        findings="System meets all Annex III requirements for medical AI.",
         ce_marking_eligible=True,
     )
     print(f"  Assessment ID: {assessment['assessment_id']}")
@@ -133,7 +133,6 @@ def main():
     print("\n=== Step 7: Declaration of Conformity (Annex V) ===\n")
     declaration = compliance_svc.generate_declaration_of_conformity(agent_id)
     print(f"  Declaration ID: {declaration['declaration_id']}")
-    print(f"  Auto-issued VC: {declaration.get('credential_id', 'N/A')}")
 
     # Step 8: Final Compliance Check
     print("\n=== Step 8: Final Compliance Status ===\n")
@@ -144,20 +143,25 @@ def main():
 
     # Step 9: Verify the auto-issued credential
     print("\n=== Step 9: Verify Compliance Credential ===\n")
-    cred_id = declaration.get("credential_id")
-    if cred_id:
+    creds = credential_svc.list_credentials(
+        agent_id=agent_id, credential_type="EUAIActComplianceCredential",
+    )
+    if creds:
+        cred_id = creds[0]["id"]
         verification = credential_svc.verify_credential(cred_id)
         print(f"  Credential ID: {cred_id}")
         print(f"  Valid: {verification.get('valid')}")
         for check, passed in verification.get("checks", {}).items():
             print(f"    {check}: {passed}")
+    else:
+        print("  No compliance credential found")
 
     # Step 10: View full provenance
     print("\n=== Step 10: Full Provenance Record ===\n")
     provenance = provenance_svc.get_provenance(agent_id)
     print(f"  Training datasets: {len(provenance.get('training_data', []))}")
     print(f"  Model lineage entries: {len(provenance.get('model_lineage', []))}")
-    print(f"  Audit log entries: {len(provenance.get('audit_log', []))}")
+    print(f"  Audit log count: {provenance.get('audit_log_count', 0)}")
 
     print("\n=== Compliance Workflow Complete ===")
     print(f"\nAgent {agent_id} is now EU AI Act compliant.")

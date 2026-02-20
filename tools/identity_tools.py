@@ -166,3 +166,25 @@ def register(mcp):
         if result is None:
             return json.dumps({"error": f"Agent {agent_id} not found"})
         return json.dumps({"revoked": True, "agent_id": agent_id, "reason": reason})
+
+    @mcp.tool()
+    async def purge_agent_data(agent_id: str) -> str:
+        """GDPR Article 17 right to erasure. Permanently deletes ALL data for an agent.
+
+        Removes identity, credentials, compliance profiles, delegations,
+        provenance records, reputation data, and audit logs. This action is
+        irreversible. Blockchain anchors are immutable and cannot be purged.
+
+        Args:
+            agent_id: The Attestix agent ID to purge.
+        """
+        err = _validate_required({"agent_id": agent_id})
+        if err:
+            return err
+
+        from services.cache import get_service
+        from services.identity_service import IdentityService
+
+        svc = get_service(IdentityService)
+        result = svc.purge_agent_data(agent_id)
+        return json.dumps(result, indent=2, default=str)

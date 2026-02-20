@@ -70,20 +70,21 @@ def main():
     for outcome in ["success", "success", "success", "partial", "success"]:
         reputation_svc.record_interaction(
             agent_id=agent_id,
+            counterparty_id="attestix:system",
             outcome=outcome,
             category="data_quality",
         )
 
     reputation = reputation_svc.get_reputation(agent_id)
-    print(f"Trust Score:     {reputation['score']:.2f}")
+    print(f"Trust Score:     {reputation['trust_score']:.2f}")
     print(f"Interactions:    {reputation['total_interactions']}")
     print(f"Categories:      {list(reputation.get('category_breakdown', {}).keys())}")
 
     # 6. List all identities
     print("\n=== All Registered Agents ===\n")
     all_agents = identity_svc.list_identities()
-    print(f"Total agents: {all_agents['total']}")
-    for a in all_agents["agents"]:
+    print(f"Total agents: {len(all_agents)}")
+    for a in all_agents:
         print(f"  - {a['display_name']} ({a['agent_id'][:20]}...)")
 
     print("\nDone! All data saved to JSON files in the project directory.")

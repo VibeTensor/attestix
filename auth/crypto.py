@@ -83,6 +83,19 @@ def public_key_to_did_key(public_key: Ed25519PublicKey) -> str:
     return f"did:key:z{encoded}"
 
 
+def did_key_fragment(did: str) -> str:
+    """Return the did:key verification method fragment.
+
+    Per the did:key spec, the fragment is the multibase-encoded public key
+    portion (the 'z...' part after 'did:key:').
+    Example: did:key:z6Mk... -> #z6Mk...
+    """
+    if not did.startswith("did:key:z"):
+        raise ValueError(f"Invalid did:key format: {did}")
+    multibase = did[len("did:key:"):]
+    return f"#{multibase}"
+
+
 def did_key_to_public_key(did: str) -> Ed25519PublicKey:
     """Extract Ed25519 public key from did:key identifier."""
     if not did.startswith("did:key:z"):
@@ -100,20 +113,58 @@ def did_key_to_public_key(did: str) -> Ed25519PublicKey:
 
 # --- Server signing key management ---
 
+def _get_key_encryption_key() -> Optional[bytes]:
+    """Derive a Fernet encryption key from ATTESTIX_KEY_PASSWORD env var.
+
+    Returns None if no password is set (falls back to plaintext storage).
+    """
+    import os
+    password = os.environ.get("ATTESTIX_KEY_PASSWORD")
+    if not password:
+        return None
+    try:
+        from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
+        from cryptography.hazmat.primitives import hashes
+        # Use a fixed salt derived from the application name.
+        # This is acceptable because the password provides entropy.
+        salt = b"attestix-signing-key-v1"
+        kdf = PBKDF2HMAC(
+            algorithm=hashes.SHA256(),
+            length=32,
+            salt=salt,
+            iterations=480000,
+        )
+        return base64.urlsafe_b64encode(kdf.derive(password.encode("utf-8")))
+    except ImportError:
+        return None
+
+
 def load_or_create_signing_key(
     key_file: Optional[Path] = None,
 ) -> Tuple[Ed25519PrivateKey, str]:
     """Load server signing key from file or create a new one.
 
+    If ATTESTIX_KEY_PASSWORD is set, the private key is stored encrypted
+    using Fernet (PBKDF2-derived key). Otherwise falls back to base64.
+
     Returns (private_key, did_key_string).
     """
     key_path = key_file or SIGNING_KEY_FILE
+    fernet_key = _get_key_encryption_key()
 
     if key_path.exists():
         try:
             with open(key_path, "r") as f:
                 data = json.load(f)
-            priv_bytes = base64.b64decode(data["private_key_b64"])
+
+            # Try encrypted format first
+            if "private_key_encrypted" in data and fernet_key:
+                from cryptography.fernet import Fernet
+                f_cipher = Fernet(fernet_key)
+                priv_bytes = f_cipher.decrypt(data["private_key_encrypted"].encode("utf-8"))
+            else:
+                priv_bytes = base64.b64decode(data["private_key_b64"])
+
             private_key = private_key_from_bytes(priv_bytes)
             did = data["did_key"]
             return private_key, did
@@ -127,14 +178,20 @@ def load_or_create_signing_key(
     private_key, public_key = generate_ed25519_keypair()
     did = public_key_to_did_key(public_key)
 
+    raw_bytes = private_key_to_bytes(private_key)
     key_data = {
         "did_key": did,
-        "private_key_b64": base64.b64encode(
-            private_key_to_bytes(private_key)
-        ).decode("ascii"),
         "algorithm": "Ed25519",
         "note": "Attestix server signing key. Do NOT share.",
     }
+
+    if fernet_key:
+        from cryptography.fernet import Fernet
+        f_cipher = Fernet(fernet_key)
+        key_data["private_key_encrypted"] = f_cipher.encrypt(raw_bytes).decode("utf-8")
+        key_data["encryption"] = "fernet-pbkdf2-sha256"
+    else:
+        key_data["private_key_b64"] = base64.b64encode(raw_bytes).decode("ascii")
 
     with open(key_path, "w") as f:
         json.dump(key_data, f, indent=2)
@@ -143,22 +200,50 @@ def load_or_create_signing_key(
 
 
 def _normalize_for_signing(obj):
-    """Recursively normalize all strings to NFC Unicode form for consistent signing."""
+    """Recursively normalize values for deterministic JSON serialization.
+
+    Applies NFC Unicode normalization for strings and ensures consistent
+    number representation (integers stay integers, floats use minimal form).
+    """
     import unicodedata
     if isinstance(obj, str):
         return unicodedata.normalize("NFC", obj)
+    elif isinstance(obj, bool):
+        return obj
+    elif isinstance(obj, int):
+        return obj
+    elif isinstance(obj, float):
+        # RFC 8785 requires specific float handling.
+        # Convert to int if the value is a whole number (e.g., 1.0 -> 1).
+        if obj == int(obj) and not (obj == 0.0 and str(obj).startswith("-")):
+            return int(obj)
+        return obj
     elif isinstance(obj, dict):
         return {_normalize_for_signing(k): _normalize_for_signing(v) for k, v in obj.items()}
     elif isinstance(obj, list):
         return [_normalize_for_signing(x) for x in obj]
+    elif obj is None:
+        return obj
     return obj
 
 
-def sign_json_payload(private_key: Ed25519PrivateKey, payload: dict) -> str:
-    """Sign a JSON payload (canonical NFC-normalized form) and return base64url signature."""
+def canonicalize_json(payload: dict) -> bytes:
+    """Produce a canonical JSON byte string following RFC 8785 (JCS) conventions.
+
+    Uses sorted keys, compact separators, NFC normalization, and UTF-8 encoding.
+    This is a practical subset of JCS suitable for Ed25519 signing.
+    """
     normalized = _normalize_for_signing(payload)
-    canonical = json.dumps(normalized, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
-    sig_bytes = sign_message(private_key, canonical.encode("utf-8"))
+    canonical = json.dumps(
+        normalized, sort_keys=True, separators=(",", ":"), ensure_ascii=False
+    )
+    return canonical.encode("utf-8")
+
+
+def sign_json_payload(private_key: Ed25519PrivateKey, payload: dict) -> str:
+    """Sign a JSON payload (RFC 8785 canonical form) and return base64url signature."""
+    canonical_bytes = canonicalize_json(payload)
+    sig_bytes = sign_message(private_key, canonical_bytes)
     return base64.urlsafe_b64encode(sig_bytes).decode("ascii")
 
 
@@ -166,7 +251,6 @@ def verify_json_signature(
     public_key: Ed25519PublicKey, payload: dict, signature_b64: str
 ) -> bool:
     """Verify a JSON payload signature."""
-    normalized = _normalize_for_signing(payload)
-    canonical = json.dumps(normalized, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
+    canonical_bytes = canonicalize_json(payload)
     sig_bytes = base64.urlsafe_b64decode(signature_b64)
-    return verify_signature(public_key, sig_bytes, canonical.encode("utf-8"))
+    return verify_signature(public_key, sig_bytes, canonical_bytes)

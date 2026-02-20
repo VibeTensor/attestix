@@ -11,6 +11,7 @@ from datetime import datetime, timedelta, timezone
 from typing import List, Optional
 
 from auth.crypto import (
+    did_key_fragment,
     load_or_create_signing_key,
     public_key_to_did_key,
     sign_json_payload,
@@ -218,6 +219,91 @@ class IdentityService:
         else:
             return {"error": f"Unknown target format: {target_format}"}
 
+    def purge_agent_data(self, agent_id: str) -> dict:
+        """GDPR Article 17 - Right to erasure. Purges all data for an agent.
+
+        Removes or anonymizes the agent's identity, credentials, compliance
+        profiles, delegations, provenance entries, reputation data, and
+        audit logs. Blockchain anchors are retained (immutable) but the
+        local reference is noted as purged.
+        """
+        from config import (
+            load_identities, save_identities,
+            load_credentials, save_credentials,
+            load_compliance, save_compliance,
+            load_delegations, save_delegations,
+            load_provenance, save_provenance,
+            load_reputation, save_reputation,
+        )
+
+        purged = {
+            "agent_id": agent_id,
+            "purged_at": datetime.now(timezone.utc).isoformat(),
+            "counts": {},
+        }
+
+        # 1. Purge identity
+        id_data = load_identities()
+        before = len(id_data["agents"])
+        id_data["agents"] = [a for a in id_data["agents"] if a["agent_id"] != agent_id]
+        purged["counts"]["identities"] = before - len(id_data["agents"])
+        save_identities(id_data)
+
+        # 2. Purge credentials
+        cred_data = load_credentials()
+        before = len(cred_data["credentials"])
+        cred_data["credentials"] = [
+            c for c in cred_data["credentials"]
+            if c.get("credentialSubject", {}).get("id") != agent_id
+        ]
+        purged["counts"]["credentials"] = before - len(cred_data["credentials"])
+        save_credentials(cred_data)
+
+        # 3. Purge compliance profiles, assessments, declarations
+        comp_data = load_compliance()
+        before_p = len(comp_data["profiles"])
+        comp_data["profiles"] = [p for p in comp_data["profiles"] if p["agent_id"] != agent_id]
+        purged["counts"]["compliance_profiles"] = before_p - len(comp_data["profiles"])
+        before_a = len(comp_data["assessments"])
+        comp_data["assessments"] = [a for a in comp_data["assessments"] if a["agent_id"] != agent_id]
+        purged["counts"]["compliance_assessments"] = before_a - len(comp_data["assessments"])
+        before_d = len(comp_data["declarations"])
+        comp_data["declarations"] = [d for d in comp_data["declarations"] if d["agent_id"] != agent_id]
+        purged["counts"]["compliance_declarations"] = before_d - len(comp_data["declarations"])
+        save_compliance(comp_data)
+
+        # 4. Purge delegations (as issuer or audience)
+        del_data = load_delegations()
+        before = len(del_data["delegations"])
+        del_data["delegations"] = [
+            d for d in del_data["delegations"]
+            if d.get("issuer") != agent_id and d.get("audience") != agent_id
+        ]
+        purged["counts"]["delegations"] = before - len(del_data["delegations"])
+        save_delegations(del_data)
+
+        # 5. Purge provenance entries and audit logs
+        prov_data = load_provenance()
+        before_e = len(prov_data["entries"])
+        prov_data["entries"] = [e for e in prov_data["entries"] if e["agent_id"] != agent_id]
+        purged["counts"]["provenance_entries"] = before_e - len(prov_data["entries"])
+        before_l = len(prov_data["audit_log"])
+        prov_data["audit_log"] = [e for e in prov_data["audit_log"] if e["agent_id"] != agent_id]
+        purged["counts"]["audit_log_entries"] = before_l - len(prov_data["audit_log"])
+        save_provenance(prov_data)
+
+        # 6. Purge reputation data
+        rep_data = load_reputation()
+        before = len(rep_data["interactions"])
+        rep_data["interactions"] = [
+            i for i in rep_data["interactions"] if i["agent_id"] != agent_id
+        ]
+        purged["counts"]["reputation_interactions"] = before - len(rep_data["interactions"])
+        rep_data["scores"].pop(agent_id, None)
+        save_reputation(rep_data)
+
+        return purged
+
     def update_compliance_ref(self, agent_id: str, profile_id: str):
         """Link an EU AI Act compliance profile to a UAIT."""
         data = load_identities()
@@ -300,8 +386,9 @@ class IdentityService:
             except Exception:
                 pass
 
+        fragment = did_key_fragment(did) if did.startswith("did:key:z") else "#key-1"
         vm = {
-            "id": f"{did}#key-1",
+            "id": f"{did}{fragment}",
             "type": "Ed25519VerificationKey2020",
             "controller": did,
         }
@@ -316,7 +403,7 @@ class IdentityService:
             "id": did,
             "controller": did,
             "verificationMethod": [vm],
-            "authentication": [f"{did}#key-1"],
+            "authentication": [f"{did}{fragment}"],
             "service": [
                 {
                     "id": f"{did}#attestix",

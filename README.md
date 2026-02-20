@@ -24,7 +24,7 @@ No single tool combines **agent identity + EU AI Act compliance + verifiable cre
 
 ## What Attestix Does
 
-Attestix is an MCP server providing 36 tools across 8 modules:
+Attestix is an MCP server providing **42+ tools across 9 modules**:
 
 ### Phase 1 -- Identity & Trust (19 tools)
 
@@ -43,6 +43,12 @@ Attestix is an MCP server providing 36 tools across 8 modules:
 | **Compliance** | 6 | Risk categorization, conformity assessments (Article 43), Annex V declarations |
 | **Credentials** | 6 | W3C Verifiable Credentials (VC Data Model 1.1) with Ed25519Signature2020 proofs |
 | **Provenance** | 5 | Training data provenance (Article 10), model lineage (Article 11), audit trail (Article 12) |
+
+### Phase 3 -- Blockchain Anchoring (6 tools)
+
+| Module | Tools | Purpose |
+|--------|-------|---------|
+| **Blockchain** | 6 | Anchor artifact hashes to Base L2 via Ethereum Attestation Service (EAS), Merkle batch anchoring |
 
 ---
 

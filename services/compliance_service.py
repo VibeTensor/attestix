@@ -60,6 +60,8 @@ class ComplianceService:
         intended_purpose: str = "",
         transparency_obligations: str = "",
         human_oversight_measures: str = "",
+        provider_address: str = "",
+        authorised_representative: str = "",
     ) -> dict:
         """Create an EU AI Act compliance profile for an agent."""
         try:
@@ -99,6 +101,8 @@ class ComplianceService:
                 "provider": {
                     "name": provider_name,
                     "did": self._server_did,
+                    "address": provider_address,
+                    "authorised_representative": authorised_representative,
                 },
                 "ai_system": {
                     "intended_purpose": intended_purpose,
@@ -132,6 +136,43 @@ class ComplianceService:
         except Exception as e:
             msg = log_and_format_error(
                 "create_compliance_profile", e, ErrorCategory.COMPLIANCE,
+                agent_id=agent_id,
+            )
+            return {"error": msg}
+
+    def update_compliance_profile(
+        self,
+        agent_id: str,
+        intended_purpose: Optional[str] = None,
+        transparency_obligations: Optional[str] = None,
+        human_oversight_measures: Optional[str] = None,
+        provider_name: Optional[str] = None,
+    ) -> dict:
+        """Update an existing compliance profile with new information."""
+        try:
+            data = load_compliance()
+            for p in data["profiles"]:
+                if p["agent_id"] == agent_id:
+                    if intended_purpose is not None:
+                        p["ai_system"]["intended_purpose"] = intended_purpose
+                    if transparency_obligations is not None:
+                        p["transparency"]["obligations"] = transparency_obligations
+                    if human_oversight_measures is not None:
+                        p["transparency"]["human_oversight_measures"] = human_oversight_measures
+                    if provider_name is not None:
+                        p["provider"]["name"] = provider_name
+                    p["updated_at"] = datetime.now(timezone.utc).isoformat()
+
+                    # Re-sign
+                    signable = {k: v for k, v in p.items() if k != "signature"}
+                    p["signature"] = sign_json_payload(self._private_key, signable)
+
+                    save_compliance(data)
+                    return p
+            return {"error": f"No compliance profile found for {agent_id}"}
+        except Exception as e:
+            msg = log_and_format_error(
+                "update_compliance_profile", e, ErrorCategory.COMPLIANCE,
                 agent_id=agent_id,
             )
             return {"error": msg}
@@ -262,21 +303,66 @@ class ComplianceService:
             declaration_id = f"decl:{uuid.uuid4().hex[:12]}"
             now = datetime.now(timezone.utc).isoformat()
 
-            # Build Annex V declaration
+            # Retrieve assessment details for notified body info
+            assess_record = None
+            assess_id = profile["conformity"]["assessment_id"]
+            if assess_id:
+                data_check = load_compliance()
+                assess_record = next(
+                    (a for a in data_check["assessments"] if a["assessment_id"] == assess_id),
+                    None
+                )
+
+            # Build EU AI Act Annex V declaration of conformity
+            # Fields follow the structure prescribed in Annex V of Regulation (EU) 2024/1689
             declaration = {
                 "declaration_id": declaration_id,
                 "agent_id": agent_id,
+                "regulation_reference": "Regulation (EU) 2024/1689 (EU AI Act) Annex V",
                 "annex_v_fields": {
+                    # 1. Name, address of the provider
                     "1_provider_name": profile["provider"]["name"],
-                    "2_ai_system_name": profile["ai_system"]["display_name"],
-                    "3_intended_purpose": profile["ai_system"]["intended_purpose"],
-                    "4_risk_category": profile["risk_category"],
-                    "5_conformity_assessment_id": profile["conformity"]["assessment_id"],
-                    "6_transparency_obligations": profile["transparency"]["obligations"],
-                    "7_human_oversight": profile["transparency"]["human_oversight_measures"],
-                    "8_ce_marking_eligible": profile["conformity"]["ce_marking_eligible"],
-                    "9_declaration_date": now,
-                    "10_provider_did": profile["provider"]["did"],
+                    "1a_provider_address": profile["provider"].get("address", ""),
+                    # 2. Authorised representative (if applicable)
+                    "2_authorised_representative": profile["provider"].get(
+                        "authorised_representative", ""
+                    ),
+                    # 3. AI system identification
+                    "3_ai_system_name": profile["ai_system"]["display_name"],
+                    "3a_ai_system_id": agent_id,
+                    "3b_ai_system_version": "0.1.0",
+                    # 4. Intended purpose
+                    "4_intended_purpose": profile["ai_system"]["intended_purpose"],
+                    # 5. Risk classification
+                    "5_risk_category": profile["risk_category"],
+                    # 6. Conformity assessment procedure
+                    "6_conformity_assessment_id": profile["conformity"]["assessment_id"],
+                    "6a_assessment_type": (
+                        assess_record["assessment_type"] if assess_record else ""
+                    ),
+                    "6b_assessor_name": (
+                        assess_record["assessor_name"] if assess_record else ""
+                    ),
+                    # 7. Harmonized standards or common specifications applied
+                    "7_harmonized_standards": [
+                        "ISO/IEC 42001:2023 (AI Management System)",
+                        "ISO/IEC 23894:2023 (AI Risk Management)",
+                    ],
+                    # 8. Transparency obligations
+                    "8_transparency_obligations": profile["transparency"]["obligations"],
+                    # 9. Human oversight measures
+                    "9_human_oversight": profile["transparency"]["human_oversight_measures"],
+                    # 10. CE marking eligibility
+                    "10_ce_marking_eligible": profile["conformity"]["ce_marking_eligible"],
+                    # 11. Sole responsibility statement
+                    "11_sole_responsibility": (
+                        f"The undersigned, {profile['provider']['name']}, declares under "
+                        f"sole responsibility that the AI system identified above is in "
+                        f"conformity with the provisions of Regulation (EU) 2024/1689."
+                    ),
+                    # 12. Declaration date and signature
+                    "12_declaration_date": now,
+                    "12a_signatory_did": profile["provider"]["did"],
                 },
                 "issued_at": now,
                 "issuer_did": self._server_did,
@@ -321,7 +407,11 @@ class ComplianceService:
             return {"error": msg}
 
     def get_compliance_status(self, agent_id: str) -> dict:
-        """Gap analysis: what's done, what's still needed for full compliance."""
+        """Gap analysis: what's done, what's still needed for full compliance.
+
+        Checks all EU AI Act obligations based on risk category, including
+        all 12 high-risk requirements from Article 9-15.
+        """
         try:
             profile = self.get_compliance_profile(agent_id)
             if not profile:
@@ -335,42 +425,42 @@ class ComplianceService:
                 "missing": [],
             }
 
-            # Check each requirement
-            # 1. Profile exists
+            # 1. Profile exists (all risk levels)
             status["completed"].append("compliance_profile_created")
 
-            # 2. Intended purpose documented
+            # 2. Intended purpose documented (all risk levels)
             if profile["ai_system"].get("intended_purpose"):
                 status["completed"].append("intended_purpose_documented")
             else:
                 status["missing"].append("intended_purpose_documented")
 
-            # 3. Transparency obligations
-            if profile["transparency"].get("obligations"):
-                status["completed"].append("transparency_obligations_declared")
-            else:
-                status["missing"].append("transparency_obligations_declared")
+            # 3. Transparency obligations (limited + high)
+            if profile["risk_category"] in ("limited", "high"):
+                if profile["transparency"].get("obligations"):
+                    status["completed"].append("transparency_obligations_declared")
+                else:
+                    status["missing"].append("transparency_obligations_declared")
 
-            # 4. Human oversight measures (required for high-risk)
+            # 4. Human oversight measures (high-risk only, Article 14)
             if profile["risk_category"] == "high":
                 if profile["transparency"].get("human_oversight_measures"):
                     status["completed"].append("human_oversight_measures")
                 else:
                     status["missing"].append("human_oversight_measures")
 
-            # 5. Conformity assessment
+            # 5. Conformity assessment (all risk levels)
             if profile["conformity"]["assessment_completed"]:
                 status["completed"].append("conformity_assessment_passed")
             else:
                 status["missing"].append("conformity_assessment_passed")
 
-            # 6. Declaration of conformity
+            # 6. Declaration of conformity (all risk levels)
             if profile["conformity"]["declaration_id"]:
                 status["completed"].append("declaration_of_conformity_issued")
             else:
                 status["missing"].append("declaration_of_conformity_issued")
 
-            # 7. Check provenance (training data + model lineage)
+            # 7-8. Check provenance (training data + model lineage)
             from config import load_provenance
             prov_data = load_provenance()
             has_training = any(
@@ -392,11 +482,23 @@ class ComplianceService:
             else:
                 status["missing"].append("model_lineage_recorded")
 
+            # 9-16. High-risk specific obligations (Articles 9-15)
+            if profile["risk_category"] == "high":
+                high_risk_obligations = self._check_high_risk_obligations(
+                    agent_id, profile, prov_data
+                )
+                for obligation, met in high_risk_obligations.items():
+                    if met:
+                        status["completed"].append(obligation)
+                    else:
+                        status["missing"].append(obligation)
+
             # Overall compliance
             status["compliant"] = len(status["missing"]) == 0
+            total = len(status["completed"]) + len(status["missing"])
             status["completion_pct"] = round(
-                len(status["completed"]) / (len(status["completed"]) + len(status["missing"])) * 100, 1
-            )
+                len(status["completed"]) / total * 100, 1
+            ) if total > 0 else 0.0
 
             return status
         except Exception as e:
@@ -405,6 +507,60 @@ class ComplianceService:
                 agent_id=agent_id,
             )
             return {"error": msg}
+
+    def _check_high_risk_obligations(
+        self, agent_id: str, profile: dict, prov_data: dict
+    ) -> Dict[str, bool]:
+        """Check all 12 high-risk EU AI Act obligations (Articles 9-15).
+
+        Returns a dict of obligation_name -> bool (met or not).
+        """
+        audit_entries = [
+            e for e in prov_data["audit_log"] if e["agent_id"] == agent_id
+        ]
+
+        return {
+            # Article 9: Risk management system
+            "risk_management_system": bool(
+                profile.get("risk_management", {}).get("documented")
+            ),
+            # Article 10: Data governance
+            "data_governance": any(
+                e["agent_id"] == agent_id
+                and e["entry_type"] == "training_data"
+                and e.get("data_governance_measures")
+                for e in prov_data["entries"]
+            ),
+            # Article 11: Technical documentation
+            "technical_documentation": bool(
+                profile["ai_system"].get("intended_purpose")
+                and any(
+                    e["agent_id"] == agent_id and e["entry_type"] == "model_lineage"
+                    for e in prov_data["entries"]
+                )
+            ),
+            # Article 12: Record keeping / automatic logging
+            "record_keeping": len(audit_entries) > 0,
+            # Article 13: Transparency to users
+            "transparency_to_users": bool(
+                profile["transparency"].get("obligations")
+            ),
+            # Article 15: Accuracy, robustness, cybersecurity
+            "accuracy_robustness_cybersecurity": any(
+                e["agent_id"] == agent_id
+                and e["entry_type"] == "model_lineage"
+                and bool(e.get("evaluation_metrics"))
+                for e in prov_data["entries"]
+            ),
+            # Post-market monitoring (Article 72)
+            "post_market_monitoring": bool(
+                profile.get("post_market_monitoring", {}).get("plan_documented")
+            ),
+            # Serious incident reporting (Article 73)
+            "serious_incident_reporting": bool(
+                profile.get("incident_reporting", {}).get("process_documented")
+            ),
+        }
 
     def list_compliance_profiles(
         self,

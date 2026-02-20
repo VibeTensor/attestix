@@ -50,6 +50,23 @@ def register(mcp):
         return json.dumps(result, indent=2, default=str)
 
     @mcp.tool()
+    async def revoke_delegation(jti: str, reason: str = "") -> str:
+        """Revoke a UCAN delegation token by its JTI (JWT ID).
+
+        Once revoked, the token will fail verification even if not expired.
+
+        Args:
+            jti: The unique identifier of the delegation (from create_delegation response).
+            reason: Why this delegation is being revoked.
+        """
+        from services.cache import get_service
+        from services.delegation_service import DelegationService
+
+        svc = get_service(DelegationService)
+        result = svc.revoke_delegation(jti=jti, reason=reason)
+        return json.dumps(result, indent=2, default=str)
+
+    @mcp.tool()
     async def list_delegations(
         agent_id: str = "",
         role: str = "any",

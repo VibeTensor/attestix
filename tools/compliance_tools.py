@@ -24,6 +24,8 @@ def register(mcp):
         intended_purpose: str = "",
         transparency_obligations: str = "",
         human_oversight_measures: str = "",
+        provider_address: str = "",
+        authorised_representative: str = "",
     ) -> str:
         """Create an EU AI Act compliance profile for an agent.
 
@@ -36,6 +38,8 @@ def register(mcp):
             intended_purpose: What the AI system is designed to do.
             transparency_obligations: How transparency requirements are met.
             human_oversight_measures: Human oversight mechanisms in place (required for high-risk).
+            provider_address: Registered address of the provider.
+            authorised_representative: Name of the EU authorised representative (if provider is outside EU).
         """
         err = _validate_required({"agent_id": agent_id, "risk_category": risk_category,
                                    "provider_name": provider_name})
@@ -53,6 +57,41 @@ def register(mcp):
             intended_purpose=intended_purpose,
             transparency_obligations=transparency_obligations,
             human_oversight_measures=human_oversight_measures,
+            provider_address=provider_address,
+            authorised_representative=authorised_representative,
+        )
+        return json.dumps(result, indent=2, default=str)
+
+    @mcp.tool()
+    async def update_compliance_profile(
+        agent_id: str,
+        intended_purpose: str = "",
+        transparency_obligations: str = "",
+        human_oversight_measures: str = "",
+        provider_name: str = "",
+    ) -> str:
+        """Update an existing EU AI Act compliance profile.
+
+        Use this to iteratively fill in compliance information over time.
+        Only non-empty fields will be updated.
+
+        Args:
+            agent_id: The Attestix agent ID.
+            intended_purpose: Updated purpose description.
+            transparency_obligations: Updated transparency info.
+            human_oversight_measures: Updated human oversight info.
+            provider_name: Updated provider name.
+        """
+        from services.cache import get_service
+        from services.compliance_service import ComplianceService
+
+        svc = get_service(ComplianceService)
+        result = svc.update_compliance_profile(
+            agent_id=agent_id,
+            intended_purpose=intended_purpose or None,
+            transparency_obligations=transparency_obligations or None,
+            human_oversight_measures=human_oversight_measures or None,
+            provider_name=provider_name or None,
         )
         return json.dumps(result, indent=2, default=str)
 
