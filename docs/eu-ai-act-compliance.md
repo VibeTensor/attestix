@@ -233,4 +233,4 @@ Attestix's declaration is a structured, signed documentation aid. It captures th
 You can still use Attestix for documentation best practice. Minimal-risk systems can self-assess and the workflow is simpler (fewer required fields). Limited-risk systems primarily need transparency disclosure.
 
 **Q: Can I update my compliance profile later?**
-Currently, profiles are created once. To update, revoke the existing identity and create a new one with updated information. Profile update support is planned for a future release.
+Yes. Use `update_compliance_profile` to modify fields like intended purpose, transparency obligations, and human oversight measures without recreating the agent identity.

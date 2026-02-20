@@ -3,19 +3,20 @@ site_description: Attestix - Attestation Infrastructure for AI Agents. DID-based
 site_url: https://attestix.vibetensor.com/
 repo_url: https://github.com/VibeTensor/attestix
 repo_name: VibeTensor/attestix
+copyright: Copyright &copy; 2025 VibeTensor Inc.
 
 theme:
   name: material
+  logo: assets/atx_dark.svg
+  favicon: assets/favicon.svg
   palette:
-    - media: "(prefers-color-scheme: light)"
-      scheme: default
+    - scheme: default
       primary: indigo
       accent: deep purple
       toggle:
         icon: material/brightness-7
         name: Switch to dark mode
-    - media: "(prefers-color-scheme: dark)"
-      scheme: slate
+    - scheme: slate
       primary: indigo
       accent: deep purple
       toggle:
@@ -26,20 +27,36 @@ theme:
     - navigation.sections
     - navigation.expand
     - navigation.top
+    - navigation.footer
+    - navigation.indexes
     - search.highlight
     - search.suggest
     - content.code.copy
+    - content.code.annotate
+    - content.tabs.link
   icon:
     repo: fontawesome/brands/github
 
 markdown_extensions:
   - tables
   - admonition
+  - pymdownx.details
   - pymdownx.highlight:
       anchor_linenums: true
-  - pymdownx.superfences
+  - pymdownx.inlinehilite
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
   - pymdownx.tabbed:
       alternate_style: true
+  - pymdownx.snippets
+  - pymdownx.keys
+  - pymdownx.mark
+  - attr_list
+  - md_in_html
+  - def_list
   - toc:
       permalink: true
 
@@ -50,9 +67,11 @@ nav:
       - EU AI Act Compliance: eu-ai-act-compliance.md
       - Risk Classification: risk-classification.md
       - Integration Guide: integration-guide.md
+      - Architecture: architecture.md
   - Reference:
       - API Reference: api-reference.md
       - Concepts: concepts.md
+      - Configuration: configuration.md
       - FAQ: faq.md
   - Project:
       - Roadmap: roadmap.md
@@ -63,3 +82,9 @@ extra:
   social:
     - icon: fontawesome/brands/github
       link: https://github.com/VibeTensor/attestix
+    - icon: fontawesome/brands/python
+      link: https://pypi.org/project/attestix/
+  generator: false
+
+extra_css:
+  - assets/custom.css

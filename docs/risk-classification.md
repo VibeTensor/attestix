@@ -4,19 +4,20 @@ How to determine the risk category for your AI system under the EU AI Act (Regul
 
 ## Quick Decision Tree
 
-```
-Is your AI system used for any PROHIBITED purpose?
-  --> YES --> UNACCEPTABLE RISK (banned, cannot deploy)
-  --> NO  --> Continue
+```mermaid
+flowchart TD
+    A[Your AI System] --> B{Used for any<br/>PROHIBITED purpose?}
+    B -- Yes --> C["UNACCEPTABLE RISK<br/>(Banned - cannot deploy)"]
+    B -- No --> D{Listed in<br/>Annex III?}
+    D -- Yes --> E["HIGH RISK<br/>(Heavy compliance requirements)"]
+    D -- No --> F{Interacts with people,<br/>generates synthetic content,<br/>or emotion recognition?}
+    F -- Yes --> G["LIMITED RISK<br/>(Transparency obligations)"]
+    F -- No --> H["MINIMAL RISK<br/>(No specific obligations)"]
 
-Is your AI system listed in Annex III?
-  --> YES --> HIGH RISK (heavy compliance requirements)
-  --> NO  --> Continue
-
-Does your AI system interact directly with people,
-generate synthetic content, or perform emotion recognition?
-  --> YES --> LIMITED RISK (transparency obligations)
-  --> NO  --> MINIMAL RISK (no specific obligations)
+    style C fill:#dc2626,color:#fff
+    style E fill:#ea580c,color:#fff
+    style G fill:#e1a32c,color:#fff
+    style H fill:#059669,color:#fff
 ```
 
 ## Unacceptable Risk (PROHIBITED - Article 5)

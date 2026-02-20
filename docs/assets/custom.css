@@ -1,0 +1,109 @@
+/* Attestix - VibeTensor Brand Overrides */
+
+/* Primary color variables */
+:root {
+  --md-primary-fg-color: #4f46e5;
+  --md-primary-fg-color--light: #6366f1;
+  --md-primary-fg-color--dark: #3730a3;
+  --md-accent-fg-color: #e1a32c;
+  --md-accent-fg-color--transparent: rgba(225, 163, 44, 0.1);
+}
+
+[data-md-color-scheme="slate"] {
+  --md-primary-fg-color: #6366f1;
+  --md-primary-fg-color--light: #818cf8;
+  --md-primary-fg-color--dark: #4f46e5;
+  --md-accent-fg-color: #e1a32c;
+}
+
+/* Logo sizing in header */
+.md-header__button.md-logo img,
+.md-header__button.md-logo svg {
+  height: 1.6rem;
+  width: auto;
+}
+
+/* Hero section on home page */
+.md-typeset .hero {
+  text-align: center;
+  padding: 2rem 0;
+}
+
+.md-typeset .hero img {
+  max-width: 180px;
+  margin-bottom: 1rem;
+}
+
+/* Module grid cards */
+.md-typeset .grid-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1rem;
+  margin: 1.5rem 0;
+}
+
+.md-typeset .grid-cards .card {
+  border: 1px solid var(--md-default-fg-color--lightest);
+  border-radius: 0.4rem;
+  padding: 1rem 1.2rem;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.md-typeset .grid-cards .card:hover {
+  border-color: var(--md-accent-fg-color);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.md-typeset .grid-cards .card h3 {
+  margin-top: 0;
+  font-size: 0.85rem;
+}
+
+/* Code block styling */
+.md-typeset code {
+  border-radius: 0.2rem;
+}
+
+/* Admonition custom icons for attestation concepts */
+.md-typeset .admonition.attestation,
+.md-typeset details.attestation {
+  border-color: #4f46e5;
+}
+
+.md-typeset .attestation > .admonition-title,
+.md-typeset .attestation > summary {
+  background-color: rgba(79, 70, 229, 0.1);
+}
+
+/* Footer branding */
+.md-footer-meta {
+  background-color: #1e1e2e;
+}
+
+/* Badge styling for tool counts */
+.md-typeset .tool-count {
+  display: inline-block;
+  background: var(--md-accent-fg-color);
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 0.1rem 0.45rem;
+  border-radius: 1rem;
+  vertical-align: middle;
+  margin-left: 0.3rem;
+}
+
+/* Table improvements */
+.md-typeset table:not([class]) {
+  font-size: 0.78rem;
+}
+
+.md-typeset table:not([class]) th {
+  background-color: var(--md-primary-fg-color);
+  color: #fff;
+  font-weight: 600;
+}
+
+[data-md-color-scheme="slate"] .md-typeset table:not([class]) th {
+  background-color: var(--md-primary-fg-color--dark);
+}
