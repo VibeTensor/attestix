@@ -1,8 +1,8 @@
 # Attestix
 
-**Attestation Infrastructure for AI Agents**
+**AURA Protocol - Agent Unified Registry & Authentication Protocol**
 
-The compliance identity layer for the EU AI Act era. Attestix gives every AI agent a verifiable identity, proves its regulatory compliance, tracks its provenance, and scores its trustworthiness -- all locally, vendor-neutrally, and natively within MCP.
+The compliance identity layer for the EU AI Act era. Attestix gives every AI agent a verifiable identity, proves its regulatory compliance, tracks its provenance, and scores its trustworthiness. All locally, vendor-neutrally, and natively within MCP.
 
 ---
 
@@ -10,13 +10,13 @@ The compliance identity layer for the EU AI Act era. Attestix gives every AI age
 
 On **August 2, 2026**, the EU AI Act's transparency enforcement begins. Fines reach up to EUR 35M or 7% of global revenue. Every high-risk AI system deployed in EU markets must demonstrate compliance with Articles 10-12 (data governance, technical documentation, record-keeping), undergo conformity assessments (Article 43), and produce Annex V declarations of conformity.
 
-The existing compliance tools -- Credo AI, Holistic AI, Vanta, IBM OpenPages -- all operate as **organizational dashboards**. They help a company document compliance internally. But none of them produce a **machine-readable, cryptographically verifiable proof** that an AI agent can present to another agent, regulator, or system.
+The existing compliance tools (Credo AI, Holistic AI, Vanta, IBM OpenPages) all operate as **organizational dashboards**. They help a company document compliance internally. But none of them produce a **machine-readable, cryptographically verifiable proof** that an AI agent can present to another agent, regulator, or system.
 
 Meanwhile, agent identity is fragmenting across walled gardens:
-- **Microsoft Entra Agent ID** -- Azure-locked
-- **AWS Bedrock AgentCore** -- AWS-locked
-- **Google A2A** -- communication protocol, not identity/compliance
-- **ERC-8004** -- requires Ethereum blockchain
+- **Microsoft Entra Agent ID** - Azure-locked
+- **AWS Bedrock AgentCore** - AWS-locked
+- **Google A2A** - communication protocol, not identity/compliance
+- **ERC-8004** - requires Ethereum blockchain
 
 No single tool combines **agent identity + EU AI Act compliance + verifiable credentials** in one protocol. Attestix fills this gap.
 
@@ -24,31 +24,31 @@ No single tool combines **agent identity + EU AI Act compliance + verifiable cre
 
 ## What Attestix Does
 
-Attestix is an MCP server providing **42+ tools across 9 modules**:
+Attestix is an MCP server providing **47 tools across 9 modules**:
 
-### Phase 1 -- Identity & Trust (19 tools)
+### Identity & Trust (21 tools)
 
 | Module | Tools | Purpose |
 |--------|-------|---------|
-| **Identity** | 7 | Unified Agent Identity Tokens (UAITs) bridging MCP OAuth, A2A, DIDs, and API keys |
+| **Identity** | 8 | Unified Agent Identity Tokens (UAITs) bridging MCP OAuth, A2A, DIDs, and API keys. Includes GDPR Article 17 erasure |
 | **Agent Cards** | 3 | Parse, generate, and discover Google A2A-compatible agent cards |
 | **DID** | 3 | Create and resolve W3C Decentralized Identifiers (did:key, did:web) |
-| **Delegation** | 3 | UCAN-style capability delegation with EdDSA-signed JWT tokens |
+| **Delegation** | 4 | UCAN-style capability delegation with EdDSA-signed JWT tokens, revocation |
 | **Reputation** | 3 | Recency-weighted trust scoring (0.0-1.0) with category breakdown |
 
-### Phase 2 -- EU AI Act Compliance (17 tools)
+### EU AI Act Compliance (20 tools)
 
 | Module | Tools | Purpose |
 |--------|-------|---------|
-| **Compliance** | 6 | Risk categorization, conformity assessments (Article 43), Annex V declarations |
-| **Credentials** | 6 | W3C Verifiable Credentials (VC Data Model 1.1) with Ed25519Signature2020 proofs |
-| **Provenance** | 5 | Training data provenance (Article 10), model lineage (Article 11), audit trail (Article 12) |
+| **Compliance** | 7 | Risk categorization, conformity assessments (Article 43), Annex V declarations, profile updates |
+| **Credentials** | 8 | W3C Verifiable Credentials (VC Data Model 1.1) with Ed25519Signature2020 proofs, external verification, Verifiable Presentations |
+| **Provenance** | 5 | Training data provenance (Article 10), model lineage (Article 11), hash-chained audit trail (Article 12) |
 
-### Phase 3 -- Blockchain Anchoring (6 tools)
+### Blockchain Anchoring (6 tools)
 
 | Module | Tools | Purpose |
 |--------|-------|---------|
-| **Blockchain** | 6 | Anchor artifact hashes to Base L2 via Ethereum Attestation Service (EAS), Merkle batch anchoring |
+| **Blockchain** | 6 | Anchor artifact hashes to Base L2 via Ethereum Attestation Service (EAS), Merkle batch anchoring, cost estimation |
 
 ---
 
@@ -95,26 +95,31 @@ Attestix is an MCP server providing **42+ tools across 9 modules**:
 attestix/
   auth/
     crypto.py          # Ed25519 signing, did:key creation, signature verification
+    ssrf.py            # SSRF protection for URL fetching (private IP blocking)
     token_parser.py    # Auto-detect JWT, DID, API key, URL tokens
+  blockchain/
+    merkle.py          # Merkle tree construction for batch anchoring
   services/
-    identity_service.py    # UAIT lifecycle (create, verify, translate, revoke)
+    identity_service.py    # UAIT lifecycle (create, verify, translate, revoke, purge)
     agent_card_service.py  # A2A Agent Card operations
     did_service.py         # DID resolution (did:key, did:web, Universal Resolver)
     delegation_service.py  # UCAN delegation token management
     reputation_service.py  # Recency-weighted trust scoring
-    compliance_service.py  # EU AI Act profiles, assessments, declarations
-    credential_service.py  # W3C VC issuance, verification, revocation
-    provenance_service.py  # Training data, model lineage, audit trail
+    compliance_service.py  # EU AI Act profiles, assessments, Annex V declarations
+    credential_service.py  # W3C VC issuance, verification, presentations
+    provenance_service.py  # Training data, model lineage, hash-chained audit trail
+    blockchain_service.py  # Base L2 anchoring via Ethereum Attestation Service
     cache.py               # Service instance cache with TTL
   tools/
-    identity_tools.py      # 7 MCP tools
+    identity_tools.py      # 8 MCP tools (includes GDPR erasure)
     agent_card_tools.py    # 3 MCP tools
     did_tools.py           # 3 MCP tools
-    delegation_tools.py    # 3 MCP tools
+    delegation_tools.py    # 4 MCP tools
     reputation_tools.py    # 3 MCP tools
-    compliance_tools.py    # 6 MCP tools
-    credential_tools.py    # 6 MCP tools
+    compliance_tools.py    # 7 MCP tools
+    credential_tools.py    # 8 MCP tools (includes external verification)
     provenance_tools.py    # 5 MCP tools
+    blockchain_tools.py    # 6 MCP tools
   config.py       # Storage paths, environment, defaults
   errors.py       # Centralized error handling with JSON logging
   main.py         # FastMCP server entry point
@@ -122,11 +127,13 @@ attestix/
 
 ### Key Design Decisions
 
-- **Ed25519 cryptography** -- Same algorithm used by Solana, Cosmos, SSH. Auto-generated keypair stored in `.signing_key.json`
-- **JSON file storage** -- No database dependency. Files created lazily on first use
-- **Lazy service initialization** -- Services instantiated on first tool call, cached with TTL
-- **stderr-safe** -- All print() redirected to stderr to protect MCP JSON-RPC on stdout
-- **Modular registration** -- Each tool module exposes a `register(mcp)` function
+- **Ed25519 cryptography** - Same algorithm used by Solana, Cosmos, SSH. Auto-generated keypair stored in `.signing_key.json`
+- **JSON file storage** - No database dependency. Files created lazily on first use
+- **Hash-chained audit trail** - SHA-256 chain hashes on every audit entry for tamper-evident logging
+- **SSRF protection** - Private IP blocking on all URL-fetching operations (DID resolution, agent discovery)
+- **Lazy service initialization** - Services instantiated on first tool call, cached with TTL
+- **stderr-safe** - All print() redirected to stderr to protect MCP JSON-RPC on stdout
+- **Modular registration** - Each tool module exposes a `register(mcp)` function
 
 ---
 
@@ -168,7 +175,7 @@ Add to your Claude Code config (`~/.claude.json`):
 }
 ```
 
-Restart Claude Code. You now have 36 Attestix tools available.
+Restart Claude Code. You now have 47 Attestix tools available.
 
 ### Run Examples
 
@@ -296,10 +303,10 @@ create_verifiable_presentation(
 
 ---
 
-## All 36 Tools Reference
+## All 47 Tools Reference
 
 <details>
-<summary>Identity (7 tools)</summary>
+<summary>Identity (8 tools)</summary>
 
 | Tool | Description |
 |------|-------------|
@@ -310,6 +317,7 @@ create_verifiable_presentation(
 | `list_identities` | List UAITs with protocol/revocation filters |
 | `get_identity` | Get full UAIT details |
 | `revoke_identity` | Mark a UAIT as revoked |
+| `purge_agent_data` | GDPR Article 17 right to erasure across all stores |
 
 </details>
 
@@ -336,13 +344,14 @@ create_verifiable_presentation(
 </details>
 
 <details>
-<summary>Delegation (3 tools)</summary>
+<summary>Delegation (4 tools)</summary>
 
 | Tool | Description |
 |------|-------------|
 | `create_delegation` | UCAN-style capability delegation token |
 | `verify_delegation` | Verify JWT signature, expiry, structure |
 | `list_delegations` | List delegations by agent and role |
+| `revoke_delegation` | Revoke a delegation token |
 
 </details>
 
@@ -358,12 +367,13 @@ create_verifiable_presentation(
 </details>
 
 <details>
-<summary>Compliance (6 tools)</summary>
+<summary>Compliance (7 tools)</summary>
 
 | Tool | Description |
 |------|-------------|
 | `create_compliance_profile` | Create EU AI Act profile with risk categorization |
 | `get_compliance_profile` | Retrieve full compliance profile |
+| `update_compliance_profile` | Update an existing compliance profile |
 | `get_compliance_status` | Gap analysis: completed vs missing requirements |
 | `record_conformity_assessment` | Record self or third-party assessment (Article 43) |
 | `generate_declaration_of_conformity` | Generate Annex V declaration + auto-issue VC |
@@ -372,16 +382,18 @@ create_verifiable_presentation(
 </details>
 
 <details>
-<summary>Credentials (6 tools)</summary>
+<summary>Credentials (8 tools)</summary>
 
 | Tool | Description |
 |------|-------------|
 | `issue_credential` | Issue W3C VC with Ed25519Signature2020 proof |
-| `verify_credential` | Check signature, expiry, revocation |
+| `verify_credential` | Check signature, expiry, revocation (local credentials) |
+| `verify_credential_external` | Verify any VC JSON from an external source |
 | `revoke_credential` | Revoke a Verifiable Credential |
 | `get_credential` | Get full VC details |
 | `list_credentials` | Filter by agent, type, validity |
 | `create_verifiable_presentation` | Bundle VCs into a signed VP for a verifier |
+| `verify_presentation` | Verify a VP with embedded credentials |
 
 </details>
 
@@ -392,9 +404,23 @@ create_verifiable_presentation(
 |------|-------------|
 | `record_training_data` | Record training data source (Article 10) |
 | `record_model_lineage` | Record model chain and evaluation metrics (Article 11) |
-| `log_action` | Log agent action for audit trail (Article 12) |
+| `log_action` | Log agent action with hash-chained audit trail (Article 12) |
 | `get_provenance` | Get full provenance record |
 | `get_audit_trail` | Query audit log with filters |
+
+</details>
+
+<details>
+<summary>Blockchain (6 tools)</summary>
+
+| Tool | Description |
+|------|-------------|
+| `anchor_identity` | Anchor identity hash to Base L2 via EAS |
+| `anchor_credential` | Anchor credential hash to Base L2 via EAS |
+| `anchor_audit_batch` | Merkle batch anchor of audit log entries |
+| `verify_anchor` | Verify an on-chain anchor against local data |
+| `get_anchor_status` | Get anchoring status for an artifact |
+| `estimate_anchor_cost` | Estimate gas cost for anchoring |
 
 </details>
 
@@ -402,20 +428,17 @@ create_verifiable_presentation(
 
 ## Roadmap
 
-### Phase 3 -- Blockchain Anchoring (Planned)
+### Completed
 
-Attestix's Ed25519 signatures can be anchored on-chain for tamper-proof verification without moving core operations to the blockchain.
+- **Identity & Trust** - 21 tools for agent identity, DID, delegation, reputation, agent cards
+- **EU AI Act Compliance** - 20 tools for risk profiles, conformity assessments, Annex V declarations, W3C VCs
+- **Blockchain Anchoring** - 6 tools for Base L2 anchoring via EAS, Merkle batch anchoring
+- **GDPR Compliance** - Article 17 right to erasure across all data stores
+- **External Verification** - Third-party VP and credential verification without internal access
+- **Hash-Chained Audit Trail** - Tamper-evident SHA-256 chain hashes on all audit entries
+- **SSRF Protection** - Private IP blocking on DID resolution and agent discovery
 
-| Off-Chain (Current) | On-Chain (Planned) |
-|---------------------|-------------------|
-| UAIT creation + signing | Hash anchor to Base L2 |
-| W3C VC issuance | VC hash via Ethereum Attestation Service |
-| Reputation scoring | Score summary on ERC-8004 registry |
-| Audit trail | Merkle root of audit log |
-
-Target chain: **Base (Ethereum L2)** -- sub-$0.01 gas costs, ERC-8004 compatibility, EAS support.
-
-### Phase 4 -- Ecosystem Bridges (Planned)
+### Next: Ecosystem Bridges
 
 - ERC-8004 Identity Registry adapter (UAIT <-> ERC-721)
 - A2A Agent Card auto-sync
@@ -432,7 +455,7 @@ Target chain: **Base (Ethereum L2)** -- sub-$0.01 gas costs, ERC-8004 compatibil
 | [EU AI Act Compliance](docs/eu-ai-act-compliance.md) | Step-by-step compliance workflow |
 | [Risk Classification](docs/risk-classification.md) | How to determine your AI system's risk category |
 | [Concepts](docs/concepts.md) | UAIT, DID, VC, VP, UCAN, Ed25519 explained |
-| [API Reference](docs/api-reference.md) | All 36 tools with full parameter tables |
+| [API Reference](docs/api-reference.md) | All 47 tools with full parameter tables |
 | [Integration Guide](docs/integration-guide.md) | LangChain, CrewAI, AutoGen, MCP client patterns |
 | [FAQ](docs/faq.md) | Common questions answered |
 
@@ -449,7 +472,10 @@ Attestix generates machine-readable, cryptographically signed compliance documen
 ## Security
 
 - **Ed25519** signatures on all UAITs, VCs, assessments, declarations, and audit entries
-- **did:key** identifiers derived from server signing key
+- **Hash-chained audit trail** with SHA-256 chain hashes for tamper-evident logging
+- **SSRF protection** blocks private IPs, metadata endpoints, and DNS rebinding on all URL operations
+- **did:key** identifiers derived from server signing key (multicodec 0xed01)
+- **Encrypted key storage** with AES-256-GCM when `ATTESTIX_KEY_PASSWORD` is set
 - Private keys never returned in tool responses (stored locally)
 - Signing key stored in `.signing_key.json` (excluded from git)
 - No external API calls required for core operations
