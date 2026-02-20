@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "attestix"
 version = "0.2.0"
-description = "Attestix - Attestation infrastructure for AI agents. Identity, compliance, and verifiable credentials."
+description = "AURA Protocol - Agent Unified Registry & Authentication Protocol. DID-based agent identity, W3C Verifiable Credentials, EU AI Act compliance, delegation chains, and reputation scoring. 47 MCP tools across 9 modules."
 readme = "README.md"
 license = {file = "LICENSE"}
 requires-python = ">=3.10"
@@ -14,16 +14,23 @@ authors = [
 ]
 keywords = [
     "attestix",
+    "aura-protocol",
     "ai-agents",
     "agent-identity",
     "attestation",
     "verifiable-credentials",
+    "verifiable-presentations",
     "eu-ai-act",
     "mcp",
+    "mcp-server",
     "did",
     "ucan",
     "compliance",
     "ed25519",
+    "blockchain",
+    "gdpr",
+    "reputation",
+    "w3c",
 ]
 classifiers = [
     "Development Status :: 4 - Beta",
@@ -74,5 +81,5 @@ markers = [
 ]
 
 [tool.setuptools.package-data]
-# No JSON files bundled -- runtime data files are generated on first use
+# No JSON files bundled - runtime data files are generated on first use
 blockchain = ["*.py"]
