@@ -23,7 +23,7 @@ pip install -r requirements.txt
 
 ```bash
 python main.py
-# Should print "Attestix MCP server loaded: 36 tools registered" to stderr
+# Should print "Attestix MCP server loaded: 47 tools registered" to stderr
 # Then wait for MCP client connections on stdio
 ```
 
@@ -77,7 +77,7 @@ Open an issue on GitHub with:
 ### Pull Request Guidelines
 
 - One feature or fix per PR
-- Keep changes focused -- avoid mixing refactoring with new features
+- Keep changes focused - avoid mixing refactoring with new features
 - Update documentation if you change tool parameters or behavior
 - Add an example script if you add a new module
 

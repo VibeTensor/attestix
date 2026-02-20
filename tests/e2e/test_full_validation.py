@@ -517,7 +517,7 @@ class TestEdgeCases:
 
 
 class TestToolLayerConsistency:
-    """Verify all 42 tools are registered and return valid JSON."""
+    """Verify all 47 tools are registered and return valid JSON."""
 
     def test_all_tool_modules_importable(self):
         """All 9 tool modules should import without errors."""
@@ -540,7 +540,7 @@ class TestToolLayerConsistency:
             assert hasattr(module, "register"), f"{module.__name__} missing register()"
 
     def test_tool_count(self):
-        """Verify we have exactly 42 tools across 9 modules."""
+        """Verify we have exactly 47 tools across 9 modules."""
         from mcp.server.fastmcp import FastMCP
 
         mcp = FastMCP("test-attestix")
@@ -566,7 +566,7 @@ class TestToolLayerConsistency:
 
         # FastMCP stores tools internally
         tool_count = len(mcp._tool_manager._tools)
-        assert tool_count >= 42, (
-            f"Expected at least 42 tools, got {tool_count}. "
+        assert tool_count >= 47, (
+            f"Expected at least 47 tools, got {tool_count}. "
             f"Tools: {list(mcp._tool_manager._tools.keys())}"
         )

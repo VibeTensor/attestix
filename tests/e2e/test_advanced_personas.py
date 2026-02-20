@@ -943,7 +943,7 @@ class TestPersona13_SetupValidator:
         # 1. Verify all tools are registered
         tools = mcp._tool_manager._tools
         tool_count = len(tools)
-        assert tool_count >= 42, f"Expected 42+ tools, got {tool_count}"
+        assert tool_count >= 47, f"Expected 47+ tools, got {tool_count}"
         print(f"\n  [Persona 13] Registered tools: {tool_count}")
 
         # 2. Verify all expected tool modules are present

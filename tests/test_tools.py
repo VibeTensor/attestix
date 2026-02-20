@@ -18,8 +18,8 @@ def get_tool_func(name: str):
 class TestToolRegistration:
     def test_tools_registered(self):
         tools = mcp._tool_manager._tools
-        assert len(tools) >= 42, (
-            f"Expected at least 42 tools, got {len(tools)}"
+        assert len(tools) >= 47, (
+            f"Expected at least 47 tools, got {len(tools)}"
         )
 
     def test_all_tools_are_async(self):

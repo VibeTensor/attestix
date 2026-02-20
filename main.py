@@ -1,18 +1,19 @@
 """Attestix - Attestation Infrastructure for AI Agents
 
 MCP server for cross-protocol agent identity bridging,
-delegation chains, reputation scoring, and EU AI Act compliance.
+delegation chains, reputation scoring, EU AI Act compliance,
+and blockchain anchoring.
 
-42 tools across 9 modules:
-  - Identity (7): create, resolve, verify, translate, list, get, revoke
+47 tools across 9 modules:
+  - Identity (8): create, resolve, verify, translate, list, get, revoke, purge (GDPR)
   - Agent Cards (3): parse, generate, discover
-  - DID (3): resolve_did, create_did_key, create_did_web
-  - Delegation (3): create, verify, list
+  - DID (3): create_did_key, create_did_web, resolve_did
+  - Delegation (4): create, verify, list, revoke
   - Reputation (3): record_interaction, get_reputation, query_reputation
-  - Compliance (6): create_profile, get_profile, get_status, record_assessment, generate_declaration, list_profiles
-  - Credentials (6): issue, verify, revoke, get, list, create_presentation
+  - Compliance (7): create_profile, get_profile, update_profile, get_status, record_assessment, generate_declaration, list_profiles
+  - Credentials (8): issue, verify, verify_external, revoke, get, list, create_presentation, verify_presentation
   - Provenance (5): record_training_data, record_model_lineage, log_action, get_provenance, get_audit_trail
-  - Blockchain (6): anchor_identity, anchor_credential, verify_anchor, anchor_audit_batch, get_anchor_status, estimate_anchor_cost
+  - Blockchain (6): anchor_identity, anchor_credential, anchor_audit_batch, verify_anchor, get_anchor_status, estimate_anchor_cost
 """
 
 import asyncio
@@ -54,7 +55,7 @@ credential_tools.register(mcp)
 provenance_tools.register(mcp)
 blockchain_tools.register(mcp)
 
-print(f"Attestix MCP server loaded: 42 tools registered", file=sys.stderr)
+print(f"Attestix MCP server loaded: 47 tools registered", file=sys.stderr)
 
 
 def main():

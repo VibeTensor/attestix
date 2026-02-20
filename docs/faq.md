@@ -4,7 +4,7 @@
 
 ### What is Attestix?
 
-Attestix (Attestation Infrastructure for AI Agents) is an open-source tool that gives AI agents a verifiable identity, proves their regulatory compliance, and tracks their provenance. It runs as an MCP server or Python library with 36 tools across 8 modules.
+Attestix (Attestation Infrastructure for AI Agents) is an open-source tool that gives AI agents a verifiable identity, proves their regulatory compliance, and tracks their provenance. It runs as an MCP server or Python library with 47 tools across 9 modules.
 
 ### Who is Attestix for?
 
@@ -15,18 +15,18 @@ Attestix (Attestation Infrastructure for AI Agents) is an open-source tool that 
 
 ### Is Attestix a replacement for legal compliance?
 
-No. Attestix produces machine-readable, cryptographically signed compliance documentation. It does not replace legal counsel, notified body assessments, or official regulatory submissions. The artifacts it generates support your compliance process -- they are not legally binding filings on their own.
+No. Attestix produces machine-readable, cryptographically signed compliance documentation. It does not replace legal counsel, notified body assessments, or official regulatory submissions. The artifacts it generates support your compliance process -they are not legally binding filings on their own.
 
 ### Does Attestix require a blockchain?
 
-No. Attestix works entirely offline with local JSON storage. Phase 3 (planned) will add optional blockchain anchoring for tamper-proof verification, but it is not required for any current functionality.
+No. Attestix works entirely offline with local JSON storage. Blockchain anchoring (6 tools) is available as an optional feature for tamper-proof on-chain verification via Base L2 and Ethereum Attestation Service, but it is not required for any core functionality.
 
 ### Does Attestix require cloud services?
 
 No. All core operations (identity creation, credential issuance, compliance profiling, audit logging) work locally without any external API calls. The only features that require network access are:
-- `discover_agent` -- fetches `/.well-known/agent.json` from a remote URL
-- `resolve_did` with `did:web` -- resolves via HTTPS
-- `resolve_did` with non-key/web methods -- uses the Universal Resolver
+- `discover_agent` -fetches `/.well-known/agent.json` from a remote URL
+- `resolve_did` with `did:web` -resolves via HTTPS
+- `resolve_did` with non-key/web methods -uses the Universal Resolver
 
 ---
 
@@ -59,16 +59,16 @@ Yes, if they share the same `.signing_key.json` and JSON data files. Point multi
 
 ### When does the EU AI Act take effect?
 
-- **August 2, 2026** -- Enforcement begins for high-risk systems (Annex III) and Article 50 transparency obligations
-- **August 2, 2027** -- Obligations for AI in regulated products (Annex I: medical devices, machinery)
+- **August 2, 2026** -Enforcement begins for high-risk systems (Annex III) and Article 50 transparency obligations
+- **August 2, 2027** -Obligations for AI in regulated products (Annex I: medical devices, machinery)
 
 ### How do I determine my risk category?
 
 See the [Risk Classification Guide](risk-classification.md). In short:
-- **Unacceptable** -- Banned (social scoring, manipulation, etc.)
-- **High** -- Annex III categories (biometrics, employment, credit scoring, etc.)
-- **Limited** -- Interacts with people, generates synthetic content, or performs emotion recognition
-- **Minimal** -- Everything else (spam filters, code completion, etc.)
+- **Unacceptable** -Banned (social scoring, manipulation, etc.)
+- **High** -Annex III categories (biometrics, employment, credit scoring, etc.)
+- **Limited** -Interacts with people, generates synthetic content, or performs emotion recognition
+- **Minimal** -Everything else (spam filters, code completion, etc.)
 
 ### Can high-risk systems use self-assessment?
 
@@ -80,7 +80,7 @@ The EU AI Act's Annex V specifies the required contents of a Declaration of Conf
 
 ### Can I update a compliance profile?
 
-Currently, compliance profiles are created once. To update, revoke the existing agent identity and create a new one with updated information. Profile update support is planned for a future release.
+Yes. Use `update_compliance_profile` to modify an existing compliance profile's fields (intended purpose, transparency obligations, human oversight measures, etc.) without recreating the agent identity.
 
 ---
 
@@ -118,7 +118,7 @@ At minimum: dataset name, license, and whether it contains personal data. For hi
 
 Each `log_action` call records a single agent action. Include:
 - `action_type`: What kind of action (inference, delegation, data_access, external_call)
-- `input_summary`: What went in (keep concise -- summaries, not raw data)
+- `input_summary`: What went in (keep concise -summaries, not raw data)
 - `output_summary`: What came out
 - `decision_rationale`: Why the agent made this decision (important for Article 14 human oversight)
 - `human_override`: Whether a human intervened

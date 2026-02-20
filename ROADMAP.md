@@ -2,80 +2,66 @@
 
 The project vision: every AI agent gets a verifiable identity, proves its compliance, and anchors its trust on-chain.
 
-## Phase 1 -- Identity & Trust (Complete)
+## Phase 1 - Identity & Trust (Complete)
 
-19 MCP tools for cross-protocol agent identity.
+21 MCP tools for cross-protocol agent identity.
 
 | Module | Tools | What it does |
 |--------|-------|-------------|
-| Identity | 7 | Unified Agent Identity Tokens (UAITs) bridging MCP OAuth, A2A Agent Cards, DIDs, and API keys into one format |
+| Identity | 8 | Unified Agent Identity Tokens (UAITs) bridging MCP OAuth, A2A Agent Cards, DIDs, and API keys. GDPR Article 17 erasure |
 | Agent Cards | 3 | Parse, generate, and discover Google A2A-compatible agent cards |
 | DID | 3 | Create and resolve W3C Decentralized Identifiers (did:key, did:web, Universal Resolver) |
-| Delegation | 3 | UCAN-style capability delegation with EdDSA-signed JWT tokens and proof chains |
+| Delegation | 4 | UCAN-style capability delegation with EdDSA-signed JWT tokens, revocation |
 | Reputation | 3 | Recency-weighted trust scoring (0.0-1.0) with category breakdown and 30-day half-life decay |
 
 **Key decisions:**
 - Ed25519 for all cryptographic operations (same as SSH, Signal, Solana, Cosmos)
-- JSON file storage with file locking -- no database dependency
+- JSON file storage with file locking - no database dependency
 - All records cryptographically signed at creation time
 - Server signing key auto-generated on first run
+- SSRF protection on all URL-fetching operations
+- Hash-chained audit trail with SHA-256 for tamper-evident logging
 
-## Phase 2 -- EU AI Act Compliance (Complete)
+## Phase 2 - EU AI Act Compliance (Complete)
 
-17 MCP tools for regulatory compliance documentation.
+20 MCP tools for regulatory compliance documentation.
 
 | Module | Tools | What it does |
 |--------|-------|-------------|
-| Compliance | 6 | Risk categorization (minimal/limited/high), conformity assessments (Article 43), Annex V declarations of conformity |
-| Credentials | 6 | W3C Verifiable Credentials (VC Data Model 1.1) with Ed25519Signature2020 proofs, Verifiable Presentations |
-| Provenance | 5 | Training data provenance (Article 10), model lineage (Article 11), audit trail (Article 12) |
+| Compliance | 7 | Risk categorization (minimal/limited/high), conformity assessments (Article 43), Annex V declarations, profile updates |
+| Credentials | 8 | W3C Verifiable Credentials (VC Data Model 1.1) with Ed25519Signature2020 proofs, external verification, Verifiable Presentations |
+| Provenance | 5 | Training data provenance (Article 10), model lineage (Article 11), hash-chained audit trail (Article 12) |
 
 **Key decisions:**
 - VC Data Model 1.1 (widely supported, stable specification)
 - High-risk systems blocked from self-assessment (requires third-party per Article 43)
 - Declaration generation auto-issues a W3C Verifiable Credential
 - Mutable fields excluded from signature payloads (revocation doesn't break signatures)
+- External VP and credential verification for third-party auditors
 
 **EU AI Act timeline:**
-- August 2, 2026 -- Enforcement begins for high-risk systems and transparency obligations
-- August 2, 2027 -- Obligations for AI in regulated products (medical devices, machinery)
+- August 2, 2026 - Enforcement begins for high-risk systems and transparency obligations
+- August 2, 2027 - Obligations for AI in regulated products (medical devices, machinery)
 
-## Phase 3 -- Blockchain Anchoring (Planned)
+## Phase 3 - Blockchain Anchoring (Complete)
 
-Anchor cryptographic proofs on-chain without moving core operations to the blockchain. Everything still works offline -- blockchain adds tamper-proof public verifiability.
+6 MCP tools for on-chain tamper-proof verification. Everything still works offline - blockchain adds public verifiability.
 
-| Off-Chain (Current) | On-Chain (Phase 3) | Standard |
-|---------------------|-------------------|----------|
-| UAIT creation + Ed25519 signing | Hash anchor to Base L2 | Custom attestation |
-| W3C VC issuance | VC hash via Ethereum Attestation Service (EAS) | EAS schema |
-| Reputation scoring | Score summary on ERC-8004 registry | ERC-8004 |
-| Audit trail | Merkle root of periodic audit log batches | Merkle tree |
-| Compliance declarations | Declaration hash on-chain | EAS attestation |
+| Module | Tools | What it does |
+|--------|-------|-------------|
+| Blockchain | 6 | Anchor identity and credential hashes to Base L2 via EAS, Merkle batch anchoring, cost estimation |
 
-**Target chain:** Base (Ethereum L2)
-- Sub-$0.01 gas costs for attestations
-- ERC-8004 compatibility (agent identity standard)
-- Ethereum Attestation Service support
-- Growing agent ecosystem (Mantle, Coinbase, etc.)
+**Tools:**
+- `anchor_identity` - Anchor a UAIT hash on-chain
+- `anchor_credential` - Anchor a VC hash via EAS
+- `anchor_audit_batch` - Merkle-root a batch of audit entries
+- `verify_anchor` - Check on-chain anchor for any artifact
+- `get_anchor_status` - Retrieve all on-chain anchors for an agent
+- `estimate_anchor_cost` - Gas estimation before anchoring
 
-**Scope:**
-- [ ] Base L2 integration (ethers.js / web3.py)
-- [ ] EAS schema registration for UAIT and VC hashes
-- [ ] Anchor service: signs hash, submits to chain, stores tx receipt
-- [ ] Verification service: given a UAIT/VC, verify its on-chain anchor
-- [ ] Merkle tree batching for audit log entries (cost optimization)
-- [ ] On-chain revocation registry (complement local revocation)
-- [ ] Gas estimation and cost reporting tools
+**Target chain:** Base (Ethereum L2) - sub-$0.01 gas costs, EAS support, growing agent ecosystem.
 
-**New tools (estimated 6-8):**
-- `anchor_identity` -- Anchor a UAIT hash on-chain
-- `anchor_credential` -- Anchor a VC hash via EAS
-- `verify_anchor` -- Check on-chain anchor for any artifact
-- `anchor_audit_batch` -- Merkle-root a batch of audit entries
-- `get_anchor_status` -- Retrieve all on-chain anchors for an agent
-- `estimate_anchor_cost` -- Gas estimation before anchoring
-
-## Phase 4 -- Ecosystem Bridges (Planned)
+## Phase 4 - Ecosystem Bridges (Planned)
 
 Connect to existing agent identity ecosystems for interoperability.
 
@@ -102,7 +88,7 @@ Connect to existing agent identity ecosystems for interoperability.
 
 **Estimated tools: 8-12**
 
-## Phase 5 -- Multi-Chain & Enterprise (Future)
+## Phase 5 - Multi-Chain & Enterprise (Future)
 
 ### Multi-Chain Identity
 - Solana (SVM): anchor UAITs on Solana for sub-second finality
@@ -138,7 +124,7 @@ Connect to existing agent identity ecosystems for interoperability.
 | Version | Phase | Target |
 |---------|-------|--------|
 | 0.1.0 | Phase 1 + 2 | Initial release (36 tools) |
-| 0.2.0 | Phase 3 | Blockchain anchoring on Base L2 |
+| 0.2.0 | Phase 3 | Blockchain anchoring + security audit (47 tools) |
 | 0.3.0 | Phase 4 | ERC-8004, A2A sync, ANS |
 | 0.4.0 | Phase 4 | Polygon ID / ZK credentials |
 | 0.5.0 | Phase 5 | Multi-chain + enterprise storage |

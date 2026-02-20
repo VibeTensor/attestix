@@ -14,24 +14,24 @@ You will need the following information gathered from different teams:
 
 ### From Your Legal/Compliance Team
 
-- [ ] **Risk category determination** -- Is your AI system minimal, limited, or high-risk? See [Risk Classification Guide](risk-classification.md)
-- [ ] **Intended purpose statement** -- What the AI system is designed to do
-- [ ] **Transparency measures** -- How you inform users they're interacting with AI
-- [ ] **Human oversight measures** -- How humans monitor and can intervene (required for high-risk)
+- [ ] **Risk category determination** -Is your AI system minimal, limited, or high-risk? See [Risk Classification Guide](risk-classification.md)
+- [ ] **Intended purpose statement** -What the AI system is designed to do
+- [ ] **Transparency measures** -How you inform users they're interacting with AI
+- [ ] **Human oversight measures** -How humans monitor and can intervene (required for high-risk)
 
 ### From Your ML/Engineering Team
 
-- [ ] **Training datasets** -- Name, source, license for each dataset used
-- [ ] **Personal data flag** -- Whether training data contains personal data
-- [ ] **Data governance measures** -- Quality checks, bias mitigation, cleaning processes
-- [ ] **Base model** -- What foundation model you built on (e.g., GPT-4, Claude, LLaMA)
-- [ ] **Fine-tuning method** -- How the model was adapted (LoRA, RLHF, etc.)
-- [ ] **Evaluation metrics** -- Accuracy, F1, AUC-ROC, or domain-specific metrics
+- [ ] **Training datasets** -Name, source, license for each dataset used
+- [ ] **Personal data flag** -Whether training data contains personal data
+- [ ] **Data governance measures** -Quality checks, bias mitigation, cleaning processes
+- [ ] **Base model** -What foundation model you built on (e.g., GPT-4, Claude, LLaMA)
+- [ ] **Fine-tuning method** -How the model was adapted (LoRA, RLHF, etc.)
+- [ ] **Evaluation metrics** -Accuracy, F1, AUC-ROC, or domain-specific metrics
 
 ### From Your Business Team
 
-- [ ] **Provider company legal name** -- The entity responsible for the AI system
-- [ ] **Notified body** -- For high-risk: which organization will assess you? (TUV Rheinland, BSI, Bureau Veritas, etc.)
+- [ ] **Provider company legal name** -The entity responsible for the AI system
+- [ ] **Notified body** -For high-risk: which organization will assess you? (TUV Rheinland, BSI, Bureau Veritas, etc.)
 
 ## Step-by-Step Workflow
 
@@ -48,7 +48,7 @@ create_agent_identity(
 )
 ```
 
-**Output:** An `agent_id` like `attestix:f9bdb7a94ccb40f1`. Save this -- you'll use it in every subsequent step.
+**Output:** An `agent_id` like `attestix:f9bdb7a94ccb40f1`. Save this -you'll use it in every subsequent step.
 
 ### Step 2: Record Training Data Provenance (Article 10)
 

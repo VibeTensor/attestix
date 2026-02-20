@@ -1,6 +1,6 @@
 # Attestix
 
-**AURA Protocol - Agent Unified Registry & Authentication Protocol**
+**Attestation Infrastructure for AI Agents**
 
 The compliance identity layer for the EU AI Act era. Attestix gives every AI agent a verifiable identity, proves its regulatory compliance, tracks its provenance, and scores its trustworthiness. All locally, vendor-neutrally, and natively within MCP.
 

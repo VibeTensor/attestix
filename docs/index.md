@@ -2,7 +2,7 @@
 
 **Attestation Infrastructure for AI Agents**
 
-The compliance identity layer for the EU AI Act era. Attestix gives every AI agent a verifiable identity, proves its regulatory compliance, tracks its provenance, and scores its trustworthiness -- all locally, vendor-neutrally, and natively within MCP.
+The compliance identity layer for the EU AI Act era. Attestix gives every AI agent a verifiable identity, proves its regulatory compliance, tracks its provenance, and scores its trustworthiness. All locally, vendor-neutrally, and natively within MCP.
 
 ## Why This Exists
 
@@ -14,18 +14,18 @@ Meanwhile, agent identity is fragmenting across walled gardens (Microsoft Entra,
 
 ## What Attestix Does
 
-42+ MCP tools across 9 modules:
+47 MCP tools across 9 modules:
 
 | Module | Tools | Purpose |
 |--------|-------|---------|
-| **Identity** | 7 | Unified Agent Identity Tokens (UAITs) bridging MCP OAuth, A2A, DIDs, and API keys |
+| **Identity** | 8 | Unified Agent Identity Tokens (UAITs) bridging MCP OAuth, A2A, DIDs, and API keys. GDPR Article 17 erasure |
 | **Agent Cards** | 3 | Parse, generate, and discover A2A-compatible agent cards |
 | **DID** | 3 | Create and resolve W3C Decentralized Identifiers |
-| **Delegation** | 3 | UCAN-style capability delegation with signed JWT tokens |
+| **Delegation** | 4 | UCAN-style capability delegation with signed JWT tokens, revocation |
 | **Reputation** | 3 | Recency-weighted trust scoring with category breakdown |
-| **Compliance** | 6 | EU AI Act risk profiles, conformity assessments, Annex V declarations |
-| **Credentials** | 6 | W3C Verifiable Credentials with Ed25519Signature2020 proofs |
-| **Provenance** | 5 | Training data provenance, model lineage, audit trail |
+| **Compliance** | 7 | EU AI Act risk profiles, conformity assessments, Annex V declarations |
+| **Credentials** | 8 | W3C Verifiable Credentials with Ed25519Signature2020 proofs, external verification |
+| **Provenance** | 5 | Training data provenance, model lineage, hash-chained audit trail |
 | **Blockchain** | 6 | Anchor artifact hashes to Base L2 via EAS, Merkle batch anchoring |
 
 ## Quick Start

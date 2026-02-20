@@ -26,11 +26,11 @@ A DID looks like this:
 did:key:z6Mkija7eQS9kNrvh1kAp7PJFgPEznFpBdDm825vugSQxdW7
 ```
 
-**Why it matters:** Traditional identifiers (usernames, API keys) are controlled by a single company. If that company goes down, your identity disappears. A DID is cryptographically self-sovereign -- your agent owns its identity.
+**Why it matters:** Traditional identifiers (usernames, API keys) are controlled by a single company. If that company goes down, your identity disappears. A DID is cryptographically self-sovereign -your agent owns its identity.
 
 **Types Attestix supports:**
-- `did:key` -- Derived from a public key. No network needed. Instant.
-- `did:web` -- Hosted on your domain. Resolvable via HTTPS.
+- `did:key` -Derived from a public key. No network needed. Instant.
+- `did:web` -Hosted on your domain. Resolvable via HTTPS.
 - Any other DID method via Universal Resolver.
 
 **Real-world analogy:** Like a phone number that works across all carriers and countries, except no carrier can revoke it.
@@ -54,20 +54,20 @@ A VC contains:
 **Real-world analogy:** Like a university diploma, but instead of being a piece of paper that could be forged, it's a digital document signed by the university's private key that anyone can verify.
 
 **Attestix credential types:**
-- `EUAIActComplianceCredential` -- Proves EU AI Act compliance
-- `ConformityAssessmentCredential` -- Proves assessment results
-- `AgentIdentityCredential` -- Proves agent identity claims
-- `TrainingDataProvenanceCredential` -- Proves data governance
-- Custom types -- Define your own
+- `EUAIActComplianceCredential` -Proves EU AI Act compliance
+- `ConformityAssessmentCredential` -Proves assessment results
+- `AgentIdentityCredential` -Proves agent identity claims
+- `TrainingDataProvenanceCredential` -Proves data governance
+- Custom types -Define your own
 
 ## Verifiable Presentation (VP)
 
 **What it is:** A bundle of Verifiable Credentials you present to a specific verifier.
 
 **Why not just send the VCs directly?** A VP adds:
-- **Audience binding** -- This presentation is for TUV Rheinland, not anyone else
-- **Challenge/nonce** -- Prevents replay attacks (someone can't reuse your presentation)
-- **Holder signature** -- Proves the presenter authorized this disclosure
+- **Audience binding** -This presentation is for TUV Rheinland, not anyone else
+- **Challenge/nonce** -Prevents replay attacks (someone can't reuse your presentation)
+- **Holder signature** -Proves the presenter authorized this disclosure
 
 **Real-world analogy:** Like bringing your passport + visa + vaccination card to an embassy. You show specific documents to a specific party for a specific purpose.
 
@@ -110,7 +110,7 @@ A VC contains:
 - Each interaction is recorded with an outcome (success/failure/partial)
 - Recent interactions count more (30-day half-life exponential decay)
 - Score is computed across categories (e.g., data_quality: 0.95, response_time: 0.80)
-- New agents start with no score (not 0.0 -- absence of data, not distrust)
+- New agents start with no score (not 0.0 -absence of data, not distrust)
 
 **Why recency-weighted:** An agent that was great 6 months ago but has been failing recently should not ride on its old reputation. The decay function ensures the score reflects current behavior.
 

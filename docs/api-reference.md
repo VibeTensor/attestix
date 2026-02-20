@@ -1,8 +1,8 @@
 # API Reference
 
-All 36 Attestix MCP tools organized by module.
+All 47 Attestix MCP tools organized by module.
 
-## Identity (7 tools)
+## Identity (8 tools)
 
 ### `create_agent_identity`
 
@@ -68,6 +68,16 @@ Convert a UAIT to another identity format.
 | `agent_id` | string | Yes | - | Agent ID to revoke |
 | `reason` | string | No | `""` | Revocation reason |
 
+### `purge_agent_data`
+
+GDPR Article 17 right to erasure. Removes all data for an agent across all storage files (identities, credentials, compliance, provenance, audit logs, reputation, delegations).
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `agent_id` | string | Yes | Agent ID to completely erase |
+
+**Returns:** Summary of purged records per store.
+
 ---
 
 ## Agent Cards (3 tools)
@@ -131,7 +141,7 @@ Resolve any DID to its DID Document. Supports `did:key` (local), `did:web` (HTTP
 
 ---
 
-## Delegation (3 tools)
+## Delegation (4 tools)
 
 ### `create_delegation`
 
@@ -160,6 +170,15 @@ Verify a delegation JWT: signature, expiry, revocation, and structure.
 | `agent_id` | string | No | `""` | Filter by agent ID |
 | `role` | string | No | `"any"` | `issuer`, `audience`, or `any` |
 | `include_expired` | bool | No | `false` | Include expired delegations |
+
+### `revoke_delegation`
+
+Revoke a delegation token, immediately invalidating the delegated capabilities.
+
+| Parameter | Type | Required | Default | Description |
+|-----------|------|----------|---------|-------------|
+| `delegation_id` | string | Yes | - | Delegation ID to revoke |
+| `reason` | string | No | `""` | Revocation reason |
 
 ---
 
@@ -198,7 +217,7 @@ Search agents by reputation criteria.
 
 ---
 
-## Compliance (6 tools)
+## Compliance (7 tools)
 
 ### `create_compliance_profile`
 
@@ -218,6 +237,17 @@ Create an EU AI Act compliance profile with risk categorization.
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
 | `agent_id` | string | Yes | Agent ID |
+
+### `update_compliance_profile`
+
+Update an existing compliance profile's fields.
+
+| Parameter | Type | Required | Default | Description |
+|-----------|------|----------|---------|-------------|
+| `agent_id` | string | Yes | - | Agent ID |
+| `intended_purpose` | string | No | `""` | Updated intended purpose |
+| `transparency_obligations` | string | No | `""` | Updated transparency measures |
+| `human_oversight_measures` | string | No | `""` | Updated human oversight |
 
 ### `get_compliance_status`
 
@@ -258,7 +288,7 @@ Generate Annex V declaration + auto-issue W3C Verifiable Credential.
 
 ---
 
-## Credentials (6 tools)
+## Credentials (8 tools)
 
 ### `issue_credential`
 
@@ -312,6 +342,26 @@ Bundle multiple VCs into a signed VP for a specific verifier.
 | `credential_ids` | string | Yes | - | Comma-separated credential URNs |
 | `audience_did` | string | No | `""` | Verifier's DID |
 | `challenge` | string | No | `""` | Nonce from verifier for replay protection |
+
+### `verify_credential_external`
+
+Verify any W3C Verifiable Credential JSON from an external source (does not need to be in the local store).
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `credential_json` | string | Yes | Full JSON string of the Verifiable Credential |
+
+**Returns:** `{ "valid": bool, "checks": { "structure_valid", "signature_valid", "not_expired" } }`
+
+### `verify_presentation`
+
+Verify a Verifiable Presentation including all embedded credentials.
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `presentation_json` | string | Yes | Full JSON string of the Verifiable Presentation |
+
+**Returns:** `{ "valid": bool, "checks": { "structure_valid", "vp_signature_valid", "challenge_present", "domain_present", "credentials_valid", "holder_matches_subjects" } }`
 
 ---
 
@@ -375,3 +425,58 @@ Query audit trail with filters.
 | `start_date` | string | No | `""` | ISO date filter (start) |
 | `end_date` | string | No | `""` | ISO date filter (end) |
 | `limit` | int | No | `50` | Maximum results |
+
+---
+
+## Blockchain (6 tools)
+
+### `anchor_identity`
+
+Anchor an identity hash to Base L2 via Ethereum Attestation Service.
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `agent_id` | string | Yes | Agent ID to anchor |
+
+### `anchor_credential`
+
+Anchor a credential hash to Base L2 via EAS.
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `credential_id` | string | Yes | Credential URN to anchor |
+
+### `anchor_audit_batch`
+
+Merkle batch anchor of audit log entries for an agent.
+
+| Parameter | Type | Required | Default | Description |
+|-----------|------|----------|---------|-------------|
+| `agent_id` | string | Yes | - | Agent ID |
+| `limit` | int | No | `100` | Maximum entries to include in batch |
+
+**Returns:** Merkle root hash, entry count, and transaction receipt.
+
+### `verify_anchor`
+
+Verify an on-chain anchor against local data.
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `artifact_id` | string | Yes | Agent ID or credential URN to verify |
+
+### `get_anchor_status`
+
+Get all anchoring records for an artifact.
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `artifact_id` | string | Yes | Agent ID or credential URN |
+
+### `estimate_anchor_cost`
+
+Estimate gas cost for anchoring an artifact.
+
+| Parameter | Type | Required | Default | Description |
+|-----------|------|----------|---------|-------------|
+| `artifact_type` | string | Yes | - | `identity`, `credential`, or `audit_batch` |

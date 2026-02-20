@@ -37,7 +37,7 @@ Add to your Claude Code config (`~/.claude.json` on macOS/Linux, `%USERPROFILE%\
 }
 ```
 
-Restart Claude Code. You now have 36 Attestix tools available.
+Restart Claude Code. You now have 47 Attestix tools available.
 
 Then just ask Claude:
 
@@ -110,7 +110,7 @@ print(result)
 
 ## Next Steps
 
-- [EU AI Act Compliance Guide](eu-ai-act-compliance.md) -- Full compliance workflow
-- [Concepts Explained](concepts.md) -- What are UAITs, DIDs, VCs?
-- [API Reference](api-reference.md) -- All 36 tools documented
-- [Examples](../examples/) -- Runnable Python scripts
+- [EU AI Act Compliance Guide](eu-ai-act-compliance.md) - Full compliance workflow
+- [Concepts Explained](concepts.md) - What are UAITs, DIDs, VCs?
+- [API Reference](api-reference.md) - All 47 tools documented
+- [Examples](../examples/) - Runnable Python scripts
