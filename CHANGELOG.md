@@ -4,6 +4,25 @@ All notable changes to Attestix are documented here.
 
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.2.1] - 2026-02-21
+
+### Added
+- 91 conformance benchmark test suite (`tests/benchmarks/`) validating standards claims:
+  - RFC 8032 Section 7.1 Ed25519 canonical test vectors (4 IETF vectors, 18 tests)
+  - W3C VC Data Model 1.1 conformance (credential structure, proof, presentations, 24 tests)
+  - W3C DID Core 1.0 conformance (did:key, did:web, roundtrip resolution, 16 tests)
+  - UCAN v0.9.0 conformance (JWT header, payload, attenuation, revocation, 16 tests)
+  - MCP tool registration conformance (47 tools, 9 modules, naming, 5 tests)
+  - Performance benchmarks with hard latency thresholds (7 tests)
+- Standards Conformance section in README with measured performance numbers
+- Running the Test Suite section in configuration docs
+- FAQ entry on standards validation methodology
+
+### Changed
+- Total automated tests: 193 -> 284 (193 functional + 91 conformance benchmarks)
+- Updated research paper evaluation section with conformance test results and measured latencies
+- Updated all documentation (architecture, changelog, contributing, roadmap, FAQ) with benchmark details
+
 ## [0.2.0] - 2026-02-21
 
 ### Added
@@ -28,10 +47,17 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - `verify_presentation` - Verify Verifiable Presentations with embedded credentials
 
 **Testing**
-- 193 automated tests (unit, integration, e2e)
+- 284 automated tests (unit, integration, e2e, conformance benchmarks)
+- 91 conformance benchmark tests validating standards compliance:
+  - RFC 8032 Section 7.1 Ed25519 canonical test vectors (4 IETF vectors, 18 tests)
+  - W3C VC Data Model 1.1 conformance (credential structure, proof, presentations, 24 tests)
+  - W3C DID Core 1.0 conformance (did:key, did:web, roundtrip resolution, 16 tests)
+  - UCAN v0.9.0 conformance (JWT header, payload, attenuation, revocation, 16 tests)
+  - MCP tool registration conformance (47 tools, 9 modules, naming, 5 tests)
+  - Performance benchmarks with hard latency thresholds (7 tests)
 - 16 user persona test scenarios (cybersecurity, government regulator, legal, healthcare, DPO, enterprise architect)
 - 10 manual workflow simulations with real tool output
-- Docker containerized test runner
+- Docker containerized test runner (`Dockerfile.test`)
 - AWS CodeBuild CI spec
 
 ### Changed

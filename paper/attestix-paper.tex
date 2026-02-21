@@ -50,7 +50,7 @@ Email: pkd@vibetensor.com}
 \maketitle
 
 \begin{abstract}
-The rapid proliferation of autonomous AI agents operating across organizational boundaries introduces fundamental challenges in identity verification, trust establishment, and regulatory compliance. Existing identity and access management frameworks, designed for human users and static machine credentials, are inadequate for dynamic, capability-driven agent ecosystems. We present Attestix, an open-source attestation infrastructure that provides a unified trust layer for AI agents through nine integrated modules: cryptographic identity management, W3C Verifiable Credentials, Decentralized Identifiers (DIDs), UCAN-based delegation chains, exponential-decay reputation scoring, automated EU AI Act compliance, data provenance tracking with tamper-evident audit logs, and blockchain anchoring via the Ethereum Attestation Service. Attestix is implemented as a Model Context Protocol (MCP) server exposing 47 tools, enabling any MCP-compatible AI agent to acquire, present, and verify cryptographic attestations without modifications to the agent's core logic. We describe the system architecture, detail the cryptographic pipeline built on Ed25519 signatures with RFC 8785 JSON canonicalization, and present evaluation results demonstrating sub-millisecond credential operations. Attestix bridges the gap between emerging agent communication protocols (Google A2A, Anthropic MCP) and established trust standards (W3C VC, DID, UCAN), providing the first integrated compliance-aware attestation framework purpose-built for agentic AI.
+The rapid proliferation of autonomous AI agents operating across organizational boundaries introduces fundamental challenges in identity verification, trust establishment, and regulatory compliance. Existing identity and access management frameworks, designed for human users and static machine credentials, are inadequate for dynamic, capability-driven agent ecosystems. We present Attestix, an open-source attestation infrastructure that provides a unified trust layer for AI agents through nine integrated modules: cryptographic identity management, W3C Verifiable Credentials, Decentralized Identifiers (DIDs), UCAN-based delegation chains, exponential-decay reputation scoring, automated EU AI Act compliance, data provenance tracking with tamper-evident audit logs, and blockchain anchoring via the Ethereum Attestation Service. Attestix is implemented as a Model Context Protocol (MCP) server exposing 47 tools, enabling any MCP-compatible AI agent to acquire, present, and verify cryptographic attestations without modifications to the agent's core logic. We describe the system architecture, detail the cryptographic pipeline built on Ed25519 signatures with RFC 8785 JSON canonicalization, and present evaluation results from 284 automated tests including 91 conformance benchmarks that validate standards compliance against RFC 8032 canonical vectors, W3C VC/DID specifications, and UCAN v0.9.0, demonstrating sub-millisecond cryptographic operations. Attestix bridges the gap between emerging agent communication protocols (Google A2A, Anthropic MCP) and established trust standards (W3C VC, DID, UCAN), providing the first integrated compliance-aware attestation framework purpose-built for agentic AI.
 \end{abstract}
 
 \begin{IEEEkeywords}
@@ -78,7 +78,7 @@ We present Attestix, an open-source attestation infrastructure that addresses al
 \begin{itemize}
     \item A \textbf{unified attestation architecture} integrating DID-based identity, W3C Verifiable Credentials, UCAN delegation, reputation scoring, EU AI Act compliance automation, provenance tracking, and blockchain anchoring into a single coherent framework.
     \item A \textbf{compliance automation engine} that implements Articles 5, 9--15, 43, 72--73, and Annex V of the EU AI Act, including automated risk classification, conformity assessment enforcement, and declaration of conformity generation.
-    \item An \textbf{open-source implementation}\footnote{Source code: \url{https://github.com/VibeTensor/attestix}} as an MCP server with 47 tools, demonstrating that comprehensive attestation can be delivered as a protocol-level service with sub-millisecond cryptographic operations.
+    \item An \textbf{open-source implementation}\footnote{Source code: \url{https://github.com/VibeTensor/attestix}} as an MCP server with 47 tools, validated by 284 automated tests including 91 conformance benchmarks against RFC 8032, W3C VC/DID, and UCAN specifications, demonstrating that comprehensive attestation can be delivered as a protocol-level service with sub-millisecond cryptographic operations.
     \item A \textbf{tamper-evident audit mechanism} combining SHA-256 hash-chained logs with Merkle tree aggregation and on-chain anchoring via the Ethereum Attestation Service on Base L2.
 \end{itemize}
 
@@ -144,7 +144,7 @@ Blockchain & 6 & EAS on Base L2 \\
 \subsection{Cryptographic Foundation}
 \label{sec:crypto}
 
-All operations use \textbf{Ed25519} (EdDSA over Curve25519) exclusively, chosen for deterministic signatures, compact 64-byte output, timing-attack resistance, and widespread DID ecosystem adoption.
+All operations use \textbf{Ed25519} (EdDSA over Curve25519)~\cite{rfc8032} exclusively, chosen for deterministic signatures, compact 64-byte output, timing-attack resistance, and widespread DID ecosystem adoption.
 
 \subsubsection{Key Management}
 
@@ -240,7 +240,7 @@ Attestix anchors artifact hashes on \textbf{Base L2} using the \textbf{Ethereum 
 \section{Implementation}
 \label{sec:implementation}
 
-Attestix is implemented in Python 3.10+ using \texttt{FastMCP}. The codebase comprises 5,596 lines of production code across 31 files, 166 test cases, and 5 example scripts.
+Attestix is implemented in Python 3.10+ using \texttt{FastMCP}. The codebase comprises approximately 6,000 lines of production code across 31 files, 284 test cases (193 functional + 91 conformance benchmarks), and 5 example scripts.
 
 \subsection{MCP Integration}
 
@@ -259,53 +259,88 @@ The 47 tools are registered via module-level \texttt{register(mcp)} functions wi
 
 \subsection{Functional Correctness}
 
-The test suite includes 121 unit tests and 45 end-to-end tests covering multi-agent delegation, enterprise compliance, blockchain anchoring, and persona simulations (healthcare, finance, content moderation, supply chain). All examples verified in clean Docker containers.
+The test suite includes 284 automated tests: 193 functional tests (unit, integration, end-to-end) and 91 conformance benchmark tests. Functional tests cover multi-agent delegation, enterprise compliance, blockchain anchoring, and persona simulations (healthcare, finance, content moderation, supply chain, cybersecurity, government regulator). All tests are validated in clean Docker containers via \texttt{Dockerfile.test}.
 
-\subsection{Performance}
+\subsection{Standards Conformance}
+
+We validate every standards claim through dedicated conformance test suites. Table~\ref{tab:conformance} summarizes the 91 benchmark tests.
 
 \begin{table}[htbp]
 \centering
-\caption{Operation latency (median, 1000 runs).}
-\label{tab:performance}
-\begin{tabular}{lr}
+\caption{Conformance benchmark test suite (91 tests).}
+\label{tab:conformance}
+\begin{tabular}{llr}
 \toprule
-\textbf{Operation} & \textbf{Latency} \\
+\textbf{Standard} & \textbf{What is validated} & \textbf{Tests} \\
 \midrule
-Ed25519 key generation & $<$1 ms \\
-JSON canonicalization & $<$1 ms \\
-Ed25519 sign/verify & $<$1 ms \\
-Identity creation (UAIT) & $\sim$2 ms \\
-Credential issuance (W3C VC) & $\sim$3 ms \\
-Credential verification & $\sim$1 ms \\
-UCAN token creation & $\sim$2 ms \\
-Merkle root (100 leaves) & $\sim$5 ms \\
-Blockchain anchor (Base L2) & 3--8 s \\
+RFC 8032 \S7.1 & 4 IETF Ed25519 canonical vectors: & 18 \\
+ & key derivation, signature match, verify & \\
+W3C VC 1.1 & Credential structure, proof fields, & 24 \\
+ & mutable field exclusion, VP, replay & \\
+W3C DID Core & did:key/web structure, roundtrip, & 16 \\
+ & Ed25519VerificationKey2020 & \\
+UCAN v0.9.0 & JWT header, payload, attenuation, & 16 \\
+ & expiry, revocation & \\
+MCP & 47 tools, 9 modules, async, naming & 5 \\
+Performance & Latency thresholds (see below) & 7 \\
+\midrule
+ & \textbf{Total conformance tests} & \textbf{91} \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-All local operations complete sub-millisecond to low-millisecond. Blockchain latency is dominated by network round-trip, acceptable for non-real-time workflows.
+\textbf{RFC 8032 validation.} We test against four of the five Section~7.1 test vectors (empty message, 1-byte, 2-byte, and SHA-512(abc)). For each vector, we verify: (a)~public key derivation from the 32-byte seed matches the RFC-specified public key byte-for-byte, (b)~the Ed25519 signature matches the RFC-specified signature exactly, (c)~verification succeeds, and (d)~a tampered message fails verification.
 
-\subsection{Standards Compliance}
+\textbf{W3C VC conformance.} We validate the full credential lifecycle: \texttt{@context} includes the VC v1 and Ed25519-2020 suite URIs, \texttt{type} includes \texttt{VerifiableCredential}, proof type is \texttt{Ed25519Signature2020} with \texttt{proofPurpose: assertionMethod}, mutable fields (\texttt{proof}, \texttt{credentialStatus}) are excluded from the signature payload, and revocation does not break the signature. VP tests validate \texttt{authentication} proof purpose, \texttt{challenge}/\texttt{domain} replay protection, and holder-subject binding.
+
+\textbf{W3C DID conformance.} DID documents are tested for required fields (\texttt{@context}, \texttt{id}, \texttt{verificationMethod}, \texttt{authentication}, \texttt{controller}), correct verification method type (\texttt{Ed25519VerificationKey2020}), and roundtrip consistency (create then resolve).
+
+\subsection{Performance}
+
+Table~\ref{tab:performance} reports median latencies from 1,000-iteration (cryptographic) and 100-iteration (service) benchmark runs executed inside the Docker test container.
 
 \begin{table}[htbp]
 \centering
-\caption{Standards and specifications.}
-\label{tab:standards}
-\begin{tabular}{ll}
+\caption{Operation latency (median, measured in Docker).}
+\label{tab:performance}
+\begin{tabular}{lrr}
 \toprule
-\textbf{Standard} & \textbf{Coverage} \\
+\textbf{Operation} & \textbf{Median} & \textbf{Threshold} \\
 \midrule
-W3C VC Data Model 1.1 & Full lifecycle \\
-W3C DID Core 1.0 & did:key, did:web, resolver \\
-Ed25519Signature2020 & VC/VP proofs \\
-UCAN v0.9.0 & Delegation chains \\
-RFC 8785 (JCS) & JSON canonicalization \\
-RFC 6962 Sec. 2.1 & Merkle trees \\
-EU AI Act (2024/1689) & 12 articles + Annex V \\
-EAS / EIP-1559 & On-chain anchoring \\
-A2A Protocol & Agent cards \\
-MCP & 47-tool server \\
+Ed25519 key generation & 0.08 ms & $<$50 ms \\
+JSON canonicalization (RFC 8785) & 0.02 ms & $<$10 ms \\
+Ed25519 sign + verify cycle & 0.28 ms & $<$20 ms \\
+Identity creation (UAIT) & 14 ms & $<$200 ms \\
+Credential issuance (W3C VC) & 17 ms & $<$200 ms \\
+Credential verification & 2 ms & $<$200 ms \\
+UCAN token creation & 9 ms & $<$200 ms \\
+Blockchain anchor (Base L2) & 3--8 s & Network \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+All cryptographic primitives complete sub-millisecond. Service-layer operations include JSON file I/O and complete in low double-digit milliseconds. Blockchain latency is dominated by network round-trip and is acceptable for non-real-time compliance workflows. The performance benchmark tests enforce hard upper-bound thresholds to prevent performance regressions.
+
+\subsection{Standards Coverage Summary}
+
+\begin{table}[htbp]
+\centering
+\caption{Standards and specifications with conformance validation.}
+\label{tab:standards}
+\begin{tabular}{lll}
+\toprule
+\textbf{Standard} & \textbf{Coverage} & \textbf{Validated} \\
+\midrule
+W3C VC Data Model 1.1 & Full lifecycle & 24 tests \\
+W3C DID Core 1.0 & did:key, did:web, resolver & 16 tests \\
+Ed25519 (RFC 8032) & Sign/verify/derive & 18 tests \\
+UCAN v0.9.0 & Delegation chains & 16 tests \\
+RFC 8785 (JCS) & JSON canonicalization & Implicit \\
+RFC 6962 Sec. 2.1 & Merkle trees & Unit tests \\
+EU AI Act (2024/1689) & 12 articles + Annex V & E2E tests \\
+EAS / EIP-1559 & On-chain anchoring & Mock tests \\
+A2A Protocol & Agent cards & Unit tests \\
+MCP & 47-tool server & 5 tests \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -345,14 +380,14 @@ Current limitations include: single-server trust model (planned: distributed key
 % ============================================================
 \section{Conclusion}
 
-We presented Attestix, the first integrated attestation infrastructure for autonomous AI agents combining cryptographic identity, verifiable credentials, capability delegation, regulatory compliance, reputation scoring, provenance tracking, and blockchain anchoring in a single MCP server. The system implements twelve EU AI Act articles, provides sub-millisecond operations, and bridges emerging agent protocols with established trust standards. Attestix is available as open-source under Apache 2.0 at \url{https://github.com/VibeTensor/attestix} and on PyPI as \texttt{attestix}.
+We presented Attestix, the first integrated attestation infrastructure for autonomous AI agents combining cryptographic identity, verifiable credentials, capability delegation, regulatory compliance, reputation scoring, provenance tracking, and blockchain anchoring in a single MCP server. The system implements twelve EU AI Act articles, provides sub-millisecond cryptographic operations (0.08\,ms key generation, 0.28\,ms sign/verify), and bridges emerging agent protocols with established trust standards. Standards compliance is validated by 91 conformance benchmark tests covering RFC 8032 Ed25519 canonical vectors, W3C VC Data Model 1.1, W3C DID Core 1.0, and UCAN v0.9.0, all executed in Docker alongside 193 functional tests. Attestix is available as open-source under Apache 2.0 at \url{https://github.com/VibeTensor/attestix} and on PyPI as \texttt{attestix}.
 
 \section*{Acknowledgments}
 This work was conducted at VibeTensor Private Limited. The author thanks the W3C, UCAN, and MCP communities for foundational standards.
 
 \balance
 \bibliographystyle{IEEEtran}
-\begin{thebibliography}{11}
+\begin{thebibliography}{12}
 
 \bibitem{chan2025infrastructure}
 A.~Chan, K.~Wei, S.~Huang, N.~Rajkumar, E.~Perrier, S.~Lazar, G.K.~Hadfield, and M.~Anderljung, ``Infrastructure for AI Agents,'' \textit{arXiv preprint arXiv:2501.10114}, 2025.
@@ -383,6 +418,9 @@ Anthropic, ``Model Context Protocol Specification,'' 2024. [Online]. Available: 
 
 \bibitem{a2a2025}
 Google, ``Agent-to-Agent (A2A) Protocol,'' 2025. [Online]. Available: \url{https://google.github.io/A2A/}
+
+\bibitem{rfc8032}
+S.~Josefsson and I.~Liusvaara, ``Edwards-Curve Digital Signature Algorithm (EdDSA),'' RFC 8032, Internet Engineering Task Force, 2017.
 
 \bibitem{attestix2026}
 P.K.~Dubasi, ``Attestix: Attestation Infrastructure for AI Agents,'' VibeTensor, 2026. [Online]. Available: \url{https://github.com/VibeTensor/attestix}

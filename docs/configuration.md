@@ -173,6 +173,8 @@ python main.py
 
 ## Docker
 
+### Running Attestix
+
 ```dockerfile
 FROM python:3.12-slim
 WORKDIR /app
@@ -187,3 +189,17 @@ CMD ["python", "main.py"]
 docker build -t attestix .
 docker run -v attestix-data:/data attestix
 ```
+
+### Running the Test Suite
+
+The project includes `Dockerfile.test` which runs all 284 tests (unit, e2e, and conformance benchmarks) in a clean container:
+
+```bash
+docker build -f Dockerfile.test -t attestix-bench . && docker run --rm attestix-bench
+```
+
+This validates:
+
+- 193 unit and end-to-end tests
+- 91 conformance benchmarks (RFC 8032, W3C VC, W3C DID, UCAN, MCP, performance)
+- Performance thresholds for all cryptographic and service operations

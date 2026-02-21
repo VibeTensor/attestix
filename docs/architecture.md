@@ -40,15 +40,17 @@ attestix/
     blockchain_tools.py   # MCP tool definitions for Blockchain module (6 tools)
 
   tests/
-    test_identity.py      # Unit tests for identity service
-    test_compliance.py    # Unit tests for compliance service
-    test_credentials.py   # Unit tests for credential service
-    test_provenance.py    # Unit tests for provenance service
-    test_delegation.py    # Unit tests for delegation service
-    test_reputation.py    # Unit tests for reputation service
-    test_blockchain.py    # Unit tests for blockchain service
+    conftest.py           # Shared fixtures (tmp isolation, service factories)
     test_tools.py         # Integration tests for MCP tool registration
+    unit/                 # Unit tests for each service module
     e2e/                  # End-to-end persona-based tests
+    benchmarks/           # Standards conformance and performance benchmarks
+      test_rfc8032_ed25519.py      # RFC 8032 Ed25519 test vectors
+      test_w3c_vc_conformance.py   # W3C VC Data Model 1.1
+      test_w3c_did_conformance.py  # W3C DID Core 1.0
+      test_ucan_conformance.py     # UCAN v0.9.0
+      test_mcp_conformance.py      # MCP tool registration
+      test_performance.py          # Latency benchmarks
 ```
 
 ## Layered Architecture
@@ -162,18 +164,51 @@ Attestix uses environment variables for configuration. No config files needed. S
 
 ## Testing
 
-193 tests across unit and end-to-end suites:
+284 tests across unit, end-to-end, and conformance benchmark suites:
 
 ```bash
 # Run all tests
 pytest tests/ -v
 
 # Run specific module tests
-pytest tests/test_identity.py -v
+pytest tests/unit/test_crypto.py -v
 
 # Run e2e persona tests
 pytest tests/e2e/ -v
 
+# Run conformance benchmarks only
+pytest tests/benchmarks/ -v
+
 # Skip blockchain tests (require funded wallet)
 pytest tests/ -m "not live_blockchain" -v
+
+# Run everything in Docker (recommended)
+docker build -f Dockerfile.test -t attestix-bench . && docker run --rm attestix-bench
 ```
+
+### Conformance Benchmark Suite
+
+The `tests/benchmarks/` directory contains 91 tests that validate every standards claim:
+
+| File | Standard | Tests |
+|------|----------|:-----:|
+| `test_rfc8032_ed25519.py` | RFC 8032 Section 7.1 Ed25519 vectors | 18 |
+| `test_w3c_vc_conformance.py` | W3C VC Data Model 1.1 | 24 |
+| `test_w3c_did_conformance.py` | W3C DID Core 1.0 | 16 |
+| `test_ucan_conformance.py` | UCAN v0.9.0 | 16 |
+| `test_mcp_conformance.py` | MCP tool registration | 5 |
+| `test_performance.py` | Latency benchmarks with thresholds | 7 |
+
+### Performance Thresholds
+
+The performance benchmark enforces hard upper bounds:
+
+| Operation | Threshold | Typical |
+|-----------|-----------|---------|
+| Ed25519 key generation | < 50 ms | ~0.08 ms |
+| JSON canonicalization | < 10 ms | ~0.02 ms |
+| Ed25519 sign + verify | < 20 ms | ~0.28 ms |
+| Identity creation | < 200 ms | ~14 ms |
+| Credential issuance | < 200 ms | ~17 ms |
+| Credential verification | < 200 ms | ~2 ms |
+| UCAN token creation | < 200 ms | ~9 ms |

@@ -66,10 +66,13 @@ Open an issue on GitHub with:
 1. Fork the repository
 2. Create a feature branch: `git checkout -b feature/your-feature`
 3. Make your changes
-4. Run the examples to verify nothing is broken:
+4. Run the test suite to verify nothing is broken:
    ```bash
-   python examples/01_basic_identity.py
-   python examples/02_full_compliance.py
+   # Run all 284 tests (unit, e2e, conformance benchmarks)
+   pytest tests/ -v -m "not live_blockchain"
+
+   # Or run in Docker for a clean environment
+   docker build -f Dockerfile.test -t attestix-bench . && docker run --rm attestix-bench
    ```
 5. Commit with a descriptive message
 6. Push to your fork and open a Pull Request

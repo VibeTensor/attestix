@@ -21,6 +21,7 @@ The project vision: every AI agent gets a verifiable identity, proves its compli
 - Server signing key auto-generated on first run
 - SSRF protection on all URL-fetching operations
 - Hash-chained audit trail with SHA-256 for tamper-evident logging
+- 91 conformance benchmark tests validating RFC 8032, W3C VC, W3C DID, UCAN, and MCP standards
 
 ## Phase 2 - EU AI Act Compliance (Complete)
 
@@ -124,8 +125,8 @@ Connect to existing agent identity ecosystems for interoperability.
 | Version | Phase | Target |
 |---------|-------|--------|
 | 0.1.0 | Phase 1 + 2 | Initial release (36 tools) |
-| 0.2.0 | Phase 3 | Blockchain anchoring + security audit (47 tools) |
+| 0.2.0 | Phase 3 | Blockchain anchoring + security audit + conformance benchmarks (47 tools, 284 tests) |
 | 0.3.0 | Phase 4 | ERC-8004, A2A sync, ANS |
 | 0.4.0 | Phase 4 | Polygon ID / ZK credentials |
 | 0.5.0 | Phase 5 | Multi-chain + enterprise storage |
-| 1.0.0 | Stable | Production-ready with full test suite |
+| 1.0.0 | Stable | Production-ready with full test suite and third-party audit |

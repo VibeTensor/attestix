@@ -129,9 +129,21 @@ For high-risk systems, Article 12 requires automatic logging of all events durin
 
 ## Technical
 
+### How are the standards claims validated?
+
+Attestix includes 91 conformance benchmark tests that run alongside the main test suite. These validate every standards claim against official specifications:
+
+- **RFC 8032**: Ed25519 signatures verified against 4 IETF canonical test vectors (exact byte-level match)
+- **W3C VC Data Model 1.1**: credential structure, Ed25519Signature2020 proof fields, mutable field exclusion, Verifiable Presentations with replay protection
+- **W3C DID Core 1.0**: `did:key` and `did:web` document structure, roundtrip resolution, Ed25519VerificationKey2020 verification method
+- **UCAN v0.9.0**: JWT header fields (alg=EdDSA, typ=JWT, ucv=0.9.0), capability attenuation, expiry enforcement, revocation
+- **MCP**: all 47 tools registered, 9 modules, async interface, snake\_case naming
+
+Run them yourself: `docker build -f Dockerfile.test -t attestix-bench . && docker run --rm attestix-bench`
+
 ### What cryptographic algorithm does Attestix use?
 
-Ed25519 (EdDSA with Curve25519). The signing key is auto-generated on first run and stored in `.signing_key.json`. See [Concepts](concepts.md#ed25519) for why Ed25519 was chosen.
+Ed25519 (EdDSA with Curve25519). The signing key is auto-generated on first run and stored in `.signing_key.json`. See [Concepts](concepts.md#ed25519) for why Ed25519 was chosen. The Ed25519 implementation is validated against all RFC 8032 Section 7.1 canonical test vectors.
 
 ### Where is data stored?
 

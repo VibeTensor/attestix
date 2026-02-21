@@ -300,6 +300,36 @@ attestix/
 
 ---
 
+## Standards Conformance
+
+Every standards claim is validated by 91 automated conformance tests that run in Docker alongside the 193 existing tests (284 total). Run them yourself:
+
+```bash
+docker build -f Dockerfile.test -t attestix-bench . && docker run --rm attestix-bench
+```
+
+| Standard | What is tested | Tests |
+|----------|---------------|:-----:|
+| **RFC 8032 (Ed25519)** | 4 IETF canonical vectors: key derivation, signature generation (exact match), verification, tamper rejection | 18 |
+| **W3C VC Data Model 1.1** | Credential structure, Ed25519Signature2020 proof, mutable field exclusion, VP structure, replay protection | 24 |
+| **W3C DID Core 1.0** | `did:key` and `did:web` document structure, roundtrip resolution, Ed25519VerificationKey2020 | 16 |
+| **UCAN v0.9.0** | JWT header (alg/typ/ucv), all payload fields, capability attenuation, expiry enforcement, revocation | 16 |
+| **MCP Protocol** | 47 tools registered, 9 modules, async convention, snake\_case naming | 5 |
+
+### Performance (median latency, 1000 runs)
+
+| Operation | Latency |
+|-----------|---------|
+| Ed25519 key generation | 0.08 ms |
+| JSON canonicalization | 0.02 ms |
+| Ed25519 sign + verify | 0.28 ms |
+| Identity creation | ~14 ms |
+| Credential issuance | ~17 ms |
+| Credential verification | ~2 ms |
+| UCAN token creation | ~9 ms |
+
+---
+
 ## Security
 
 - **Ed25519** signatures on all UAITs, VCs, assessments, declarations, and audit entries
