@@ -1,3 +1,5 @@
+<!-- mcp-name: io.github.VibeTensor/attestix -->
+
 <p align="center">
   <img src="docs/assets/atx_icon.png" alt="Attestix" width="120" height="120" />
 </p>

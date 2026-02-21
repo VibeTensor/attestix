@@ -1,0 +1,21 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.VibeTensor/attestix",
+  "title": "Attestix",
+  "description": "Attestation infrastructure for AI agents. DID-based identity, W3C Verifiable Credentials, EU AI Act compliance, UCAN delegation chains, reputation scoring, and blockchain anchoring. 47 MCP tools across 9 modules.",
+  "repository": {
+    "url": "https://github.com/VibeTensor/attestix",
+    "source": "github"
+  },
+  "version": "0.2.2",
+  "packages": [
+    {
+      "registryType": "pypi",
+      "identifier": "attestix",
+      "version": "0.2.2",
+      "transport": {
+        "type": "stdio"
+      }
+    }
+  ]
+}
