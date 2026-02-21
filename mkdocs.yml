@@ -3,11 +3,11 @@ site_description: Attestix - Attestation Infrastructure for AI Agents. DID-based
 site_url: https://attestix.vibetensor.com/
 repo_url: https://github.com/VibeTensor/attestix
 repo_name: VibeTensor/attestix
-copyright: Copyright &copy; 2025 VibeTensor Inc.
+copyright: Copyright &copy; 2026 VibeTensor Private Limited.
 
 theme:
   name: material
-  logo: assets/atx_dark.svg
+  logo: assets/atx_icon.svg
   favicon: assets/favicon.svg
   palette:
     - scheme: default
