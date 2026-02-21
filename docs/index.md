@@ -121,6 +121,28 @@ flowchart TD
 
 ---
 
+## Research Paper
+
+Attestix is described in a research paper that covers the architecture, cryptographic pipeline, and evaluation results.
+
+**[Attestix: A Unified Attestation Infrastructure for Autonomous AI Agents](research.md)**
+
+Pavan Kumar Dubasi, VibeTensor Private Limited, 2026.
+
+```bibtex
+@article{dubasi2026attestix,
+  title     = {Attestix: A Unified Attestation Infrastructure for Autonomous AI Agents},
+  author    = {Dubasi, Pavan Kumar},
+  year      = {2026},
+  url       = {https://github.com/VibeTensor/attestix},
+  note      = {Open-source. Apache License 2.0}
+}
+```
+
+See the [Research Paper](research.md) page for full citation formats (BibTeX, APA, IEEE) and evaluation highlights.
+
+---
+
 ## Important Disclaimer
 
 Attestix generates machine-readable, cryptographically signed compliance documentation for AI agents. It is a documentation and evidence tooling system.

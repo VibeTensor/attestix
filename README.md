@@ -341,6 +341,29 @@ docker build -f Dockerfile.test -t attestix-bench . && docker run --rm attestix-
 
 ---
 
+## Research Paper
+
+Attestix is described in a research paper covering system architecture, cryptographic pipeline, EU AI Act compliance automation, and evaluation with 284 automated tests.
+
+**[Attestix: A Unified Attestation Infrastructure for Autonomous AI Agents](https://github.com/VibeTensor/attestix/blob/main/paper/attestix-paper.pdf)**
+Pavan Kumar Dubasi, VibeTensor Private Limited, 2026.
+
+### Citing Attestix
+
+If you use Attestix in your research, please cite:
+
+```bibtex
+@article{dubasi2026attestix,
+  title     = {Attestix: A Unified Attestation Infrastructure for Autonomous AI Agents},
+  author    = {Dubasi, Pavan Kumar},
+  year      = {2026},
+  url       = {https://github.com/VibeTensor/attestix},
+  note      = {Open-source. Apache License 2.0}
+}
+```
+
+---
+
 ## Documentation
 
 Full documentation at **[attestix.vibetensor.com](https://attestix.vibetensor.com)**
@@ -354,6 +377,7 @@ Full documentation at **[attestix.vibetensor.com](https://attestix.vibetensor.co
 | [API Reference](https://attestix.vibetensor.com/api-reference/) | All 47 tools with parameter tables |
 | [Integration Guide](https://attestix.vibetensor.com/integration-guide/) | LangChain, CrewAI, AutoGen, MCP client |
 | [Configuration](https://attestix.vibetensor.com/configuration/) | Environment variables, storage, Docker |
+| [Research Paper](https://attestix.vibetensor.com/research/) | Paper, citation formats, evaluation highlights |
 
 ---
 

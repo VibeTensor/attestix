@@ -75,6 +75,7 @@ nav:
       - Configuration: configuration.md
       - FAQ: faq.md
   - Project:
+      - Research Paper: research.md
       - Roadmap: roadmap.md
       - Changelog: changelog.md
       - Contributing: contributing.md
