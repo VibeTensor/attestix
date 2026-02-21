@@ -7,7 +7,6 @@ Usage:
     python examples/04_verifiable_credentials.py
 """
 
-import json
 import sys
 from pathlib import Path
 
@@ -25,6 +24,7 @@ def main():
     print("=== Creating Agent ===\n")
     agent = identity_svc.create_identity(
         display_name="CertifiedBot",
+        source_protocol="manual",
         capabilities=["data_processing", "customer_service"],
         description="A certified customer service agent",
         issuer_name="BotCert Authority",
@@ -35,16 +35,16 @@ def main():
     # Issue a custom credential
     print("\n=== Issuing Verifiable Credential ===\n")
     vc1 = credential_svc.issue_credential(
-        subject_agent_id=agent_id,
+        subject_id=agent_id,
         credential_type="CustomerServiceCertification",
         issuer_name="BotCert Authority",
-        claims_json=json.dumps({
+        claims={
             "certification_level": "gold",
             "languages": ["en", "es", "fr"],
             "max_concurrent_sessions": 100,
             "response_time_sla_ms": 500,
             "audit_date": "2026-02-19",
-        }),
+        },
         expiry_days=180,
     )
     cred_id_1 = vc1["id"]
@@ -56,15 +56,15 @@ def main():
     # Issue a second credential
     print("\n=== Issuing Second Credential ===\n")
     vc2 = credential_svc.issue_credential(
-        subject_agent_id=agent_id,
+        subject_id=agent_id,
         credential_type="DataProcessingCompliance",
         issuer_name="DataGuard EU",
-        claims_json=json.dumps({
+        claims={
             "gdpr_compliant": True,
             "data_residency": "EU",
             "encryption_standard": "AES-256",
             "dpo_contact": "dpo@example.com",
-        }),
+        },
         expiry_days=365,
     )
     cred_id_2 = vc2["id"]
@@ -88,7 +88,7 @@ def main():
     print(f"Revoked: {revoke_result.get('credential_id', cred_id_1)}")
     print(f"Reason: {revoke_result.get('reason', 'N/A')}")
 
-    # Verify again -- first should show revoked
+    # Verify again - first should show revoked
     print("\n=== Verify After Revocation ===\n")
     v1_after = credential_svc.verify_credential(cred_id_1)
     print(f"CustomerService: valid={v1_after['valid']}")
@@ -102,13 +102,16 @@ def main():
     print("\n=== Creating Verifiable Presentation ===\n")
     vp = credential_svc.create_verifiable_presentation(
         agent_id=agent_id,
-        credential_ids=cred_id_2,  # Only include the valid one
+        credential_ids=[cred_id_2],  # Only include the valid one
         audience_did="did:web:regulator.europa.eu",
         challenge="nonce-abc-123-xyz",
     )
     print(f"VP Type: {vp.get('type')}")
-    print(f"Holder: {vp.get('holder', {}).get('id', 'N/A')[:30]}...")
-    print(f"Credentials included: {len(vp.get('verifiableCredential', []))}")
+    holder = vp.get("holder", "N/A")
+    holder_id = holder.get("id", "N/A")[:30] if isinstance(holder, dict) else str(holder)[:30]
+    print(f"Holder: {holder_id}...")
+    vc_count = len(vp.get("verifiableCredential", []))
+    print(f"Credentials included: {vc_count}")
     print(f"Proof type: {vp.get('proof', {}).get('type')}")
     print(f"Challenge: {vp.get('proof', {}).get('challenge')}")
     print(f"Domain: {vp.get('proof', {}).get('domain')}")
@@ -116,16 +119,18 @@ def main():
     # List all credentials for the agent
     print("\n=== List All Credentials ===\n")
     all_creds = credential_svc.list_credentials(agent_id=agent_id)
-    print(f"Total: {all_creds['total']}")
-    for c in all_creds["credentials"]:
-        status = "REVOKED" if c.get("credentialStatus", {}).get("revoked") else "ACTIVE"
+    print(f"Total: {len(all_creds)}")
+    for c in all_creds:
+        revoked = c.get("credentialStatus", {}).get("revoked")
+        status = "REVOKED" if revoked else "ACTIVE"
         ctype = c["type"][-1] if isinstance(c["type"], list) else c["type"]
-        print(f"  [{status}] {ctype} - {c['id'][:30]}...")
+        cid_short = c["id"][:30]
+        print(f"  [{status}] {ctype} - {cid_short}...")
 
     # List only valid credentials
     print("\n=== Valid Credentials Only ===\n")
     valid_creds = credential_svc.list_credentials(agent_id=agent_id, valid_only=True)
-    print(f"Valid: {valid_creds['total']}")
+    print(f"Valid: {len(valid_creds)}")
 
     print("\nDone!")
 
