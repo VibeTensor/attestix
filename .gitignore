@@ -1,7 +1,10 @@
 # Environment & secrets
 .env
+.env.local
+.env*.local
 .signing_key.json
 .keypairs.json
+.mcpregistry_*_token
 
 # Python
 __pycache__/
@@ -50,10 +53,20 @@ build/
 
 # LaTeX build artifacts
 *.aux
-*.log
 *.out
 *.bbl
 *.blg
 *.fls
 *.fdb_latexmk
 *.synctex.gz
+
+# Source templates (used to scaffold website, no longer needed)
+magicuidesign-devtool-template/
+magicuidesign-agent-template/
+
+# Paper marketing assets (social thumbnails, outreach drafts)
+paper/*.html
+paper/*.png
+paper/outreach.txt
+paper/producthunt-draft.txt
+paper/attestix-arxiv.tar.gz

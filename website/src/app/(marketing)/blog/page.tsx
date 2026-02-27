@@ -2,6 +2,7 @@ import BlogCard from "@/components/blog-card";
 import { getBlogPosts } from "@/lib/blog";
 import { siteConfig } from "@/lib/config";
 import { constructMetadata } from "@/lib/utils";
+import { RssIcon } from "lucide-react";
 
 export const metadata = constructMetadata({
   title: "Blog",
@@ -25,6 +26,24 @@ export default async function Blog() {
           <p className="mt-4 text-xl text-muted-foreground">
             Latest news and updates from {siteConfig.name}
           </p>
+          <div className="mt-4 flex justify-center gap-3">
+            <a
+              href="/feed.xml"
+              className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
+              title="RSS Feed"
+            >
+              <RssIcon className="h-4 w-4" />
+              RSS
+            </a>
+            <span className="text-muted-foreground/40">|</span>
+            <a
+              href="/feed.json"
+              className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
+              title="JSON Feed"
+            >
+              JSON Feed
+            </a>
+          </div>
         </div>
       </div>
       <div className="min-h-[50vh] bg-secondary/30 backdrop-blur-lg">
