@@ -17,6 +17,7 @@ import Link from "next/link";
 const mobileLinks = [
   { label: "Features", href: "#features" },
   { label: "Use Cases", href: "#use-cases" },
+  { label: "Pricing", href: "#pricing" },
   { label: "Docs", href: "https://docs.attestix.vibetensor.com" },
   { label: "Research", href: "https://docs.attestix.vibetensor.com/research/" },
   { label: "GitHub", href: "https://github.com/VibeTensor/attestix" },

@@ -76,11 +76,14 @@ export default function TermsOfService() {
         PURPOSE, AND NONINFRINGEMENT.
       </p>
       <p>
-        Attestix provides tools for generating compliance-related artifacts.
-        These tools do not constitute legal advice, and use of the software does
-        not guarantee regulatory compliance. You are responsible for ensuring
-        that your use of the software meets your specific regulatory
-        requirements.
+        Attestix provides tools for generating compliance-related documentation
+        artifacts such as signed declarations and verifiable credentials. These
+        tools do not constitute legal advice, regulatory certification, or
+        official compliance proof. Use of the software does not guarantee
+        regulatory compliance with the EU AI Act or any other regulation. You
+        are solely responsible for ensuring that your AI systems meet applicable
+        regulatory requirements. Always consult qualified legal professionals
+        for compliance decisions.
       </p>
 
       <h2>6. Limitation of Liability</h2>
@@ -95,8 +98,9 @@ export default function TermsOfService() {
       <h2>7. Indemnification</h2>
       <p>
         You agree to indemnify and hold harmless VibeTensor Private Limited from
-        any claims, damages, or expenses arising from your use of the software
-        or violation of these terms.
+        any claims, damages, or expenses arising from your violation of these
+        terms, your unlawful use of the software, or any third-party claims
+        resulting from artifacts you generate using Attestix.
       </p>
 
       <h2>8. Intellectual Property</h2>

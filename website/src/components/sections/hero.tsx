@@ -158,7 +158,7 @@ function HeroCTA() {
 }
 
 function StatsStrip() {
-  const stats = ["47 Tools", "9 Modules", "284 Tests", "91 Benchmarks", "Apache 2.0"];
+  const stats = ["47 Tools", "9 Modules", "272+ Tests", "Apache 2.0"];
   return (
     <motion.div
       className="flex flex-wrap gap-3 mt-8"

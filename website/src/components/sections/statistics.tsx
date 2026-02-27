@@ -18,8 +18,8 @@ const stats = [
     href: "https://docs.attestix.vibetensor.com",
   },
   {
-    title: "284",
-    subtitle: "Tests with 91 conformance benchmarks",
+    title: "272+",
+    subtitle: "Tests with conformance benchmarks",
     icon: <FlaskConicalIcon className="h-5 w-5" />,
     href: "https://github.com/VibeTensor/attestix",
   },

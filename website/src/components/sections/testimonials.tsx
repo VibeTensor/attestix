@@ -9,7 +9,7 @@ import { QuoteIcon } from "lucide-react";
 
 export function Testimonials() {
   return (
-    <Section id="testimonials" title="Highlights">
+    <Section id="testimonials" title="From the Project">
       <div className="grid grid-cols-1 md:grid-cols-3 border border-b-0">
         {siteConfig.highlights.map((highlight, index) => (
           <motion.div

@@ -38,9 +38,9 @@ The agent will call `create_agent_identity` and return a UAIT, DID, and Ed25519 
 
 ## Step 4: Issue a Credential
 
-> "Issue a verifiable credential certifying this agent is EU AI Act compliant"
+> "Issue a verifiable credential for this agent with type ComplianceDeclaration"
 
-This calls `issue_credential` with Ed25519Signature2020 signing, producing a full W3C Verifiable Credential.
+This calls `issue_credential` with Ed25519Signature2020 signing, producing a W3C Verifiable Credential. Note: this generates a signed declaration, not a regulatory compliance certification.
 
 ## Step 5: Anchor to Blockchain
 
@@ -48,4 +48,4 @@ This calls `issue_credential` with Ed25519Signature2020 signing, producing a ful
 
 This calls `anchor_credential` to create an Ethereum Attestation Service record on Base L2.
 
-That is it. Five steps, five minutes, and your AI agent now has verifiable identity and compliance credentials.
+That is it. Five steps, five minutes, and your AI agent now has verifiable identity and signed credentials. These are cryptographic artifacts for documentation purposes, not regulatory certifications.

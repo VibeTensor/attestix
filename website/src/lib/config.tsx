@@ -37,7 +37,7 @@ export const siteConfig = {
   hero: {
     title: "Attestix",
     description:
-      "Verifiable identity, W3C credentials, delegation chains, and reputation scoring for every AI agent. Built for regulatory readiness.",
+      "Verifiable identity, W3C credentials, delegation chains, and reputation scoring for every AI agent. Built to support regulatory documentation workflows.",
     cta: "pip install attestix",
     ctaDescription: "Open source. Apache 2.0 license.",
   },
@@ -109,7 +109,6 @@ export const siteConfig = {
         "Priority feature requests",
         "Security audit reports",
       ],
-      popular: true,
       cta: "Contact Us",
     },
   ],
@@ -152,16 +151,16 @@ export const siteConfig = {
     },
     {
       id: 2,
-      text: "Attestix generates machine-readable, cryptographically signed compliance declarations that can be independently verified without trusting the issuer.",
-      name: "From the Research Paper",
-      role: "Architecture Overview",
-      company: "Attestix Whitepaper",
+      text: "Attestix generates machine-readable, cryptographically signed declarations that can be independently verified without trusting the issuer. It is a documentation and evidence tooling system, not a compliance guarantee.",
+      name: "Design Principle",
+      role: "From the Whitepaper",
+      company: "Architecture Overview",
       image: undefined,
     },
     {
       id: 3,
-      text: "47 MCP tools across 9 modules with 284 tests and 91 conformance benchmarks, implementing 5 W3C and IETF standards for verifiable agent identity.",
-      name: "Project Stats",
+      text: "47 MCP tools across 9 modules with 272+ tests and conformance benchmarks validating 5 W3C and IETF standards for verifiable agent identity.",
+      name: "By the Numbers",
       role: "Open Source",
       company: "Apache 2.0 License",
       image: undefined,
@@ -185,9 +184,9 @@ export const siteConfig = {
         "Attestix implements W3C Verifiable Credentials (VC Data Model 2.0), W3C Decentralized Identifiers (DIDs), UCAN delegation (based on JWT), Ed25519 signatures (RFC 8032), and Ethereum Attestation Service (EAS) for blockchain anchoring.",
     },
     {
-      question: "Is Attestix production-ready?",
+      question: "What is the current maturity level?",
       answer:
-        "Attestix v0.2.2 includes 284 tests (193 functional + 91 conformance benchmarks) with comprehensive coverage across all 9 modules. It is actively maintained and suitable for development and staging environments. We recommend thorough testing before production deployment.",
+        "Attestix v0.2.2 is in active development (beta). It includes 272+ tests across functional, end-to-end, and conformance benchmark suites covering all 9 modules. We recommend thorough testing before production deployment.",
     },
     {
       question: "How does blockchain anchoring work?",

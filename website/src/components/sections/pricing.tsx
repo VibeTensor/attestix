@@ -1,8 +1,6 @@
 "use client";
 
 import { Section } from "@/components/section";
-import { Badge } from "@/components/ui/badge";
-import { BorderBeam } from "@/components/ui/border-beam";
 import { Button } from "@/components/ui/button";
 import { CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { siteConfig } from "@/lib/config";
@@ -18,26 +16,14 @@ function PricingTier({
 
   return (
     <div
-      className={cn(
-        "outline-focus transition-transform-background relative z-10 box-border grid h-full w-full overflow-hidden text-foreground motion-reduce:transition-none lg:border-r border-t last:border-r-0",
-        tier.popular ? "bg-primary/5" : "text-foreground"
-      )}
+      className="outline-focus transition-transform-background relative z-10 box-border grid h-full w-full overflow-hidden text-foreground motion-reduce:transition-none lg:border-r border-t last:border-r-0"
     >
-      {tier.popular && <BorderBeam size={200} duration={12} />}
       <div className="flex flex-col h-full">
         <CardHeader className="border-b p-4 grid grid-rows-2 h-fit">
           <CardTitle className="flex items-center justify-between">
             <span className="text-sm font-medium text-muted-foreground">
               {tier.name}
             </span>
-            {tier.popular && (
-              <Badge
-                variant="secondary"
-                className="bg-primary text-primary-foreground hover:bg-secondary-foreground"
-              >
-                Enterprise
-              </Badge>
-            )}
           </CardTitle>
           <div className="pt-2 text-3xl font-bold">
             {tier.price.monthly}
@@ -67,9 +53,9 @@ function PricingTier({
           size="lg"
           className={cn(
             "w-full rounded-none shadow-none",
-            tier.popular
-              ? "bg-primary text-primary-foreground hover:bg-primary/90"
-              : "bg-muted text-foreground hover:bg-muted/80"
+            isEnterprise
+              ? "bg-muted text-foreground hover:bg-muted/80"
+              : "bg-primary text-primary-foreground hover:bg-primary/90"
           )}
           asChild
         >

@@ -10,6 +10,7 @@ import Link from "next/link";
 const navLinks = [
   { label: "Features", href: "#features" },
   { label: "Use Cases", href: "#use-cases" },
+  { label: "Pricing", href: "#pricing" },
   { label: "Docs", href: "https://docs.attestix.vibetensor.com", external: true },
   { label: "Research", href: "https://docs.attestix.vibetensor.com/research/", external: true },
 ];
