@@ -217,7 +217,7 @@ export function Hero() {
               ].map(({ Icon, label, tilt, dur, del, color }) => (
                 <div
                   key={label}
-                  className="absolute inset-0"
+                  className="absolute inset-0 flex items-center justify-center"
                   style={{ transform: `rotate(${tilt}deg) scaleY(0.35)` }}
                 >
                   {/* Visible elliptical orbit path */}
