@@ -1,2 +1,36 @@
 """Re-export from flat module for namespace compatibility."""
-from auth.crypto import *
+from auth.crypto import (
+    ED25519_MULTICODEC_PREFIX,
+    canonicalize_json,
+    did_key_fragment,
+    did_key_to_public_key,
+    generate_ed25519_keypair,
+    load_or_create_signing_key,
+    private_key_from_bytes,
+    private_key_to_bytes,
+    public_key_from_bytes,
+    public_key_to_bytes,
+    public_key_to_did_key,
+    sign_json_payload,
+    sign_message,
+    verify_json_signature,
+    verify_signature,
+)
+
+__all__ = [
+    "ED25519_MULTICODEC_PREFIX",
+    "canonicalize_json",
+    "did_key_fragment",
+    "did_key_to_public_key",
+    "generate_ed25519_keypair",
+    "load_or_create_signing_key",
+    "private_key_from_bytes",
+    "private_key_to_bytes",
+    "public_key_from_bytes",
+    "public_key_to_bytes",
+    "public_key_to_did_key",
+    "sign_json_payload",
+    "sign_message",
+    "verify_json_signature",
+    "verify_signature",
+]

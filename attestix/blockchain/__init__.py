@@ -7,28 +7,25 @@ Modules:
 
 # Re-export from the flat blockchain module
 from blockchain.merkle import (
-    hash_leaf,
-    hash_pair,
     build_merkle_tree,
     compute_merkle_root,
+    hash_leaf,
+    hash_pair,
 )
 
 from blockchain.abi import EAS_ABI, SCHEMA_REGISTRY_ABI
 
-# Re-export submodules
-from blockchain import merkle
-from blockchain import abi
+# Re-export submodules as relative imports for consistent module identity
+from . import abi  # noqa: E402
+from . import merkle  # noqa: E402
 
 __all__ = [
-    # Merkle functions
-    "hash_leaf",
-    "hash_pair",
-    "build_merkle_tree",
-    "compute_merkle_root",
-    # ABI
     "EAS_ABI",
     "SCHEMA_REGISTRY_ABI",
-    # Submodules
-    "merkle",
     "abi",
+    "build_merkle_tree",
+    "compute_merkle_root",
+    "hash_leaf",
+    "hash_pair",
+    "merkle",
 ]

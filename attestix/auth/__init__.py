@@ -28,10 +28,10 @@ from auth.ssrf import validate_url_host
 
 from auth.token_parser import extract_identity_from_token
 
-# Re-export submodules
-from auth import crypto
-from auth import ssrf
-from auth import token_parser
+# Re-export submodules as relative imports for consistent module identity
+from . import crypto  # noqa: E402
+from . import ssrf  # noqa: E402
+from . import token_parser  # noqa: E402
 
 __all__ = [
     # Crypto functions

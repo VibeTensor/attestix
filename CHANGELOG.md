@@ -4,7 +4,7 @@ All notable changes to Attestix are documented here.
 
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
-## [0.2.3] - 2026-02-28
+## [0.2.3] - 2026-02-27
 
 ### Added
 - **Namespace package support**: Added `attestix` namespace package for cleaner imports
