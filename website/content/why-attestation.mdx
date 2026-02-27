@@ -1,0 +1,31 @@
+---
+title: Why AI Agents Need Attestation Infrastructure
+publishedAt: "2026-02-15"
+summary: AI agents are multiplying fast, but they lack verifiable identity. Here is why attestation infrastructure is the missing trust layer.
+author: "Pavan Kumar Dubasi"
+---
+
+As AI agents proliferate across enterprise workflows, a fundamental question emerges: how do you know which agent did what, and whether it was authorized to do so?
+
+## The Trust Gap
+
+Today's AI agents operate in a trust vacuum. They have no verifiable identity, no way to prove their capabilities, and no cryptographic trail of their actions. This creates real problems:
+
+- **No accountability** when agents make decisions or access sensitive data
+- **No compliance** evidence for regulators like the EU AI Act
+- **No interoperability** between agent frameworks (MCP, A2A, custom)
+
+## What Attestation Provides
+
+Attestation infrastructure gives every AI agent a cryptographic identity and a verifiable record of its actions. Think of it as the passport system for AI agents:
+
+1. **Identity** - Each agent gets a unique identifier (UAIT) backed by Ed25519 keys
+2. **Credentials** - W3C Verifiable Credentials prove capabilities and compliance status
+3. **Delegation** - UCAN tokens enable scoped, revocable permission chains
+4. **Audit Trail** - Hash-chained provenance records create tamper-evident logs
+
+## Why Now
+
+The EU AI Act enforcement date of August 2, 2026 creates an immediate need for machine-readable compliance declarations. Manual compliance tools generate PDFs and reports. Attestix generates cryptographically signed, independently verifiable proofs.
+
+The gap between "AI safety theater" and "provable AI compliance" is the gap that attestation infrastructure fills.

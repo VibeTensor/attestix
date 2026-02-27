@@ -1,0 +1,51 @@
+---
+title: Getting Started with Attestix in 5 Minutes
+publishedAt: "2026-02-20"
+summary: Install Attestix, create your first agent identity, and issue a verifiable credential in under 5 minutes.
+author: "Pavan Kumar Dubasi"
+---
+
+Attestix runs as an MCP server, which means any MCP-compatible AI agent (Claude, Cursor, Windsurf) can use all 47 tools out of the box. Here is how to get started.
+
+## Step 1: Install
+
+```bash
+pip install attestix
+```
+
+## Step 2: Configure Your MCP Client
+
+Add Attestix to your MCP configuration:
+
+```json
+{
+  "mcpServers": {
+    "attestix": {
+      "command": "attestix",
+      "args": ["--transport", "stdio"]
+    }
+  }
+}
+```
+
+## Step 3: Create an Agent Identity
+
+Ask your AI agent to create an identity:
+
+> "Create an agent identity for my compliance auditor agent"
+
+The agent will call `create_agent_identity` and return a UAIT, DID, and Ed25519 key pair.
+
+## Step 4: Issue a Credential
+
+> "Issue a verifiable credential certifying this agent is EU AI Act compliant"
+
+This calls `issue_credential` with Ed25519Signature2020 signing, producing a full W3C Verifiable Credential.
+
+## Step 5: Anchor to Blockchain
+
+> "Anchor this credential to Base L2"
+
+This calls `anchor_credential` to create an Ethereum Attestation Service record on Base L2.
+
+That is it. Five steps, five minutes, and your AI agent now has verifiable identity and compliance credentials.

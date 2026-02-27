@@ -1,0 +1,38 @@
+---
+title: "Research Paper: Attestix Architecture"
+publishedAt: "2026-02-25"
+summary: Our research paper describes the Attestix architecture for cryptographic attestation infrastructure for AI agents, covering identity, credentials, delegation, and compliance.
+author: "Pavan Kumar Dubasi"
+---
+
+We have published a research paper describing the Attestix architecture and its approach to solving the AI agent trust problem.
+
+## Abstract
+
+As AI agents proliferate across enterprise workflows, the need for verifiable identity, auditable actions, and regulatory compliance becomes critical. Attestix presents a comprehensive attestation infrastructure that provides cryptographic identity, W3C Verifiable Credentials, capability-based delegation, and EU AI Act compliance tooling through a 47-tool MCP server.
+
+## Key Contributions
+
+1. **Universal Agent Identity Token (UAIT)** - A bridge format connecting MCP server names, A2A agent cards, and W3C DIDs into a single identity namespace
+
+2. **Ed25519Signature2020 Credentials** - Full W3C Verifiable Credentials implementation with JSON-LD context and revocation support
+
+3. **UCAN Delegation Chains** - Capability-based delegation using signed JWT tokens with scoped permissions and time bounds
+
+4. **EU AI Act Conformity Declarations** - Machine-readable Annex V declarations that can be cryptographically signed and blockchain-anchored
+
+5. **91 Conformance Benchmarks** - Test suite validating compliance with W3C, IETF, and UCAN specifications
+
+## Read the Paper
+
+The full paper is available at [attestix.vibetensor.com/paper](https://attestix.vibetensor.com/paper/).
+
+If you find Attestix useful in your research, please cite us:
+
+```bibtex
+@article{dubasi2026attestix,
+  title={Attestix: Attestation Infrastructure for AI Agents},
+  author={Dubasi, Pavan Kumar},
+  year={2026}
+}
+```
