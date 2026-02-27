@@ -1,5 +1,5 @@
 """Re-export from flat module for namespace compatibility."""
-from blockchain.abi import (  # noqa: F403
+from blockchain.abi import (
     ATTESTIX_SCHEMA,
     EAS_ABI,
     EAS_CONTRACT_ADDRESS,
