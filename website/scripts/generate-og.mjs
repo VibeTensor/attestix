@@ -262,16 +262,23 @@ const ogPath = join(root, "public", "og-image.png");
 await sharp(ogPng).toFile(ogPath);
 console.log(`Generated ${ogPath} (${ogPng.length} bytes)`);
 
-// --- Favicons from atx_gold.svg ---
+// --- Favicons from atx_gold.svg (transparent background) ---
 
-const logoSvg = readFileSync(join(root, "public", "atx_gold.svg"));
+const logoSvgRaw = readFileSync(join(root, "public", "atx_gold.svg"), "utf-8");
+// Remove the dark background rect to get a transparent favicon
+const logoSvgTransparent = logoSvgRaw.replace(
+  /<rect width="180" height="180" fill="#232c30"\/>/,
+  ""
+);
+const logoSvg = Buffer.from(logoSvgTransparent);
 
-// Apple Touch Icon (180x180)
+// Apple Touch Icon (180x180) - keep original with background for contrast on iOS
+const logoSvgOriginal = readFileSync(join(root, "public", "atx_gold.svg"));
 const appleTouchPath = join(root, "public", "apple-touch-icon.png");
-await sharp(logoSvg).resize(180, 180).png().toFile(appleTouchPath);
+await sharp(logoSvgOriginal).resize(180, 180).png().toFile(appleTouchPath);
 console.log(`Generated ${appleTouchPath}`);
 
-// Favicon PNGs
+// Favicon PNGs (transparent background)
 const favicon32 = await sharp(logoSvg).resize(32, 32).png().toBuffer();
 const favicon16 = await sharp(logoSvg).resize(16, 16).png().toBuffer();
 

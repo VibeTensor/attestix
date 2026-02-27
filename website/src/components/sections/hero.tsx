@@ -200,11 +200,8 @@ export function Hero() {
               className="relative flex items-center justify-center h-full w-full min-h-[400px]"
             >
               <div className="absolute inset-0 bg-[radial-gradient(circle,oklch(0.46_0.24_264_/_0.08)_0%,transparent_60%)]" aria-hidden="true" />
-              {/* Attestix logo + text at center */}
-              <div className="relative z-10 flex flex-col items-center gap-1">
-                <Icons.logo className="h-8 w-8" />
-                <span className="text-xs font-semibold tracking-wider text-gold/80">ATTESTIX</span>
-              </div>
+              {/* Attestix logo at center */}
+              <Icons.logo className="h-10 w-10 relative z-10" />
 
               {/* 9 elliptical orbits - atom style */}
               {[
