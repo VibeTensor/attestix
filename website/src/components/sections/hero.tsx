@@ -4,7 +4,6 @@ import { AuroraText } from "@/components/aurora-text";
 import { Icons } from "@/components/icons";
 import { Section } from "@/components/section";
 import { buttonVariants } from "@/components/ui/button";
-import OrbitingCircles from "@/components/ui/orbiting-circles";
 import { siteConfig } from "@/lib/config";
 import { cn } from "@/lib/utils";
 import { motion } from "motion/react";
@@ -15,7 +14,6 @@ import {
   LinkIcon,
   ScaleIcon,
   ShieldCheckIcon,
-  AwardIcon,
   KeyIcon,
   StarIcon,
   ContactIcon,
@@ -202,59 +200,70 @@ export function Hero() {
               className="relative flex items-center justify-center h-full w-full min-h-[400px]"
             >
               <div className="absolute inset-0 bg-[radial-gradient(circle,oklch(0.46_0.24_264_/_0.08)_0%,transparent_60%)]" aria-hidden="true" />
-              {/* Attestix logo at center */}
-              <Icons.logo className="h-10 w-10" />
+              {/* Attestix logo + text at center */}
+              <div className="relative z-10 flex flex-col items-center gap-1">
+                <Icons.logo className="h-8 w-8" />
+                <span className="text-xs font-semibold tracking-wider text-gold/80">ATTESTIX</span>
+              </div>
 
-              {/* Inner ring: Core identity modules (3) */}
-              <OrbitingCircles duration={20} delay={0} radius={55} reverse>
-                <div className="h-8 w-8 rounded-full bg-gold/20 border border-gold/30 flex items-center justify-center" title="Identity">
-                  <FingerprintIcon className="h-4 w-4 text-gold" />
+              {/* 9 elliptical orbits - atom style */}
+              {[
+                { Icon: FingerprintIcon, label: "Identity", tilt: 0, dur: 20, del: 0, color: "gold" as const },
+                { Icon: KeyIcon, label: "DID", tilt: 20, dur: 23, del: 3, color: "gold" as const },
+                { Icon: ContactIcon, label: "Agent Cards", tilt: 40, dur: 26, del: 7, color: "gold" as const },
+                { Icon: ShieldCheckIcon, label: "Credentials", tilt: 60, dur: 19, del: 2, color: "primary" as const },
+                { Icon: GitForkIcon, label: "Delegation", tilt: 80, dur: 22, del: 5, color: "primary" as const },
+                { Icon: ScaleIcon, label: "Compliance", tilt: 100, dur: 25, del: 9, color: "primary" as const },
+                { Icon: FileSearchIcon, label: "Provenance", tilt: 120, dur: 21, del: 1, color: "primary" as const },
+                { Icon: StarIcon, label: "Reputation", tilt: 140, dur: 24, del: 6, color: "primary" as const },
+                { Icon: LinkIcon, label: "Blockchain", tilt: 160, dur: 18, del: 4, color: "gold" as const },
+              ].map(({ Icon, label, tilt, dur, del, color }) => (
+                <div
+                  key={label}
+                  className="absolute inset-0"
+                  style={{ transform: `rotate(${tilt}deg) scaleY(0.35)` }}
+                >
+                  {/* Visible elliptical orbit path */}
+                  <svg className="pointer-events-none absolute inset-0 size-full overflow-visible">
+                    <circle
+                      cx="50%"
+                      cy="50%"
+                      r={100}
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1"
+                      className="text-border/40"
+                    />
+                  </svg>
+                  {/* Orbiting module icon */}
+                  <div
+                    style={{
+                      "--duration": dur,
+                      "--radius": 100,
+                      "--delay": -del,
+                    } as React.CSSProperties}
+                    className="absolute flex transform-gpu animate-orbit items-center justify-center [animation-delay:calc(var(--delay)*1000ms)]"
+                  >
+                    <div
+                      style={{ transform: `scaleY(${1 / 0.35}) rotate(${-tilt}deg)` }}
+                      className={cn(
+                        "h-7 w-7 rounded-full flex items-center justify-center border backdrop-blur-sm",
+                        color === "gold"
+                          ? "bg-gold/20 border-gold/30"
+                          : "bg-primary/15 border-primary/25"
+                      )}
+                      title={label}
+                    >
+                      <Icon
+                        className={cn(
+                          "h-3.5 w-3.5",
+                          color === "gold" ? "text-gold" : "text-primary"
+                        )}
+                      />
+                    </div>
+                  </div>
                 </div>
-              </OrbitingCircles>
-              <OrbitingCircles duration={20} delay={7} radius={55}>
-                <div className="h-8 w-8 rounded-full bg-gold/20 border border-gold/30 flex items-center justify-center" title="DID">
-                  <KeyIcon className="h-4 w-4 text-gold" />
-                </div>
-              </OrbitingCircles>
-              <OrbitingCircles duration={20} delay={14} radius={55} reverse>
-                <div className="h-8 w-8 rounded-full bg-gold/20 border border-gold/30 flex items-center justify-center" title="Agent Cards">
-                  <ContactIcon className="h-4 w-4 text-gold" />
-                </div>
-              </OrbitingCircles>
-
-              {/* Middle ring: Trust and governance modules (3) */}
-              <OrbitingCircles duration={30} delay={0} radius={105}>
-                <div className="h-8 w-8 rounded-full bg-primary/15 border border-primary/25 flex items-center justify-center" title="Credentials">
-                  <ShieldCheckIcon className="h-4 w-4 text-primary" />
-                </div>
-              </OrbitingCircles>
-              <OrbitingCircles duration={30} delay={10} radius={105} reverse>
-                <div className="h-8 w-8 rounded-full bg-primary/15 border border-primary/25 flex items-center justify-center" title="Delegation">
-                  <GitForkIcon className="h-4 w-4 text-primary" />
-                </div>
-              </OrbitingCircles>
-              <OrbitingCircles duration={30} delay={20} radius={105}>
-                <div className="h-8 w-8 rounded-full bg-primary/15 border border-primary/25 flex items-center justify-center" title="Compliance">
-                  <ScaleIcon className="h-4 w-4 text-primary" />
-                </div>
-              </OrbitingCircles>
-
-              {/* Outer ring: Data and verification modules (3) */}
-              <OrbitingCircles duration={40} delay={0} radius={160} reverse>
-                <div className="h-8 w-8 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center" title="Provenance">
-                  <FileSearchIcon className="h-4 w-4 text-primary" />
-                </div>
-              </OrbitingCircles>
-              <OrbitingCircles duration={40} delay={13} radius={160}>
-                <div className="h-8 w-8 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center" title="Reputation">
-                  <StarIcon className="h-4 w-4 text-primary" />
-                </div>
-              </OrbitingCircles>
-              <OrbitingCircles duration={40} delay={27} radius={160} reverse>
-                <div className="h-8 w-8 rounded-full bg-gold/15 border border-gold/25 flex items-center justify-center" title="Blockchain">
-                  <LinkIcon className="h-4 w-4 text-gold" />
-                </div>
-              </OrbitingCircles>
+              ))}
             </motion.div>
           </div>
         )}

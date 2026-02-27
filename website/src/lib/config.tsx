@@ -32,7 +32,7 @@ export const siteConfig = {
     pypi: "https://pypi.org/project/attestix/",
     docs: "https://docs.attestix.vibetensor.com",
     mcpRegistry:
-      "https://registry.modelcontextprotocol.io/servers/io.github.VibeTensor/attestix",
+      "https://registry.modelcontextprotocol.io",
   },
   hero: {
     title: "Attestix",
@@ -128,7 +128,7 @@ export const siteConfig = {
       { text: "PyPI", url: "https://pypi.org/project/attestix/" },
       {
         text: "MCP Registry",
-        url: "https://registry.modelcontextprotocol.io/servers/io.github.VibeTensor/attestix",
+        url: "https://registry.modelcontextprotocol.io",
       },
       {
         text: "Research Paper",

@@ -1,12 +1,15 @@
 /**
- * Build-time OG image generator.
- * Produces public/og-image.png (1200x630) using satori + sharp.
- * Runs as a prebuild step so static export has a real OG image.
+ * Build-time asset generator.
+ * Produces:
+ *   - public/og-image.png (1200x630 OG image)
+ *   - src/app/favicon.ico (32x32 + 16x16 ICO from atx_gold.svg)
+ *   - public/apple-touch-icon.png (180x180)
+ * Runs as a prebuild step.
  */
 
 import satori from "satori";
 import sharp from "sharp";
-import { readFileSync } from "fs";
+import { readFileSync, writeFileSync } from "fs";
 import { join, dirname } from "path";
 import { fileURLToPath } from "url";
 
@@ -16,6 +19,8 @@ const root = join(__dirname, "..");
 const fontData = readFileSync(
   join(root, "src", "assets", "fonts", "Inter-SemiBold.ttf")
 );
+
+// --- OG Image (1200x630) ---
 
 const WIDTH = 1200;
 const HEIGHT = 630;
@@ -31,42 +36,57 @@ const svg = await satori(
         flexDirection: "column",
         alignItems: "center",
         justifyContent: "center",
-        backgroundColor: "#0f1219",
-        fontSize: 32,
-        fontWeight: 600,
+        backgroundColor: "#0a0d14",
         position: "relative",
+        overflow: "hidden",
       },
       children: [
-        // Subtle grid overlay
+        // Large indigo radial glow (top center)
         {
           type: "div",
           props: {
             style: {
               position: "absolute",
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              backgroundImage:
-                "linear-gradient(rgba(79,70,229,0.06) 1px, transparent 1px), linear-gradient(90deg, rgba(79,70,229,0.06) 1px, transparent 1px)",
-              backgroundSize: "60px 60px",
-            },
-          },
-        },
-        // Indigo accent glow
-        {
-          type: "div",
-          props: {
-            style: {
-              position: "absolute",
-              top: "-300px",
+              top: "-200px",
               left: "50%",
               transform: "translateX(-50%)",
-              width: "600px",
+              width: "900px",
               height: "600px",
               borderRadius: "50%",
               background:
-                "radial-gradient(circle, rgba(79,70,229,0.2) 0%, transparent 70%)",
+                "radial-gradient(ellipse, rgba(79,70,229,0.25) 0%, rgba(79,70,229,0.08) 40%, transparent 70%)",
+            },
+          },
+        },
+        // Gold accent glow (bottom right)
+        {
+          type: "div",
+          props: {
+            style: {
+              position: "absolute",
+              bottom: "-150px",
+              right: "-100px",
+              width: "500px",
+              height: "400px",
+              borderRadius: "50%",
+              background:
+                "radial-gradient(ellipse, rgba(225,163,44,0.12) 0%, transparent 60%)",
+            },
+          },
+        },
+        // Subtle emerald glow (bottom left)
+        {
+          type: "div",
+          props: {
+            style: {
+              position: "absolute",
+              bottom: "-100px",
+              left: "-50px",
+              width: "400px",
+              height: "300px",
+              borderRadius: "50%",
+              background:
+                "radial-gradient(ellipse, rgba(5,150,105,0.08) 0%, transparent 60%)",
             },
           },
         },
@@ -80,57 +100,52 @@ const svg = await satori(
               justifyContent: "center",
               alignItems: "center",
               position: "relative",
+              padding: "0 80px",
             },
             children: [
-              // Gold shield icon
-              {
-                type: "div",
-                props: {
-                  style: {
-                    display: "flex",
-                    width: "64px",
-                    height: "64px",
-                    borderRadius: "16px",
-                    background: "linear-gradient(135deg, #E1A32C, #d4922a)",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    fontSize: "32px",
-                    color: "#0f1219",
-                    fontWeight: 800,
-                  },
-                  children: "A",
-                },
-              },
-              // Title
-              {
-                type: "div",
-                props: {
-                  style: {
-                    display: "flex",
-                    fontSize: "56px",
-                    fontWeight: 700,
-                    marginTop: "24px",
-                    textAlign: "center",
-                    color: "#ffffff",
-                    letterSpacing: "-0.04em",
-                    lineHeight: 1.1,
-                  },
-                  children: "Attestation Infrastructure for AI Agents",
-                },
-              },
               // Brand name
               {
                 type: "div",
                 props: {
                   style: {
                     display: "flex",
-                    fontSize: "18px",
-                    fontWeight: 500,
-                    marginTop: "20px",
-                    color: "#4F46E5",
-                    letterSpacing: "0.05em",
+                    fontSize: "72px",
+                    fontWeight: 700,
+                    letterSpacing: "-0.04em",
+                    color: "#E1A32C",
                   },
                   children: "Attestix",
+                },
+              },
+              // Tagline
+              {
+                type: "div",
+                props: {
+                  style: {
+                    display: "flex",
+                    fontSize: "28px",
+                    fontWeight: 600,
+                    marginTop: "16px",
+                    textAlign: "center",
+                    color: "rgba(255,255,255,0.9)",
+                    letterSpacing: "-0.02em",
+                    lineHeight: 1.3,
+                  },
+                  children: "Attestation Infrastructure for AI Agents",
+                },
+              },
+              // Divider line
+              {
+                type: "div",
+                props: {
+                  style: {
+                    display: "flex",
+                    width: "80px",
+                    height: "2px",
+                    marginTop: "28px",
+                    background:
+                      "linear-gradient(90deg, transparent, #4F46E5, transparent)",
+                  },
                 },
               },
               // Stats strip
@@ -139,13 +154,88 @@ const svg = await satori(
                 props: {
                   style: {
                     display: "flex",
-                    fontSize: "14px",
-                    fontWeight: 400,
-                    marginTop: "8px",
-                    color: "rgba(255,255,255,0.5)",
+                    fontSize: "15px",
+                    fontWeight: 500,
+                    marginTop: "28px",
+                    color: "rgba(255,255,255,0.45)",
+                    letterSpacing: "0.04em",
+                    gap: "24px",
                   },
-                  children:
-                    "47 MCP Tools  |  9 Modules  |  W3C Compliant  |  Apache 2.0",
+                  children: [
+                    {
+                      type: "span",
+                      props: {
+                        children: "47 MCP Tools",
+                        style: { display: "flex" },
+                      },
+                    },
+                    {
+                      type: "span",
+                      props: {
+                        children: "\u00b7",
+                        style: {
+                          display: "flex",
+                          color: "rgba(79,70,229,0.5)",
+                        },
+                      },
+                    },
+                    {
+                      type: "span",
+                      props: {
+                        children: "9 Modules",
+                        style: { display: "flex" },
+                      },
+                    },
+                    {
+                      type: "span",
+                      props: {
+                        children: "\u00b7",
+                        style: {
+                          display: "flex",
+                          color: "rgba(79,70,229,0.5)",
+                        },
+                      },
+                    },
+                    {
+                      type: "span",
+                      props: {
+                        children: "W3C Compliant",
+                        style: { display: "flex" },
+                      },
+                    },
+                    {
+                      type: "span",
+                      props: {
+                        children: "\u00b7",
+                        style: {
+                          display: "flex",
+                          color: "rgba(79,70,229,0.5)",
+                        },
+                      },
+                    },
+                    {
+                      type: "span",
+                      props: {
+                        children: "Apache 2.0",
+                        style: { display: "flex" },
+                      },
+                    },
+                  ],
+                },
+              },
+              // URL
+              {
+                type: "div",
+                props: {
+                  style: {
+                    display: "flex",
+                    fontSize: "13px",
+                    fontWeight: 500,
+                    marginTop: "32px",
+                    color: "#4F46E5",
+                    letterSpacing: "0.06em",
+                  },
+                  children: "attestix.vibetensor.com",
                 },
               },
             ],
@@ -167,9 +257,63 @@ const svg = await satori(
   }
 );
 
-const png = await sharp(Buffer.from(svg)).png({ quality: 90 }).toBuffer();
+const ogPng = await sharp(Buffer.from(svg)).png({ quality: 90 }).toBuffer();
+const ogPath = join(root, "public", "og-image.png");
+await sharp(ogPng).toFile(ogPath);
+console.log(`Generated ${ogPath} (${ogPng.length} bytes)`);
 
-const outPath = join(root, "public", "og-image.png");
-await sharp(png).toFile(outPath);
+// --- Favicons from atx_gold.svg ---
 
-console.log(`Generated ${outPath} (${png.length} bytes)`);
+const logoSvg = readFileSync(join(root, "public", "atx_gold.svg"));
+
+// Apple Touch Icon (180x180)
+const appleTouchPath = join(root, "public", "apple-touch-icon.png");
+await sharp(logoSvg).resize(180, 180).png().toFile(appleTouchPath);
+console.log(`Generated ${appleTouchPath}`);
+
+// Favicon PNGs
+const favicon32 = await sharp(logoSvg).resize(32, 32).png().toBuffer();
+const favicon16 = await sharp(logoSvg).resize(16, 16).png().toBuffer();
+
+// Build ICO file (contains both 32x32 and 16x16 PNGs)
+function buildIco(images) {
+  const headerSize = 6;
+  const dirEntrySize = 16;
+  const dirSize = dirEntrySize * images.length;
+  let dataOffset = headerSize + dirSize;
+
+  // Header: reserved(2) + type(2) + count(2)
+  const header = Buffer.alloc(headerSize);
+  header.writeUInt16LE(0, 0); // reserved
+  header.writeUInt16LE(1, 2); // type = ICO
+  header.writeUInt16LE(images.length, 4);
+
+  const dirEntries = [];
+  const imageBuffers = [];
+
+  for (const { width, height, data } of images) {
+    const entry = Buffer.alloc(dirEntrySize);
+    entry.writeUInt8(width >= 256 ? 0 : width, 0);
+    entry.writeUInt8(height >= 256 ? 0 : height, 1);
+    entry.writeUInt8(0, 2); // color palette
+    entry.writeUInt8(0, 3); // reserved
+    entry.writeUInt16LE(1, 4); // color planes
+    entry.writeUInt16LE(32, 6); // bits per pixel
+    entry.writeUInt32LE(data.length, 8); // image data size
+    entry.writeUInt32LE(dataOffset, 12); // offset
+    dirEntries.push(entry);
+    imageBuffers.push(data);
+    dataOffset += data.length;
+  }
+
+  return Buffer.concat([header, ...dirEntries, ...imageBuffers]);
+}
+
+const icoBuffer = buildIco([
+  { width: 32, height: 32, data: favicon32 },
+  { width: 16, height: 16, data: favicon16 },
+]);
+
+const faviconPath = join(root, "src", "app", "favicon.ico");
+writeFileSync(faviconPath, icoBuffer);
+console.log(`Generated ${faviconPath} (${icoBuffer.length} bytes)`);
