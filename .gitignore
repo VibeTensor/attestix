@@ -37,6 +37,11 @@ attestix_errors.log
 # MkDocs build output
 site/
 
+# Next.js build output
+website/.next/
+website/out/
+website/public/og-image.png
+
 # Distribution
 dist/
 build/

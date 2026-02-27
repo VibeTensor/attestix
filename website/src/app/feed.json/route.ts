@@ -1,6 +1,8 @@
 import { getBlogPosts } from "@/lib/blog";
 import { siteConfig } from "@/lib/config";
 
+export const dynamic = "force-static";
+
 export async function GET() {
   const posts = await getBlogPosts();
   const sorted = posts.sort(

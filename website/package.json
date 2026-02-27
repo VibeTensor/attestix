@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbo",
+    "prebuild": "node scripts/generate-og.mjs",
     "build": "next build",
     "start": "next start",
     "lint": "next lint"
@@ -44,6 +45,8 @@
     "eslint": "^8",
     "eslint-config-next": "15.0.3",
     "postcss": "^8",
+    "satori": "^0.19.2",
+    "sharp": "^0.34.5",
     "tw-animate-css": "^1.3.5",
     "typescript": "^5"
   }

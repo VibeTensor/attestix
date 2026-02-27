@@ -2,6 +2,8 @@ import { getBlogPosts } from "@/lib/blog";
 import { siteConfig } from "@/lib/config";
 import { MetadataRoute } from "next";
 
+export const dynamic = "force-static";
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const posts = await getBlogPosts();
 

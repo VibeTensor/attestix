@@ -63,7 +63,7 @@ export async function getPost(slug: string) {
   const source = fs.readFileSync(filePath, "utf-8");
   const { content: rawContent, data: metadata } = parseFrontmatter(source);
   const content = await markdownToHTML(rawContent);
-  const defaultImage = `/og?title=${encodeURIComponent(metadata.title)}`;
+  const defaultImage = `/og-image.png`;
   return {
     source: content,
     metadata: {
