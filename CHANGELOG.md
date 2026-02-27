@@ -4,6 +4,18 @@ All notable changes to Attestix are documented here.
 
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.2.3] - 2026-02-28
+
+### Added
+- **Namespace package support**: Added `attestix` namespace package for cleaner imports
+  - New import pattern: `from attestix.services.identity_service import IdentityService`
+  - New import pattern: `from attestix.auth.crypto import generate_ed25519_keypair`
+  - Flat imports still work for backward compatibility: `from services.identity_service import IdentityService`
+
+### Changed
+- Package structure now includes both flat modules and `attestix.*` namespace
+- Updated pyproject.toml to include attestix namespace packages
+
 ## [0.2.1] - 2026-02-21
 
 ### Added
