@@ -1,14 +1,18 @@
 "use client";
 
+import { Icons } from "@/components/icons";
 import { Section } from "@/components/section";
 import OrbitingCircles from "@/components/ui/orbiting-circles";
+import { cn } from "@/lib/utils";
 import { cubicBezier, motion } from "motion/react";
 import {
   AwardIcon,
+  ContactIcon,
   FileCheckIcon,
   FingerprintIcon,
   GitForkIcon,
   FileSearchIcon,
+  KeyIcon,
   LinkIcon,
   ScaleIcon,
   ShieldCheckIcon,
@@ -149,6 +153,35 @@ const Card2 = () => {
   );
 };
 
+function OrbitIcon({
+  Icon,
+  label,
+  color,
+}: {
+  Icon: React.ComponentType<{ className?: string }>;
+  label: string;
+  color: "gold" | "primary";
+}) {
+  return (
+    <div
+      className={cn(
+        "flex h-8 w-8 items-center justify-center rounded-full border backdrop-blur-sm",
+        color === "gold"
+          ? "bg-gold/20 border-gold/30"
+          : "bg-primary/15 border-primary/25"
+      )}
+      title={label}
+    >
+      <Icon
+        className={cn(
+          "h-4 w-4",
+          color === "gold" ? "text-gold" : "text-primary"
+        )}
+      />
+    </div>
+  );
+}
+
 const Card3 = () => {
   const orbitVariant = {
     initial: { scale: 1, transition: { duration: 0.3, ease: "easeInOut" as const } },
@@ -176,30 +209,41 @@ const Card3 = () => {
         <div className="border-b items-center justify-center overflow-hidden rounded-t-xl h-4/5 w-full flex">
           <motion.div variants={orbitVariant} className="relative flex items-center justify-center h-full w-full">
             <div className="absolute inset-0 bg-[radial-gradient(circle,oklch(0.46_0.24_264_/_0.08)_0%,transparent_60%)]"></div>
-            <motion.span variants={centerVariant} className="text-gold z-10"><ShieldIcon className="h-6 w-6" /></motion.span>
-            <OrbitingCircles duration={15} delay={0} radius={40} reverse>
-              <div className="h-8 w-8 rounded-full bg-gold/15 border border-gold/25 flex items-center justify-center"><FingerprintIcon className="h-4 w-4 text-gold" /></div>
+            <motion.span variants={centerVariant} className="z-10">
+              <Icons.logo className="h-8 w-8" />
+            </motion.span>
+
+            {/* Inner ring (radius 55) - forward */}
+            <OrbitingCircles radius={55} duration={22} delay={0} className="border-0 bg-transparent p-0 size-auto">
+              <OrbitIcon Icon={FingerprintIcon} label="Identity" color="gold" />
             </OrbitingCircles>
-            <OrbitingCircles duration={15} delay={20} radius={80}>
-              <div className="h-8 w-8 rounded-full bg-primary/15 border border-primary/25 flex items-center justify-center"><ShieldCheckIcon className="h-4 w-4 text-primary" /></div>
+            <OrbitingCircles radius={55} duration={22} delay={7} className="border-0 bg-transparent p-0 size-auto">
+              <OrbitIcon Icon={KeyIcon} label="DID" color="gold" />
             </OrbitingCircles>
-            <OrbitingCircles radius={80} duration={20} delay={10} reverse>
-              <div className="h-8 w-8 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center"><GitForkIcon className="h-4 w-4 text-primary" /></div>
+            <OrbitingCircles radius={55} duration={22} delay={14} className="border-0 bg-transparent p-0 size-auto">
+              <OrbitIcon Icon={ContactIcon} label="Agent Cards" color="gold" />
             </OrbitingCircles>
-            <OrbitingCircles radius={120} duration={25} delay={5}>
-              <div className="h-8 w-8 rounded-full bg-gold/15 border border-gold/25 flex items-center justify-center"><ScaleIcon className="h-4 w-4 text-gold" /></div>
+
+            {/* Middle ring (radius 100) - reverse */}
+            <OrbitingCircles radius={100} duration={28} delay={0} reverse className="border-0 bg-transparent p-0 size-auto">
+              <OrbitIcon Icon={ShieldCheckIcon} label="Credentials" color="primary" />
             </OrbitingCircles>
-            <OrbitingCircles radius={120} duration={30} delay={15} reverse>
-              <div className="h-8 w-8 rounded-full bg-primary/15 border border-primary/25 flex items-center justify-center"><FileSearchIcon className="h-4 w-4 text-primary" /></div>
+            <OrbitingCircles radius={100} duration={28} delay={9} reverse className="border-0 bg-transparent p-0 size-auto">
+              <OrbitIcon Icon={GitForkIcon} label="Delegation" color="primary" />
             </OrbitingCircles>
-            <OrbitingCircles radius={160} duration={35} delay={0}>
-              <div className="h-8 w-8 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center"><StarIcon className="h-4 w-4 text-primary" /></div>
+            <OrbitingCircles radius={100} duration={28} delay={18} reverse className="border-0 bg-transparent p-0 size-auto">
+              <OrbitIcon Icon={ScaleIcon} label="Compliance" color="primary" />
             </OrbitingCircles>
-            <OrbitingCircles radius={160} duration={40} delay={20} reverse>
-              <div className="h-8 w-8 rounded-full bg-gold/15 border border-gold/25 flex items-center justify-center"><LinkIcon className="h-4 w-4 text-gold" /></div>
+
+            {/* Outer ring (radius 145) - forward */}
+            <OrbitingCircles radius={145} duration={34} delay={0} className="border-0 bg-transparent p-0 size-auto">
+              <OrbitIcon Icon={FileSearchIcon} label="Provenance" color="primary" />
             </OrbitingCircles>
-            <OrbitingCircles radius={200} duration={45} delay={10}>
-              <div className="h-8 w-8 rounded-full bg-primary/15 border border-primary/25 flex items-center justify-center"><AwardIcon className="h-4 w-4 text-primary" /></div>
+            <OrbitingCircles radius={145} duration={34} delay={11} className="border-0 bg-transparent p-0 size-auto">
+              <OrbitIcon Icon={StarIcon} label="Reputation" color="gold" />
+            </OrbitingCircles>
+            <OrbitingCircles radius={145} duration={34} delay={22} className="border-0 bg-transparent p-0 size-auto">
+              <OrbitIcon Icon={LinkIcon} label="Blockchain" color="gold" />
             </OrbitingCircles>
           </motion.div>
         </div>
