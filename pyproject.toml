@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "attestix"
-version = "0.2.2"
+version = "0.2.3"
 description = "Attestix - Attestation Infrastructure for AI Agents. DID-based agent identity, W3C Verifiable Credentials, EU AI Act compliance, delegation chains, and reputation scoring. 47 MCP tools across 9 modules."
 readme = "README.md"
 license = {file = "LICENSE"}
@@ -69,7 +69,20 @@ Issues = "https://github.com/VibeTensor/attestix/issues"
 attestix = "main:main"
 
 [tool.setuptools]
-packages = ["auth", "blockchain", "services", "tools"]
+# Include both flat modules (backward compatibility) and attestix namespace (new)
+packages = [
+    # Flat modules (legacy imports: from services.X import Y)
+    "auth",
+    "blockchain",
+    "services",
+    "tools",
+    # Namespace package (new imports: from attestix.services.X import Y)
+    "attestix",
+    "attestix.auth",
+    "attestix.blockchain",
+    "attestix.services",
+    "attestix.tools",
+]
 py-modules = ["main", "config", "errors"]
 
 [tool.pytest.ini_options]
