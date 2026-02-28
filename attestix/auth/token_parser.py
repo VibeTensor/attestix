@@ -12,11 +12,11 @@ from auth.token_parser import (
 
 __all__ = [
     "API_KEY_PATTERN",
-    "detect_token_type",
     "DID_PATTERN",
-    "extract_identity_from_token",
     "JWT_PATTERN",
-    "parse_jwt_claims",
     "TokenType",
     "URL_PATTERN",
+    "detect_token_type",
+    "extract_identity_from_token",
+    "parse_jwt_claims",
 ]
