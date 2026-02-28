@@ -15,7 +15,7 @@ const stats = [
     title: "47",
     subtitle: "MCP Tools across 9 modules",
     icon: <WrenchIcon className="h-5 w-5" />,
-    href: "https://docs.attestix.vibetensor.com",
+    href: "https://docs.attestix.io",
   },
   {
     title: "272+",
@@ -27,7 +27,7 @@ const stats = [
     title: "5",
     subtitle: "W3C/IETF standards implemented",
     icon: <BookOpenIcon className="h-5 w-5" />,
-    href: "https://docs.attestix.vibetensor.com/research/",
+    href: "https://docs.attestix.io/research/",
   },
 ];
 

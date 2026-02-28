@@ -1,6 +1,6 @@
 site_name: Attestix
 site_description: Attestix - Attestation Infrastructure for AI Agents. DID-based agent identity, W3C Verifiable Credentials, EU AI Act compliance, delegation chains, and reputation scoring. 47 MCP tools across 9 modules.
-site_url: https://docs.attestix.vibetensor.com/
+site_url: https://docs.attestix.io/
 repo_url: https://github.com/VibeTensor/attestix
 repo_name: VibeTensor/attestix
 copyright: Copyright &copy; 2026 VibeTensor Private Limited.
@@ -88,7 +88,7 @@ extra:
       link: https://pypi.org/project/attestix/
     - icon: fontawesome/brands/twitter
       link: https://twitter.com/vibetensor
-  homepage: https://attestix.vibetensor.com
+  homepage: https://attestix.io
   generator: false
 
 extra_css:

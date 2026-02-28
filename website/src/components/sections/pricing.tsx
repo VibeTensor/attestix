@@ -63,7 +63,7 @@ function PricingTier({
             href={
               isEnterprise
                 ? "mailto:info@vibetensor.com?subject=Attestix Enterprise"
-                : "https://docs.attestix.vibetensor.com/getting-started/"
+                : "https://docs.attestix.io/getting-started/"
             }
             target={isEnterprise ? undefined : "_blank"}
             rel={isEnterprise ? undefined : "noopener noreferrer"}
