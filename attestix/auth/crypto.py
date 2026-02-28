@@ -18,10 +18,10 @@ from auth.crypto import (
 )
 
 __all__ = [
-    "ED25519_MULTICODEC_PREFIX",
     "canonicalize_json",
     "did_key_fragment",
     "did_key_to_public_key",
+    "ED25519_MULTICODEC_PREFIX",
     "generate_ed25519_keypair",
     "load_or_create_signing_key",
     "private_key_from_bytes",

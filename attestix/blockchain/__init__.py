@@ -20,12 +20,12 @@ from . import abi  # noqa: E402
 from . import merkle  # noqa: E402
 
 __all__ = [
-    "EAS_ABI",
-    "SCHEMA_REGISTRY_ABI",
     "abi",
     "build_merkle_tree",
     "compute_merkle_root",
+    "EAS_ABI",
     "hash_leaf",
     "hash_pair",
     "merkle",
+    "SCHEMA_REGISTRY_ABI",
 ]
