@@ -16,6 +16,19 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Package structure now includes both flat modules and `attestix.*` namespace
 - Updated pyproject.toml to include attestix namespace packages
 
+### Fixed
+- Replaced wildcard imports with explicit named imports and `__all__` declarations across all namespace shim modules
+- Consistent relative imports in `attestix/auth/__init__.py` and `attestix/blockchain/__init__.py`
+- Sorted `__all__` lists per RUF022 (ASCII case-sensitive ordering)
+- Removed redundant `# noqa` comments from namespace modules
+
+## [0.2.2] - 2026-02-22
+
+### Added
+- MCP Registry listing: published as `io.github.VibeTensor/attestix`
+- `server.json` for MCP Registry verification
+- Research paper page with citation references (BibTeX, APA, IEEE)
+
 ## [0.2.1] - 2026-02-21
 
 ### Added
