@@ -18,8 +18,8 @@ const mobileLinks = [
   { label: "Features", href: "#features" },
   { label: "Use Cases", href: "#use-cases" },
   { label: "Pricing", href: "#pricing" },
-  { label: "Docs", href: "https://docs.attestix.vibetensor.com" },
-  { label: "Research", href: "https://docs.attestix.vibetensor.com/research/" },
+  { label: "Docs", href: "https://docs.attestix.io" },
+  { label: "Research", href: "https://docs.attestix.io/research/" },
   { label: "GitHub", href: "https://github.com/VibeTensor/attestix" },
 ];
 
@@ -54,7 +54,7 @@ export function MobileDrawer() {
         </div>
         <DrawerFooter>
           <Link
-            href="https://docs.attestix.vibetensor.com/getting-started/"
+            href="https://docs.attestix.io/getting-started/"
             target="_blank"
             rel="noopener noreferrer"
             className={cn(

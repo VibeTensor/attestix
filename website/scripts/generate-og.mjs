@@ -235,7 +235,7 @@ const svg = await satori(
                     color: "#4F46E5",
                     letterSpacing: "0.06em",
                   },
-                  children: "attestix.vibetensor.com",
+                  children: "attestix.io",
                 },
               },
             ],
