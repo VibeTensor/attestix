@@ -5,30 +5,27 @@ Modules:
     - abi: EAS contract ABI definitions
 """
 
-# Re-export from the flat blockchain module
-from blockchain.merkle import (
-    hash_leaf,
-    hash_pair,
+# Re-export from the flat blockchain module via relative imports
+from .merkle import (
     build_merkle_tree,
     compute_merkle_root,
+    hash_leaf,
+    hash_pair,
 )
 
-from blockchain.abi import EAS_ABI, SCHEMA_REGISTRY_ABI
+from .abi import EAS_ABI, SCHEMA_REGISTRY_ABI
 
-# Re-export submodules
-from blockchain import merkle
-from blockchain import abi
+# Re-export submodules for namespace access
+from . import abi
+from . import merkle
 
 __all__ = [
-    # Merkle functions
-    "hash_leaf",
-    "hash_pair",
-    "build_merkle_tree",
-    "compute_merkle_root",
-    # ABI
     "EAS_ABI",
     "SCHEMA_REGISTRY_ABI",
-    # Submodules
-    "merkle",
     "abi",
+    "build_merkle_tree",
+    "compute_merkle_root",
+    "hash_leaf",
+    "hash_pair",
+    "merkle",
 ]
