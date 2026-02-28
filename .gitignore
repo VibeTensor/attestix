@@ -75,3 +75,9 @@ paper/*.png
 paper/outreach.txt
 paper/producthunt-draft.txt
 paper/attestix-arxiv.tar.gz
+
+# Internal strategy docs (research, meetings, roadmap, funding)
+paper/internal/
+
+# Windows shell artifacts
+nul
