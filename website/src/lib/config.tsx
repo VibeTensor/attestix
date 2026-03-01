@@ -14,7 +14,7 @@ export const siteConfig = {
   name: "Attestix",
   description: "Attestation Infrastructure for AI Agents",
   cta: "Get Started",
-  url: process.env.NEXT_PUBLIC_APP_URL || "https://attestix.vibetensor.com",
+  url: process.env.NEXT_PUBLIC_APP_URL || "https://attestix.io",
   keywords: [
     "AI Agent Identity",
     "W3C Verifiable Credentials",
@@ -30,7 +30,7 @@ export const siteConfig = {
     twitter: "https://twitter.com/vibetensor",
     github: "https://github.com/VibeTensor/attestix",
     pypi: "https://pypi.org/project/attestix/",
-    docs: "https://docs.attestix.vibetensor.com",
+    docs: "https://docs.attestix.io",
     mcpRegistry:
       "https://registry.modelcontextprotocol.io",
   },
@@ -124,7 +124,7 @@ export const siteConfig = {
       },
     ],
     links: [
-      { text: "Documentation", url: "https://docs.attestix.vibetensor.com" },
+      { text: "Documentation", url: "https://docs.attestix.io" },
       { text: "PyPI", url: "https://pypi.org/project/attestix/" },
       {
         text: "MCP Registry",
@@ -132,7 +132,7 @@ export const siteConfig = {
       },
       {
         text: "Research Paper",
-        url: "https://docs.attestix.vibetensor.com/research/",
+        url: "https://docs.attestix.io/research/",
       },
       { text: "GitHub", url: "https://github.com/VibeTensor/attestix" },
     ],

@@ -61,7 +61,7 @@ test = ["pytest>=8.0", "pytest-asyncio>=0.24", "respx>=0.22"]
 
 [project.urls]
 Homepage = "https://github.com/VibeTensor/attestix"
-Documentation = "https://attestix.vibetensor.com/"
+Documentation = "https://docs.attestix.io/"
 Repository = "https://github.com/VibeTensor/attestix"
 Issues = "https://github.com/VibeTensor/attestix/issues"
 

@@ -11,8 +11,8 @@ const navLinks = [
   { label: "Features", href: "#features" },
   { label: "Use Cases", href: "#use-cases" },
   { label: "Pricing", href: "#pricing" },
-  { label: "Docs", href: "https://docs.attestix.vibetensor.com", external: true },
-  { label: "Research", href: "https://docs.attestix.vibetensor.com/research/", external: true },
+  { label: "Docs", href: "https://docs.attestix.io", external: true },
+  { label: "Research", href: "https://docs.attestix.io/research/", external: true },
 ];
 
 export function Header() {
@@ -51,7 +51,7 @@ export function Header() {
         </nav>
         <div className="hidden lg:block">
           <Link
-            href="https://docs.attestix.vibetensor.com/getting-started/"
+            href="https://docs.attestix.io/getting-started/"
             target="_blank"
             rel="noopener noreferrer"
             className={cn(

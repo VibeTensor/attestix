@@ -17,7 +17,7 @@ export default function PrivacyPolicy() {
       <p>
         VibeTensor Private Limited (&quot;VibeTensor&quot;, &quot;we&quot;,
         &quot;us&quot;, or &quot;our&quot;) operates the Attestix website
-        (attestix.vibetensor.com) and the Attestix open-source software. This
+        (attestix.io) and the Attestix open-source software. This
         Privacy Policy explains how we collect, use, disclose, and safeguard
         your information when you visit our website or use our services.
       </p>

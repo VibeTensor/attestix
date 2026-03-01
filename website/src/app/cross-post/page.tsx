@@ -29,14 +29,14 @@ export default function CrossPostGuide() {
           <h2>Syndication Workflow</h2>
           <ol>
             <li>
-              <strong>Publish on attestix.vibetensor.com</strong> - Create the
+              <strong>Publish on attestix.io</strong> - Create the
               MDX file in <code>content/</code>, deploy, and verify the post is
               live
             </li>
             <li>
               <strong>Wait 5-7 days</strong> - Allow Google to crawl and index
               the original post. Verify indexing via{" "}
-              <code>site:attestix.vibetensor.com/blog/your-slug</code> in Google
+              <code>site:attestix.io/blog/your-slug</code> in Google
               Search
             </li>
             <li>

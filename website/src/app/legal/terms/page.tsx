@@ -15,7 +15,7 @@ export default function TermsOfService() {
 
       <h2>1. Acceptance of Terms</h2>
       <p>
-        By accessing or using the Attestix website (attestix.vibetensor.com) or
+        By accessing or using the Attestix website (attestix.io) or
         the Attestix software, you agree to be bound by these Terms of Service.
         If you do not agree, do not use our services.
       </p>
