@@ -36,7 +36,7 @@ const jsonLd = {
   },
   codeRepository: siteConfig.links.github,
   programmingLanguage: "Python",
-  softwareVersion: "0.2.2",
+  softwareVersion: siteConfig.version,
 };
 
 export default function Home() {

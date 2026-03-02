@@ -10,8 +10,12 @@ import {
 
 export const BLUR_FADE_DELAY = 0.15;
 
+export const ATTESTIX_VERSION =
+  process.env.NEXT_PUBLIC_ATTESTIX_VERSION || "0.0.0";
+
 export const siteConfig = {
   name: "Attestix",
+  version: ATTESTIX_VERSION,
   description: "Attestation Infrastructure for AI Agents",
   cta: "Get Started",
   url: process.env.NEXT_PUBLIC_APP_URL || "https://attestix.io",
@@ -186,7 +190,7 @@ export const siteConfig = {
     {
       question: "What is the current maturity level?",
       answer:
-        "Attestix v0.2.2 is in active development (beta). It includes 272+ tests across functional, end-to-end, and conformance benchmark suites covering all 9 modules. We recommend thorough testing before production deployment.",
+        `Attestix v${ATTESTIX_VERSION} is in active development (beta). It includes 272+ tests across functional, end-to-end, and conformance benchmark suites covering all 9 modules. We recommend thorough testing before production deployment.`,
     },
     {
       question: "How does blockchain anchoring work?",
