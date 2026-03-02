@@ -45,8 +45,8 @@ jobs:
           "
           python -c "
           from blockchain.merkle import build_merkle_tree
-          levels = build_merkle_tree(['a', 'b', 'c'])
-          print(f'Merkle OK - root {levels[-1][0][:16]}...')
+          root, levels = build_merkle_tree([b'a', b'b', b'c'])
+          print(f'Merkle OK - root {root[:16]}...')
           "
           python -c "
           from auth.ssrf import validate_url_host
