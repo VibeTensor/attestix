@@ -23,7 +23,7 @@ export const siteConfig = {
   ],
   links: {
     email: "info@vibetensor.com",
-    twitter: "https://twitter.com/vibetensor",
+    twitter: "https://x.com/vibetensor",
     github: "https://github.com/VibeTensor/attestix",
     pypi: "https://pypi.org/project/attestix/",
     docs: "https://docs.attestix.io",
@@ -78,7 +78,7 @@ export const siteConfig = {
       },
       {
         icon: <Icons.twitter className="h-5 w-5" />,
-        url: "https://twitter.com/vibetensor",
+        url: "https://x.com/vibetensor",
       },
     ],
     linkGroups: [

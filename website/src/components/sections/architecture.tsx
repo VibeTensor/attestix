@@ -23,7 +23,7 @@ const layers = [
       "did:key and did:web resolution with UAIT bridge connecting MCP, A2A, and DID ecosystems.",
     color: "gold" as const,
     span: "col-span-1 lg:col-span-1",
-    href: "https://docs.attestix.io/modules/identity/",
+    href: "https://docs.attestix.io/api-reference/#identity-8-tools",
     modules: [
       { name: "Identity", Icon: FingerprintIcon },
       { name: "DIDs", Icon: GlobeIcon },
@@ -37,7 +37,7 @@ const layers = [
       "W3C Verifiable Credentials with Ed25519 signatures, UCAN delegation chains with scoped permissions, and regulatory compliance tooling for EU AI Act workflows.",
     color: "primary" as const,
     span: "col-span-1 lg:col-span-2",
-    href: "https://docs.attestix.io/modules/credentials/",
+    href: "https://docs.attestix.io/api-reference/#credentials-8-tools",
     modules: [
       { name: "Credentials", Icon: ShieldCheckIcon },
       { name: "Delegation", Icon: GitForkIcon },
@@ -51,7 +51,7 @@ const layers = [
       "Hash-chained provenance tracking, reputation scoring from verified actions, and blockchain anchoring to Base L2 via EAS for tamper-proof audit trails.",
     color: "gold" as const,
     span: "col-span-1 lg:col-span-3",
-    href: "https://docs.attestix.io/modules/provenance/",
+    href: "https://docs.attestix.io/api-reference/#provenance-5-tools",
     modules: [
       { name: "Provenance", Icon: FileSearchIcon },
       { name: "Reputation", Icon: StarIcon },
