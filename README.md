@@ -313,10 +313,11 @@ docker build -f Dockerfile.test -t attestix-bench . && docker run --rm attestix-
 | Standard | What is tested | Tests |
 |----------|---------------|:-----:|
 | **RFC 8032 (Ed25519)** | 4 IETF canonical vectors: key derivation, signature generation (exact match), verification, tamper rejection | 18 |
-| **W3C VC Data Model 1.1** | Credential structure, Ed25519Signature2020 proof, mutable field exclusion, VP structure, replay protection | 24 |
-| **W3C DID Core 1.0** | `did:key` and `did:web` document structure, roundtrip resolution, Ed25519VerificationKey2020 | 16 |
-| **UCAN v0.9.0** | JWT header (alg/typ/ucv), all payload fields, capability attenuation, expiry enforcement, revocation | 16 |
+| **W3C VC Data Model 1.1** | Credential structure, Ed25519Signature2020 proof, mutable field exclusion, VP structure, replay protection | 25 |
+| **W3C DID Core 1.0** | `did:key` and `did:web` document structure, roundtrip resolution, Ed25519VerificationKey2020 | 18 |
+| **UCAN v0.9.0** | JWT header (alg/typ/ucv), all payload fields, capability attenuation, expiry enforcement, revocation | 18 |
 | **MCP Protocol** | 47 tools registered, 9 modules, async convention, snake\_case naming | 5 |
+| **Performance** | Ed25519 key gen, JSON canonicalization, sign/verify, identity creation, credential ops | 7 |
 
 ### Performance (median latency, 1000 runs)
 

@@ -1,7 +1,9 @@
-"""Tests for services/compliance_service.py — EU AI Act compliance."""
+"""Tests for EU AI Act compliance in services/compliance_service.py."""
 
 
 class TestCreateComplianceProfile:
+    """Tests for creating compliance profiles with risk categorization."""
+
     def test_creates_profile(self, compliance_service, sample_agent_id):
         result = compliance_service.create_compliance_profile(
             agent_id=sample_agent_id,
@@ -50,6 +52,8 @@ class TestCreateComplianceProfile:
 
 
 class TestConformityAssessment:
+    """Tests for recording conformity assessments and risk-based requirements."""
+
     def test_record_assessment(self, compliance_service, sample_agent_id):
         compliance_service.create_compliance_profile(
             sample_agent_id, "limited", "Corp",
@@ -81,6 +85,8 @@ class TestConformityAssessment:
 
 
 class TestDeclarationOfConformity:
+    """Tests for generating EU AI Act declarations of conformity."""
+
     def test_full_flow(self, compliance_service, sample_agent_id):
         compliance_service.create_compliance_profile(
             sample_agent_id, "limited", "Corp",
@@ -106,6 +112,8 @@ class TestDeclarationOfConformity:
 
 
 class TestComplianceStatus:
+    """Tests for compliance status gap analysis and completion tracking."""
+
     def test_gap_analysis(self, compliance_service, sample_agent_id):
         compliance_service.create_compliance_profile(
             sample_agent_id, "limited", "Corp",

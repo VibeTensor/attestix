@@ -5,6 +5,8 @@ Workflow: Create identity → verify → translate to A2A card → translate to 
 
 
 class TestAgentDeveloperWorkflow:
+    """Tests the agent developer workflow from identity creation through translation."""
+
     def test_create_verify_translate(self, identity_service):
         # Step 1: Create an agent identity
         agent = identity_service.create_identity(

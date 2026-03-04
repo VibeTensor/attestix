@@ -1,7 +1,9 @@
-"""Tests for services/agent_card_service.py — A2A Agent Cards."""
+"""Tests for A2A Agent Cards in services/agent_card_service.py."""
 
 
 class TestParseAgentCard:
+    """Tests for parsing A2A agent card JSON into structured data."""
+
     def test_parses_standard_card(self, agent_card_service):
         card = {
             "name": "TestAgent",
@@ -34,6 +36,8 @@ class TestParseAgentCard:
 
 
 class TestGenerateAgentCard:
+    """Tests for generating well-known agent card JSON."""
+
     def test_generates_valid_card(self, agent_card_service):
         result = agent_card_service.generate_agent_card(
             name="MyAgent",
@@ -55,6 +59,8 @@ class TestGenerateAgentCard:
 
 
 class TestDiscoverAgent:
+    """Tests for agent discovery with HTTPS and SSRF validation."""
+
     def test_requires_https(self, agent_card_service):
         result = agent_card_service.discover_agent("http://example.com")
         assert "error" in result

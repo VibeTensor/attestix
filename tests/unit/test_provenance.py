@@ -1,7 +1,9 @@
-"""Tests for services/provenance_service.py — training data, lineage, audit."""
+"""Tests for training data, lineage, and audit in services/provenance_service.py."""
 
 
 class TestRecordTrainingData:
+    """Tests for recording training data provenance entries."""
+
     def test_records_entry(self, provenance_service):
         result = provenance_service.record_training_data(
             agent_id="attestix:bot1",
@@ -25,6 +27,8 @@ class TestRecordTrainingData:
 
 
 class TestRecordModelLineage:
+    """Tests for recording model lineage and fine-tuning metadata."""
+
     def test_records_lineage(self, provenance_service):
         result = provenance_service.record_model_lineage(
             agent_id="attestix:bot1",
@@ -39,6 +43,8 @@ class TestRecordModelLineage:
 
 
 class TestLogAction:
+    """Tests for logging agent actions to the audit trail."""
+
     def test_logs_action(self, provenance_service):
         result = provenance_service.log_action(
             agent_id="attestix:bot1",
@@ -66,6 +72,8 @@ class TestLogAction:
 
 
 class TestGetProvenance:
+    """Tests for aggregating provenance records across all entry types."""
+
     def test_aggregates_all_types(self, provenance_service):
         provenance_service.record_training_data("a:1", "Dataset1")
         provenance_service.record_model_lineage("a:1", "model-v1")
@@ -77,6 +85,8 @@ class TestGetProvenance:
 
 
 class TestAuditTrail:
+    """Tests for querying and filtering the audit trail."""
+
     def test_filters_by_action_type(self, provenance_service):
         provenance_service.log_action("a:1", "inference")
         provenance_service.log_action("a:1", "delegation")

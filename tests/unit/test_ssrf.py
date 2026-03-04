@@ -1,4 +1,4 @@
-"""Tests for auth/ssrf.py — SSRF protection."""
+"""Tests for SSRF protection in auth/ssrf.py."""
 
 from unittest.mock import patch
 
@@ -6,6 +6,8 @@ from auth.ssrf import validate_url_host
 
 
 class TestBlockedHosts:
+    """Tests that private, loopback, and metadata hostnames are blocked."""
+
     def test_blocks_localhost(self):
         assert validate_url_host("localhost") is not None
 
@@ -41,6 +43,8 @@ class TestBlockedHosts:
 
 
 class TestAllowedHosts:
+    """Tests that public IP addresses and hostnames are allowed."""
+
     def test_allows_public_ip(self):
         # Mock DNS resolution to return a public IP
         with patch("auth.ssrf.socket.getaddrinfo") as mock_dns:
@@ -54,6 +58,8 @@ class TestAllowedHosts:
 
 
 class TestDnsRebinding:
+    """Tests that DNS rebinding attacks resolving to private IPs are blocked."""
+
     def test_blocks_hostname_resolving_to_private(self):
         """A public hostname that resolves to 127.0.0.1 should be blocked."""
         with patch("auth.ssrf.socket.getaddrinfo") as mock_dns:
@@ -66,6 +72,8 @@ class TestDnsRebinding:
 
 
 class TestEdgeCases:
+    """Tests for edge cases like empty hostnames and IPv6 bracket stripping."""
+
     def test_empty_hostname(self):
         assert validate_url_host("") is not None
 

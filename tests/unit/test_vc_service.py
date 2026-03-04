@@ -1,7 +1,9 @@
-"""Tests for services/credential_service.py — W3C Verifiable Credentials."""
+"""Tests for W3C Verifiable Credentials in services/credential_service.py."""
 
 
 class TestIssueCredential:
+    """Tests for issuing verifiable credentials with proofs."""
+
     def test_issues_with_proof(self, credential_service):
         result = credential_service.issue_credential(
             subject_id="attestix:agent1",
@@ -31,6 +33,8 @@ class TestIssueCredential:
 
 
 class TestVerifyCredential:
+    """Tests for verifying credential validity and revocation status."""
+
     def test_valid_credential(self, credential_service):
         cred = credential_service.issue_credential(
             subject_id="attestix:agent1",
@@ -63,6 +67,8 @@ class TestVerifyCredential:
 
 
 class TestRevokeCredential:
+    """Tests for revoking issued credentials."""
+
     def test_revoke_success(self, credential_service):
         cred = credential_service.issue_credential(
             subject_id="attestix:agent1",
@@ -79,6 +85,8 @@ class TestRevokeCredential:
 
 
 class TestListCredentials:
+    """Tests for listing and filtering credentials."""
+
     def test_list_all(self, credential_service):
         credential_service.issue_credential("a:1", "T", "I", {"x": 1})
         credential_service.issue_credential("a:2", "T", "I", {"x": 2})
@@ -94,6 +102,8 @@ class TestListCredentials:
 
 
 class TestVerifiablePresentation:
+    """Tests for creating verifiable presentations from credentials."""
+
     def test_create_vp(self, credential_service):
         cred = credential_service.issue_credential(
             subject_id="attestix:agent1",

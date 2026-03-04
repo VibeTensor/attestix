@@ -1,4 +1,4 @@
-"""Tests for the MCP tool layer — generic patterns across all tools."""
+"""Tests for the MCP tool layer, covering generic patterns across all tools."""
 
 import json
 
@@ -16,6 +16,8 @@ def get_tool_func(name: str):
 
 
 class TestToolRegistration:
+    """Tests for MCP tool registration and async compliance."""
+
     def test_tools_registered(self):
         tools = mcp._tool_manager._tools
         assert len(tools) >= 47, (

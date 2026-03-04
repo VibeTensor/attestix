@@ -1,7 +1,9 @@
-"""Tests for services/reputation_service.py — trust scoring."""
+"""Tests for trust scoring operations in services/reputation_service.py."""
 
 
 class TestRecordInteraction:
+    """Tests for recording agent interactions and updating trust scores."""
+
     def test_records_and_returns_score(self, reputation_service):
         result = reputation_service.record_interaction(
             agent_id="attestix:bot1",
@@ -30,6 +32,8 @@ class TestRecordInteraction:
 
 
 class TestGetReputation:
+    """Tests for retrieving reputation scores with category breakdowns."""
+
     def test_no_interactions(self, reputation_service):
         result = reputation_service.get_reputation("attestix:unknown")
         assert result["trust_score"] is None
@@ -46,6 +50,8 @@ class TestGetReputation:
 
 
 class TestQueryReputation:
+    """Tests for querying reputations with score and interaction filters."""
+
     def test_filter_by_min_score(self, reputation_service):
         reputation_service.record_interaction("a:good", "a:x", "success")
         reputation_service.record_interaction("a:bad", "a:x", "failure")

@@ -1,4 +1,4 @@
-"""Credential MCP tools for Attestix (6 tools).
+"""Credential MCP tools for Attestix (8 tools).
 
 W3C Verifiable Credentials (VC Data Model 1.1) issuance and verification.
 """

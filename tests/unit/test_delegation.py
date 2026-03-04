@@ -1,7 +1,9 @@
-"""Tests for services/delegation_service.py — UCAN delegation tokens."""
+"""Tests for UCAN delegation token operations in services/delegation_service.py."""
 
 
 class TestCreateDelegation:
+    """Tests for creating UCAN delegation tokens as signed JWTs."""
+
     def test_creates_jwt_token(self, delegation_service):
         result = delegation_service.create_delegation(
             issuer_agent_id="attestix:issuer",
@@ -29,6 +31,8 @@ class TestCreateDelegation:
 
 
 class TestVerifyDelegation:
+    """Tests for verifying delegation tokens including tamper detection."""
+
     def test_verify_valid_token(self, delegation_service):
         created = delegation_service.create_delegation(
             issuer_agent_id="attestix:issuer",
@@ -61,6 +65,8 @@ class TestVerifyDelegation:
 
 
 class TestListDelegations:
+    """Tests for listing and filtering delegations by issuer or audience."""
+
     def test_list_all(self, delegation_service):
         delegation_service.create_delegation("a:1", "a:2", ["read"])
         delegation_service.create_delegation("a:2", "a:3", ["write"])

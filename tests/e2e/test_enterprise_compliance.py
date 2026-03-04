@@ -6,6 +6,8 @@ assessment → declaration → verify credential.
 
 
 class TestEnterpriseComplianceWorkflow:
+    """Tests the full EU AI Act compliance workflow for enterprise teams."""
+
     def test_full_eu_ai_act_flow(
         self, identity_service, compliance_service,
         provenance_service, credential_service,

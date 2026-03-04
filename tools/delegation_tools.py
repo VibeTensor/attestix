@@ -1,4 +1,4 @@
-"""Delegation MCP tools for Attestix (3 tools)."""
+"""Delegation MCP tools for Attestix (4 tools)."""
 
 import json
 from typing import Optional

@@ -1,4 +1,4 @@
-"""Tests for services/did_service.py — DID resolution and creation."""
+"""Tests for DID resolution and creation in services/did_service.py."""
 
 from unittest.mock import patch, MagicMock
 
@@ -6,6 +6,8 @@ import pytest
 
 
 class TestCreateDidKey:
+    """Tests for creating did:key identifiers with Ed25519 keypairs."""
+
     def test_creates_valid_did(self, did_service):
         result = did_service.create_did_key()
         assert result["did"].startswith("did:key:z")
@@ -23,6 +25,8 @@ class TestCreateDidKey:
 
 
 class TestResolveDidKey:
+    """Tests for resolving did:key identifiers to DID documents."""
+
     def test_resolves_generated_did(self, did_service):
         created = did_service.create_did_key()
         resolved = did_service.resolve_did(created["did"])
@@ -35,6 +39,8 @@ class TestResolveDidKey:
 
 
 class TestCreateDidWeb:
+    """Tests for creating did:web identifiers with hosting URLs."""
+
     def test_creates_did_web(self, did_service):
         result = did_service.create_did_web("example.com")
         assert result["did"] == "did:web:example.com"
@@ -48,6 +54,8 @@ class TestCreateDidWeb:
 
 
 class TestResolveDidWeb:
+    """Tests for did:web resolution with SSRF and security validation."""
+
     def test_ssrf_blocks_localhost(self, did_service):
         result = did_service.resolve_did("did:web:localhost")
         assert "error" in result
@@ -67,6 +75,8 @@ class TestResolveDidWeb:
 
 
 class TestResolveUniversal:
+    """Tests for universal DID resolution with format validation."""
+
     def test_rejects_invalid_format(self, did_service):
         result = did_service.resolve_did("did:foo:has spaces!")
         assert "error" in result

@@ -328,8 +328,8 @@ cred2 = credential_svc.issue_credential(
 )
 
 # Bundle into a Verifiable Presentation for a specific verifier
-vp = credential_svc.create_presentation(
-    holder_id=agent_id,
+vp = credential_svc.create_verifiable_presentation(
+    agent_id=agent_id,
     credential_ids=[cred2["id"]],
     audience_did="did:web:auditor.example.com",
     challenge="nonce-from-verifier-12345",
@@ -388,7 +388,7 @@ print(f"ReliableBot:   {score_a['trust_score']:.2f}")   # ~0.95+
 print(f"UnreliableBot: {score_b['trust_score']:.2f}")   # ~0.30-0.40
 
 # Query agents above a threshold
-top_agents = reputation_svc.query_agents(min_score=0.8)
+top_agents = reputation_svc.query_reputation(min_score=0.8)
 print(f"Agents above 0.8: {len(top_agents)}")
 ```
 

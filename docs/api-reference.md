@@ -191,6 +191,7 @@ Record an interaction outcome and update trust score.
 | Parameter | Type | Required | Default | Description |
 |-----------|------|----------|---------|-------------|
 | `agent_id` | string | Yes | - | Agent being rated |
+| `counterparty_id` | string | Yes | - | Agent on the other side of the interaction |
 | `outcome` | string | Yes | - | `success`, `failure`, or `partial` |
 | `category` | string | No | `"general"` | Category (e.g., `data_quality`, `response_time`) |
 | `details` | string | No | `""` | Additional context |
@@ -203,7 +204,7 @@ Get reputation score with category breakdown.
 |-----------|------|----------|-------------|
 | `agent_id` | string | Yes | Agent ID to query |
 
-**Returns:** `{ "score": 0.85, "total_interactions": 42, "category_breakdown": {...} }`
+**Returns:** `{ "trust_score": 0.85, "total_interactions": 42, "category_breakdown": {...} }`
 
 ### `query_reputation`
 
@@ -212,8 +213,10 @@ Search agents by reputation criteria.
 | Parameter | Type | Required | Default | Description |
 |-----------|------|----------|---------|-------------|
 | `min_score` | float | No | `0.0` | Minimum reputation score |
+| `max_score` | float | No | `1.0` | Maximum reputation score |
 | `category` | string | No | `""` | Filter by interaction category |
-| `limit` | int | No | `20` | Maximum results |
+| `min_interactions` | int | No | `0` | Minimum number of interactions |
+| `limit` | int | No | `50` | Maximum results |
 
 ---
 
@@ -231,6 +234,8 @@ Create an EU AI Act compliance profile with risk categorization.
 | `intended_purpose` | string | No | `""` | What the AI system does |
 | `transparency_obligations` | string | No | `""` | How transparency requirements are met |
 | `human_oversight_measures` | string | No | `""` | Human oversight mechanisms (required for high-risk) |
+| `provider_address` | string | No | `""` | Provider's registered address |
+| `authorised_representative` | string | No | `""` | EU authorised representative |
 
 ### `get_compliance_profile`
 
@@ -245,6 +250,7 @@ Update an existing compliance profile's fields.
 | Parameter | Type | Required | Default | Description |
 |-----------|------|----------|---------|-------------|
 | `agent_id` | string | Yes | - | Agent ID |
+| `provider_name` | string | No | `""` | Updated provider name |
 | `intended_purpose` | string | No | `""` | Updated intended purpose |
 | `transparency_obligations` | string | No | `""` | Updated transparency measures |
 | `human_oversight_measures` | string | No | `""` | Updated human oversight |

@@ -1,9 +1,11 @@
-"""Tests for services/blockchain_service.py — on-chain anchoring."""
+"""Tests for on-chain anchoring in services/blockchain_service.py."""
 
 from unittest.mock import patch
 
 
 class TestGracefulDegradation:
+    """Tests for graceful behavior when blockchain is not configured."""
+
     def test_not_configured_without_key(self, tmp_attestix):
         """Without EVM_PRIVATE_KEY, service reports not configured."""
         with patch.dict("os.environ", {}, clear=False):
@@ -34,6 +36,8 @@ class TestGracefulDegradation:
 
 
 class TestHashArtifact:
+    """Tests for deterministic SHA-256 artifact hashing."""
+
     def test_deterministic(self, blockchain_service_mock):
         artifact = {"agent_id": "test:1", "name": "Bot"}
         h1 = blockchain_service_mock.hash_artifact(artifact)
@@ -53,6 +57,8 @@ class TestHashArtifact:
 
 
 class TestAnchorArtifact:
+    """Tests for anchoring artifacts with type validation."""
+
     def test_invalid_artifact_type(self, blockchain_service_mock):
         result = blockchain_service_mock.anchor_artifact(
             "aa" * 32, "invalid_type", "test:1",
@@ -70,6 +76,8 @@ class TestAnchorArtifact:
 
 
 class TestVerifyAnchor:
+    """Tests for verifying on-chain anchor records."""
+
     def test_no_local_records(self, blockchain_service_mock):
         result = blockchain_service_mock.verify_anchor("cc" * 32)
         assert result["verified"] is False
@@ -77,6 +85,8 @@ class TestVerifyAnchor:
 
 
 class TestGetAnchorStatus:
+    """Tests for retrieving anchor status by agent ID."""
+
     def test_empty_status(self, blockchain_service_mock):
         result = blockchain_service_mock.get_anchor_status("attestix:unknown")
         assert result["total_anchors"] == 0
@@ -84,6 +94,8 @@ class TestGetAnchorStatus:
 
 
 class TestEstimateCost:
+    """Tests for estimating gas cost and wallet affordability."""
+
     def test_returns_estimate(self, blockchain_service_mock):
         result = blockchain_service_mock.estimate_anchor_cost()
         assert "estimated_gas" in result

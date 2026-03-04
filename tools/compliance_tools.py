@@ -1,4 +1,4 @@
-"""Compliance MCP tools for Attestix (6 tools).
+"""Compliance MCP tools for Attestix (7 tools).
 
 EU AI Act compliance profiles, conformity assessments, and declarations.
 """

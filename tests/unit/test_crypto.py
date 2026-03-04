@@ -1,4 +1,4 @@
-"""Tests for auth/crypto.py — Ed25519 key operations, signing, verification."""
+"""Tests for Ed25519 key operations, signing, and verification in auth/crypto.py."""
 
 from auth.crypto import (
     generate_ed25519_keypair,
@@ -18,6 +18,8 @@ from auth.crypto import (
 
 
 class TestKeypairGeneration:
+    """Tests for Ed25519 keypair generation and byte serialization roundtrips."""
+
     def test_generate_keypair(self):
         priv, pub = generate_ed25519_keypair()
         assert priv is not None
@@ -39,6 +41,8 @@ class TestKeypairGeneration:
 
 
 class TestSignVerify:
+    """Tests for Ed25519 message signing and signature verification."""
+
     def test_sign_and_verify(self):
         priv, pub = generate_ed25519_keypair()
         msg = b"hello attestix"
@@ -59,6 +63,8 @@ class TestSignVerify:
 
 
 class TestDidKey:
+    """Tests for did:key encoding, decoding, and error handling."""
+
     def test_did_key_roundtrip(self):
         priv, pub = generate_ed25519_keypair()
         did = public_key_to_did_key(pub)
@@ -82,6 +88,8 @@ class TestDidKey:
 
 
 class TestJsonSigning:
+    """Tests for JSON payload signing and verification with canonical ordering."""
+
     def test_sign_verify_payload(self):
         priv, pub = generate_ed25519_keypair()
         payload = {"name": "test", "value": 42}
@@ -106,6 +114,8 @@ class TestJsonSigning:
 
 
 class TestNormalize:
+    """Tests for Unicode NFC normalization of signing inputs."""
+
     def test_nfc_normalization(self):
         # Combining e + acute accent should normalize to e-acute
         import unicodedata
@@ -121,6 +131,8 @@ class TestNormalize:
 
 
 class TestLoadOrCreateSigningKey:
+    """Tests for persistent signing key creation and loading from disk."""
+
     def test_creates_key_on_first_call(self, tmp_path):
         key_file = tmp_path / ".test_key.json"
         priv, did = load_or_create_signing_key(key_file)

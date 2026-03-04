@@ -1,6 +1,6 @@
-"""E2E: Web3 x AI persona - on-chain anchoring (mock blockchain).
+"""E2E: Web3 x AI persona for on-chain anchoring (mock blockchain).
 
-Workflow: Create identity -> anchor -> verify -> batch anchor audit log.
+Workflow: Create identity, anchor, verify, then batch anchor audit log.
 """
 import pytest
 
@@ -9,6 +9,8 @@ pytest.importorskip("eth_abi", reason="eth_abi required for blockchain tests")
 
 
 class TestBlockchainAnchorWorkflow:
+    """Tests on-chain identity anchoring, verification, and batch audit log anchoring."""
+
     def test_anchor_identity_flow(
         self, identity_service, blockchain_service_mock,
     ):

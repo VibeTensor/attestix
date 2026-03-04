@@ -1,4 +1,4 @@
-"""Tests for blockchain/merkle.py — Merkle tree operations."""
+"""Tests for Merkle tree operations in blockchain/merkle.py."""
 
 import pytest
 
@@ -13,6 +13,8 @@ from blockchain.merkle import (
 
 
 class TestHashLeaf:
+    """Tests for leaf hashing with deterministic canonical JSON input."""
+
     def test_deterministic(self):
         data = {"key": "value"}
         assert hash_leaf(data) == hash_leaf(data)
@@ -26,13 +28,15 @@ class TestHashLeaf:
 
 
 class TestHashPair:
+    """Tests for internal node pair hashing with domain separation."""
+
     def test_deterministic(self):
         a = hash_leaf({"a": 1})
         b = hash_leaf({"b": 2})
         assert hash_pair(a, b) == hash_pair(a, b)
 
     def test_position_matters(self):
-        """hash_pair(a, b) != hash_pair(b, a) — position-preserving."""
+        """hash_pair(a, b) != hash_pair(b, a) because position is preserved."""
         a = hash_leaf({"a": 1})
         b = hash_leaf({"b": 2})
         assert hash_pair(a, b) != hash_pair(b, a)
@@ -47,6 +51,8 @@ class TestHashPair:
 
 
 class TestBuildMerkleTree:
+    """Tests for building Merkle trees from leaf sets including odd promotion."""
+
     def test_single_leaf(self):
         leaf = hash_leaf({"x": 1})
         root, levels = build_merkle_tree([leaf])
@@ -76,6 +82,8 @@ class TestBuildMerkleTree:
 
 
 class TestComputeMerkleRoot:
+    """Tests for the high-level compute_merkle_root convenience function."""
+
     def test_returns_hex_and_count(self):
         entries = [{"i": 1}, {"i": 2}, {"i": 3}]
         root_hex, count = compute_merkle_root(entries)

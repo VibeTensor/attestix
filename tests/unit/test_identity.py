@@ -1,9 +1,11 @@
-"""Tests for services/identity_service.py — UAIT lifecycle."""
+"""Tests for UAIT lifecycle operations in services/identity_service.py."""
 
 from datetime import datetime, timedelta, timezone
 
 
 class TestCreateIdentity:
+    """Tests for creating agent identities with required and optional fields."""
+
     def test_creates_with_required_fields(self, identity_service):
         result = identity_service.create_identity(
             display_name="TestBot",
@@ -41,6 +43,8 @@ class TestCreateIdentity:
 
 
 class TestGetIdentity:
+    """Tests for retrieving agent identities by ID."""
+
     def test_get_existing(self, identity_service):
         created = identity_service.create_identity("Bot", "mcp")
         found = identity_service.get_identity(created["agent_id"])
@@ -52,6 +56,8 @@ class TestGetIdentity:
 
 
 class TestListIdentities:
+    """Tests for listing identities with protocol and revocation filters."""
+
     def test_list_all(self, identity_service):
         identity_service.create_identity("A", "mcp")
         identity_service.create_identity("B", "a2a")
@@ -79,6 +85,8 @@ class TestListIdentities:
 
 
 class TestVerifyIdentity:
+    """Tests for identity verification including expiry and signature checks."""
+
     def test_valid_identity(self, identity_service):
         created = identity_service.create_identity("Bot", "mcp")
         result = identity_service.verify_identity(created["agent_id"])
@@ -102,6 +110,8 @@ class TestVerifyIdentity:
 
 
 class TestRevokeIdentity:
+    """Tests for revoking agent identities with reason tracking."""
+
     def test_revoke_success(self, identity_service):
         created = identity_service.create_identity("Bot", "mcp")
         result = identity_service.revoke_identity(created["agent_id"], "test reason")

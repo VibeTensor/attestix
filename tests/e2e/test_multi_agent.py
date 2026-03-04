@@ -6,6 +6,8 @@ record interactions → check reputation.
 
 
 class TestMultiAgentWorkflow:
+    """Tests multi-agent delegation, interaction recording, and reputation scoring."""
+
     def test_delegation_chain(self, identity_service, delegation_service):
         # Create two agents
         agent_a = identity_service.create_identity("AgentA", "mcp", capabilities=["read", "write", "admin"])
