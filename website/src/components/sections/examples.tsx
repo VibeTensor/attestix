@@ -18,17 +18,18 @@ const featureOptions: FeatureOption[] = [
 # Generates a UAIT (Unique Agent Identity Token) and DID
 
 result = await create_agent_identity(
-    agent_name="compliance-auditor",
-    capabilities=["audit", "verify", "report"],
-    agent_type="compliance",
-    version="1.0.0"
+    display_name="compliance-auditor",
+    source_protocol="manual",
+    capabilities="audit, verify, report",
+    description="Automated compliance auditing agent",
+    issuer_name="Acme Corp",
+    expiry_days=365
 )
 
 # Returns:
-# - uait: "uait:atx:a1b2c3..."
+# - agent_id: "attestix:a1b2c3..."
 # - did: "did:key:z6Mk..."
-# - public_key: Ed25519 public key
-# - agent_card: A2A-compatible agent card`,
+# - public_key: Ed25519 public key`,
   },
   {
     id: 2,
@@ -38,16 +39,11 @@ result = await create_agent_identity(
 # Signed with Ed25519Signature2020
 
 credential = await issue_credential(
-    issuer_id="uait:atx:issuer123",
-    subject_id="uait:atx:agent456",
+    subject_agent_id="attestix:agent456",
     credential_type="ComplianceCertification",
-    claims={
-        "risk_level": "limited",
-        "framework": "EU AI Act",
-        "assessment_date": "2026-01-15",
-        "conformity_status": "compliant"
-    },
-    expiration_days=365
+    issuer_name="Acme Corp",
+    claims_json='{"risk_level": "limited", "framework": "EU AI Act"}',
+    expiry_days=365
 )
 
 # Returns a full W3C VC with:
@@ -63,20 +59,10 @@ credential = await issue_credential(
 # Scoped capability delegation with JWT tokens
 
 delegation = await create_delegation(
-    issuer_id="uait:atx:parent_agent",
-    audience_id="uait:atx:child_agent",
-    capabilities=[
-        {
-            "with": "attestix://credentials/*",
-            "can": "credential/issue"
-        },
-        {
-            "with": "attestix://compliance/*",
-            "can": "compliance/read"
-        }
-    ],
-    expiration_hours=24,
-    not_before=None  # Active immediately
+    issuer_agent_id="attestix:parent_agent",
+    audience_agent_id="attestix:child_agent",
+    capabilities="credential/issue, compliance/read",
+    expiry_hours=24
 )
 
 # Returns a signed UCAN JWT token
@@ -90,24 +76,20 @@ delegation = await create_delegation(
 # Risk classification + conformity assessment + declaration
 
 profile = await create_compliance_profile(
-    agent_id="uait:atx:agent456",
-    risk_level="limited",
+    agent_id="attestix:agent456",
+    risk_category="limited",
+    provider_name="Acme Corp",
     intended_purpose="automated content moderation",
-    transparency_measures=[
-        "AI-generated content disclosure",
-        "human oversight mechanism",
-        "bias monitoring dashboard"
-    ]
+    transparency_obligations="AI-generated content disclosure",
+    human_oversight_measures="human review before publish"
 )
 
 declaration = await generate_declaration_of_conformity(
-    agent_id="uait:atx:agent456",
-    profile_id=profile["profile_id"],
-    standards=["ISO 42001", "EU AI Act Annex V"],
-    authorized_representative="VibeTensor GmbH"
+    agent_id="attestix:agent456"
 )
 
 # Machine-readable Annex V declaration
+# Auto-issues a W3C VC as proof
 # Can be anchored to blockchain for immutability`,
   },
 ];
@@ -125,7 +107,7 @@ export async function Examples() {
 
   return (
     <Section id="examples" title="Code Examples">
-      <div className="border-x border-t">
+      <div className="px-4 py-6 md:px-6">
         <FeatureSelector features={features} />
       </div>
     </Section>

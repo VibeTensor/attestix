@@ -1,8 +1,7 @@
 "use client";
 
-import { Icons } from "@/components/icons";
 import { Section } from "@/components/section";
-import { BorderText } from "@/components/ui/border-number";
+import { NumberTicker } from "@/components/ui/number-ticker";
 import {
   WrenchIcon,
   FlaskConicalIcon,
@@ -12,20 +11,23 @@ import Link from "next/link";
 
 const stats = [
   {
-    title: "47",
+    value: 47,
+    suffix: "",
     subtitle: "MCP Tools across 9 modules",
     icon: <WrenchIcon className="h-5 w-5" />,
     href: "https://docs.attestix.io",
   },
   {
-    title: "272+",
+    value: 284,
+    suffix: "",
     subtitle: "Tests with conformance benchmarks",
     icon: <FlaskConicalIcon className="h-5 w-5" />,
     href: "https://github.com/VibeTensor/attestix",
   },
   {
-    title: "5",
-    subtitle: "W3C/IETF standards implemented",
+    value: 5,
+    suffix: "",
+    subtitle: "Conformance test suites (W3C, IETF, UCAN)",
     icon: <BookOpenIcon className="h-5 w-5" />,
     href: "https://docs.attestix.io/research/",
   },
@@ -67,7 +69,12 @@ export function Statistics() {
                 </svg>
               </div>
               <div className="text-center relative">
-                <BorderText text={stat.title} />
+                <div className="flex items-center justify-center">
+                  <NumberTicker
+                    value={stat.value}
+                    className="font-mono pointer-events-none text-center text-[6rem] font-bold leading-none before:bg-gradient-to-b before:from-border before:to-border/50 dark:before:from-border dark:before:to-border/30 bg-gradient-to-b from-foreground/60 to-foreground/30 bg-clip-text text-transparent"
+                  />
+                </div>
                 <div className="flex items-center justify-center gap-2 mt-2">
                   {stat.icon}
                   <p className="text-sm text-muted-foreground">

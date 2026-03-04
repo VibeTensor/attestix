@@ -1,23 +1,18 @@
 "use client";
 
-import { Icons } from "@/components/icons";
 import { Section } from "@/components/section";
-import OrbitingCircles from "@/components/ui/orbiting-circles";
+import { MagicCard } from "@/components/ui/magic-card";
 import { cn } from "@/lib/utils";
 import { cubicBezier, motion } from "motion/react";
 import {
   AwardIcon,
-  ContactIcon,
   FileCheckIcon,
   FingerprintIcon,
-  GitForkIcon,
   FileSearchIcon,
-  KeyIcon,
   LinkIcon,
   ScaleIcon,
   ShieldCheckIcon,
   ShieldIcon,
-  StarIcon,
 } from "lucide-react";
 
 const containerVariants = {
@@ -120,7 +115,7 @@ const Card2 = () => {
   ];
 
   return (
-    <div className="p-0 h-full overflow-hidden border-b lg:border-b-0 lg:border-r">
+    <div className="p-0 h-full overflow-hidden border-b lg:border-b-0">
       <motion.div variants={containerVariants} initial="initial" whileHover="whileHover" className="flex flex-col gap-y-5 items-center justify-between h-full w-full cursor-pointer">
         <div className="border-b items-center justify-center overflow-hidden bg-transparent rounded-t-xl h-4/5 w-full flex">
           <motion.div className="p-5 rounded-t-md cursor-pointer overflow-hidden h-[270px] flex flex-col gap-y-3.5 w-full">
@@ -153,116 +148,28 @@ const Card2 = () => {
   );
 };
 
-function OrbitIcon({
-  Icon,
-  label,
-  color,
-}: {
-  Icon: React.ComponentType<{ className?: string }>;
-  label: string;
-  color: "gold" | "primary";
-}) {
-  return (
-    <div
-      className={cn(
-        "flex h-8 w-8 items-center justify-center rounded-full border backdrop-blur-sm",
-        color === "gold"
-          ? "bg-gold/20 border-gold/30"
-          : "bg-primary/15 border-primary/25"
-      )}
-      title={label}
-    >
-      <Icon
-        className={cn(
-          "h-4 w-4",
-          color === "gold" ? "text-gold" : "text-primary"
-        )}
-      />
-    </div>
-  );
-}
-
-const Card3 = () => {
-  const orbitVariant = {
-    initial: { scale: 1, transition: { duration: 0.3, ease: "easeInOut" as const } },
-    whileHover: {
-      scale: 1.08,
-      transition: { duration: 0.3, ease: "easeInOut" as const },
-    },
-  };
-  const centerVariant = {
-    initial: { scale: 1, transition: { duration: 0.2, ease: "easeInOut" as const } },
-    whileHover: {
-      scale: 1.25,
-      transition: { duration: 0.2, ease: "easeInOut" as const },
-    },
-  };
-
-  return (
-    <div className="p-0 h-full overflow-hidden border-b lg:border-b-0">
-      <motion.div
-        variants={{ initial: {}, whileHover: { transition: { staggerChildren: 0.05 } } }}
-        initial="initial"
-        whileHover="whileHover"
-        className="relative flex flex-col gap-y-5 items-center justify-between h-full w-full cursor-pointer"
-      >
-        <div className="border-b items-center justify-center overflow-hidden rounded-t-xl h-4/5 w-full flex">
-          <motion.div variants={orbitVariant} className="relative flex items-center justify-center h-full w-full">
-            <div className="absolute inset-0 bg-[radial-gradient(circle,oklch(0.46_0.24_264_/_0.08)_0%,transparent_60%)]"></div>
-            <motion.span variants={centerVariant} className="z-10">
-              <Icons.logo className="h-8 w-8" />
-            </motion.span>
-
-            {/* Inner ring (radius 55) - forward */}
-            <OrbitingCircles radius={55} duration={22} delay={0} className="border-0 bg-transparent p-0 size-auto">
-              <OrbitIcon Icon={FingerprintIcon} label="Identity" color="gold" />
-            </OrbitingCircles>
-            <OrbitingCircles radius={55} duration={22} delay={7} className="border-0 bg-transparent p-0 size-auto">
-              <OrbitIcon Icon={KeyIcon} label="DID" color="gold" />
-            </OrbitingCircles>
-            <OrbitingCircles radius={55} duration={22} delay={14} className="border-0 bg-transparent p-0 size-auto">
-              <OrbitIcon Icon={ContactIcon} label="Agent Cards" color="gold" />
-            </OrbitingCircles>
-
-            {/* Middle ring (radius 100) - reverse */}
-            <OrbitingCircles radius={100} duration={28} delay={0} reverse className="border-0 bg-transparent p-0 size-auto">
-              <OrbitIcon Icon={ShieldCheckIcon} label="Credentials" color="primary" />
-            </OrbitingCircles>
-            <OrbitingCircles radius={100} duration={28} delay={9} reverse className="border-0 bg-transparent p-0 size-auto">
-              <OrbitIcon Icon={GitForkIcon} label="Delegation" color="primary" />
-            </OrbitingCircles>
-            <OrbitingCircles radius={100} duration={28} delay={18} reverse className="border-0 bg-transparent p-0 size-auto">
-              <OrbitIcon Icon={ScaleIcon} label="Compliance" color="primary" />
-            </OrbitingCircles>
-
-            {/* Outer ring (radius 145) - forward */}
-            <OrbitingCircles radius={145} duration={34} delay={0} className="border-0 bg-transparent p-0 size-auto">
-              <OrbitIcon Icon={FileSearchIcon} label="Provenance" color="primary" />
-            </OrbitingCircles>
-            <OrbitingCircles radius={145} duration={34} delay={11} className="border-0 bg-transparent p-0 size-auto">
-              <OrbitIcon Icon={StarIcon} label="Reputation" color="gold" />
-            </OrbitingCircles>
-            <OrbitingCircles radius={145} duration={34} delay={22} className="border-0 bg-transparent p-0 size-auto">
-              <OrbitIcon Icon={LinkIcon} label="Blockchain" color="gold" />
-            </OrbitingCircles>
-          </motion.div>
-        </div>
-        <div className="flex flex-col gap-y-1 px-5 pb-4 items-start w-full">
-          <h2 className="font-semibold tracking-tight text-lg">9-Module Ecosystem</h2>
-          <p className="text-sm text-muted-foreground">Identity, DIDs, Credentials, Delegation, Compliance, Provenance, Reputation, Blockchain, and Agent Cards.</p>
-        </div>
-      </motion.div>
-    </div>
-  );
-};
-
 export function UseCases() {
   return (
     <Section id="use-cases" title="Use Cases">
-      <div className="grid lg:grid-cols-3 h-full border border-b-0">
-        <Card1 />
-        <Card2 />
-        <Card3 />
+      <div className="grid grid-cols-1 lg:grid-cols-2 h-full border border-b-0">
+        <MagicCard
+          gradientColor="#4F46E5"
+          gradientOpacity={0.15}
+          gradientFrom="#4F46E5"
+          gradientTo="#E1A32C"
+          className="rounded-none"
+        >
+          <Card1 />
+        </MagicCard>
+        <MagicCard
+          gradientColor="#E1A32C"
+          gradientOpacity={0.15}
+          gradientFrom="#E1A32C"
+          gradientTo="#4F46E5"
+          className="rounded-none"
+        >
+          <Card2 />
+        </MagicCard>
       </div>
     </Section>
   );

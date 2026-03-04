@@ -2,6 +2,7 @@
 
 import { Section } from "@/components/section";
 import { Button } from "@/components/ui/button";
+import { BorderBeam } from "@/components/ui/border-beam";
 import { CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { siteConfig } from "@/lib/config";
 import { cn } from "@/lib/utils";
@@ -18,6 +19,15 @@ function PricingTier({
     <div
       className="outline-focus transition-transform-background relative z-10 box-border grid h-full w-full overflow-hidden text-foreground motion-reduce:transition-none lg:border-r border-t last:border-r-0"
     >
+      {isEnterprise && (
+        <BorderBeam
+          size={120}
+          duration={8}
+          colorFrom="#4F46E5"
+          colorTo="#E1A32C"
+          borderWidth={2}
+        />
+      )}
       <div className="flex flex-col h-full">
         <CardHeader className="border-b p-4 grid grid-rows-2 h-fit">
           <CardTitle className="flex items-center justify-between">
@@ -27,11 +37,9 @@ function PricingTier({
           </CardTitle>
           <div className="pt-2 text-3xl font-bold">
             {tier.price.monthly}
-            {tier.price.monthly !== "Custom" && (
-              <span className="text-sm font-medium text-muted-foreground">
-                {" "}/ {tier.frequency.monthly}
-              </span>
-            )}
+            <span className="ml-2 text-sm font-medium text-muted-foreground">
+              {tier.frequency.monthly}
+            </span>
           </div>
           <p className="text-[15px] font-medium text-muted-foreground">
             {tier.description}
@@ -83,13 +91,13 @@ export function Pricing() {
         <div className="grid grid-rows-1 gap-y-10 p-10">
           <div className="text-center">
             <h2 className="text-3xl md:text-5xl font-bold tracking-tighter text-balance">
-              Open source, free forever.
+              Open source. Apache 2.0.
             </h2>
 
             <p className="mt-6 text-balance text-muted-foreground">
-              Attestix is <strong>Apache 2.0 licensed</strong> with all 47 tools available
-              for free. Enterprise support available for organizations with
-              advanced compliance requirements.
+              The complete attestation toolkit for AI agents. Enterprise
+              support available for organizations with advanced compliance
+              requirements.
             </p>
           </div>
         </div>

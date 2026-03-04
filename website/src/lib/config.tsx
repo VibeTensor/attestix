@@ -1,12 +1,4 @@
 import { Icons } from "@/components/icons";
-import {
-  FingerprintIcon,
-  GitForkIcon,
-  FileSearchIcon,
-  LinkIcon,
-  ScaleIcon,
-  ShieldCheckIcon,
-} from "lucide-react";
 
 export const BLUR_FADE_DELAY = 0.15;
 
@@ -45,49 +37,11 @@ export const siteConfig = {
     cta: "pip install attestix",
     ctaDescription: "Open source. Apache 2.0 license.",
   },
-  features: [
-    {
-      name: "W3C Verifiable Credentials",
-      description:
-        "Issue and verify Ed25519Signature2020 credentials and verifiable presentations following W3C standards.",
-      icon: <ShieldCheckIcon className="h-6 w-6" />,
-    },
-    {
-      name: "Regulatory Compliance Tools",
-      description:
-        "Risk classification, conformity assessments, and structured declaration generation for compliance workflows.",
-      icon: <ScaleIcon className="h-6 w-6" />,
-    },
-    {
-      name: "Decentralized Identity",
-      description:
-        "did:key and did:web resolution with UAIT bridge connecting MCP, A2A, and DID ecosystems.",
-      icon: <FingerprintIcon className="h-6 w-6" />,
-    },
-    {
-      name: "UCAN Delegation",
-      description:
-        "Capability-based delegation with signed JWT tokens, permission scoping, and revocation support.",
-      icon: <GitForkIcon className="h-6 w-6" />,
-    },
-    {
-      name: "Provenance Tracking",
-      description:
-        "Record training data, model lineage, and hash-chained audit trails for complete transparency.",
-      icon: <FileSearchIcon className="h-6 w-6" />,
-    },
-    {
-      name: "Blockchain Anchoring",
-      description:
-        "Anchor identities and credentials to Base L2 via EAS with Merkle batch support for tamper-proof records.",
-      icon: <LinkIcon className="h-6 w-6" />,
-    },
-  ],
   pricing: [
     {
       name: "Open Source",
-      price: { monthly: "Free", yearly: "Free" },
-      frequency: { monthly: "forever", yearly: "forever" },
+      price: { monthly: "$0", yearly: "$0" },
+      frequency: { monthly: "open source", yearly: "open source" },
       description: "Everything you need for AI agent attestation.",
       features: [
         "47 MCP tools across 9 modules",
@@ -127,18 +81,31 @@ export const siteConfig = {
         url: "https://twitter.com/vibetensor",
       },
     ],
-    links: [
-      { text: "Documentation", url: "https://docs.attestix.io" },
-      { text: "PyPI", url: "https://pypi.org/project/attestix/" },
+    linkGroups: [
       {
-        text: "MCP Registry",
-        url: "https://registry.modelcontextprotocol.io",
+        title: "Resources",
+        links: [
+          { text: "Documentation", url: "https://docs.attestix.io", external: true },
+          { text: "Research Paper", url: "https://docs.attestix.io/research/", external: true },
+          { text: "Blog", url: "/blog", external: false },
+        ],
       },
       {
-        text: "Research Paper",
-        url: "https://docs.attestix.io/research/",
+        title: "Project",
+        links: [
+          { text: "PyPI", url: "https://pypi.org/project/attestix/", external: true },
+          { text: "MCP Registry", url: "https://registry.modelcontextprotocol.io", external: true },
+          { text: "GitHub", url: "https://github.com/VibeTensor/attestix", external: true },
+        ],
       },
-      { text: "GitHub", url: "https://github.com/VibeTensor/attestix" },
+      {
+        title: "Company",
+        links: [
+          { text: "Pricing", url: "/pricing", external: false },
+          { text: "FAQ", url: "/faq", external: false },
+          { text: "Community", url: "/community", external: false },
+        ],
+      },
     ],
     bottomText: "Apache 2.0 License. Built by VibeTensor.",
     brandText: "ATTESTIX",
@@ -146,28 +113,49 @@ export const siteConfig = {
 
   highlights: [
     {
-      id: 1,
-      text: "Attestix provides the cryptographic identity layer that every AI agent needs. W3C Verifiable Credentials, UCAN delegation, and blockchain anchoring in a single MCP server.",
-      name: "Pavan Kumar Dubasi",
-      role: "Creator",
-      company: "VibeTensor",
-      image: "https://avatars.githubusercontent.com/u/52927921?v=4",
+      id: 4,
+      text: "How do we design where we can have trust? This is one of the very active conversations that we are having right now.",
+      name: "Julie Zhuo",
+      role: "Founder, Sundial",
+      company: "Ex-VP Product Design, Meta (14 years)",
+
+      validation: "problem" as const,
+      context: "On trust infrastructure for AI agent workflows",
+      askedBy: "Pavan Kumar Dubasi",
+      question: "As AI agents start making autonomous decisions, who is responsible when an agent makes a bad data-driven decision? How does Sundial think about the trust and accountability layer for agent workflows? Should AI agents have verifiable proof of work before they can act?",
+      event: "Fireside Chat with Julie Zhuo | South Park Commons",
+      venue: "SPC India, HSR Layout, Bengaluru - March 3, 2026",
+      detail: "Julie confirmed that designing trust for AI agents is an active, unsolved problem at Sundial. She described the management chain model where a human somewhere in the chain owns accountability. This maps directly to Attestix's UCAN delegation chains, where every agent action traces back to a human principal through cryptographic proof of authorization.",
     },
     {
-      id: 2,
-      text: "Attestix generates machine-readable, cryptographically signed declarations that can be independently verified without trusting the issuer. It is a documentation and evidence tooling system, not a compliance guarantee.",
-      name: "Design Principle",
-      role: "From the Whitepaper",
-      company: "Architecture Overview",
-      image: undefined,
+      id: 5,
+      text: "How do humans trust each other? Benefit of the doubt, then validate work, then trust more. We build structures to minimise mistakes given the context.",
+      name: "Julie Zhuo",
+      role: "Founder, Sundial",
+      company: "Ex-VP Product Design, Meta (14 years)",
+
+      validation: "problem" as const,
+      context: "Describing progressive trust, the pattern Attestix implements",
+      askedBy: "Pavan Kumar Dubasi",
+      question: "As AI agents start making autonomous decisions, who is responsible when an agent makes a bad data-driven decision? How does Sundial think about the trust and accountability layer for agent workflows? Should AI agents have verifiable proof of work before they can act?",
+      event: "Fireside Chat with Julie Zhuo | South Park Commons",
+      venue: "SPC India, HSR Layout, Bengaluru - March 3, 2026",
+      detail: "Julie described how humans build trust progressively: start with benefit of the doubt, validate work, then extend more trust. This is exactly the pattern Attestix's reputation scoring module implements. Agents earn trust scores based on verified actions, compliance history, and audit trail integrity. Progressive trust, but cryptographically verifiable.",
     },
     {
-      id: 3,
-      text: "47 MCP tools across 9 modules with 272+ tests and conformance benchmarks validating 5 W3C and IETF standards for verifiable agent identity.",
-      name: "By the Numbers",
-      role: "Open Source",
-      company: "Apache 2.0 License",
-      image: undefined,
+      id: 6,
+      text: "Code reviews as a process to generate trust. That is how trust is created, because humans are not perfect. We always need structured verification.",
+      name: "Julie Zhuo",
+      role: "Founder, Sundial",
+      company: "Ex-VP Product Design, Meta (14 years)",
+
+      validation: "problem" as const,
+      context: "Structured verification for AI agents is what Attestix automates",
+      askedBy: "Pavan Kumar Dubasi",
+      question: "As AI agents start making autonomous decisions, who is responsible when an agent makes a bad data-driven decision? How does Sundial think about the trust and accountability layer for agent workflows? Should AI agents have verifiable proof of work before they can act?",
+      event: "Fireside Chat with Julie Zhuo | South Park Commons",
+      venue: "SPC India, HSR Layout, Bengaluru - March 3, 2026",
+      detail: "Julie sees code reviews as the human model for trust generation: structured review processes that catch mistakes before they ship. Attestix automates this exact pattern for AI agents. Instead of code reviews, agents undergo compliance verification, identity attestation, and authorization checks before they can act. Structured verification, but automated and cryptographically signed.",
     },
   ],
 
@@ -175,7 +163,7 @@ export const siteConfig = {
     {
       question: "What is Attestix?",
       answer:
-        "Attestix is an open-source attestation infrastructure for AI agents. It provides 47 MCP tools across 9 modules for verifiable identity, W3C credentials, delegation chains, compliance declarations, provenance tracking, reputation scoring, and blockchain anchoring.",
+        "Attestix is an open-source attestation infrastructure for AI agents. It covers verifiable identity, W3C credentials, delegation chains, compliance declarations, provenance tracking, reputation scoring, and blockchain anchoring across 9 modules.",
     },
     {
       question: "How do I install Attestix?",
@@ -185,12 +173,12 @@ export const siteConfig = {
     {
       question: "What standards does Attestix implement?",
       answer:
-        "Attestix implements W3C Verifiable Credentials (VC Data Model 2.0), W3C Decentralized Identifiers (DIDs), UCAN delegation (based on JWT), Ed25519 signatures (RFC 8032), and Ethereum Attestation Service (EAS) for blockchain anchoring.",
+        "Attestix implements W3C Verifiable Credentials (VC Data Model 1.1), W3C Decentralized Identifiers (DIDs), UCAN delegation (based on JWT), Ed25519 signatures (RFC 8032), and Ethereum Attestation Service (EAS) for blockchain anchoring.",
     },
     {
       question: "What is the current maturity level?",
       answer:
-        `Attestix v${ATTESTIX_VERSION} is in active development (beta). It includes 272+ tests across functional, end-to-end, and conformance benchmark suites covering all 9 modules. We recommend thorough testing before production deployment.`,
+        `Attestix v${ATTESTIX_VERSION} is in active development (beta). It includes 284 tests across functional, end-to-end, and conformance benchmark suites covering all 9 modules. We recommend thorough testing before production deployment.`,
     },
     {
       question: "How does blockchain anchoring work?",
@@ -203,6 +191,7 @@ export const siteConfig = {
         "Yes. Blockchain anchoring is optional. All core features (identity, credentials, delegation, compliance, provenance, reputation) work fully without any blockchain dependency.",
     },
   ],
+
 };
 
 export type SiteConfig = typeof siteConfig;

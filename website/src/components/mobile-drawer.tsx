@@ -15,9 +15,10 @@ import { MenuIcon } from "lucide-react";
 import Link from "next/link";
 
 const mobileLinks = [
-  { label: "Features", href: "#features" },
-  { label: "Use Cases", href: "#use-cases" },
-  { label: "Pricing", href: "#pricing" },
+  { label: "Architecture", href: "#architecture" },
+  { label: "Tech Stack", href: "#tech-stack" },
+  { label: "Pricing", href: "/pricing" },
+  { label: "FAQ", href: "/faq" },
   { label: "Docs", href: "https://docs.attestix.io" },
   { label: "Research", href: "https://docs.attestix.io/research/" },
   { label: "GitHub", href: "https://github.com/VibeTensor/attestix" },

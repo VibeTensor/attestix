@@ -8,9 +8,8 @@ import { cn } from "@/lib/utils";
 import Link from "next/link";
 
 const navLinks = [
-  { label: "Features", href: "#features" },
-  { label: "Use Cases", href: "#use-cases" },
-  { label: "Pricing", href: "#pricing" },
+  { label: "Architecture", href: "#architecture" },
+  { label: "Tech Stack", href: "#tech-stack" },
   { label: "Docs", href: "https://docs.attestix.io", external: true },
   { label: "Research", href: "https://docs.attestix.io/research/", external: true },
 ];
@@ -27,14 +26,14 @@ export function Header() {
           <Icons.logo className="w-auto h-7" />
           <span className="font-semibold text-lg">{siteConfig.name}</span>
         </Link>
-        <nav className="hidden lg:flex items-center space-x-6">
+        <nav className="hidden lg:flex items-center gap-8">
           {navLinks.map((link) => (
             <Link
               key={link.label}
               href={link.href}
               target={link.external ? "_blank" : undefined}
               rel={link.external ? "noopener noreferrer" : undefined}
-              className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+              className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors relative after:absolute after:-bottom-1 after:left-0 after:h-[2px] after:w-0 after:bg-primary after:transition-all hover:after:w-full"
             >
               {link.label}
             </Link>
@@ -66,7 +65,7 @@ export function Header() {
           <MobileDrawer />
         </div>
       </div>
-      <hr className="absolute w-full bottom-0" />
+      <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-border to-transparent" />
     </header>
   );
 }
