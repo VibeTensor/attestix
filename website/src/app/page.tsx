@@ -6,7 +6,7 @@ import { Header } from "@/components/sections/header";
 import { Hero } from "@/components/sections/hero";
 import { Statistics } from "@/components/sections/statistics";
 import { TechStack } from "@/components/sections/tech-stack";
-import { Testimonials } from "@/components/sections/testimonials";
+// import { Testimonials } from "@/components/sections/testimonials";
 import { UseCases } from "@/components/sections/use-cases";
 import { siteConfig } from "@/lib/config";
 
@@ -50,7 +50,7 @@ export default function Home() {
         <Examples />
         <UseCases />
         <Statistics />
-        <Testimonials />
+        {/* <Testimonials /> */}
         <CTA />
         <Footer />
       </main>
