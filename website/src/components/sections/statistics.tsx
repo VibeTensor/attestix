@@ -25,9 +25,9 @@ const stats = [
     href: "https://github.com/VibeTensor/attestix",
   },
   {
-    value: 5,
+    value: 6,
     suffix: "",
-    subtitle: "Conformance test suites (W3C, IETF, UCAN)",
+    subtitle: "Conformance test suites (W3C, IETF, UCAN, MCP)",
     icon: <BookOpenIcon className="h-5 w-5" />,
     href: "https://docs.attestix.io/research/",
   },
