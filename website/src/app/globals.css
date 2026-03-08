@@ -6,32 +6,54 @@
 
 @source '../node_modules/fumadocs-ui/dist/**/*.js';
 
-/* Fumadocs brand overrides */
+/* Fumadocs brand overrides - indigo theme
+ * Variables must use --color-fd-* prefix (Tailwind v4 convention)
+ * Light mode: :root overrides @theme defaults from neutral.css
+ * Dark mode: .dark overrides neutral.css .dark block
+ */
 :root {
-  --fd-primary: oklch(0.46 0.24 264);
-  --fd-primary-foreground: oklch(0.98 0.005 264);
-  --fd-background: oklch(0.985 0.002 264);
-  --fd-foreground: oklch(0.13 0.02 264);
-  --fd-muted: oklch(0.48 0.02 264);
-  --fd-muted-foreground: oklch(0.48 0.02 264);
-  --fd-border: oklch(0.91 0.008 264);
-  --fd-accent: oklch(0.95 0.008 264);
-  --fd-accent-foreground: oklch(0.20 0.02 264);
+  --color-fd-background: oklch(0.985 0.002 264);
+  --color-fd-foreground: oklch(0.13 0.02 264);
+  --color-fd-muted: oklch(0.955 0.008 264);
+  --color-fd-muted-foreground: oklch(0.48 0.02 264);
+  --color-fd-popover: oklch(0.985 0.002 264);
+  --color-fd-popover-foreground: oklch(0.15 0.02 264);
+  --color-fd-card: oklch(0.97 0.005 264);
+  --color-fd-card-foreground: oklch(0.13 0.02 264);
+  --color-fd-border: oklch(0.88 0.015 264 / 60%);
+  --color-fd-primary: oklch(0.46 0.24 264);
+  --color-fd-primary-foreground: oklch(0.98 0.005 264);
+  --color-fd-secondary: oklch(0.95 0.008 264);
+  --color-fd-secondary-foreground: oklch(0.20 0.02 264);
+  --color-fd-accent: oklch(0.94 0.012 264);
+  --color-fd-accent-foreground: oklch(0.20 0.02 264);
+  --color-fd-ring: oklch(0.46 0.24 264);
 }
 
 .dark {
-  --fd-primary: oklch(0.56 0.22 264);
-  --fd-primary-foreground: oklch(0.98 0.005 264);
-  --fd-background: oklch(0.145 0.02 264);
-  --fd-foreground: oklch(0.94 0.008 264);
-  --fd-muted: oklch(0.68 0.012 264);
-  --fd-muted-foreground: oklch(0.68 0.012 264);
-  --fd-border: oklch(0.27 0.012 264);
-  --fd-accent: oklch(0.23 0.015 264);
-  --fd-accent-foreground: oklch(0.94 0.008 264);
+  --color-fd-background: oklch(0.145 0.02 264);
+  --color-fd-foreground: oklch(0.93 0.008 264);
+  --color-fd-muted: oklch(0.20 0.015 264);
+  --color-fd-muted-foreground: oklch(0.70 0.012 264);
+  --color-fd-popover: oklch(0.17 0.015 264);
+  --color-fd-popover-foreground: oklch(0.90 0.008 264);
+  --color-fd-card: oklch(0.17 0.015 264);
+  --color-fd-card-foreground: oklch(0.93 0.008 264);
+  --color-fd-border: oklch(0.32 0.018 264 / 40%);
+  --color-fd-primary: oklch(0.65 0.20 264);
+  --color-fd-primary-foreground: oklch(0.13 0.02 264);
+  --color-fd-secondary: oklch(0.22 0.015 264);
+  --color-fd-secondary-foreground: oklch(0.93 0.008 264);
+  --color-fd-accent: oklch(0.25 0.018 264 / 50%);
+  --color-fd-accent-foreground: oklch(0.93 0.008 264);
+  --color-fd-ring: oklch(0.65 0.20 264);
 }
 
-@custom-variant dark (&:is(.dark *));
+.dark #nd-sidebar {
+  --color-fd-muted: oklch(0.22 0.018 264);
+  --color-fd-secondary: oklch(0.24 0.018 264);
+  --color-fd-muted-foreground: oklch(0.72 0.012 264);
+}
 
 @theme inline {
   --radius-sm: calc(var(--radius) - 4px);
