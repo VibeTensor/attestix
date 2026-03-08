@@ -31,28 +31,28 @@
 }
 
 .dark {
-  --color-fd-background: oklch(0.145 0.02 264);
-  --color-fd-foreground: oklch(0.95 0.005 264);
-  --color-fd-muted: oklch(0.24 0.018 264);
-  --color-fd-muted-foreground: oklch(0.72 0.010 264);
-  --color-fd-popover: oklch(0.18 0.015 264);
-  --color-fd-popover-foreground: oklch(0.92 0.005 264);
-  --color-fd-card: oklch(0.18 0.015 264);
-  --color-fd-card-foreground: oklch(0.95 0.005 264);
-  --color-fd-border: oklch(0.35 0.020 264);
-  --color-fd-primary: oklch(0.65 0.20 264);
-  --color-fd-primary-foreground: oklch(0.13 0.02 264);
+  --color-fd-background: oklch(0.14 0.015 264);
+  --color-fd-foreground: oklch(0.97 0.003 264);
+  --color-fd-muted: oklch(0.22 0.015 264);
+  --color-fd-muted-foreground: oklch(0.75 0.008 264);
+  --color-fd-popover: oklch(0.17 0.012 264);
+  --color-fd-popover-foreground: oklch(0.97 0.003 264);
+  --color-fd-card: oklch(0.17 0.012 264);
+  --color-fd-card-foreground: oklch(0.97 0.003 264);
+  --color-fd-border: oklch(0.40 0.015 264);
+  --color-fd-primary: oklch(0.78 0.14 264);
+  --color-fd-primary-foreground: oklch(0.10 0.02 264);
   --color-fd-secondary: oklch(0.22 0.015 264);
-  --color-fd-secondary-foreground: oklch(0.95 0.005 264);
-  --color-fd-accent: oklch(0.28 0.020 264);
-  --color-fd-accent-foreground: oklch(0.95 0.005 264);
-  --color-fd-ring: oklch(0.65 0.20 264);
+  --color-fd-secondary-foreground: oklch(0.95 0.003 264);
+  --color-fd-accent: oklch(0.26 0.018 264);
+  --color-fd-accent-foreground: oklch(0.95 0.003 264);
+  --color-fd-ring: oklch(0.78 0.14 264);
 }
 
 .dark #nd-sidebar {
-  --color-fd-muted: oklch(0.24 0.018 264);
-  --color-fd-secondary: oklch(0.26 0.018 264);
-  --color-fd-muted-foreground: oklch(0.72 0.012 264);
+  --color-fd-muted: oklch(0.22 0.015 264);
+  --color-fd-secondary: oklch(0.25 0.015 264);
+  --color-fd-muted-foreground: oklch(0.75 0.008 264);
 }
 
 /* Remove backtick pseudo-elements from inline code.
@@ -61,6 +61,56 @@
 .prose code::before,
 .prose code::after {
   content: none !important;
+}
+
+/* Docs dark mode: ensure table text is readable and doesn't overflow.
+ * Fumadocs roundedTable uses --color-fd-card bg and --color-fd-muted for headers.
+ * Force high-contrast text and proper cell sizing. */
+.dark .prose table {
+  --tw-prose-headings: oklch(0.97 0.003 264);
+  --tw-prose-body: oklch(0.92 0.005 264);
+}
+
+.dark .prose th {
+  color: oklch(0.97 0.003 264) !important;
+}
+
+.dark .prose td {
+  color: oklch(0.90 0.005 264);
+}
+
+.prose table {
+  table-layout: fixed;
+}
+
+.prose th:first-child,
+.prose td:first-child {
+  width: 20%;
+}
+
+.prose th:nth-child(2),
+.prose td:nth-child(2) {
+  width: 10%;
+  text-align: center;
+}
+
+.prose th:last-child,
+.prose td:last-child {
+  width: 70%;
+}
+
+.prose td {
+  word-break: break-word;
+  overflow-wrap: break-word;
+}
+
+/* Remove link underlines in docs prose - use color distinction instead */
+.prose a:not([data-card]) {
+  text-decoration: none !important;
+}
+
+.prose a:not([data-card]):hover {
+  text-decoration: underline !important;
 }
 
 @theme inline {
