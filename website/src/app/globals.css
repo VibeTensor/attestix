@@ -32,27 +32,35 @@
 
 .dark {
   --color-fd-background: oklch(0.145 0.02 264);
-  --color-fd-foreground: oklch(0.93 0.008 264);
-  --color-fd-muted: oklch(0.20 0.015 264);
-  --color-fd-muted-foreground: oklch(0.70 0.012 264);
-  --color-fd-popover: oklch(0.17 0.015 264);
-  --color-fd-popover-foreground: oklch(0.90 0.008 264);
-  --color-fd-card: oklch(0.17 0.015 264);
-  --color-fd-card-foreground: oklch(0.93 0.008 264);
-  --color-fd-border: oklch(0.32 0.018 264 / 40%);
+  --color-fd-foreground: oklch(0.95 0.005 264);
+  --color-fd-muted: oklch(0.24 0.018 264);
+  --color-fd-muted-foreground: oklch(0.72 0.010 264);
+  --color-fd-popover: oklch(0.18 0.015 264);
+  --color-fd-popover-foreground: oklch(0.92 0.005 264);
+  --color-fd-card: oklch(0.18 0.015 264);
+  --color-fd-card-foreground: oklch(0.95 0.005 264);
+  --color-fd-border: oklch(0.35 0.020 264);
   --color-fd-primary: oklch(0.65 0.20 264);
   --color-fd-primary-foreground: oklch(0.13 0.02 264);
   --color-fd-secondary: oklch(0.22 0.015 264);
-  --color-fd-secondary-foreground: oklch(0.93 0.008 264);
-  --color-fd-accent: oklch(0.25 0.018 264 / 50%);
-  --color-fd-accent-foreground: oklch(0.93 0.008 264);
+  --color-fd-secondary-foreground: oklch(0.95 0.005 264);
+  --color-fd-accent: oklch(0.28 0.020 264);
+  --color-fd-accent-foreground: oklch(0.95 0.005 264);
   --color-fd-ring: oklch(0.65 0.20 264);
 }
 
 .dark #nd-sidebar {
-  --color-fd-muted: oklch(0.22 0.018 264);
-  --color-fd-secondary: oklch(0.24 0.018 264);
+  --color-fd-muted: oklch(0.24 0.018 264);
+  --color-fd-secondary: oklch(0.26 0.018 264);
   --color-fd-muted-foreground: oklch(0.72 0.012 264);
+}
+
+/* Remove backtick pseudo-elements from inline code.
+ * @tailwindcss/typography adds content:"`" before/after <code>,
+ * but Fumadocs styles inline code with border+background instead. */
+.prose code::before,
+.prose code::after {
+  content: none !important;
 }
 
 @theme inline {
