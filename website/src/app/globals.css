@@ -63,40 +63,53 @@
   content: none !important;
 }
 
-/* Docs dark mode: ensure table text is readable and doesn't overflow.
- * Fumadocs roundedTable uses --color-fd-card bg and --color-fd-muted for headers.
- * Force high-contrast text and proper cell sizing. */
-.dark .prose table {
+/* Dark mode prose: override all typography color variables directly.
+ * The Fumadocs typography plugin uses color-mix(var(--color-fd-foreground) 90%, transparent)
+ * which mis-resolves in dark mode (produces ~37% lightness instead of ~87%).
+ * Bypassing by setting explicit high-contrast values on .prose. */
+.dark .prose {
+  --tw-prose-body: oklch(0.88 0.005 264);
   --tw-prose-headings: oklch(0.97 0.003 264);
-  --tw-prose-body: oklch(0.92 0.005 264);
+  --tw-prose-lead: oklch(0.82 0.008 264);
+  --tw-prose-links: oklch(0.78 0.14 264);
+  --tw-prose-bold: oklch(0.97 0.003 264);
+  --tw-prose-quotes: oklch(0.85 0.008 264);
+  --tw-prose-counters: oklch(0.72 0.010 264);
+  --tw-prose-bullets: oklch(0.58 0.015 264);
+  --tw-prose-captions: oklch(0.68 0.010 264);
+  --tw-prose-code: oklch(0.92 0.005 264);
+  --tw-prose-th-borders: oklch(0.40 0.015 264);
+  --tw-prose-td-borders: oklch(0.30 0.012 264);
+  color: oklch(0.88 0.005 264);
 }
 
-.dark .prose th {
-  color: oklch(0.97 0.003 264) !important;
+.dark .prose :where(h1, h2, h3, h4, h5, h6):not(:where([class~="not-prose"],[class~="not-prose"] *)) {
+  color: oklch(0.97 0.003 264);
 }
 
-.dark .prose td {
-  color: oklch(0.90 0.005 264);
+.dark .prose :where(strong):not(:where([class~="not-prose"],[class~="not-prose"] *)) {
+  color: oklch(0.97 0.003 264);
 }
 
-.prose table {
-  table-layout: fixed;
+.dark .prose :where(a):not(:where([class~="not-prose"],[class~="not-prose"] *)) {
+  color: oklch(0.78 0.14 264);
 }
 
-.prose th:first-child,
-.prose td:first-child {
-  width: 20%;
+.dark .prose :where(p, li, dd, dt):not(:where([class~="not-prose"],[class~="not-prose"] *)) {
+  color: oklch(0.88 0.005 264);
 }
 
-.prose th:nth-child(2),
-.prose td:nth-child(2) {
-  width: 10%;
+.dark .prose :where(blockquote):not(:where([class~="not-prose"],[class~="not-prose"] *)) {
+  color: oklch(0.82 0.008 264);
+}
+
+/* Table layout: prevent module names from breaking mid-word */
+.prose :where(td:first-child, th:first-child):not(:where([class~="not-prose"],[class~="not-prose"] *)) {
+  white-space: nowrap;
+}
+
+.prose :where(td:nth-child(2), th:nth-child(2)):not(:where([class~="not-prose"],[class~="not-prose"] *)) {
   text-align: center;
-}
-
-.prose th:last-child,
-.prose td:last-child {
-  width: 70%;
 }
 
 .prose td {
@@ -104,7 +117,15 @@
   overflow-wrap: break-word;
 }
 
-/* Remove link underlines in docs prose - use color distinction instead */
+.dark .prose :where(th):not(:where([class~="not-prose"],[class~="not-prose"] *)) {
+  color: oklch(0.97 0.003 264);
+}
+
+.dark .prose :where(td):not(:where([class~="not-prose"],[class~="not-prose"] *)) {
+  color: oklch(0.88 0.005 264);
+}
+
+/* Remove link underlines in docs prose - show underline only on hover */
 .prose a:not([data-card]) {
   text-decoration: none !important;
 }
