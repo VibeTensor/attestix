@@ -1,0 +1,272 @@
+---
+title: Troubleshooting
+description: Common errors and solutions when working with Attestix
+---
+
+## Installation Issues
+
+### `pip install attestix` fails with dependency conflicts
+
+```
+ERROR: Cannot install attestix because these package versions have conflicting dependencies.
+```
+
+**Solution:** Use a virtual environment to isolate dependencies:
+
+```bash
+python -m venv attestix-env
+source attestix-env/bin/activate  # Linux/macOS
+attestix-env\Scripts\activate     # Windows
+pip install attestix
+```
+
+### Python version error
+
+```
+ERROR: Package 'attestix' requires Python >=3.10
+```
+
+**Solution:** Attestix requires Python 3.10 or later. Check your version with `python --version` and upgrade if needed.
+
+---
+
+## MCP Server Issues
+
+### Claude Code cannot find the MCP server
+
+```
+Error: MCP server "attestix" failed to start
+```
+
+**Possible causes:**
+
+1. **Wrong Python path** - Use the full path to your Python executable:
+   ```json
+   {
+     "mcpServers": {
+       "attestix": {
+         "type": "stdio",
+         "command": "/usr/bin/python3",
+         "args": ["/full/path/to/attestix/main.py"]
+       }
+     }
+   }
+   ```
+
+2. **Virtual environment not activated** - If Attestix is installed in a venv, point to that Python:
+   ```json
+   {
+     "command": "/path/to/venv/bin/python"
+   }
+   ```
+
+3. **Missing dependencies** - Run `pip install -r requirements.txt` in the Attestix directory.
+
+### Tools not showing up in Claude Code
+
+**Solution:** Restart Claude Code after updating the MCP config. Run `/mcp` to verify the server is connected and showing 47 tools.
+
+---
+
+## Identity Issues
+
+### "Identity not found" when verifying
+
+```json
+{
+  "valid": false,
+  "checks": { "exists": false }
+}
+```
+
+**Cause:** The agent ID does not exist in `identities.json`. This can happen if:
+- The identity was created in a different working directory (Attestix uses local JSON files)
+- The identity was revoked or erased (GDPR Article 17)
+- You're using a different Attestix instance
+
+**Solution:** Check `identities.json` in your working directory. Create a new identity if needed.
+
+### Signature verification fails
+
+```json
+{
+  "valid": false,
+  "checks": { "signature_valid": false }
+}
+```
+
+**Cause:** The signing key has changed since the identity was created. This happens when:
+- `.signing_key.json` was deleted or replaced
+- You moved the Attestix data files to a different machine
+- The identity was created by a different Attestix instance
+
+**Solution:** Identities are bound to the signing key that created them. If you need to verify identities across machines, you must use the same `.signing_key.json` file.
+
+---
+
+## Credential Issues
+
+### "Credential has been revoked"
+
+```json
+{
+  "valid": false,
+  "checks": { "not_revoked": false }
+}
+```
+
+**Cause:** The credential was explicitly revoked via `revoke_credential`. Revocation is permanent.
+
+**Solution:** Issue a new credential with `issue_credential`.
+
+### Ed25519Signature2020 verification fails externally
+
+**Cause:** External verifiers may expect different canonicalization. Attestix uses JCS (RFC 8785) for JSON canonicalization before signing.
+
+**Solution:** Ensure your external verifier supports:
+- Ed25519Signature2020 proof type
+- JCS (JSON Canonicalization Scheme) per RFC 8785
+- Multibase-encoded public keys (base58btc, `z` prefix)
+
+---
+
+## Compliance Issues
+
+### Self-assessment blocked for high-risk system
+
+```json
+{
+  "error": "High-risk systems in Annex III categories require third-party assessment"
+}
+```
+
+**This is intentional.** EU AI Act Article 43 prohibits self-assessment for most high-risk AI systems. You must use a third-party notified body:
+
+```python
+compliance_svc.record_conformity_assessment(
+    agent_id=agent_id,
+    assessment_type="third_party",  # not "self"
+    assessor_name="TUV Rheinland AG",
+    result="pass",
+)
+```
+
+### Compliance status shows missing items
+
+```json
+{
+  "compliant": false,
+  "completion_pct": 60.0,
+  "missing": ["conformity_assessment", "declaration_of_conformity"]
+}
+```
+
+**Solution:** Follow the steps in the [EU AI Act Compliance Guide](/docs/guides/eu-ai-act-compliance). The typical workflow is:
+
+1. Create identity
+2. Record training data (Article 10)
+3. Record model lineage (Article 11)
+4. Create compliance profile
+5. Record conformity assessment
+6. Generate declaration of conformity
+
+---
+
+## Blockchain Issues
+
+### "No RPC URL configured"
+
+```
+Error: ATTESTIX_BASE_RPC_URL environment variable not set
+```
+
+**Solution:** Set the Base L2 RPC URL in your environment:
+
+```bash
+export ATTESTIX_BASE_RPC_URL="https://mainnet.base.org"
+```
+
+Or use a provider like Alchemy:
+
+```bash
+export ATTESTIX_BASE_RPC_URL="https://base-mainnet.g.alchemy.com/v2/YOUR_KEY"
+```
+
+See the [Configuration](/docs/reference/configuration) page for all environment variables.
+
+### Transaction fails with "insufficient funds"
+
+**Cause:** Blockchain anchoring requires a small amount of ETH on Base L2 for gas fees (typically less than $0.01).
+
+**Solution:** Fund the wallet associated with `ATTESTIX_WALLET_PRIVATE_KEY` with a small amount of ETH on Base L2.
+
+### Anchoring is optional
+
+All core Attestix features work without blockchain. If you don't need on-chain proof, skip the blockchain configuration entirely. Identity, credentials, compliance, and provenance all work fully offline.
+
+---
+
+## Delegation Issues
+
+### "Capability not in parent scope"
+
+```json
+{
+  "error": "Cannot delegate capabilities not held by issuer"
+}
+```
+
+**Cause:** When chaining delegations, the child delegation cannot grant capabilities that the parent delegation does not have.
+
+**Solution:** Only delegate capabilities that are a subset of what the issuing agent has been granted:
+
+```python
+# Parent has: ["data_access", "reporting"]
+# Child can delegate at most: ["data_access", "reporting"]
+# Child CANNOT delegate: ["admin", "delete"]
+```
+
+### Delegation expired
+
+```json
+{
+  "valid": false,
+  "checks": { "not_expired": false }
+}
+```
+
+**Cause:** UCAN delegations are time-bounded. The `expiry_hours` parameter sets the lifetime.
+
+**Solution:** Create a new delegation with `create_delegation`. Consider using longer expiry times if appropriate for your use case.
+
+---
+
+## Data and Storage
+
+### Where does Attestix store data?
+
+By default, Attestix creates JSON files in the current working directory:
+- `identities.json` - Agent identity tokens
+- `credentials.json` - Verifiable credentials
+- `delegations.json` - UCAN delegation tokens
+- `provenance.json` - Audit trail entries
+- `reputation.json` - Interaction records
+- `.signing_key.json` - Ed25519 keypair (keep this safe)
+
+### How do I back up my data?
+
+Back up these files and especially `.signing_key.json`. Without the signing key, you cannot verify any previously created identities or credentials.
+
+### How do I reset everything?
+
+Delete the JSON data files (but NOT `.signing_key.json` unless you want a completely fresh start). Attestix will recreate empty files on next use.
+
+---
+
+## Getting Help
+
+If your issue is not covered here:
+
+1. Check the [FAQ](/docs/reference/faq) for general questions
+2. Search [GitHub Issues](https://github.com/VibeTensor/attestix/issues)
+3. Open a new issue with your error message and environment details

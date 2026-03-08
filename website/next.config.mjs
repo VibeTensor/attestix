@@ -1,6 +1,7 @@
 import { readFileSync } from "fs";
 import { resolve, dirname } from "path";
 import { fileURLToPath } from "url";
+import { createMDX } from "fumadocs-mdx/next";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -17,6 +18,8 @@ function getAttestixVersion() {
   }
 }
 
+const withMDX = createMDX();
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   output: "export",
@@ -29,4 +32,4 @@ const nextConfig = {
   },
 };
 
-export default nextConfig;
+export default withMDX(nextConfig);

@@ -1,8 +1,8 @@
 import { TailwindIndicator } from "@/components/tailwind-indicator";
-import { ThemeProvider } from "@/components/theme-provider";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { siteConfig } from "@/lib/config";
 import { cn, constructMetadata } from "@/lib/utils";
+import { RootProvider } from "fumadocs-ui/provider";
 import { GeistMono } from "geist/font/mono";
 import { GeistSans } from "geist/font/sans";
 import type { Metadata, Viewport } from "next";
@@ -51,15 +51,17 @@ export default function RootLayout({
         >
           Skip to main content
         </a>
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="dark"
-          enableSystem={false}
+        <RootProvider
+          theme={{
+            attribute: "class",
+            defaultTheme: "dark",
+            enableSystem: false,
+          }}
         >
           {children}
           <ThemeToggle />
           <TailwindIndicator />
-        </ThemeProvider>
+        </RootProvider>
       </body>
     </html>
   );

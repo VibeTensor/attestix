@@ -26,7 +26,7 @@ export const siteConfig = {
     twitter: "https://x.com/vibetensor",
     github: "https://github.com/VibeTensor/attestix",
     pypi: "https://pypi.org/project/attestix/",
-    docs: "https://docs.attestix.io",
+    docs: "/docs",
     mcpRegistry:
       "https://registry.modelcontextprotocol.io",
   },
@@ -85,8 +85,8 @@ export const siteConfig = {
       {
         title: "Resources",
         links: [
-          { text: "Documentation", url: "https://docs.attestix.io", external: true },
-          { text: "Research Paper", url: "https://docs.attestix.io/research/", external: true },
+          { text: "Documentation", url: "/docs", external: false },
+          { text: "Research Paper", url: "/docs/project/research", external: false },
           { text: "Blog", url: "/blog", external: false },
         ],
       },

@@ -19,8 +19,8 @@ const mobileLinks = [
   { label: "Tech Stack", href: "#tech-stack" },
   { label: "Pricing", href: "/pricing" },
   { label: "FAQ", href: "/faq" },
-  { label: "Docs", href: "https://docs.attestix.io" },
-  { label: "Research", href: "https://docs.attestix.io/research/" },
+  { label: "Docs", href: "/docs" },
+  { label: "Research", href: "/docs/project/research" },
   { label: "GitHub", href: "https://github.com/VibeTensor/attestix" },
 ];
 
@@ -55,9 +55,7 @@ export function MobileDrawer() {
         </div>
         <DrawerFooter>
           <Link
-            href="https://docs.attestix.io/getting-started/"
-            target="_blank"
-            rel="noopener noreferrer"
+            href="/docs/getting-started"
             className={cn(
               buttonVariants({ variant: "default" }),
               "rounded-full group"

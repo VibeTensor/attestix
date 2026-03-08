@@ -61,9 +61,7 @@ export function CTA() {
         <div className="flex flex-wrap justify-center gap-3">
           <CopyInstallButton />
           <Link
-            href="https://docs.attestix.io"
-            target="_blank"
-            rel="noopener noreferrer"
+            href="/docs"
           >
             <Button variant="outline" size="lg">
               Read the Docs

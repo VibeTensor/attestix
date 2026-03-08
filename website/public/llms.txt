@@ -1,0 +1,61 @@
+# Attestix
+
+> Attestation Infrastructure for AI Agents
+
+Attestix provides verifiable identity, W3C credentials, delegation chains, compliance declarations, provenance tracking, reputation scoring, and blockchain anchoring for AI agents. 47 MCP tools across 9 modules. Open source, Apache 2.0.
+
+## Docs
+
+- [Overview](https://attestix.io/docs): Project overview, architecture, and quick start
+- [Getting Started](https://attestix.io/docs/getting-started): Installation and first agent identity in 5 minutes
+- [Examples](https://attestix.io/docs/examples): 11 runnable code examples for all modules
+- [EU AI Act Compliance](https://attestix.io/docs/guides/eu-ai-act-compliance): Full compliance workflow with checklists
+- [Risk Classification](https://attestix.io/docs/guides/risk-classification): Decision tree for AI Act risk categories
+- [Integration Guide](https://attestix.io/docs/guides/integration-guide): LangChain, CrewAI, AutoGen, plain Python
+- [Architecture](https://attestix.io/docs/guides/architecture): System design, data flows, security model
+- [API Reference](https://attestix.io/docs/reference/api-reference): All 47 tools with parameters and return types
+- [Concepts](https://attestix.io/docs/reference/concepts): UAIT, DID, VC, VP, UCAN, Ed25519 explained
+- [Configuration](https://attestix.io/docs/reference/configuration): Environment variables and setup
+- [FAQ](https://attestix.io/docs/reference/faq): Frequently asked questions
+- [Research Paper](https://attestix.io/docs/project/research): Academic paper with citations
+- [Roadmap](https://attestix.io/docs/project/roadmap): Development phases and timeline
+- [Changelog](https://attestix.io/docs/project/changelog): Version history
+- [Contributing](https://attestix.io/docs/project/contributing): How to contribute
+- [Glossary](https://attestix.io/docs/reference/glossary): Terms and acronyms
+- [Troubleshooting](https://attestix.io/docs/reference/troubleshooting): Common errors and solutions
+
+## Modules
+
+- Identity: 8 tools for Unified Agent Identity Tokens (UAITs), GDPR Article 17 erasure
+- Agent Cards: 3 tools for A2A-compatible agent card generation and discovery
+- DID: 3 tools for W3C Decentralized Identifiers (did:key, did:web, resolution)
+- Delegation: 4 tools for UCAN-style capability delegation with signed JWT tokens
+- Reputation: 3 tools for recency-weighted trust scoring with category breakdown
+- Compliance: 7 tools for EU AI Act risk profiles, conformity assessments, Annex V declarations
+- Credentials: 8 tools for W3C Verifiable Credentials with Ed25519Signature2020
+- Provenance: 5 tools for training data provenance, model lineage, hash-chained audit trail
+- Blockchain: 6 tools for anchoring artifact hashes to Base L2 via EAS
+
+## Standards
+
+- W3C Verifiable Credentials Data Model 1.1
+- W3C Decentralized Identifiers (DIDs) v1.0
+- UCAN (User Controlled Authorization Networks) v0.9.0
+- Ed25519 digital signatures (RFC 8032)
+- JSON Canonicalization Scheme (RFC 8785)
+- EU AI Act (Articles 9-15, 43, Annex III, Annex V)
+- Ethereum Attestation Service (EAS) on Base L2
+- Model Context Protocol (MCP) 1.8+
+- Google A2A Agent-to-Agent Protocol
+
+## Install
+
+```
+pip install attestix
+```
+
+## Links
+
+- GitHub: https://github.com/VibeTensor/attestix
+- PyPI: https://pypi.org/project/attestix/
+- Website: https://attestix.io

@@ -15,7 +15,7 @@ const stats = [
     suffix: "",
     subtitle: "MCP Tools across 9 modules",
     icon: <WrenchIcon className="h-5 w-5" />,
-    href: "https://docs.attestix.io",
+    href: "/docs",
   },
   {
     value: 284,
@@ -29,7 +29,7 @@ const stats = [
     suffix: "",
     subtitle: "Conformance test suites (W3C, IETF, UCAN, MCP)",
     icon: <BookOpenIcon className="h-5 w-5" />,
-    href: "https://docs.attestix.io/research/",
+    href: "/docs/project/research",
   },
 ];
 

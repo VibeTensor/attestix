@@ -1,6 +1,35 @@
 @import "tailwindcss";
+@import "fumadocs-ui/css/neutral.css";
+@import "fumadocs-ui/css/preset.css";
 @plugin "@tailwindcss/typography";
 @import "tw-animate-css";
+
+@source '../node_modules/fumadocs-ui/dist/**/*.js';
+
+/* Fumadocs brand overrides */
+:root {
+  --fd-primary: oklch(0.46 0.24 264);
+  --fd-primary-foreground: oklch(0.98 0.005 264);
+  --fd-background: oklch(0.985 0.002 264);
+  --fd-foreground: oklch(0.13 0.02 264);
+  --fd-muted: oklch(0.48 0.02 264);
+  --fd-muted-foreground: oklch(0.48 0.02 264);
+  --fd-border: oklch(0.91 0.008 264);
+  --fd-accent: oklch(0.95 0.008 264);
+  --fd-accent-foreground: oklch(0.20 0.02 264);
+}
+
+.dark {
+  --fd-primary: oklch(0.56 0.22 264);
+  --fd-primary-foreground: oklch(0.98 0.005 264);
+  --fd-background: oklch(0.145 0.02 264);
+  --fd-foreground: oklch(0.94 0.008 264);
+  --fd-muted: oklch(0.68 0.012 264);
+  --fd-muted-foreground: oklch(0.68 0.012 264);
+  --fd-border: oklch(0.27 0.012 264);
+  --fd-accent: oklch(0.23 0.015 264);
+  --fd-accent-foreground: oklch(0.94 0.008 264);
+}
 
 @custom-variant dark (&:is(.dark *));
 

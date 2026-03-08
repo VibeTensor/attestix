@@ -10,8 +10,8 @@ import Link from "next/link";
 const navLinks = [
   { label: "Architecture", href: "#architecture" },
   { label: "Tech Stack", href: "#tech-stack" },
-  { label: "Docs", href: "https://docs.attestix.io", external: true },
-  { label: "Research", href: "https://docs.attestix.io/research/", external: true },
+  { label: "Docs", href: "/docs", external: false },
+  { label: "Research", href: "/docs/project/research", external: false },
 ];
 
 export function Header() {
@@ -50,9 +50,7 @@ export function Header() {
         </nav>
         <div className="hidden lg:block">
           <Link
-            href="https://docs.attestix.io/getting-started/"
-            target="_blank"
-            rel="noopener noreferrer"
+            href="/docs/getting-started"
             className={cn(
               buttonVariants({ variant: "default" }),
               "h-8 text-primary-foreground rounded-lg group tracking-tight font-medium"
