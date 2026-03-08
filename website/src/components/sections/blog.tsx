@@ -4,9 +4,8 @@ import { getBlogPosts } from "@/lib/blog";
 
 export async function Blog() {
   const allPosts = await getBlogPosts();
-
-  const articles = await Promise.all(
-    allPosts.sort((a, b) => b.publishedAt.localeCompare(a.publishedAt))
+  const articles = allPosts.sort((a, b) =>
+    b.publishedAt.localeCompare(a.publishedAt)
   );
 
   return (
