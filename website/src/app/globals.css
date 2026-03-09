@@ -236,8 +236,7 @@
     75% { background-position: 50% 0%; transform: rotate(3deg) scale(1.05); }
     100% { background-position: 0% 50%; transform: rotate(-5deg) scale(0.9); }
   }
-  --animate-gradient: gradient 8s linear infinite
-;
+  --animate-gradient: gradient 8s linear infinite;
   @keyframes gradient {
   to {
     background-position: var(--bg-size, 300%) 0;}}
@@ -314,7 +313,6 @@
   --border: oklch(0.91 0.008 264);
   --input: oklch(0.91 0.008 264);
   --ring: oklch(0.46 0.24 264);
-  --radius: 0.5rem;
 
   --chart-1: oklch(0.46 0.24 264);
   --chart-2: oklch(0.56 0.20 264);

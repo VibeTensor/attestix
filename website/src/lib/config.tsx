@@ -8,7 +8,7 @@ export const ATTESTIX_VERSION =
 export const siteConfig = {
   name: "Attestix",
   version: ATTESTIX_VERSION,
-  description: "Attestation Infrastructure for AI Agents",
+  description: "Make your AI agents EU AI Act compliant with cryptographically verifiable proof. Open-source compliance automation, identity, and trust scoring.",
   cta: "Get Started",
   url: process.env.NEXT_PUBLIC_APP_URL || "https://attestix.io",
   keywords: [
@@ -33,7 +33,7 @@ export const siteConfig = {
   hero: {
     title: "Attestix",
     description:
-      "Verifiable identity, W3C credentials, delegation chains, and reputation scoring for every AI agent. Built to support regulatory documentation workflows.",
+      "The EU AI Act takes effect August 2, 2026. Non-compliant organizations face fines up to EUR 35 million or 7% of global revenue. Attestix is like TurboTax for AI compliance: it automates the documentation, identity verification, and audit trails your AI agents need to stay legal. Install once, generate cryptographic proof of compliance on every run.",
     cta: "pip install attestix",
     ctaDescription: "Open source. Apache 2.0 license.",
   },
@@ -111,6 +111,17 @@ export const siteConfig = {
     brandText: "ATTESTIX",
   },
 
+  problem: {
+    title: "The Problem",
+    stats: [
+      "EUR 35M maximum fine",
+      "7% of global annual revenue",
+      "August 2, 2026 enforcement date",
+    ],
+    description:
+      "Every organization deploying AI in the European Union will need to prove their systems are compliant with the EU AI Act. Today, most teams rely on manual documentation, static PDFs, and spreadsheets that cannot be independently verified. There is no standard way for AI agents to carry proof of identity, authorization, or regulatory compliance. Attestix closes that gap with open-source tooling that generates cryptographic proof of compliance, identity, and trust for every AI agent in your stack.",
+  },
+
   highlights: [
     {
       id: 4,
@@ -160,6 +171,21 @@ export const siteConfig = {
   ],
 
   faq: [
+    {
+      question: "Why does my organization need Attestix?",
+      answer:
+        "The EU AI Act enforcement begins August 2, 2026 with fines up to EUR 35 million or 7% of global annual revenue for non-compliance. Most compliance tools only generate static PDF reports that cannot be independently verified. Attestix produces cryptographically signed, machine-verifiable proof of compliance that auditors and regulators can validate in seconds. Every credential, audit trail, and identity attestation is backed by digital signatures and optional blockchain anchoring.",
+    },
+    {
+      question: "Who is Attestix for?",
+      answer:
+        "Attestix serves AI startups selling into the EU market, compliance teams preparing for EU AI Act enforcement, enterprises deploying AI agents at scale, and any developer building with the Model Context Protocol (MCP). If your AI systems need to demonstrate accountability, traceability, or regulatory compliance, Attestix provides the infrastructure to prove it.",
+    },
+    {
+      question: "What happens if I'm not EU AI Act compliant by August 2026?",
+      answer:
+        "Organizations deploying non-compliant AI systems face fines of up to EUR 35 million or 7% of global annual revenue, whichever is higher. National market surveillance authorities can order non-compliant systems to be withdrawn from the market entirely. The regulation applies to any organization offering AI systems in the EU, regardless of where the organization is headquartered. Attestix helps you build compliance into your AI agents from day one rather than retrofitting before the deadline.",
+    },
     {
       question: "What is Attestix?",
       answer:

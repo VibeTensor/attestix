@@ -20,6 +20,7 @@ const mobileLinks = [
   { label: "Pricing", href: "/pricing" },
   { label: "FAQ", href: "/faq" },
   { label: "Docs", href: "/docs" },
+  { label: "Demos", href: "/demo" },
   { label: "Research", href: "/docs/project/research" },
   { label: "GitHub", href: "https://github.com/VibeTensor/attestix" },
 ];

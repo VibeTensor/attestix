@@ -11,6 +11,7 @@ const navLinks = [
   { label: "Architecture", href: "#architecture" },
   { label: "Tech Stack", href: "#tech-stack" },
   { label: "Docs", href: "/docs", external: false },
+  { label: "Demos", href: "/demo", external: false },
   { label: "Research", href: "/docs/project/research", external: false },
 ];
 

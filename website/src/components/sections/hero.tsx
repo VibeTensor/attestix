@@ -157,7 +157,7 @@ function HeroCTA() {
 }
 
 function StatsStrip() {
-  const stats = ["9 Modules", "MCP Native", "EU AI Act Ready", "Apache 2.0"];
+  const stats = ["9 Modules", "47 Tools", "EU AI Act Ready", "Open Source"];
   return (
     <motion.div
       className="flex flex-wrap gap-3 mt-8"
