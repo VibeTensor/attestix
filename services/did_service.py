@@ -30,7 +30,6 @@ class DIDService:
 
     def _store_keypair(self, keypair_id: str, priv_b64: str, pub_multibase: str, did: str):
         """Store a generated keypair locally (never return private keys in tool responses)."""
-        import shutil
         from datetime import datetime, timezone
         from filelock import FileLock
         from config import PROJECT_DIR

@@ -1,4 +1,3 @@
-import { siteConfig } from "@/lib/config";
 import fs from "fs";
 import path from "path";
 import rehypePrettyCode from "rehype-pretty-code";

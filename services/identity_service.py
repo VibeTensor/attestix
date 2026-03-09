@@ -5,7 +5,6 @@ revoke, verify, and sign operations.
 """
 
 import hashlib
-import json
 import uuid
 from datetime import datetime, timedelta, timezone
 from typing import List, Optional
@@ -13,7 +12,6 @@ from typing import List, Optional
 from auth.crypto import (
     did_key_fragment,
     load_or_create_signing_key,
-    public_key_to_did_key,
     sign_json_payload,
     verify_json_signature,
     did_key_to_public_key,
@@ -383,8 +381,8 @@ class IdentityService:
                 pub_multibase = "z" + base58.b58encode(
                     ED25519_MULTICODEC_PREFIX + pub_bytes
                 ).decode("ascii")
-            except Exception:
-                pass
+            except (ValueError, ImportError):
+                pass  # Graceful degradation if crypto libs unavailable
 
         fragment = did_key_fragment(did) if did.startswith("did:key:z") else "#key-1"
         vm = {

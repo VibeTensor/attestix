@@ -4,7 +4,6 @@ Handles fetching, parsing, and generating Google A2A Agent Cards
 (the /.well-known/agent.json standard).
 """
 
-import json
 from typing import Optional
 
 import httpx

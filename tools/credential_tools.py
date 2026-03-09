@@ -4,7 +4,6 @@ W3C Verifiable Credentials (VC Data Model 1.1) issuance and verification.
 """
 
 import json
-from typing import Optional
 
 
 def _validate_required(params: dict) -> str:

@@ -11,7 +11,7 @@ import json
 import threading
 import uuid
 from datetime import datetime, timezone
-from typing import Dict, List, Optional, Tuple
+from typing import Optional, Tuple
 
 from auth.crypto import load_or_create_signing_key, _normalize_for_signing
 from config import (
@@ -139,8 +139,8 @@ class BlockchainService:
                 with open(BLOCKCHAIN_CONFIG_FILE, "r") as f:
                     config = json.load(f)
                 return config.get(f"schema_uid_{self._network}")
-        except Exception:
-            pass
+        except (OSError, json.JSONDecodeError, KeyError):
+            pass  # Config file missing or corrupt, return None
         return None
 
     def _save_schema_uid(self, schema_uid: str):
@@ -150,8 +150,8 @@ class BlockchainService:
             if BLOCKCHAIN_CONFIG_FILE.exists():
                 with open(BLOCKCHAIN_CONFIG_FILE, "r") as f:
                     config = json.load(f)
-        except Exception:
-            pass
+        except (OSError, json.JSONDecodeError):
+            pass  # Start fresh if config is unreadable
         config[f"schema_uid_{self._network}"] = schema_uid
         with open(BLOCKCHAIN_CONFIG_FILE, "w") as f:
             json.dump(config, f, indent=2)

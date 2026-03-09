@@ -1,7 +1,6 @@
 """Identity management MCP tools for Attestix (7 tools)."""
 
 import json
-from typing import Optional
 
 
 def _validate_required(params: dict) -> str:

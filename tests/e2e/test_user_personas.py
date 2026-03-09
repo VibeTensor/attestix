@@ -431,7 +431,7 @@ class TestPersona4_DataProtectionOfficer:
             )
 
         # 6. Issue a credential
-        cred = call_tool(
+        _cred = call_tool(
             "issue_credential",
             subject_agent_id=agent_id,
             credential_type="AgentIdentityCredential",
@@ -549,7 +549,7 @@ class TestPersona5_ExternalAuditor:
         )
 
         # Issue an additional manual credential
-        manual_cred = call_tool(
+        _manual_cred = call_tool(
             "issue_credential",
             subject_agent_id=agent_id,
             credential_type="TransparencyObligationCredential",
@@ -600,7 +600,7 @@ class TestPersona5_ExternalAuditor:
         print(f"  [Persona 5] All {len(all_creds)} credentials individually verified")
 
         # Check audit trail
-        trail = call_tool("get_audit_trail", agent_id=agent_id)
+        _trail = call_tool("get_audit_trail", agent_id=agent_id)
         provenance = call_tool("get_provenance", agent_id=agent_id)
         print(f"  [Persona 5] Provenance: {len(provenance['training_data'])} datasets, "
               f"{len(provenance['model_lineage'])} lineage records")

@@ -2,7 +2,6 @@
 
 import { Section } from "@/components/section";
 import { MagicCard } from "@/components/ui/magic-card";
-import { cn } from "@/lib/utils";
 import { cubicBezier, motion } from "motion/react";
 import {
   AwardIcon,

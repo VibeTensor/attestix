@@ -65,7 +65,7 @@ class TestMultiAgentWorkflow:
         a_id, b_id = a["agent_id"], b["agent_id"]
 
         # Delegate
-        deleg = delegation_service.create_delegation(a_id, b_id, ["execute"], expiry_hours=2)
+        _deleg = delegation_service.create_delegation(a_id, b_id, ["execute"], expiry_hours=2)
 
         # Worker completes tasks
         reputation_service.record_interaction(b_id, a_id, "success", "delegation")

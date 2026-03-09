@@ -4,7 +4,6 @@ Training data provenance, model lineage, and Article 12 audit trail.
 """
 
 import json
-from typing import Optional
 
 
 def _validate_required(params: dict) -> str:

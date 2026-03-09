@@ -1,7 +1,6 @@
 """Delegation MCP tools for Attestix (4 tools)."""
 
 import json
-from typing import Optional
 
 
 def register(mcp):

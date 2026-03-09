@@ -5,7 +5,6 @@ following the UCAN (User Controlled Authorization Networks) pattern
 with capability attenuation.
 """
 
-import json
 import secrets
 import time
 from datetime import datetime, timezone
@@ -13,11 +12,9 @@ from typing import List, Optional
 
 import jwt
 
-from auth.crypto import load_or_create_signing_key, did_key_to_public_key, public_key_to_bytes
+from auth.crypto import load_or_create_signing_key, did_key_to_public_key
 from config import load_delegations, save_delegations
 from errors import ErrorCategory, log_and_format_error
-
-import base64
 
 
 class DelegationService:

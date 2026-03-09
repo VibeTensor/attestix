@@ -8,7 +8,6 @@ or web3 is not installed.
 """
 
 import json
-from typing import Optional
 
 
 def _validate_required(params: dict) -> str:
