@@ -1,0 +1,160 @@
+---
+title: Reputation Scoring Guide
+description: Build trust between AI agents using Attestix's recency-weighted reputation system with interaction tracking, category breakdowns, and threshold-based queries.
+---
+
+# Reputation Scoring Guide
+
+Attestix tracks agent trustworthiness through a recency-weighted reputation system. Every interaction is recorded, scored, and aggregated into a trust score that decays over time, rewarding consistent good behavior.
+
+## How Reputation Works
+
+Each agent starts with a neutral trust score. As interactions are recorded, the score adjusts based on:
+
+- **Outcome weighting** - Success (+1.0), partial (+0.5), failure (0.0)
+- **Recency decay** - Recent interactions matter more than old ones (exponential moving average, alpha = 0.08)
+- **Category breakdown** - Scores are tracked per category (compliance, accuracy, safety, etc.)
+
+The trust score ranges from 0.0 to 1.0:
+
+| Range | Label | Meaning |
+|-------|-------|---------|
+| 0.70 - 1.00 | Trusted | Consistently reliable, safe for autonomous delegation |
+| 0.50 - 0.69 | Moderate | Mixed track record, human oversight recommended |
+| 0.00 - 0.49 | At Risk | Unreliable, should not be trusted for critical tasks |
+
+## Quick Start
+
+### 1. Record Interactions
+
+Every time an agent completes a task, record the outcome:
+
+```python
+from services.identity_service import IdentityService
+from services.reputation_service import ReputationService
+
+identity_svc = IdentityService()
+reputation_svc = ReputationService()
+
+# Create an agent
+agent = identity_svc.create_identity(
+    display_name="AnalysisBot",
+    source_protocol="manual",
+    capabilities=["data_analysis"],
+    issuer_name="DataCorp",
+)
+agent_id = agent["agent_id"]
+
+# Record successful interactions
+reputation_svc.record_interaction(
+    agent_id=agent_id,
+    counterparty_id="attestix:system",
+    outcome="success",
+    category="accuracy",
+)
+
+# Record a failure
+reputation_svc.record_interaction(
+    agent_id=agent_id,
+    counterparty_id="attestix:system",
+    outcome="failure",
+    category="accuracy",
+)
+```
+
+### 2. Check Trust Score
+
+```python
+score = reputation_svc.get_reputation(agent_id)
+print(f"Trust score: {score['trust_score']:.2f}")
+print(f"Total interactions: {score['interaction_count']}")
+print(f"Breakdown: {score['category_scores']}")
+```
+
+### 3. Query by Threshold
+
+Find all agents above a minimum trust score:
+
+```python
+trusted_agents = reputation_svc.query_reputation(min_score=0.7)
+for agent in trusted_agents:
+    print(f"{agent['agent_id']}: {agent['trust_score']:.2f}")
+```
+
+## Using via MCP Tools
+
+All reputation operations are available as MCP tools:
+
+```bash
+# Record an interaction
+record_interaction(
+    agent_id="attestix:abc123",
+    counterparty_id="attestix:def456",
+    outcome="success",
+    category="compliance"
+)
+
+# Get reputation
+get_reputation(agent_id="attestix:abc123")
+
+# Query agents above threshold
+query_reputation(min_score=0.8)
+```
+
+## Categories
+
+Interactions can be categorized to track different dimensions of trust:
+
+| Category | What it Measures |
+|----------|-----------------|
+| `accuracy` | Correctness of outputs and predictions |
+| `compliance` | Adherence to regulatory requirements |
+| `safety` | Avoiding harmful or dangerous outputs |
+| `data_quality` | Quality and integrity of data handling |
+| `reliability` | Consistent availability and response times |
+| `general` | Default category for uncategorized interactions |
+
+## Recency Decay
+
+The scoring algorithm uses exponential moving average (EMA) with alpha = 0.08. This means:
+
+- A single failure won't destroy a long track record
+- Sustained failures will steadily erode trust
+- Recovery is possible through consistent good behavior
+- An agent with no recent interactions will gradually drift toward neutral
+
+## Best Practices
+
+1. **Record every interaction** - Even partial outcomes provide signal
+2. **Use specific categories** - Helps identify which dimension needs improvement
+3. **Set thresholds per use case** - Critical medical AI might require 0.90+, while a chatbot might accept 0.60+
+4. **Monitor trends** - A declining score is a leading indicator of problems
+5. **Combine with credentials** - High reputation + valid compliance credential = strong trust signal
+
+## Integration with Delegation
+
+Reputation scores can inform delegation decisions. Before delegating capabilities to another agent, check their trust score:
+
+```python
+from services.delegation_service import DelegationService
+
+delegation_svc = DelegationService()
+
+# Check reputation before delegating
+score = reputation_svc.get_reputation(target_agent_id)
+if score["trust_score"] >= 0.7:
+    delegation_svc.create_delegation(
+        issuer_agent_id=my_agent_id,
+        audience_agent_id=target_agent_id,
+        capabilities=["data_access"],
+        expiry_hours=4,
+    )
+else:
+    print(f"Agent trust too low ({score['trust_score']:.2f}), delegation denied")
+```
+
+## Next Steps
+
+- [Examples](/docs/examples#7-reputation-scoring) - Full reputation code examples
+- [API Reference](/docs/reference/api-reference) - All reputation tool parameters
+- [Concepts](/docs/reference/concepts) - How trust scores are computed

@@ -470,7 +470,7 @@ export function FineCalculator() {
                 <ArrowRight className="h-4 w-4" />
               </Button>
             </Link>
-            <Link href="/docs/guides/eu-compliance">
+            <Link href="/docs/guides/eu-ai-act-compliance">
               <Button variant="outline" size="lg">
                 EU compliance walkthrough
               </Button>

@@ -698,7 +698,7 @@ function ExploreSection({ identity }: { identity: AgentIdentity }) {
               <ArrowRight className="h-4 w-4" />
             </Button>
           </Link>
-          <Link href="/docs/examples/agent-identity">
+          <Link href="/docs/examples#1-create-and-verify-an-agent-identity">
             <Button variant="outline" size="lg">
               <ExternalLink className="h-4 w-4" />
               View identity example
