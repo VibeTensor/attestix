@@ -14,7 +14,7 @@
   <a href="https://pypi.org/project/attestix/"><img src="https://img.shields.io/pypi/v/attestix?color=4f46e5&style=flat-square" alt="PyPI"></a>
   <a href="https://pypi.org/project/attestix/"><img src="https://img.shields.io/pypi/pyversions/attestix?color=4f46e5&style=flat-square" alt="Python"></a>
   <a href="https://github.com/VibeTensor/attestix/blob/main/LICENSE"><img src="https://img.shields.io/github/license/VibeTensor/attestix?color=4f46e5&style=flat-square" alt="License"></a>
-  <a href="https://docs.attestix.io"><img src="https://img.shields.io/badge/docs-docs.attestix.io-4f46e5?style=flat-square" alt="Docs"></a>
+  <a href="https://attestix.io/docs"><img src="https://img.shields.io/badge/docs-attestix.io%2Fdocs-4f46e5?style=flat-square" alt="Docs"></a>
 </p>
 
 <p align="center">
@@ -130,7 +130,7 @@ record_conformity_assessment(assessment_type="self", ...)
 --> ERROR: "High-risk AI systems require third_party conformity assessment"
 ```
 
-Full walkthrough: [EU AI Act Compliance Guide](https://docs.attestix.io/eu-ai-act-compliance/)
+Full walkthrough: [EU AI Act Compliance Guide](https://attestix.io/docs/guides/eu-ai-act-compliance)
 
 ---
 
@@ -369,18 +369,20 @@ If you use Attestix in your research, please cite:
 
 ## Documentation
 
-Full documentation at **[docs.attestix.io](https://docs.attestix.io)**
+Full documentation at **[attestix.io/docs](https://attestix.io/docs)**
 
 | Guide | Description |
 |-------|-------------|
-| [Getting Started](https://docs.attestix.io/getting-started/) | Installation and first identity in 5 minutes |
-| [EU AI Act Compliance](https://docs.attestix.io/eu-ai-act-compliance/) | Step-by-step compliance workflow |
-| [Risk Classification](https://docs.attestix.io/risk-classification/) | How to determine your AI system's risk category |
-| [Architecture](https://docs.attestix.io/architecture/) | System design and data flows |
-| [API Reference](https://docs.attestix.io/api-reference/) | All 47 tools with parameter tables |
-| [Integration Guide](https://docs.attestix.io/integration-guide/) | LangChain, CrewAI, AutoGen, MCP client |
-| [Configuration](https://docs.attestix.io/configuration/) | Environment variables, storage, Docker |
-| [Research Paper](https://docs.attestix.io/research/) | Paper, citation formats, evaluation highlights |
+| [Getting Started](https://attestix.io/docs/getting-started) | Installation and first identity in 5 minutes |
+| [EU AI Act Compliance](https://attestix.io/docs/guides/eu-ai-act-compliance) | Step-by-step compliance workflow |
+| [Risk Classification](https://attestix.io/docs/guides/risk-classification) | How to determine your AI system's risk category |
+| [Architecture](https://attestix.io/docs/guides/architecture) | System design and data flows |
+| [API Reference](https://attestix.io/docs/reference/api-reference) | All 47 tools with parameter tables |
+| [Integration Guide](https://attestix.io/docs/guides/integration-guide) | LangChain, CrewAI, AutoGen, MCP client |
+| [Configuration](https://attestix.io/docs/reference/configuration) | Environment variables, storage, Docker |
+| [Research Paper](https://attestix.io/docs/project/research) | Paper, citation formats, evaluation highlights |
+| [Reputation Scoring](https://attestix.io/docs/guides/reputation) | Recency-weighted trust scoring and categories |
+| [Examples](https://attestix.io/docs/examples) | End-to-end code examples for common workflows |
 
 ---
 

@@ -13,6 +13,7 @@ Attestix provides verifiable identity, W3C credentials, delegation chains, compl
 - [Risk Classification](https://attestix.io/docs/guides/risk-classification): Decision tree for AI Act risk categories
 - [Integration Guide](https://attestix.io/docs/guides/integration-guide): LangChain, CrewAI, AutoGen, plain Python
 - [Architecture](https://attestix.io/docs/guides/architecture): System design, data flows, security model
+- [Reputation Scoring](https://attestix.io/docs/guides/reputation): Trust scoring, categories, recency decay
 - [API Reference](https://attestix.io/docs/reference/api-reference): All 47 tools with parameters and return types
 - [Concepts](https://attestix.io/docs/reference/concepts): UAIT, DID, VC, VP, UCAN, Ed25519 explained
 - [Configuration](https://attestix.io/docs/reference/configuration): Environment variables and setup
