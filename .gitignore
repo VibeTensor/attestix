@@ -75,6 +75,12 @@ paper/*.png
 paper/outreach.txt
 paper/producthunt-draft.txt
 paper/attestix-arxiv.tar.gz
+paper/linkedin-*.txt
+paper/social-posts.txt
+
+# Website test artifacts
+website/mermaid-test*.png
+website/test_*.py
 
 # Internal strategy docs (research, meetings, roadmap, funding)
 paper/internal/
