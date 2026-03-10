@@ -1,5 +1,4 @@
 import { TailwindIndicator } from "@/components/tailwind-indicator";
-import { ThemeToggle } from "@/components/theme-toggle";
 import { siteConfig } from "@/lib/config";
 import { cn, constructMetadata } from "@/lib/utils";
 import { RootProvider } from "fumadocs-ui/provider";
@@ -39,7 +38,7 @@ export default function RootLayout({
     <html
       lang="en"
       suppressHydrationWarning
-      className={`${GeistSans.variable} ${GeistMono.variable}`}
+      className={`dark ${GeistSans.variable} ${GeistMono.variable}`}
     >
       <body
         className={cn(
@@ -61,7 +60,6 @@ export default function RootLayout({
           search={{ SearchDialog }}
         >
           {children}
-          <ThemeToggle />
           <TailwindIndicator />
         </RootProvider>
       </body>

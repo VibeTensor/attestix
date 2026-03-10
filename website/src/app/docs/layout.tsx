@@ -20,6 +20,7 @@ export default function Layout({ children }: { children: ReactNode }) {
         defaultOpenLevel: 1,
         collapsible: true,
       }}
+      themeSwitch={{ enabled: false }}
       links={[
         {
           type: "icon",
