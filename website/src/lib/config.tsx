@@ -3,7 +3,7 @@ import { Icons } from "@/components/icons";
 export const BLUR_FADE_DELAY = 0.15;
 
 export const ATTESTIX_VERSION =
-  process.env.NEXT_PUBLIC_ATTESTIX_VERSION || "0.0.0";
+  process.env.NEXT_PUBLIC_ATTESTIX_VERSION || "0.2.4";
 
 export const siteConfig = {
   name: "Attestix",

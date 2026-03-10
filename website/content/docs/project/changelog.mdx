@@ -9,6 +9,57 @@ All notable changes to Attestix are documented here.
 
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.2.4] - 2026-03-10
+
+### Added
+- 4 interactive demo apps: Identity Explorer, Reputation Dashboard, EU AI Act Compliance Checker, Fine Calculator
+- Mermaid diagram rendering in docs (remark plugin with dark theme)
+- Static client-side search via Orama (Fumadocs static mode)
+- Reputation scoring guide (`/docs/guides/reputation`)
+- EU AI Act urgency blog post (146 days countdown)
+- Testimonials section on landing page (Yoshua Bengio, Matt Pagett, Laisha Wadhwa validation)
+- `llms.txt` for AI discoverability
+
+### Changed
+- Forced dark-mode-only (removed theme toggle, hardcoded dark class)
+- Tables now fill full container width (display:table + width:100%)
+- All documentation links updated from docs.attestix.io to attestix.io/docs
+- Hero messaging rewritten for non-technical audiences ("TurboTax for AI compliance")
+- README documentation table updated with all current guide links
+
+### Fixed
+- Client-side search error on Cloudflare Pages (switched to static search mode)
+- Mermaid sequence diagram text invisible in dark mode (added explicit theme variables)
+- 3 broken CTA links in demo pages
+- CodeQL security alerts (workflow permissions, unused imports, broad exception handling)
+
+## [0.2.3] - 2026-03-05
+
+### Added
+- Fumadocs v15 integration (migrated 17 docs pages from MkDocs to in-app MDX)
+- Sidebar navigation with collapsible sections (Getting Started, Guides, Reference, Project)
+- Dark mode prose typography overrides for Fumadocs
+
+### Changed
+- Docs now served at attestix.io/docs instead of docs.attestix.io
+- Next.js upgraded from 15.3.5 to 15.5.12 (resolved 8 security vulnerabilities)
+
+## [0.2.2] - 2026-02-27
+
+### Added
+- Marketing website at attestix.io (Next.js 15 + Tailwind v4 + Cloudflare Pages)
+- Landing page: Hero, Architecture, TechStack, Examples, UseCases, Statistics, CTA sections
+- Standalone pages: /pricing, /faq, /community, /blog
+- 3 blog posts (MDX)
+- RSS and JSON feeds
+- Domain migration from attestix.vibetensor.com to attestix.io
+- Namespace package for cleaner imports (`from attestix.services import ...`)
+- PyPI Trusted Publishing via OIDC (GitHub Actions)
+- Cross-post guide for distribution
+
+### Fixed
+- CI Merkle smoke test passing strings instead of bytes
+
 ## [0.2.1] - 2026-02-21
 
 ### Added
