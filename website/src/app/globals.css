@@ -103,31 +103,22 @@
   color: oklch(0.82 0.008 264);
 }
 
-/* Table layout: ensure tables don't overflow rounded containers */
+/* Table layout: fill container width, scroll on overflow via .prose-no-margin wrapper */
 .prose-no-margin {
   border-radius: 0.5rem;
-}
-
-.prose-no-margin table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-.prose-no-margin td,
-.prose-no-margin th {
-  padding: 0.75rem 1rem;
-  word-break: normal;
-  overflow-wrap: break-word;
-}
-
-.prose :where(table):not(:where([class~="not-prose"],[class~="not-prose"] *)) {
-  display: block;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
 }
 
+.prose :where(table):not(:where([class~="not-prose"],[class~="not-prose"] *)) {
+  display: table;
+  width: 100%;
+  border-collapse: collapse;
+}
+
 .prose td,
 .prose th {
+  padding: 0.75rem 1rem;
   word-break: normal;
   overflow-wrap: break-word;
   min-width: 0;
@@ -139,6 +130,21 @@
 
 .dark .prose :where(td):not(:where([class~="not-prose"],[class~="not-prose"] *)) {
   color: oklch(0.88 0.005 264);
+}
+
+/* Mermaid SVG: force light text on dark backgrounds as fallback */
+.dark [data-mermaid] text,
+.dark [data-mermaid] .messageText,
+.dark [data-mermaid] .labelText,
+.dark [data-mermaid] .loopText,
+.dark [data-mermaid] .noteText,
+.dark [data-mermaid] tspan {
+  fill: #e2e8f0 !important;
+}
+
+.dark [data-mermaid] .actor-man line,
+.dark [data-mermaid] .actor-man circle {
+  stroke: #e2e8f0 !important;
 }
 
 /* Remove link underlines in docs prose - show underline only on hover */
