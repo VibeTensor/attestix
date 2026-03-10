@@ -103,18 +103,34 @@
   color: oklch(0.82 0.008 264);
 }
 
-/* Table layout: prevent module names from breaking mid-word */
-.prose :where(td:first-child, th:first-child):not(:where([class~="not-prose"],[class~="not-prose"] *)) {
-  white-space: nowrap;
+/* Table layout: ensure tables don't overflow rounded containers */
+.prose-no-margin {
+  border-radius: 0.5rem;
 }
 
-.prose :where(td:nth-child(2), th:nth-child(2)):not(:where([class~="not-prose"],[class~="not-prose"] *)) {
-  text-align: center;
+.prose-no-margin table {
+  width: 100%;
+  border-collapse: collapse;
 }
 
-.prose td {
-  word-break: break-word;
+.prose-no-margin td,
+.prose-no-margin th {
+  padding: 0.75rem 1rem;
+  word-break: normal;
   overflow-wrap: break-word;
+}
+
+.prose :where(table):not(:where([class~="not-prose"],[class~="not-prose"] *)) {
+  display: block;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.prose td,
+.prose th {
+  word-break: normal;
+  overflow-wrap: break-word;
+  min-width: 0;
 }
 
 .dark .prose :where(th):not(:where([class~="not-prose"],[class~="not-prose"] *)) {
