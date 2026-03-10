@@ -3,6 +3,7 @@ import { ThemeToggle } from "@/components/theme-toggle";
 import { siteConfig } from "@/lib/config";
 import { cn, constructMetadata } from "@/lib/utils";
 import { RootProvider } from "fumadocs-ui/provider";
+import SearchDialog from "@/components/search";
 import { GeistMono } from "geist/font/mono";
 import { GeistSans } from "geist/font/sans";
 import type { Metadata, Viewport } from "next";
@@ -57,6 +58,7 @@ export default function RootLayout({
             defaultTheme: "dark",
             enableSystem: false,
           }}
+          search={{ SearchDialog }}
         >
           {children}
           <ThemeToggle />
