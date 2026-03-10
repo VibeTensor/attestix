@@ -7,19 +7,22 @@
 <h1 align="center">Attestix</h1>
 
 <p align="center">
-  <strong>Attestation Infrastructure for AI Agents</strong>
+  <strong>Compliance Automation for AI Agents</strong>
 </p>
 
 <p align="center">
+  <a href="https://github.com/VibeTensor/attestix/releases"><img src="https://img.shields.io/badge/version-0.2.4-4f46e5?style=flat-square" alt="v0.2.4"></a>
   <a href="https://pypi.org/project/attestix/"><img src="https://img.shields.io/pypi/v/attestix?color=4f46e5&style=flat-square" alt="PyPI"></a>
   <a href="https://pypi.org/project/attestix/"><img src="https://img.shields.io/pypi/pyversions/attestix?color=4f46e5&style=flat-square" alt="Python"></a>
   <a href="https://github.com/VibeTensor/attestix/blob/main/LICENSE"><img src="https://img.shields.io/github/license/VibeTensor/attestix?color=4f46e5&style=flat-square" alt="License"></a>
   <a href="https://attestix.io/docs"><img src="https://img.shields.io/badge/docs-attestix.io%2Fdocs-4f46e5?style=flat-square" alt="Docs"></a>
+  <a href="https://attestix.io"><img src="https://img.shields.io/badge/website-attestix.io-4f46e5?style=flat-square" alt="Website"></a>
 </p>
 
 <p align="center">
-  Verifiable identity, W3C credentials, EU AI Act compliance, delegation chains,<br/>
-  and reputation scoring for every AI agent. 47 MCP tools across 9 modules.
+  Make your AI agents EU AI Act compliant with cryptographically verifiable proof.<br/>
+  Open-source identity, credentials, compliance automation, and trust scoring.<br/>
+  47 MCP tools across 9 modules.
 </p>
 
 ---
