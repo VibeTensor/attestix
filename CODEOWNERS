@@ -1,0 +1,24 @@
+# Attestix Code Owners
+# These owners will be automatically requested for review on PRs
+
+# Default owner for everything
+* @ascender1729
+
+# Core cryptographic modules require explicit review
+/attestix/auth/ @ascender1729
+/attestix/blockchain/ @ascender1729
+
+# Service layer
+/attestix/services/ @ascender1729
+
+# MCP tool definitions
+/attestix/tools/ @ascender1729
+
+# Tests and benchmarks
+/tests/ @ascender1729
+
+# Security policy
+/SECURITY.md @ascender1729
+
+# Website and docs
+/website/ @ascender1729
