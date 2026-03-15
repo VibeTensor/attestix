@@ -395,6 +395,15 @@ Attestix generates machine-readable, cryptographically signed compliance documen
 
 ---
 
+## Sponsors
+
+Attestix is free and open-source. If you or your organization benefit from it, please consider sponsoring to support continued development, security audits, and infrastructure.
+
+<a href="https://polar.sh/VibeTensor"><img src="https://polar.sh/embed/seeks-funding-shield.svg?org=VibeTensor" alt="Sponsor on Polar" /></a>
+<a href="https://github.com/sponsors/VibeTensor"><img src="https://img.shields.io/badge/Sponsor-GitHub%20Sponsors-ea4aaa?style=flat-square&logo=github" alt="GitHub Sponsors" /></a>
+
+---
+
 ## Contributing
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for development setup and guidelines.
