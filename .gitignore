@@ -85,5 +85,8 @@ website/test_*.py
 # Internal strategy docs (research, meetings, roadmap, funding)
 paper/internal/
 
+# Firecrawl scrape cache
+.firecrawl/
+
 # Windows shell artifacts
 nul
