@@ -10,7 +10,7 @@ readme = "README.md"
 license = {file = "LICENSE"}
 requires-python = ">=3.10"
 authors = [
-    {name = "VibeTensor Inc.", email = "hello@vibetensor.com"},
+    {name = "VIBETENSOR PRIVATE LIMITED", email = "hello@vibetensor.com"},
 ]
 keywords = [
     "attestix",
