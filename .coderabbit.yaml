@@ -1,0 +1,58 @@
+# CodeRabbit Configuration
+# https://docs.coderabbit.ai/guides/configure-coderabbit
+
+language: en-US
+
+reviews:
+  auto_review:
+    enabled: true
+    drafts: false
+    base_branches:
+      - main
+
+  profile: default
+  request_changes_workflow: true
+  high_level_summary: true
+  poem: false
+  review_status: true
+  collapse_walkthrough: true
+
+  # Auto-approve PRs when no actionable issues found
+  auto_approve:
+    enabled: true
+
+  path_instructions:
+    - path: "attestix/**/*.py"
+      instructions: |
+        - Check for Python best practices
+        - Ensure proper error handling
+        - Verify input validation for security
+        - Check cryptographic operations for correctness
+
+    - path: "attestix/auth/**"
+      instructions: |
+        - CRITICAL: Review for security vulnerabilities
+        - Check Ed25519 key handling
+        - Verify no hardcoded secrets
+        - Check SSRF protection
+
+chat:
+  auto_reply: true
+
+knowledge_base:
+  opt_out: false
+  learnings:
+    scope: auto
+
+early_access: true
+
+tone_instructions: |
+  - Be constructive and helpful
+  - Focus on code quality and security
+  - Prioritize security issues in auth/crypto code
+
+ignore:
+  - "**/__pycache__/**"
+  - "**/dist/**"
+  - "**/*.egg-info/**"
+  - "**/htmlcov/**"
