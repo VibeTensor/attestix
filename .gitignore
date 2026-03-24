@@ -88,5 +88,9 @@ paper/internal/
 # Firecrawl scrape cache
 .firecrawl/
 
+# Interactive demo (local presentations only)
+demo/interactive/
+demo/agentic/
+
 # Windows shell artifacts
 nul
