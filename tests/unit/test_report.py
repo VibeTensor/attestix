@@ -143,6 +143,124 @@ class TestGenerateHtmlReport:
         assert "&lt;script&gt;" in html
 
 
+class TestDigitalSignatureSection:
+    """Tests for the Digital Signature Verification section in HTML reports."""
+
+    def test_signature_section_present(self, report_service, identity_service):
+        """Every report must include the Digital Signature Verification section."""
+        agent = identity_service.create_identity(
+            display_name="Sig Test Agent",
+            source_protocol="mcp",
+        )
+        result = report_service.generate_html_report(agent["agent_id"])
+        assert "error" not in result
+        html = result["html"]
+        assert "Digital Signature Verification" in html
+
+    def test_signature_section_contains_signing_key_did(self, report_service, identity_service):
+        """The report must show the signing key DID from agent.issuer.did."""
+        agent = identity_service.create_identity(
+            display_name="DID Check Agent",
+            source_protocol="mcp",
+        )
+        result = report_service.generate_html_report(agent["agent_id"])
+        html = result["html"]
+        issuer_did = agent["issuer"]["did"]
+        assert issuer_did in html
+
+    def test_signature_section_algorithm(self, report_service, identity_service):
+        """The report must declare Ed25519Signature2020 as the algorithm."""
+        agent = identity_service.create_identity(
+            display_name="Algo Check Agent",
+            source_protocol="mcp",
+        )
+        result = report_service.generate_html_report(agent["agent_id"])
+        html = result["html"]
+        assert "Ed25519Signature2020" in html
+
+    def test_signature_section_truncated_value(self, report_service, identity_service):
+        """The signature value must be truncated with ellipsis."""
+        agent = identity_service.create_identity(
+            display_name="Truncation Agent",
+            source_protocol="mcp",
+        )
+        result = report_service.generate_html_report(agent["agent_id"])
+        html = result["html"]
+        # Signature should be truncated: first 40 chars followed by ...
+        assert "..." in html
+        sig_raw = agent.get("signature", "")
+        if sig_raw and len(sig_raw) > 40:
+            assert sig_raw[:40] in html
+
+    def test_signature_section_verification_status(self, report_service, identity_service):
+        """The report must show a verification status for the signature."""
+        agent = identity_service.create_identity(
+            display_name="Verify Status Agent",
+            source_protocol="mcp",
+        )
+        result = report_service.generate_html_report(agent["agent_id"])
+        html = result["html"]
+        # Either VALID or UNVERIFIED must appear
+        assert "VALID" in html or "UNVERIFIED" in html
+
+    def test_signature_section_verify_command_hint(self, report_service, identity_service):
+        """The report must include the CLI verify command hint."""
+        agent = identity_service.create_identity(
+            display_name="CLI Hint Agent",
+            source_protocol="mcp",
+        )
+        result = report_service.generate_html_report(agent["agent_id"])
+        html = result["html"]
+        assert "attestix verify" in html
+        assert agent["agent_id"] in html
+
+    def test_signature_section_valid_status_for_fresh_agent(self, report_service, identity_service):
+        """A freshly created agent should have a VALID signature in the report."""
+        agent = identity_service.create_identity(
+            display_name="Fresh Signed Agent",
+            source_protocol="mcp",
+        )
+        result = report_service.generate_html_report(agent["agent_id"])
+        html = result["html"]
+        assert "VALID" in html
+
+    def test_credentials_section_proof_columns(self, report_service, identity_service, credential_service):
+        """Credentials section must include Proof Type, Proof Value, and Verification Method columns."""
+        agent = identity_service.create_identity(
+            display_name="Cred Proof Agent",
+            source_protocol="mcp",
+        )
+        credential_service.issue_credential(
+            agent_id=agent["agent_id"],
+            credential_type="ComplianceCertificate",
+            claims={"status": "compliant"},
+        )
+        result = report_service.generate_html_report(agent["agent_id"])
+        html = result["html"]
+        assert "Proof Type" in html
+        assert "Proof Value" in html
+        assert "Verification Method" in html
+        assert "Ed25519Signature2020" in html
+
+    def test_credentials_section_proof_value_truncated(self, report_service, identity_service, credential_service):
+        """The proof value displayed in the credentials table must be truncated."""
+        agent = identity_service.create_identity(
+            display_name="Proof Trunc Agent",
+            source_protocol="mcp",
+        )
+        cred = credential_service.issue_credential(
+            agent_id=agent["agent_id"],
+            credential_type="ComplianceCertificate",
+            claims={"status": "compliant"},
+        )
+        result = report_service.generate_html_report(agent["agent_id"])
+        html = result["html"]
+        proof_value = cred.get("proof", {}).get("proofValue", "")
+        if proof_value and len(proof_value) > 40:
+            assert proof_value[:40] in html
+            assert proof_value not in html  # full value should not appear
+
+
 class TestGeneratePdfReport:
     """Tests for PDF report generation (fallback when weasyprint missing)."""
 

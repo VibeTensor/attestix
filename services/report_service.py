@@ -9,7 +9,7 @@ and credential inventory into a single file with inline CSS.
 
 import html
 from datetime import datetime, timezone
-from typing import Optional
+from typing import List, Optional
 
 from errors import ErrorCategory, log_and_format_error
 
@@ -190,6 +190,130 @@ class ReportService:
             )
             return {"error": msg}
 
+    def generate_bulk_html_report(self, agent_ids: List[str]) -> dict:
+        """Generate a single HTML document covering multiple agents.
+
+        Each agent gets its own labelled section inside a single
+        self-contained HTML file.  Individual agent errors are recorded
+        inline so a partial failure never blocks the rest of the batch.
+
+        Parameters
+        ----------
+        agent_ids : list of str
+            IDs of the agents to include in the report.
+
+        Returns
+        -------
+        dict
+            ``{"html": "<full document>", "agent_ids": [...],
+               "generated_at": "...", "errors": {...}}``
+            where *errors* maps agent_id to an error message for any
+            agent that could not be rendered.
+        """
+        if not agent_ids:
+            return {"error": "agent_ids must be a non-empty list"}
+
+        generated_at = datetime.now(timezone.utc).isoformat()
+        agent_sections: List[str] = []
+        errors: dict = {}
+
+        for agent_id in agent_ids:
+            try:
+                result = self.generate_html_report(agent_id)
+                if "error" in result:
+                    errors[agent_id] = result["error"]
+                    agent_sections.append(
+                        self._bulk_error_section(agent_id, result["error"])
+                    )
+                else:
+                    agent_sections.append(
+                        self._bulk_wrap_agent_section(agent_id, result["html"])
+                    )
+            except Exception as e:
+                msg = log_and_format_error(
+                    "generate_bulk_html_report", e, ErrorCategory.COMPLIANCE,
+                    agent_id=agent_id,
+                )
+                errors[agent_id] = msg
+                agent_sections.append(self._bulk_error_section(agent_id, msg))
+
+        body = "\n".join(agent_sections)
+        count = len(agent_ids)
+        error_count = len(errors)
+        ok_count = count - error_count
+
+        bulk_html = f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Attestix Bulk Compliance Report ({count} agents)</title>
+{_INLINE_CSS}
+{_BULK_EXTRA_CSS}
+</head>
+<body>
+<header>
+  <div class="logo">ATTESTIX</div>
+  <div class="subtitle">Bulk EU AI Act Compliance Report</div>
+  <div class="bulk-meta">
+    {self._esc(count)} agent(s) &nbsp;|&nbsp;
+    {self._esc(ok_count)} rendered &nbsp;|&nbsp;
+    {self._esc(error_count)} error(s)
+  </div>
+</header>
+<main>
+{body}
+<section class="meta">
+  <p>Report generated: {self._esc(generated_at)}</p>
+  <p>Attestix v0.2.4 - attestix.io</p>
+</section>
+</main>
+</body>
+</html>"""
+
+        return {
+            "html": bulk_html,
+            "agent_ids": agent_ids,
+            "generated_at": generated_at,
+            "errors": errors,
+        }
+
+    # -- bulk rendering helpers --------------------------------------------
+
+    @staticmethod
+    def _bulk_wrap_agent_section(agent_id: str, single_report_html: str) -> str:
+        """Extract the <main> content from a single-agent report and wrap it."""
+        # Pull the content between <main> and </main> tags
+        start_tag = "<main>"
+        end_tag = "</main>"
+        start = single_report_html.find(start_tag)
+        end = single_report_html.rfind(end_tag)
+        if start != -1 and end != -1:
+            inner = single_report_html[start + len(start_tag):end]
+            # Strip the trailing meta section (already added at bulk level)
+            meta_start = inner.rfind('<section class="meta">')
+            if meta_start != -1:
+                inner = inner[:meta_start]
+        else:
+            inner = single_report_html
+
+        escaped_id = html.escape(agent_id)
+        return f"""<div class="bulk-agent-block">
+  <div class="bulk-agent-header">Agent: <span class="mono">{escaped_id}</span></div>
+  {inner}
+</div>"""
+
+    @staticmethod
+    def _bulk_error_section(agent_id: str, error_msg: str) -> str:
+        escaped_id = html.escape(agent_id)
+        escaped_msg = html.escape(str(error_msg))
+        return f"""<div class="bulk-agent-block bulk-agent-error">
+  <div class="bulk-agent-header">Agent: <span class="mono">{escaped_id}</span></div>
+  <section>
+    <p class="status-fail">Error generating report: {escaped_msg}</p>
+  </section>
+</div>"""
+
     # -- private rendering helpers -----------------------------------------
 
     @staticmethod
@@ -227,6 +351,7 @@ class ReportService:
         sections.append(self._section_provenance(provenance))
         sections.append(self._section_audit_trail(audit_trail))
         sections.append(self._section_credentials(credentials))
+        sections.append(self._section_signature(agent))
 
         body = "\n".join(sections)
         agent_name = self._esc(agent.get("display_name", agent["agent_id"]))
@@ -427,21 +552,76 @@ class ReportService:
             revoked = cred.get("credentialStatus", {}).get("revoked", False)
             status_class = "status-fail" if revoked else "status-pass"
             status_label = "Revoked" if revoked else "Active"
+
+            # Proof details
+            proof = cred.get("proof", {})
+            proof_type = proof.get("type", "")
+            proof_value_raw = proof.get("proofValue", "")
+            proof_value_display = (
+                proof_value_raw[:40] + "..." if len(proof_value_raw) > 40 else proof_value_raw
+            )
+            verification_method = proof.get("verificationMethod", "")
+
             rows += (
                 f"<tr>"
                 f"<td class='mono'>{self._esc(cred.get('id', ''))}</td>"
                 f"<td>{self._esc(type_str)}</td>"
                 f"<td>{self._esc(cred.get('issuanceDate', ''))}</td>"
                 f"<td class='{status_class}'>{status_label}</td>"
+                f"<td class='mono'>{self._esc(proof_type)}</td>"
+                f"<td class='mono'>{self._esc(proof_value_display)}</td>"
+                f"<td class='mono'>{self._esc(verification_method)}</td>"
                 f"</tr>\n"
             )
 
         return f"""<section>
   <h2>Credentials</h2>
   <table>
-    <tr><th>ID</th><th>Type</th><th>Issued</th><th>Status</th></tr>
+    <tr><th>ID</th><th>Type</th><th>Issued</th><th>Status</th><th>Proof Type</th><th>Proof Value</th><th>Verification Method</th></tr>
     {rows}
   </table>
+</section>"""
+
+    def _section_signature(self, agent: dict) -> str:
+        """Render the Digital Signature Verification section for auditors."""
+        signing_key_did = self._esc(agent.get("issuer", {}).get("did", ""))
+
+        signature_raw = agent.get("signature", "") or ""
+        signature_display = (
+            signature_raw[:40] + "..." if len(signature_raw) > 40 else signature_raw
+        )
+
+        verify_result = self.identity_svc.verify_identity(agent["agent_id"])
+        sig_valid = verify_result.get("checks", {}).get("signature_valid", False)
+        verification_status_class = "status-pass" if sig_valid else "status-fail"
+        verification_status_label = "VALID" if sig_valid else "UNVERIFIED"
+
+        agent_id_esc = self._esc(agent["agent_id"])
+
+        return f"""<section>
+  <h2>Digital Signature Verification</h2>
+  <table>
+    <tr>
+      <th>Signing Key DID</th>
+      <td class="mono">{signing_key_did}</td>
+    </tr>
+    <tr>
+      <th>Signature Algorithm</th>
+      <td class="mono">Ed25519Signature2020</td>
+    </tr>
+    <tr>
+      <th>Identity Signature</th>
+      <td class="mono">{self._esc(signature_display)}</td>
+    </tr>
+    <tr>
+      <th>Verification Status</th>
+      <td class="{verification_status_class}">{verification_status_label}</td>
+    </tr>
+  </table>
+  <p style="margin-top:1rem;color:var(--text-muted);font-size:0.85rem;">
+    This report was cryptographically generated by Attestix. Verify using:
+    <span class="mono">attestix verify {agent_id_esc}</span>
+  </p>
 </section>"""
 
 
@@ -586,5 +766,37 @@ _INLINE_CSS = """<style>
     th { color: #555; }
     .progress-bar { background: #ddd; }
     .badge { color: #fff; }
+  }
+</style>"""
+
+# ---------------------------------------------------------------------------
+# Extra CSS for bulk reports (appended to _INLINE_CSS inside bulk documents)
+# ---------------------------------------------------------------------------
+
+_BULK_EXTRA_CSS = """<style>
+  .bulk-meta {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    margin-top: 0.5rem;
+  }
+  .bulk-agent-block {
+    border: 2px solid var(--indigo);
+    border-radius: 10px;
+    padding: 1rem 1rem 0.25rem;
+    margin-bottom: 2.5rem;
+  }
+  .bulk-agent-block.bulk-agent-error {
+    border-color: var(--red);
+  }
+  .bulk-agent-header {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--gold);
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .bulk-agent-block section:first-of-type {
+    margin-top: 0;
   }
 </style>"""
