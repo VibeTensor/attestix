@@ -53,6 +53,7 @@ dependencies = [
     "nest-asyncio>=1.6.0",
     "python-json-logger>=3.3.0",
     "filelock>=3.13.0",
+    "click>=8.1.0",
 ]
 
 [project.optional-dependencies]
@@ -67,7 +68,7 @@ Repository = "https://github.com/VibeTensor/attestix"
 Issues = "https://github.com/VibeTensor/attestix/issues"
 
 [project.scripts]
-attestix = "main:main"
+attestix-cli = "cli:cli"
 
 [tool.setuptools]
 # Include both flat modules (backward compatibility) and attestix namespace (new)
@@ -87,7 +88,7 @@ packages = [
     "attestix.services",
     "attestix.tools",
 ]
-py-modules = ["main", "config", "errors"]
+py-modules = ["main", "cli", "config", "errors"]
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
