@@ -10,7 +10,7 @@ reviews:
     base_branches:
       - main
 
-  profile: default
+  profile: assertive
   request_changes_workflow: true
   high_level_summary: true
   poem: false
