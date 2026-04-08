@@ -4,6 +4,7 @@ Wraps core Attestix services for interactive use: identity management,
 compliance checks, audit trails, credential operations, and system status.
 """
 
+import hashlib
 import json
 import sys
 from importlib.metadata import version as pkg_version, PackageNotFoundError
@@ -79,9 +80,10 @@ def cli():
     default="",
     help="Comma-separated capability list.",
 )
+@click.option("--identity-token", default="", help="Identity token from the source protocol (e.g. MCP bearer token).")
 @click.option("--issuer", prompt="Issuer name (optional)", default="", help="Name of the identity issuer.")
 @click.option("--expiry-days", default=365, type=int, show_default=True, help="Days until identity expires.")
-def init(name, protocol, description, capabilities, issuer, expiry_days):
+def init(name, protocol, description, capabilities, identity_token, issuer, expiry_days):
     """Create a new agent identity (interactive prompts)."""
     svc = get_service(IdentityService)
 
@@ -90,6 +92,7 @@ def init(name, protocol, description, capabilities, issuer, expiry_days):
     result = svc.create_identity(
         display_name=name,
         source_protocol=protocol,
+        identity_token=identity_token,
         capabilities=caps,
         description=description,
         issuer_name=issuer,
@@ -118,7 +121,9 @@ def verify(agent_id):
     svc = get_service(IdentityService)
     result = svc.verify_identity(agent_id)
 
-    if result.get("valid"):
+    valid = result.get("valid", False)
+
+    if valid:
         _success(f"Identity {agent_id} is VALID")
     else:
         _warn(f"Identity {agent_id} is INVALID")
@@ -130,6 +135,9 @@ def verify(agent_id):
 
     click.echo()
     _print_json(result)
+
+    if not valid:
+        sys.exit(1)
 
 
 # ---------------------------------------------------------------------------
@@ -241,6 +249,36 @@ def audit(agent_id, action_type, limit):
             click.echo(f"    {click.style('Human override applied', fg='yellow')}")
         click.echo()
 
+    # Verify hash chain integrity
+    genesis_hash = "0" * 64
+    chain_ok = True
+    for i, entry in enumerate(entries):
+        expected_prev = entries[i - 1].get("chain_hash", "") if i > 0 else genesis_hash
+        actual_prev = entry.get("prev_hash", "")
+        if actual_prev and actual_prev != expected_prev:
+            chain_ok = False
+            click.echo(
+                click.style(f"  Chain break at entry {i} ({entry.get('log_id', 'N/A')}): "
+                            f"prev_hash does not match previous entry's chain_hash", fg="red")
+            )
+
+        # Also verify the chain_hash itself if both fields are present
+        if actual_prev and entry.get("chain_hash"):
+            verify_data = {k: v for k, v in entry.items() if k not in ("chain_hash", "signature")}
+            canonical = json.dumps(verify_data, sort_keys=True, separators=(",", ":"))
+            recomputed = hashlib.sha256(f"{actual_prev}:{canonical}".encode("utf-8")).hexdigest()
+            if recomputed != entry["chain_hash"]:
+                chain_ok = False
+                click.echo(
+                    click.style(f"  Hash mismatch at entry {i} ({entry.get('log_id', 'N/A')}): "
+                                f"recomputed chain_hash differs from stored value", fg="red")
+                )
+
+    if chain_ok:
+        _success("Chain integrity: VERIFIED")
+    else:
+        click.echo(click.style("Chain integrity: BROKEN", fg="red"), err=True)
+
 
 # ---------------------------------------------------------------------------
 # attestix credential
@@ -311,9 +349,17 @@ def credential(do_issue, cred_id_to_verify, do_list, cred_id_to_revoke, agent_id
         _print_json(result)
 
     elif do_list:
+        if not agent_id:
+            agent_id = click.prompt("Agent ID (optional, leave blank to list all)", default="")
+            if not agent_id:
+                agent_id = None
         results = svc.list_credentials(agent_id=agent_id)
         if results and "error" in results[0]:
             _error(results[0]["error"])
+
+        if not results:
+            _warn(f"No credentials found{' for ' + agent_id if agent_id else ''}.")
+            return
 
         _header(f"Credentials{' for ' + agent_id if agent_id else ''} ({len(results)} found)")
         for cred in results:
@@ -429,6 +475,24 @@ def list_identities(protocol, include_revoked, limit):
         click.echo(f"    Status     : {status_str}")
         click.echo(f"    Reputation : {rep_str}")
         click.echo()
+
+    # Show risk-category summary from compliance profiles
+    compliance_data = load_compliance()
+    profiles = compliance_data.get("profiles", [])
+    agent_ids = {a.get("agent_id") for a in agents}
+    risk_counts = {"minimal": 0, "limited": 0, "high": 0, "unacceptable": 0}
+    for profile in profiles:
+        if profile.get("agent_id") in agent_ids:
+            cat = profile.get("risk_category", "").lower()
+            if cat in risk_counts:
+                risk_counts[cat] += 1
+
+    _header("Risk Category Summary")
+    for category in ("minimal", "limited", "high", "unacceptable"):
+        count = risk_counts[category]
+        color = {"minimal": "green", "limited": "yellow", "high": "red", "unacceptable": "magenta"}[category]
+        click.echo(f"  {click.style(category.capitalize(), fg=color):30s}: {count}")
+    click.echo()
 
 
 if __name__ == "__main__":
