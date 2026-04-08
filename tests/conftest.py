@@ -114,6 +114,13 @@ def agent_card_service():
 
 
 @pytest.fixture
+def report_service():
+    """Fresh ReportService instance using tmp storage."""
+    from services.report_service import ReportService
+    return ReportService()
+
+
+@pytest.fixture
 def blockchain_service_mock():
     """BlockchainService with web3 fully mocked.
 
