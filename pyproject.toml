@@ -77,6 +77,9 @@ packages = [
     "blockchain",
     "services",
     "tools",
+    # REST API
+    "api",
+    "api.routers",
     # Namespace package (new imports: from attestix.services.X import Y)
     "attestix",
     "attestix.auth",
