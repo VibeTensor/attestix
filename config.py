@@ -12,17 +12,28 @@ from dotenv import load_dotenv
 from filelock import FileLock
 
 PROJECT_DIR = Path(__file__).parent
+
+# Data directory: use ATTESTIX_DATA_DIR env var, or ~/.attestix/ by default.
+# This ensures fresh installs start with empty data (no demo artifacts)
+# and avoids writing into the package install location (site-packages).
+_data_dir_env = os.environ.get("ATTESTIX_DATA_DIR")
+if _data_dir_env:
+    DATA_DIR = Path(_data_dir_env)
+else:
+    DATA_DIR = Path.home() / ".attestix"
+DATA_DIR.mkdir(parents=True, exist_ok=True)
+
 ENV_FILE = PROJECT_DIR / ".env"
-IDENTITIES_FILE = PROJECT_DIR / "identities.json"
-REPUTATION_FILE = PROJECT_DIR / "reputation.json"
-DELEGATIONS_FILE = PROJECT_DIR / "delegations.json"
-COMPLIANCE_FILE = PROJECT_DIR / "compliance.json"
-CREDENTIALS_FILE = PROJECT_DIR / "credentials.json"
-PROVENANCE_FILE = PROJECT_DIR / "provenance.json"
-ANCHORS_FILE = PROJECT_DIR / "anchors.json"
-BLOCKCHAIN_CONFIG_FILE = PROJECT_DIR / ".blockchain_config.json"
-LOG_FILE = PROJECT_DIR / "attestix_errors.log"
-SIGNING_KEY_FILE = PROJECT_DIR / ".signing_key.json"
+IDENTITIES_FILE = DATA_DIR / "identities.json"
+REPUTATION_FILE = DATA_DIR / "reputation.json"
+DELEGATIONS_FILE = DATA_DIR / "delegations.json"
+COMPLIANCE_FILE = DATA_DIR / "compliance.json"
+CREDENTIALS_FILE = DATA_DIR / "credentials.json"
+PROVENANCE_FILE = DATA_DIR / "provenance.json"
+ANCHORS_FILE = DATA_DIR / "anchors.json"
+BLOCKCHAIN_CONFIG_FILE = DATA_DIR / ".blockchain_config.json"
+LOG_FILE = DATA_DIR / "attestix_errors.log"
+SIGNING_KEY_FILE = DATA_DIR / ".signing_key.json"
 
 load_dotenv(ENV_FILE)
 
