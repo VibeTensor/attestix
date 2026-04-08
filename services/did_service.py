@@ -32,9 +32,9 @@ class DIDService:
         """Store a generated keypair locally (never return private keys in tool responses)."""
         from datetime import datetime, timezone
         from filelock import FileLock
-        from config import PROJECT_DIR
+        from config import DATA_DIR
 
-        keypair_file = PROJECT_DIR / ".keypairs.json"
+        keypair_file = DATA_DIR / ".keypairs.json"
         lock = FileLock(str(keypair_file) + ".lock", timeout=5)
 
         with lock:

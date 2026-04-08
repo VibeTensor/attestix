@@ -26,6 +26,7 @@ for attr in ["IDENTITIES_FILE", "REPUTATION_FILE", "DELEGATIONS_FILE",
     original = getattr(config, attr)
     setattr(config, attr, config.Path(TEMP_DIR) / original.name)
 config.PROJECT_DIR = config.Path(TEMP_DIR)
+config.DATA_DIR = config.Path(TEMP_DIR)
 
 # Now import MCP tools
 from main import mcp

@@ -43,8 +43,9 @@ def tmp_attestix(tmp_path, monkeypatch):
         original = getattr(config, attr)
         monkeypatch.setattr(config, attr, tmp_path / original.name)
 
-    # Also patch PROJECT_DIR so any code using it resolves to tmp
+    # Also patch PROJECT_DIR and DATA_DIR so any code using them resolves to tmp
     monkeypatch.setattr(config, "PROJECT_DIR", tmp_path)
+    monkeypatch.setattr(config, "DATA_DIR", tmp_path)
 
     # Clear the service cache so services re-initialize with patched paths
     from services.cache import clear_cache

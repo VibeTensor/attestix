@@ -1,0 +1,54 @@
+# Include essential project files
+include LICENSE
+include README.md
+include pyproject.toml
+
+# Include all Python source
+recursive-include attestix *.py
+recursive-include auth *.py
+recursive-include blockchain *.py
+recursive-include services *.py
+recursive-include tools *.py
+
+# Exclude runtime data files (generated on first use)
+exclude identities.json
+exclude compliance.json
+exclude credentials.json
+exclude delegations.json
+exclude reputation.json
+exclude provenance.json
+exclude anchors.json
+exclude .signing_key.json
+exclude .keypairs.json
+exclude .blockchain_config.json
+
+# Exclude backup, temp, and lock files
+global-exclude *.json.bak
+global-exclude *.json.tmp
+global-exclude *.json.lock
+global-exclude *.log
+global-exclude *.pyc
+global-exclude __pycache__
+
+# Exclude development and CI files
+exclude .env
+exclude .env.local
+exclude .coderabbit.yaml
+exclude Dockerfile
+exclude Dockerfile.test
+exclude buildspec.yml
+exclude aws-test-userdata.sh
+exclude mkdocs.yml
+exclude simulate_users.py
+exclude generate_logos.py
+prune .github
+prune .claude
+prune demo
+prune docs
+prune examples
+prune paper
+prune site
+prune website
+prune api
+prune magicuidesign-devtool-template
+prune magicuidesign-agent-template

@@ -93,5 +93,24 @@ markers = [
 ]
 
 [tool.setuptools.package-data]
-# No JSON files bundled - runtime data files are generated on first use
+# Only ship Python source files, never JSON data
 blockchain = ["*.py"]
+
+[tool.setuptools.exclude-package-data]
+# Runtime data files are generated on first use - never ship them
+"*" = [
+    "identities.json",
+    "compliance.json",
+    "credentials.json",
+    "delegations.json",
+    "reputation.json",
+    "provenance.json",
+    "anchors.json",
+    "*.json.bak",
+    "*.json.tmp",
+    "*.json.lock",
+    ".signing_key.json",
+    ".keypairs.json",
+    ".blockchain_config.json",
+    "*.log",
+]
