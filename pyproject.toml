@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "attestix"
-version = "0.2.4"
+version = "0.2.5"
 description = "Attestix - Attestation Infrastructure for AI Agents. DID-based agent identity, W3C Verifiable Credentials, EU AI Act compliance, delegation chains, and reputation scoring. 47 MCP tools across 9 modules."
 readme = "README.md"
 license = {file = "LICENSE"}
@@ -68,7 +68,7 @@ Repository = "https://github.com/VibeTensor/attestix"
 Issues = "https://github.com/VibeTensor/attestix/issues"
 
 [project.scripts]
-attestix-cli = "cli:cli"
+attestix = "cli:cli"
 
 [tool.setuptools]
 # Include both flat modules (backward compatibility) and attestix namespace (new)

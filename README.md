@@ -1,7 +1,7 @@
 <!-- mcp-name: io.github.VibeTensor/attestix -->
 
 <p align="center">
-  <img src="docs/assets/atx_icon.png" alt="Attestix" width="120" height="120" />
+  <img src="https://raw.githubusercontent.com/VibeTensor/attestix/main/docs/assets/atx_icon.png" alt="Attestix" width="120" height="120" />
 </p>
 
 <h1 align="center">Attestix</h1>
@@ -11,7 +11,7 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/VibeTensor/attestix/releases"><img src="https://img.shields.io/badge/version-0.2.4-4f46e5?style=flat-square" alt="v0.2.4"></a>
+  <a href="https://github.com/VibeTensor/attestix/releases"><img src="https://img.shields.io/badge/version-0.2.5-4f46e5?style=flat-square" alt="v0.2.4"></a>
   <a href="https://pypi.org/project/attestix/"><img src="https://img.shields.io/pypi/v/attestix?color=4f46e5&style=flat-square" alt="PyPI"></a>
   <a href="https://pypi.org/project/attestix/"><img src="https://img.shields.io/pypi/pyversions/attestix?color=4f46e5&style=flat-square" alt="Python"></a>
   <a href="https://github.com/VibeTensor/attestix/blob/main/LICENSE"><img src="https://img.shields.io/github/license/VibeTensor/attestix?color=4f46e5&style=flat-square" alt="License"></a>
@@ -31,6 +31,37 @@
 
 ```bash
 pip install attestix
+```
+
+### CLI
+
+```bash
+attestix status                          # System overview
+attestix init --name MyBot               # Create agent identity
+attestix compliance <agent-id>           # Check EU AI Act compliance
+attestix verify <agent-id>               # Verify identity cryptographically
+attestix audit <agent-id>                # View hash-chained audit trail
+attestix credential --list               # List W3C Verifiable Credentials
+```
+
+### REST API
+
+```bash
+pip install fastapi uvicorn
+uvicorn api.main:app --reload            # Swagger docs at http://localhost:8000/docs
+```
+
+### Web Dashboard
+
+```bash
+pip install streamlit
+streamlit run demo/webapp/app.py         # Opens at http://localhost:8501
+```
+
+### Quick Demo
+
+```bash
+python examples/quickstart.py            # Full 9-module workflow in 0.1 seconds
 ```
 
 ## Why Attestix
@@ -446,7 +477,7 @@ Apache License 2.0. See [LICENSE](LICENSE).
 
 <p align="center">
   <a href="https://vibetensor.com">
-    <img src="docs/assets/atx_gold.svg" alt="Attestix" width="48" />
+    <img src="https://raw.githubusercontent.com/VibeTensor/attestix/main/docs/assets/atx_gold.svg" alt="Attestix" width="48" />
   </a>
 </p>
 
