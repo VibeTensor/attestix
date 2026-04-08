@@ -21,7 +21,7 @@ from services.provenance_service import ProvenanceService
 
 # Valid source protocols for identity creation
 SOURCE_PROTOCOLS = [
-    "mcp", "a2a", "oauth2", "did", "api_key", "saml", "openid_connect", "custom",
+    "manual", "mcp", "a2a", "oauth2", "did", "api_key", "saml", "openid_connect", "custom",
 ]
 
 
@@ -66,25 +66,25 @@ def cli():
 # ---------------------------------------------------------------------------
 
 @cli.command()
-@click.option("--name", prompt="Agent display name", help="Human-readable agent name.")
+@click.option("--name", required=True, prompt=True, help="Human-readable agent name.")
 @click.option(
     "--protocol",
-    prompt="Source protocol",
+    default="manual",
     type=click.Choice(SOURCE_PROTOCOLS, case_sensitive=False),
+    show_default=True,
     help="Identity source protocol.",
 )
-@click.option("--description", prompt="Description (optional)", default="", help="Agent description.")
+@click.option("--description", default="", help="Agent description.")
 @click.option(
     "--capabilities",
-    prompt="Capabilities (comma-separated, optional)",
     default="",
     help="Comma-separated capability list.",
 )
-@click.option("--identity-token", default="", help="Identity token from the source protocol (e.g. MCP bearer token).")
-@click.option("--issuer", prompt="Issuer name (optional)", default="", help="Name of the identity issuer.")
+@click.option("--identity-token", default="", help="Identity token from the source protocol.")
+@click.option("--issuer", default="", help="Name of the identity issuer.")
 @click.option("--expiry-days", default=365, type=int, show_default=True, help="Days until identity expires.")
 def init(name, protocol, description, capabilities, identity_token, issuer, expiry_days):
-    """Create a new agent identity (interactive prompts)."""
+    """Create a new agent identity. Use --name flag for non-interactive mode."""
     svc = get_service(IdentityService)
 
     caps = [c.strip() for c in capabilities.split(",") if c.strip()] if capabilities else []
