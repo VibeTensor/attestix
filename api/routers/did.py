@@ -4,13 +4,15 @@ Supports creating and resolving Decentralized Identifiers:
 did:key (Ed25519), did:web, and Universal Resolver fallback.
 """
 
-from typing import Optional
+import logging
 
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
 
 from api.deps import get_did_service
 from services.did_service import DIDService
+
+logger = logging.getLogger("attestix.api.did")
 
 router = APIRouter(prefix="/v1/dids", tags=["did"])
 
@@ -38,7 +40,8 @@ def create_did_key(
     """
     result = svc.create_did_key()
     if isinstance(result, dict) and "error" in result:
-        raise HTTPException(status_code=500, detail=result["error"])
+        logger.error("DID key creation failed: %s", result["error"])
+        raise HTTPException(status_code=500, detail="DID key creation failed")
     return result
 
 
@@ -53,7 +56,8 @@ def create_did_web(
     """
     result = svc.create_did_web(domain=body.domain, path=body.path)
     if isinstance(result, dict) and "error" in result:
-        raise HTTPException(status_code=500, detail=result["error"])
+        logger.error("DID web creation failed: %s", result["error"])
+        raise HTTPException(status_code=500, detail="DID web creation failed")
     return result
 
 
@@ -69,9 +73,10 @@ def resolve_did(
     result = svc.resolve_did(did)
     if isinstance(result, dict) and "error" in result:
         error_msg = result["error"]
+        logger.warning("DID resolution failed for %s: %s", did, error_msg)
         if "timeout" in error_msg.lower():
-            raise HTTPException(status_code=504, detail=error_msg)
+            raise HTTPException(status_code=504, detail="DID resolution timed out")
         if "http" in error_msg.lower() and any(c.isdigit() for c in error_msg):
-            raise HTTPException(status_code=502, detail=error_msg)
-        raise HTTPException(status_code=400, detail=error_msg)
+            raise HTTPException(status_code=502, detail="Upstream DID resolution error")
+        raise HTTPException(status_code=400, detail="DID resolution failed")
     return result

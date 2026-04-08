@@ -4,6 +4,7 @@ Creates, verifies, and manages UCAN-style JWT delegation tokens
 with capability attenuation.
 """
 
+import logging
 from typing import List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -11,6 +12,8 @@ from pydantic import BaseModel, Field
 
 from api.deps import get_delegation_service
 from services.delegation_service import DelegationService
+
+logger = logging.getLogger("attestix.api.delegation")
 
 router = APIRouter(prefix="/v1/delegations", tags=["delegation"])
 
@@ -53,7 +56,8 @@ def create_delegation(
         parent_token=body.parent_token,
     )
     if isinstance(result, dict) and "error" in result:
-        raise HTTPException(status_code=400, detail=result["error"])
+        logger.warning("Delegation creation failed: %s", result["error"])
+        raise HTTPException(status_code=400, detail="Delegation creation failed")
     return result
 
 
@@ -83,7 +87,8 @@ def verify_delegation(
     """Verify a UCAN delegation token (signature, expiry, revocation)."""
     result = svc.verify_delegation(body.token)
     if isinstance(result, dict) and "error" in result:
-        raise HTTPException(status_code=400, detail=result["error"])
+        logger.warning("Delegation verification failed: %s", result["error"])
+        raise HTTPException(status_code=400, detail="Delegation verification failed")
     return result
 
 
@@ -97,7 +102,8 @@ def revoke_delegation(
     reason = body.reason if body else ""
     result = svc.revoke_delegation(delegation_id, reason=reason)
     if isinstance(result, dict) and "error" in result:
+        logger.warning("Delegation revocation failed for %s: %s", delegation_id, result["error"])
         if "not found" in result["error"].lower():
-            raise HTTPException(status_code=404, detail=result["error"])
-        raise HTTPException(status_code=400, detail=result["error"])
+            raise HTTPException(status_code=404, detail="Delegation not found")
+        raise HTTPException(status_code=400, detail="Delegation revocation failed")
     return result
