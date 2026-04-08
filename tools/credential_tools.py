@@ -18,7 +18,7 @@ def register(mcp):
 
     @mcp.tool()
     async def issue_credential(
-        subject_agent_id: str,
+        agent_id: str,
         credential_type: str,
         issuer_name: str,
         claims_json: str,
@@ -27,13 +27,13 @@ def register(mcp):
         """Issue a W3C Verifiable Credential with Ed25519Signature2020 proof.
 
         Args:
-            subject_agent_id: The Attestix agent ID this credential is about.
+            agent_id: The Attestix agent ID this credential is about.
             credential_type: Credential type (e.g., EUAIActComplianceCredential, AgentIdentityCredential).
             issuer_name: Name of the issuing authority.
             claims_json: JSON string of credential claims (e.g., {"compliant": true, "risk_level": "high"}).
             expiry_days: Days until credential expires (default 365).
         """
-        err = _validate_required({"subject_agent_id": subject_agent_id,
+        err = _validate_required({"agent_id": agent_id,
                                    "credential_type": credential_type,
                                    "issuer_name": issuer_name, "claims_json": claims_json})
         if err:
@@ -49,7 +49,7 @@ def register(mcp):
             return json.dumps({"error": "Invalid JSON in claims_json"})
 
         result = svc.issue_credential(
-            subject_id=subject_agent_id,
+            agent_id=agent_id,
             credential_type=credential_type,
             issuer_name=issuer_name,
             claims=claims,
