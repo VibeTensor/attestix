@@ -9,6 +9,7 @@ recursive-include auth *.py
 recursive-include blockchain *.py
 recursive-include services *.py
 recursive-include tools *.py
+recursive-include api *.py
 
 # Exclude runtime data files (generated on first use)
 exclude identities.json
@@ -49,6 +50,5 @@ prune examples
 prune paper
 prune site
 prune website
-prune api
 prune magicuidesign-devtool-template
 prune magicuidesign-agent-template
