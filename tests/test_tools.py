@@ -56,7 +56,7 @@ class TestValidateRequired:
     async def test_issue_credential_empty_fields(self):
         fn = get_tool_func("issue_credential")
         result = await fn(
-            subject_agent_id="",
+            agent_id="",
             credential_type="Test",
             issuer_name="I",
             claims_json='{"x":1}',

@@ -4,9 +4,13 @@ Issues, verifies, and manages W3C Verifiable Credentials (VC Data Model 1.1)
 with Ed25519Signature2020 proofs.
 """
 
+import logging
 import uuid
+import warnings
 from datetime import datetime, timedelta, timezone
 from typing import Dict, List, Optional
+
+logger = logging.getLogger(__name__)
 
 from auth.crypto import (
     did_key_fragment,
@@ -46,13 +50,44 @@ class CredentialService:
 
     def issue_credential(
         self,
-        subject_id: str,
-        credential_type: str,
-        issuer_name: str,
-        claims: Dict,
+        subject_id: Optional[str] = None,
+        credential_type: str = "",
+        issuer_name: str = "",
+        claims: Optional[Dict] = None,
         expiry_days: int = 365,
+        *,
+        agent_id: Optional[str] = None,
     ) -> dict:
-        """Issue a W3C Verifiable Credential with Ed25519Signature2020 proof."""
+        """Issue a W3C Verifiable Credential with Ed25519Signature2020 proof.
+
+        Args:
+            agent_id: Preferred parameter - the agent DID or identifier for the
+                credential subject.
+            subject_id: Deprecated alias for agent_id. Kept for backward
+                compatibility; will be removed in a future release.
+            credential_type: W3C VC credential type string.
+            issuer_name: Name of the issuing authority.
+            claims: Dict of credential claims to embed.
+            expiry_days: Days until the credential expires (default 365).
+        """
+        # Resolve agent_id / subject_id alias (agent_id takes priority)
+        resolved_subject = agent_id or subject_id
+        if subject_id and not agent_id:
+            warnings.warn(
+                "subject_id is deprecated in issue_credential; use agent_id instead.",
+                DeprecationWarning,
+                stacklevel=2,
+            )
+            logger.info(
+                "Deprecation: subject_id passed to issue_credential - "
+                "migrate callers to agent_id"
+            )
+        if not resolved_subject:
+            return {"error": "Either agent_id or subject_id must be provided"}
+        if claims is None:
+            claims = {}
+
+        subject_id = resolved_subject
         try:
             cred_id = f"urn:uuid:{uuid.uuid4()}"
             now = datetime.now(timezone.utc)

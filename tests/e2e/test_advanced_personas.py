@@ -55,7 +55,7 @@ class TestPersona7_CybersecurityAnalyst:
         # 2. Issue a credential and verify signature is valid
         cred = call_tool(
             "issue_credential",
-            subject_agent_id=agent_id,
+            agent_id=agent_id,
             credential_type="AgentIdentityCredential",
             issuer_name="SecurityLab",
             claims_json='{"clearance": "top_secret", "role": "analyst"}',
@@ -430,7 +430,7 @@ class TestPersona9_LegalCounsel:
         # 8. Issue a credential attesting to the fairness audit
         fairness_cred = call_tool(
             "issue_credential",
-            subject_agent_id=agent_id,
+            agent_id=agent_id,
             credential_type="ConformityAssessmentCredential",
             issuer_name="InsureCo Fairness Board",
             claims_json=json.dumps({
@@ -908,7 +908,7 @@ class TestPersona12_EnterpriseArchitect:
         ]:
             cred = call_tool(
                 "issue_credential",
-                subject_agent_id=agent_id,
+                agent_id=agent_id,
                 credential_type=cred_type,
                 issuer_name="EnterpriseCorp Central Authority",
                 claims_json=json.dumps({"system": "enterprise", "verified": True}),
@@ -1246,7 +1246,7 @@ class TestPersona15_PenetrationTester:
         long_claims = {"data": "x" * 10000}
         long_result = call_tool(
             "issue_credential",
-            subject_agent_id=agent_id,
+            agent_id=agent_id,
             credential_type="AgentIdentityCredential",
             issuer_name="PenTestLab",
             claims_json=json.dumps(long_claims),
@@ -1272,7 +1272,7 @@ class TestPersona15_PenetrationTester:
         # First, create a real VP
         cred = call_tool(
             "issue_credential",
-            subject_agent_id=agent_id,
+            agent_id=agent_id,
             credential_type="AgentIdentityCredential",
             issuer_name="PenTestLab",
             claims_json='{"test": true}',
@@ -1301,7 +1301,7 @@ class TestPersona15_PenetrationTester:
         injection_claims = '{"role": "admin", "__proto__": {"isAdmin": true}}'
         inj_result = call_tool(
             "issue_credential",
-            subject_agent_id=agent_id,
+            agent_id=agent_id,
             credential_type="AgentIdentityCredential",
             issuer_name="PenTestLab",
             claims_json=injection_claims,
@@ -1334,7 +1334,7 @@ class TestPersona15_PenetrationTester:
         # independent of identity status - this is by design for VCs)
         post_revoke_cred = call_tool(
             "issue_credential",
-            subject_agent_id=agent_id,
+            agent_id=agent_id,
             credential_type="AgentIdentityCredential",
             issuer_name="PenTestLab",
             claims_json='{"post_revoke": true}',
@@ -1433,7 +1433,7 @@ class TestPersona16_DevOpsPlatformEngineer:
         # 8. Test file locking by doing read-write-read cycle
         cred = call_tool(
             "issue_credential",
-            subject_agent_id=agent_id,
+            agent_id=agent_id,
             credential_type="AgentIdentityCredential",
             issuer_name="DevOps Team",
             claims_json='{"env": "production"}',

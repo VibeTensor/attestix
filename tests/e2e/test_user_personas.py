@@ -63,7 +63,7 @@ class TestPersona1_StartupDeveloper:
         # 4. Issue an identity credential
         cred = call_tool(
             "issue_credential",
-            subject_agent_id=agent_id,
+            agent_id=agent_id,
             credential_type="AgentIdentityCredential",
             issuer_name="IndieAI Labs",
             claims_json=json.dumps({
@@ -433,7 +433,7 @@ class TestPersona4_DataProtectionOfficer:
         # 6. Issue a credential
         _cred = call_tool(
             "issue_credential",
-            subject_agent_id=agent_id,
+            agent_id=agent_id,
             credential_type="AgentIdentityCredential",
             issuer_name="PrivacyCorp",
             claims_json='{"role": "chat"}',
@@ -551,7 +551,7 @@ class TestPersona5_ExternalAuditor:
         # Issue an additional manual credential
         _manual_cred = call_tool(
             "issue_credential",
-            subject_agent_id=agent_id,
+            agent_id=agent_id,
             credential_type="TransparencyObligationCredential",
             issuer_name="AuditedCorp",
             claims_json=json.dumps({
