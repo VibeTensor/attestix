@@ -11,7 +11,7 @@ Attestix provides verifiable identity, W3C credentials, delegation chains, compl
 - [Examples](https://attestix.io/docs/examples): 11 runnable code examples for all modules
 - [EU AI Act Compliance](https://attestix.io/docs/guides/eu-ai-act-compliance): Full compliance workflow with checklists
 - [Risk Classification](https://attestix.io/docs/guides/risk-classification): Decision tree for AI Act risk categories
-- [Integration Guide](https://attestix.io/docs/guides/integration-guide): LangChain, CrewAI, AutoGen, plain Python
+- [Integration Guide](https://attestix.io/docs/guides/integration-guide): LangChain, OpenAI Agents SDK, CrewAI, plain Python
 - [Architecture](https://attestix.io/docs/guides/architecture): System design, data flows, security model
 - [Reputation Scoring](https://attestix.io/docs/guides/reputation): Trust scoring, categories, recency decay
 - [API Reference](https://attestix.io/docs/reference/api-reference): All 47 tools with parameters and return types

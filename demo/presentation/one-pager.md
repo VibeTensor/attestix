@@ -14,7 +14,7 @@ The EU AI Act begins enforcement on August 2, 2026, with fines up to EUR 35 mill
 - **Agent-native identity.** W3C DIDs and Verifiable Credentials designed for machine-to-machine trust, not human reviewers clicking through checklists.
 - **EU AI Act enforcement built in.** Automatically blocks prohibited systems (Article 5) and prevents self-assessment for high-risk systems (Article 43).
 - **Offline-first, zero vendor lock-in.** All core operations work without internet. Data stays local. Fully open source under Apache 2.0.
-- **MCP-native with 47 tools.** Direct integration with Claude, LangChain, CrewAI, AutoGen, and any MCP-compatible client.
+- **MCP-native with 47 tools.** Direct integration with Claude, LangChain, OpenAI Agents SDK, CrewAI, and any MCP-compatible client.
 
 ## How It Works
 
@@ -26,11 +26,11 @@ The EU AI Act begins enforcement on August 2, 2026, with fines up to EUR 35 mill
 
 ## Standards
 
-W3C Verifiable Credentials 1.1 / W3C DID Core 1.0 / UCAN v0.9.0 / Ed25519 (RFC 8032) / JSON Canonicalization (RFC 8785) / Ethereum Attestation Service / Base L2 / Merkle Trees (RFC 6962) / EU AI Act (13 articles + Annex III + Annex V) / GDPR Article 17
+W3C Verifiable Credentials 1.1 / W3C DID Core 1.0 / UCAN v0.9.0 / Ed25519 (RFC 8032) / JSON Canonicalization (RFC 8785) / Ethereum Attestation Service / Base L2 / Merkle Trees (RFC 6962) / EU AI Act (11 articles + Annex III + Annex V) / GDPR Article 17
 
 ## By the Numbers
 
-47 MCP tools / 9 modules / 284 automated tests / 91 conformance benchmarks / 25 standards implemented / Sub-millisecond cryptographic operations / Apache 2.0 license
+47 MCP tools / 9 modules / 358 automated tests (1 skipped on Windows) / 91 conformance benchmarks / 25 standards implemented / Sub-millisecond cryptographic operations / Apache 2.0 license
 
 ## Business Model
 

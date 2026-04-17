@@ -486,3 +486,102 @@ Estimate gas cost for anchoring an artifact.
 | Parameter | Type | Required | Default | Description |
 |-----------|------|----------|---------|-------------|
 | `artifact_type` | string | Yes | - | `identity`, `credential`, or `audit_batch` |
+
+---
+
+## REST API (44 endpoints)
+
+Attestix ships a FastAPI-based HTTP API under `/v1/*`. Launch it with `uvicorn api.main:app` or via the Docker image. Interactive docs are served at `/docs` (Swagger UI) and `/redoc`.
+
+All endpoints accept and return JSON. Authentication is via the `Authorization: Bearer <token>` header when `ATTESTIX_API_AUTH_TOKEN` is configured.
+
+### Identity (7 endpoints)
+
+| Method | Path | Description |
+|--------|------|-------------|
+| POST | `/v1/identities` | Create a new UAIT |
+| GET | `/v1/identities` | List identities |
+| GET | `/v1/identities/{agent_id}` | Retrieve an identity |
+| POST | `/v1/identities/{agent_id}/verify` | Verify an identity's signature |
+| POST | `/v1/identities/{agent_id}/translate` | Translate identity between protocols |
+| DELETE | `/v1/identities/{agent_id}` | Revoke an identity |
+| DELETE | `/v1/identities/{agent_id}/purge` | GDPR Article 17 erasure |
+
+### Credentials (7 endpoints)
+
+| Method | Path | Description |
+|--------|------|-------------|
+| POST | `/v1/credentials` | Issue a W3C Verifiable Credential |
+| GET | `/v1/credentials` | List credentials |
+| POST | `/v1/credentials/verify-external` | Verify an externally supplied VC |
+| GET | `/v1/credentials/{credential_id}` | Retrieve a credential |
+| POST | `/v1/credentials/{credential_id}/verify` | Verify a stored credential |
+| DELETE | `/v1/credentials/{credential_id}` | Revoke a credential |
+| POST | `/v1/presentations` | Create a Verifiable Presentation |
+
+### Compliance (6 endpoints)
+
+| Method | Path | Description |
+|--------|------|-------------|
+| POST | `/v1/compliance/profiles` | Create a compliance profile |
+| GET | `/v1/compliance/profiles` | List compliance profiles |
+| GET | `/v1/compliance/profiles/{profile_id}` | Retrieve a profile |
+| GET | `/v1/compliance/profiles/{profile_id}/status` | Get profile compliance status |
+| POST | `/v1/compliance/assessments` | Record a conformity assessment |
+| POST | `/v1/compliance/declarations` | Generate Annex V Declaration of Conformity |
+
+### Reputation (3 endpoints)
+
+| Method | Path | Description |
+|--------|------|-------------|
+| POST | `/v1/reputation/interactions` | Record an interaction event |
+| GET | `/v1/reputation/{agent_id}` | Get reputation score for an agent |
+| GET | `/v1/reputation` | Query reputation across filters |
+
+### Provenance (5 endpoints)
+
+| Method | Path | Description |
+|--------|------|-------------|
+| POST | `/v1/provenance/training-data` | Record training data provenance |
+| POST | `/v1/provenance/model-lineage` | Record model lineage |
+| POST | `/v1/provenance/actions` | Log an agent action to the audit trail |
+| GET | `/v1/provenance/audit-trail/{agent_id}` | Retrieve hash-chained audit trail |
+| GET | `/v1/provenance/{agent_id}` | Retrieve provenance for an agent |
+
+### Delegation (4 endpoints)
+
+| Method | Path | Description |
+|--------|------|-------------|
+| POST | `/v1/delegations` | Create a UCAN delegation |
+| GET | `/v1/delegations` | List delegations |
+| POST | `/v1/delegations/verify` | Verify a delegation chain |
+| DELETE | `/v1/delegations/{delegation_id}` | Revoke a delegation |
+
+### DID (3 endpoints)
+
+| Method | Path | Description |
+|--------|------|-------------|
+| POST | `/v1/dids/key` | Create a `did:key` identifier |
+| POST | `/v1/dids/web` | Create a `did:web` identifier |
+| GET | `/v1/dids/resolve/{did}` | Resolve a DID document |
+
+### Agent Cards (3 endpoints)
+
+| Method | Path | Description |
+|--------|------|-------------|
+| POST | `/v1/agent-cards/discover` | Discover an A2A agent card by URL |
+| POST | `/v1/agent-cards/parse` | Parse a supplied agent card payload |
+| POST | `/v1/agent-cards/generate` | Generate an agent card for a UAIT |
+
+### Blockchain (6 endpoints)
+
+| Method | Path | Description |
+|--------|------|-------------|
+| POST | `/v1/blockchain/anchor/identity` | Anchor an identity on Base L2 |
+| POST | `/v1/blockchain/anchor/credential` | Anchor a credential |
+| POST | `/v1/blockchain/anchor/audit-batch` | Anchor a Merkle batch of audit events |
+| POST | `/v1/blockchain/verify/{anchor_id}` | Verify an on-chain anchor |
+| GET | `/v1/blockchain/anchors/{anchor_id}` | Retrieve anchor status |
+| GET | `/v1/blockchain/estimate-cost` | Estimate gas cost for an anchor |
+
+> Endpoint counts verified against `api/routers/*.py` on 2026-04-17. Total: 44 REST endpoints across 9 routers.

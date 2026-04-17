@@ -97,7 +97,7 @@
 
 4. **Offline-first, zero vendor lock-in.** All core operations work without internet. Data stays local. Open source under Apache 2.0. No subscription fees.
 
-5. **MCP-native integration.** Direct integration with Claude, LangChain, CrewAI, AutoGen, and any MCP-compatible client. No custom API integration needed.
+5. **MCP-native integration.** Direct integration with Claude, LangChain, OpenAI Agents SDK, CrewAI, and any MCP-compatible client. No custom API integration needed.
 
 6. **Blockchain timestamping.** Immutable proof of existence via EAS on Base L2. Sub-cent anchoring costs. No other AI compliance tool offers on-chain evidence anchoring.
 

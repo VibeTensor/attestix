@@ -188,7 +188,7 @@ Run the VP creation command.
 
 "Let me recap what you just saw. Attestix provides end-to-end EU AI Act compliance automation for AI agents. 47 MCP tools across 9 modules. W3C Verifiable Credentials. Ed25519 cryptographic signatures. UCAN delegation chains. Blockchain anchoring on Base L2. Everything open-source under Apache 2.0."
 
-"We have 284 automated tests, including 91 conformance benchmarks that validate every standards claim against the actual specifications - RFC 8032 for Ed25519, W3C VC Data Model 1.1, W3C DID Core 1.0, UCAN v0.9.0."
+"We have 358 automated tests (1 skipped on Windows), including 91 conformance benchmarks that validate every standards claim against the actual specifications - RFC 8032 for Ed25519, W3C VC Data Model 1.1, W3C DID Core 1.0, UCAN v0.9.0."
 
 "The enforcement deadline is August 2, 2026. Every company deploying AI agents in the EU needs this. We are available on PyPI as 'attestix', registered in the MCP Registry, and documented at attestix.io/docs."
 

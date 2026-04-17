@@ -196,7 +196,7 @@ docker run -v attestix-data:/data attestix
 
 ### Running the Test Suite
 
-The project includes `Dockerfile.test` which runs all 284 tests (unit, e2e, and conformance benchmarks) in a clean container:
+The project includes `Dockerfile.test` which runs all 358 tests (unit, e2e, and conformance benchmarks; 1 skipped on Windows) in a clean container:
 
 ```bash
 docker build -f Dockerfile.test -t attestix-bench . && docker run --rm attestix-bench

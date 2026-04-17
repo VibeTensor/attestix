@@ -204,7 +204,7 @@ export const siteConfig = {
     {
       question: "What is the current maturity level?",
       answer:
-        `Attestix v${ATTESTIX_VERSION} is in active development (beta). It includes 284 tests across functional, end-to-end, and conformance benchmark suites covering all 9 modules. We recommend thorough testing before production deployment.`,
+        `Attestix v${ATTESTIX_VERSION} is in active development (beta). It includes 358 tests (1 skipped on Windows) across functional, end-to-end, and conformance benchmark suites covering all 9 modules. We recommend thorough testing before production deployment.`,
     },
     {
       question: "How does blockchain anchoring work?",
