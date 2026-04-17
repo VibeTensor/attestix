@@ -4,6 +4,7 @@ Anchors cryptographic hashes of off-chain artifacts (UAITs, VCs, audit log
 batches) to Base L2 via Ethereum Attestation Service (EAS).
 """
 
+import logging
 from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -13,6 +14,8 @@ from api.deps import get_blockchain_service, get_identity_service, get_credentia
 from services.blockchain_service import BlockchainService
 from services.identity_service import IdentityService
 from services.credential_service import CredentialService
+
+logger = logging.getLogger("attestix.api.blockchain")
 
 router = APIRouter(prefix="/v1/blockchain", tags=["blockchain"])
 
@@ -64,7 +67,8 @@ def anchor_identity(
         artifact_id=body.agent_id,
     )
     if isinstance(result, dict) and "error" in result:
-        raise HTTPException(status_code=400, detail=result["error"])
+        logger.warning("Identity anchor failed for %s: %s", body.agent_id, result["error"])
+        raise HTTPException(status_code=400, detail="Identity anchoring failed")
     return result
 
 
@@ -89,7 +93,11 @@ def anchor_credential(
         artifact_id=body.credential_id,
     )
     if isinstance(result, dict) and "error" in result:
-        raise HTTPException(status_code=400, detail=result["error"])
+        logger.warning(
+            "Credential anchor failed for %s: %s",
+            body.credential_id, result["error"],
+        )
+        raise HTTPException(status_code=400, detail="Credential anchoring failed")
     return result
 
 
@@ -105,7 +113,11 @@ def anchor_audit_batch(
         end_date=body.end_date,
     )
     if isinstance(result, dict) and "error" in result:
-        raise HTTPException(status_code=400, detail=result["error"])
+        logger.warning(
+            "Audit batch anchor failed for %s: %s",
+            body.agent_id, result["error"],
+        )
+        raise HTTPException(status_code=400, detail="Audit batch anchoring failed")
     return result
 
 
@@ -121,7 +133,8 @@ def verify_anchor(
     """
     result = bc_svc.verify_anchor(body.artifact_hash)
     if isinstance(result, dict) and "error" in result:
-        raise HTTPException(status_code=400, detail=result["error"])
+        logger.warning("Anchor verification failed: %s", result["error"])
+        raise HTTPException(status_code=400, detail="Anchor verification failed")
     return result
 
 
@@ -136,7 +149,8 @@ def get_anchor_status(
     """
     result = bc_svc.get_anchor_status(anchor_id)
     if isinstance(result, dict) and "error" in result:
-        raise HTTPException(status_code=500, detail=result["error"])
+        logger.error("Anchor status lookup failed for %s: %s", anchor_id, result["error"])
+        raise HTTPException(status_code=500, detail="Anchor status lookup failed")
     return result
 
 
@@ -148,5 +162,6 @@ def estimate_anchor_cost(
     """Estimate gas cost for an anchoring transaction."""
     result = bc_svc.estimate_anchor_cost(artifact_type=artifact_type)
     if isinstance(result, dict) and "error" in result:
-        raise HTTPException(status_code=400, detail=result["error"])
+        logger.warning("Anchor cost estimation failed: %s", result["error"])
+        raise HTTPException(status_code=400, detail="Anchor cost estimation failed")
     return result

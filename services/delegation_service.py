@@ -240,7 +240,15 @@ class DelegationService:
         except jwt.ExpiredSignatureError:
             return {"valid": False, "reason": "Token has expired"}
         except jwt.InvalidTokenError as e:
-            return {"valid": False, "reason": f"Invalid token: {str(e)}"}
+            # Log the underlying PyJWT error server-side (may include
+            # "Signature verification failed", "Not enough segments", etc.)
+            # but return a generic message so internal token internals don't
+            # leak to API callers.
+            log_and_format_error(
+                "verify_delegation", e, ErrorCategory.DELEGATION,
+                user_message="Invalid delegation token",
+            )
+            return {"valid": False, "reason": "Invalid token"}
         except Exception as e:
             return {
                 "valid": False,

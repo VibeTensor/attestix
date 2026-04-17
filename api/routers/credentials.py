@@ -4,6 +4,7 @@ Issues, verifies, and manages W3C Verifiable Credentials (VC Data Model 1.1)
 with Ed25519Signature2020 proofs.
 """
 
+import logging
 from typing import Dict, List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -11,6 +12,8 @@ from pydantic import BaseModel, Field
 
 from api.deps import get_credential_service
 from services.credential_service import CredentialService
+
+logger = logging.getLogger("attestix.api.credentials")
 
 router = APIRouter(prefix="/v1", tags=["credentials"])
 
@@ -60,7 +63,8 @@ def issue_credential(
         expiry_days=body.expiry_days,
     )
     if isinstance(result, dict) and "error" in result:
-        raise HTTPException(status_code=400, detail=result["error"])
+        logger.warning("Credential issuance failed: %s", result["error"])
+        raise HTTPException(status_code=400, detail="Credential issuance failed")
     return result
 
 
@@ -81,7 +85,8 @@ def list_credentials(
     )
     # Service returns list with error dict on failure
     if results and isinstance(results[0], dict) and "error" in results[0]:
-        raise HTTPException(status_code=500, detail=results[0]["error"])
+        logger.error("Credential listing failed: %s", results[0]["error"])
+        raise HTTPException(status_code=500, detail="Credential listing failed")
     return results
 
 
@@ -96,7 +101,8 @@ def verify_credential_external(
     """
     result = svc.verify_credential_external(body.credential)
     if isinstance(result, dict) and "error" in result:
-        raise HTTPException(status_code=400, detail=result["error"])
+        logger.warning("External credential verification failed: %s", result["error"])
+        raise HTTPException(status_code=400, detail="Credential verification failed")
     return result
 
 
@@ -120,7 +126,8 @@ def verify_credential(
     """Verify a credential by ID: check signature, expiry, and revocation."""
     result = svc.verify_credential(credential_id)
     if isinstance(result, dict) and "error" in result:
-        raise HTTPException(status_code=400, detail=result["error"])
+        logger.warning("Credential verification failed for %s: %s", credential_id, result["error"])
+        raise HTTPException(status_code=400, detail="Credential verification failed")
     return result
 
 
@@ -134,9 +141,11 @@ def revoke_credential(
     reason = body.reason if body else ""
     result = svc.revoke_credential(credential_id, reason=reason)
     if isinstance(result, dict) and "error" in result:
-        if "not found" in result["error"].lower():
-            raise HTTPException(status_code=404, detail=result["error"])
-        raise HTTPException(status_code=400, detail=result["error"])
+        error_msg = result["error"]
+        logger.warning("Credential revocation failed for %s: %s", credential_id, error_msg)
+        if "not found" in error_msg.lower():
+            raise HTTPException(status_code=404, detail="Credential not found")
+        raise HTTPException(status_code=400, detail="Credential revocation failed")
     return result
 
 
@@ -157,7 +166,9 @@ def create_verifiable_presentation(
         challenge=body.challenge,
     )
     if isinstance(result, dict) and "error" in result:
-        if "not found" in result["error"].lower():
-            raise HTTPException(status_code=404, detail=result["error"])
-        raise HTTPException(status_code=400, detail=result["error"])
+        error_msg = result["error"]
+        logger.warning("Verifiable presentation creation failed: %s", error_msg)
+        if "not found" in error_msg.lower():
+            raise HTTPException(status_code=404, detail="Credential or agent not found")
+        raise HTTPException(status_code=400, detail="Verifiable presentation creation failed")
     return result

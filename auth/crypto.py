@@ -5,6 +5,9 @@ Handles key generation, signing, verification, and did:key creation.
 
 import base64
 import json
+import os
+import stat
+import sys
 from pathlib import Path
 from typing import Optional, Tuple
 
@@ -195,6 +198,18 @@ def load_or_create_signing_key(
 
     with open(key_path, "w") as f:
         json.dump(key_data, f, indent=2)
+
+    # Restrict file permissions so the private key material is only readable
+    # by the owning user. Skipped on Windows where POSIX mode bits do not
+    # map cleanly; rely on filesystem ACLs there instead.
+    if sys.platform != "win32":
+        try:
+            os.chmod(key_path, stat.S_IRUSR | stat.S_IWUSR)  # 0o600
+        except OSError as chmod_err:
+            log_and_format_error(
+                "load_or_create_signing_key", chmod_err, ErrorCategory.CRYPTO,
+                user_message="Could not restrict signing key permissions to 0600",
+            )
 
     return private_key, did
 

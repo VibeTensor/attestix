@@ -4,6 +4,7 @@ Records agent interactions and queries recency-weighted trust scores
 with exponential decay (30-day half-life).
 """
 
+import logging
 from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -11,6 +12,8 @@ from pydantic import BaseModel, Field
 
 from api.deps import get_reputation_service
 from services.reputation_service import ReputationService
+
+logger = logging.getLogger("attestix.api.reputation")
 
 router = APIRouter(prefix="/v1/reputation", tags=["reputation"])
 
@@ -45,7 +48,8 @@ def record_interaction(
         details=body.details,
     )
     if isinstance(result, dict) and "error" in result:
-        raise HTTPException(status_code=400, detail=result["error"])
+        logger.warning("Interaction recording failed: %s", result["error"])
+        raise HTTPException(status_code=400, detail="Interaction recording failed")
     return result
 
 
@@ -57,7 +61,8 @@ def get_reputation(
     """Get the current trust score and category breakdown for an agent."""
     result = svc.get_reputation(agent_id)
     if isinstance(result, dict) and "error" in result:
-        raise HTTPException(status_code=500, detail=result["error"])
+        logger.error("Reputation lookup failed for %s: %s", agent_id, result["error"])
+        raise HTTPException(status_code=500, detail="Reputation lookup failed")
     return result
 
 
@@ -79,5 +84,6 @@ def query_reputation(
         limit=limit,
     )
     if results and isinstance(results[0], dict) and "error" in results[0]:
-        raise HTTPException(status_code=500, detail=results[0]["error"])
+        logger.error("Reputation query failed: %s", results[0]["error"])
+        raise HTTPException(status_code=500, detail="Reputation query failed")
     return results
