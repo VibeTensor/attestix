@@ -23,6 +23,10 @@ export function NumberTicker({
   ...props
 }: NumberTickerProps) {
   const ref = useRef<HTMLSpanElement>(null)
+  // Start at the start value on the client so the count-up animation is
+  // visible. SSR/no-JS renders a static text node with the final value (see
+  // `initialText` below), so crawlers and social previews still see the real
+  // numbers even if hydration never completes.
   const motionValue = useMotionValue(direction === "down" ? value : startValue)
   const springValue = useSpring(motionValue, {
     damping: 60,
@@ -52,6 +56,13 @@ export function NumberTicker({
     [springValue, decimalPlaces]
   )
 
+  // SSR / initial render shows the target value so crawlers and no-JS visitors
+  // see "47", "358", "6" rather than "0" or a start value.
+  const initialText = Intl.NumberFormat("en-US", {
+    minimumFractionDigits: decimalPlaces,
+    maximumFractionDigits: decimalPlaces,
+  }).format(Number(value.toFixed(decimalPlaces)))
+
   return (
     <span
       ref={ref}
@@ -61,7 +72,7 @@ export function NumberTicker({
       )}
       {...props}
     >
-      {startValue}
+      {initialText}
     </span>
   )
 }
