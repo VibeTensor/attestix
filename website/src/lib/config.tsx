@@ -3,7 +3,7 @@ import { Icons } from "@/components/icons";
 export const BLUR_FADE_DELAY = 0.15;
 
 export const ATTESTIX_VERSION =
-  process.env.NEXT_PUBLIC_ATTESTIX_VERSION || "0.2.4";
+  process.env.NEXT_PUBLIC_ATTESTIX_VERSION || "0.3.0";
 
 export const siteConfig = {
   name: "Attestix",
@@ -33,9 +33,9 @@ export const siteConfig = {
   hero: {
     title: "Attestix",
     description:
-      "The EU AI Act takes effect August 2, 2026. Non-compliant organizations face fines up to EUR 35 million or 7% of global revenue. Attestix is like TurboTax for AI compliance: it automates the documentation, identity verification, and audit trails your AI agents need to stay legal. Install once, generate cryptographic proof of compliance on every run.",
+      "The EU AI Act takes effect August 2, 2026. Non-compliant organizations face fines up to EUR 35 million or 7% of global revenue. Attestix is like TurboTax for AI compliance: it automates the documentation, identity verification, and audit trails your AI agents need to stay legal. Install once, drop into LangChain, OpenAI Agents SDK, or CrewAI, and generate cryptographic proof of compliance on every run.",
     cta: "pip install attestix",
-    ctaDescription: "Open source. Apache 2.0 license.",
+    ctaDescription: "v0.3.0 - 358 tests passing. Real LangChain, OpenAI Agents SDK, and CrewAI integrations. Apache 2.0 license.",
   },
   pricing: [
     {
@@ -124,49 +124,49 @@ export const siteConfig = {
 
   highlights: [
     {
-      id: 4,
-      text: "How do we design where we can have trust? This is one of the very active conversations that we are having right now.",
-      name: "Julie Zhuo",
-      role: "Founder, Sundial",
-      company: "Ex-VP Product Design, Meta (14 years)",
+      id: 1,
+      text: "I encourage you to continue with your project.",
+      name: "Yoshua Bengio",
+      role: "Turing Award Laureate",
+      company: "Scientific Director, MILA",
 
       validation: "problem" as const,
-      context: "On trust infrastructure for AI agent workflows",
+      context: "Direct encouragement on the Attestix mission",
       askedBy: "Pavan Kumar Dubasi",
-      question: "As AI agents start making autonomous decisions, who is responsible when an agent makes a bad data-driven decision? How does Sundial think about the trust and accountability layer for agent workflows? Should AI agents have verifiable proof of work before they can act?",
-      event: "Fireside Chat with Julie Zhuo | South Park Commons",
-      venue: "SPC India, HSR Layout, Bengaluru - March 3, 2026",
-      detail: "Julie confirmed that designing trust for AI agents is an active, unsolved problem at Sundial. She described the management chain model where a human somewhere in the chain owns accountability. This maps directly to Attestix's UCAN delegation chains, where every agent action traces back to a human principal through cryptographic proof of authorization.",
+      question: "Shared the Attestix mission and verifiable trust infrastructure approach for AI agents under the EU AI Act.",
+      event: "Email Correspondence",
+      venue: "February 21, 2026",
+      detail: "Professor Bengio, one of the three Turing Award recipients for deep learning and a leading voice in AI safety, reviewed the Attestix pitch and replied with direct encouragement. His endorsement underscores the importance of building verifiable, open source trust infrastructure for autonomous AI agents.",
     },
     {
-      id: 5,
-      text: "How do humans trust each other? Benefit of the doubt, then validate work, then trust more. We build structures to minimise mistakes given the context.",
-      name: "Julie Zhuo",
-      role: "Founder, Sundial",
-      company: "Ex-VP Product Design, Meta (14 years)",
+      id: 2,
+      text: "The fact you are open source is really interesting.",
+      name: "Alvaro Cabrejas Egea",
+      role: "AI Policy Officer",
+      company: "EU AI Office, European Commission",
 
       validation: "problem" as const,
-      context: "Describing progressive trust, the pattern Attestix implements",
+      context: "On the value of open source compliance tooling for the EU AI Act",
       askedBy: "Pavan Kumar Dubasi",
-      question: "As AI agents start making autonomous decisions, who is responsible when an agent makes a bad data-driven decision? How does Sundial think about the trust and accountability layer for agent workflows? Should AI agents have verifiable proof of work before they can act?",
-      event: "Fireside Chat with Julie Zhuo | South Park Commons",
-      venue: "SPC India, HSR Layout, Bengaluru - March 3, 2026",
-      detail: "Julie described how humans build trust progressively: start with benefit of the doubt, validate work, then extend more trust. This is exactly the pattern Attestix's reputation scoring module implements. Agents earn trust scores based on verified actions, compliance history, and audit trail integrity. Progressive trust, but cryptographically verifiable.",
+      question: "Walked through how Attestix produces cryptographically verifiable evidence for EU AI Act Articles 16 to 22 while the provider remains legally liable.",
+      event: "Direct Discussion on EU AI Act Enforcement",
+      venue: "European Commission Outreach - 2026",
+      detail: "Alvaro raised the critical liability question of who is responsible when a deployed system is found non compliant. The answer is that providers remain liable under Articles 16 to 22. Attestix is positioned as the evidence generation tool, not a guarantor. Alvaro expressed genuine interest in the open source angle and said he would share the approach with the appropriate team.",
     },
     {
-      id: 6,
-      text: "Code reviews as a process to generate trust. That is how trust is created, because humans are not perfect. We always need structured verification.",
-      name: "Julie Zhuo",
-      role: "Founder, Sundial",
-      company: "Ex-VP Product Design, Meta (14 years)",
+      id: 3,
+      text: "I can see how to put a register of compliance and self certify or get a third party certifier to cryptographically sign.",
+      name: "Matt Pagett",
+      role: "AI Safety Researcher",
+      company: "CBAAC Author, NANDA Contributor",
 
       validation: "problem" as const,
-      context: "Structured verification for AI agents is what Attestix automates",
+      context: "Describing the exact primitives Attestix already ships",
       askedBy: "Pavan Kumar Dubasi",
-      question: "As AI agents start making autonomous decisions, who is responsible when an agent makes a bad data-driven decision? How does Sundial think about the trust and accountability layer for agent workflows? Should AI agents have verifiable proof of work before they can act?",
-      event: "Fireside Chat with Julie Zhuo | South Park Commons",
-      venue: "SPC India, HSR Layout, Bengaluru - March 3, 2026",
-      detail: "Julie sees code reviews as the human model for trust generation: structured review processes that catch mistakes before they ship. Attestix automates this exact pattern for AI agents. Instead of code reviews, agents undergo compliance verification, identity attestation, and authorization checks before they can act. Structured verification, but automated and cryptographically signed.",
+      question: "Walked through the Attestix automated compliance attestation flow: UAIT identity, compliance profile, training data records, model lineage, audit trail, Annex V declaration, and auto issued W3C Verifiable Credentials.",
+      event: "1 on 1 Discovery Call",
+      venue: "Remote - February 27, 2026",
+      detail: "Matt framed Attestix as TurboTax for AI compliance: layers of audit protection chosen by risk exposure and budget, with the company still owning final responsibility. He validated the business case, signaled strong alignment with CBAAC and NANDA, and agreed to re engage once he moves to Munich in April or May 2026 to connect Attestix with European compliance buyers.",
     },
   ],
 
@@ -204,7 +204,12 @@ export const siteConfig = {
     {
       question: "What is the current maturity level?",
       answer:
-        `Attestix v${ATTESTIX_VERSION} is in active development (beta). It includes 358 tests (1 skipped on Windows) across functional, end-to-end, and conformance benchmark suites covering all 9 modules. We recommend thorough testing before production deployment.`,
+        `Attestix v${ATTESTIX_VERSION} is in active development (beta). It includes 358 tests across functional, end-to-end, and conformance benchmark suites covering all 9 modules, plus real integrations with LangChain, OpenAI Agents SDK, and CrewAI. GitHub Actions CI runs the full pytest matrix, lint, and security scans on every push. We still recommend thorough testing before production deployment.`,
+    },
+    {
+      question: "Does Attestix work with LangChain, OpenAI Agents SDK, or CrewAI?",
+      answer:
+        "Yes, all three are real integrations shipped in v0.3.0 rather than examples or shims. LangChain uses a BaseCallbackHandler that writes every tool call, LLM call, and chain step to the Attestix audit trail with hash chaining. OpenAI Agents SDK uses MCPServerStdio so Attestix tools appear as native MCP tools. CrewAI attaches Attestix to the mcps field on every agent, giving each crew member full attestation capabilities. You can also use Attestix via its MCP server from any MCP-compatible client (Claude Desktop, Cursor, Continue, Windsurf, VS Code).",
     },
     {
       question: "How does blockchain anchoring work?",

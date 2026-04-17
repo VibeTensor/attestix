@@ -9,6 +9,42 @@ All notable changes to Attestix are documented here.
 
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.3.0] - 2026-04-17
+
+Flagship release introducing real framework integrations, a security hardening sweep, and GitHub Actions CI/CD.
+
+### Added
+
+**Real framework integrations (not simulations)**
+- LangChain integration via `BaseCallbackHandler` that logs every tool call, LLM call, and chain step to the Attestix audit trail with hash chaining (#42)
+- OpenAI Agents SDK integration using `MCPServerStdio` so agents can call Attestix tools directly as MCP tools (#48)
+- CrewAI integration that attaches Attestix to the `mcps` field on every agent, giving each crew member full attestation capabilities (#51)
+- 7 additional framework integration examples and 15 integration tests covering LangChain, OpenAI Agents SDK, and CrewAI end to end (#41)
+
+**CI/CD and release tooling**
+- GitHub Actions workflow with pytest matrix (Linux and Windows), lint, and security scan jobs (#49)
+- Single-job PyPI publish workflow restored to token auth (#54, #56)
+- Automated release for v0.3.0 including tag, PyPI push, and documentation sync (#52, #58)
+
+**Security fixes (HIGH severity)**
+- SSRF redirect following hardened to re-check every redirect target against the private IP and metadata endpoint allow list (#47)
+- API key comparison moved to constant-time HMAC to prevent timing side channels (#47)
+- Exception messages sanitized so internal file paths and stack traces no longer leak to MCP clients (#47)
+- `display_name` validation tightened to block control characters and oversized values (#47)
+- Signing key file permissions locked down to owner-only read/write on POSIX (#47)
+- Delegation chain authentication bypass fixed: parent tokens are now fully verified and capability attenuation is enforced so a delegatee cannot silently escalate privileges beyond its delegator (#45)
+- PyJWT CVE remediated, plus simplified publish workflow removed the id-token and environment gate that blocked v0.3.0 publishing (#55)
+
+**Correctness fixes**
+- EAS schema UID derivation corrected and on-chain event decoding hardened so `anchor_credential` and `verify_anchor` no longer misreport status (#50)
+- Article 43 conformity assessment now differentiates Annex III categories per the EU AI Act text, so self-assessment is permitted where the regulation allows and blocked where it does not (#46)
+- Persona e2e test findings addressed: version printout, `python -m attestix`, and quickstart path fixed (#57)
+
+### Changed
+
+- Total automated tests: 284 -> 358 (267 functional + 91 conformance benchmarks), 1 skipped on Windows
+- Documentation refreshed to reflect v0.3.0 current state: 358 tests, 3 real framework integrations, CI/CD pipeline (#58)
+
 ## [0.2.4] - 2026-03-10
 
 ### Added
@@ -75,7 +111,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - FAQ entry on standards validation methodology
 
 ### Changed
-- Total automated tests: 193 -> 284 (193 functional + 91 conformance benchmarks)
+- Total automated tests: 193 -> 284 (193 functional + 91 conformance benchmarks). See the 0.3.0 entry for the current figure (358).
 - Updated research paper evaluation section with conformance test results and measured latencies
 - Updated all documentation (architecture, changelog, contributing, roadmap, FAQ) with benchmark details
 
@@ -103,7 +139,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - `verify_presentation` - Verify Verifiable Presentations with embedded credentials
 
 **Testing**
-- 284 automated tests (unit, integration, e2e, conformance benchmarks)
+- 284 automated tests at the 0.2.0 cut (unit, integration, e2e, conformance benchmarks). The current figure is 358 (see 0.3.0).
 - 91 conformance benchmark tests validating standards compliance:
   - RFC 8032 Section 7.1 Ed25519 canonical test vectors (4 IETF vectors, 18 tests)
   - W3C VC Data Model 1.1 conformance (credential structure, proof, presentations, 24 tests)

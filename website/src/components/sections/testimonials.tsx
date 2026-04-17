@@ -193,21 +193,7 @@ export function Testimonials() {
         description="Researchers, founders, and industry leaders validating the need for verifiable trust infrastructure in AI agent systems."
       >
         <div className="relative border-x border-b overflow-hidden py-8">
-          <Marquee pauseOnHover className="[--duration:35s] [--gap:1rem]">
-            {highlights.map((highlight) => (
-              <TestimonialCard
-                key={highlight.id}
-                highlight={highlight}
-                onClick={() => setSelectedHighlight(highlight)}
-              />
-            ))}
-          </Marquee>
-
-          <Marquee
-            pauseOnHover
-            reverse
-            className="mt-4 [--duration:40s] [--gap:1rem]"
-          >
+          <Marquee pauseOnHover repeat={2} className="[--duration:45s] [--gap:1rem]">
             {highlights.map((highlight) => (
               <TestimonialCard
                 key={highlight.id}

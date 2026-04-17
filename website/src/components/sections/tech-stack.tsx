@@ -23,6 +23,9 @@ import {
   WindIcon,
   TerminalIcon,
   BookOpenIcon,
+  BrainIcon,
+  SparklesIcon,
+  UsersIcon,
 } from "lucide-react";
 
 interface TechItem {
@@ -49,6 +52,15 @@ const categories: { title: string; description: string; items: TechItem[] }[] = 
       { name: "JWT", label: "JSON Web Tokens", Icon: LockIcon, color: "gold" },
       { name: "DID:key", label: "DID Key Method", Icon: FileSearchIcon, color: "primary" },
       { name: "EAS", label: "Ethereum Attestation Service", Icon: HashIcon, color: "gold" },
+    ],
+  },
+  {
+    title: "Agent Frameworks",
+    description: "Real, shipped integrations in v0.3.0 (not simulations)",
+    items: [
+      { name: "LangChain", label: "LangChain via BaseCallbackHandler", Icon: BrainIcon, color: "primary" },
+      { name: "OpenAI Agents", label: "OpenAI Agents SDK via MCPServerStdio", Icon: SparklesIcon, color: "primary" },
+      { name: "CrewAI", label: "CrewAI via mcps field on every agent", Icon: UsersIcon, color: "primary" },
     ],
   },
   {

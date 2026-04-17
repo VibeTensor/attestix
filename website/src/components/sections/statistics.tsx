@@ -12,13 +12,15 @@ import Link from "next/link";
 const stats = [
   {
     value: 47,
+    startValue: 37,
     suffix: "",
     subtitle: "MCP Tools across 9 modules",
     icon: <WrenchIcon className="h-5 w-5" />,
     href: "/docs",
   },
   {
-    value: 284,
+    value: 358,
+    startValue: 340,
     suffix: "",
     subtitle: "Tests with conformance benchmarks",
     icon: <FlaskConicalIcon className="h-5 w-5" />,
@@ -26,6 +28,7 @@ const stats = [
   },
   {
     value: 6,
+    startValue: 1,
     suffix: "",
     subtitle: "Conformance test suites (W3C, IETF, UCAN, MCP)",
     icon: <BookOpenIcon className="h-5 w-5" />,
@@ -72,6 +75,7 @@ export function Statistics() {
                 <div className="flex items-center justify-center">
                   <NumberTicker
                     value={stat.value}
+                    startValue={stat.startValue}
                     className="font-mono pointer-events-none text-center text-[6rem] font-bold leading-none before:bg-gradient-to-b before:from-border before:to-border/50 dark:before:from-border dark:before:to-border/30 bg-gradient-to-b from-foreground/60 to-foreground/30 bg-clip-text text-transparent"
                   />
                 </div>
