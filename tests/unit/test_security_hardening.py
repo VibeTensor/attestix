@@ -51,34 +51,16 @@ class TestAgentCardRedirectProtection:
 
     def test_redirect_response_is_refused(self, monkeypatch):
         """A 30x response must short-circuit to an error, not be silently
-        followed."""
+        followed. After switching to fetch_json_pinned, the redirect refusal
+        is enforced by the pinned fetcher, so we stub that layer instead."""
         from services.agent_card_service import AgentCardService
+        import auth.ssrf as ssrf_mod
+        import services.agent_card_service as acs_mod
 
-        class FakeResp:
-            status_code = 302
-            is_redirect = True
-            headers = {"location": "http://169.254.169.254/latest/meta-data/"}
+        def fake_fetch_json_pinned(url, max_bytes=None, timeout=10.0, headers=None):
+            return "refused: redirect to 169.254.169.254 blocked", None
 
-            def raise_for_status(self):
-                pass
-
-            def json(self):
-                return {}
-
-        class FakeClient:
-            def __init__(self, *a, **kw):
-                pass
-
-            def __enter__(self):
-                return self
-
-            def __exit__(self, *a):
-                return False
-
-            def get(self, url):
-                return FakeResp()
-
-        monkeypatch.setattr(httpx, "Client", FakeClient)
+        monkeypatch.setattr(acs_mod, "fetch_json_pinned", fake_fetch_json_pinned)
 
         svc = AgentCardService()
         result = svc.discover_agent("https://example.com")

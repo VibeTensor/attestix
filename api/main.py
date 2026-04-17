@@ -7,11 +7,13 @@ agent cards, and blockchain anchoring.
 """
 
 import hmac
+import ipaddress
 import os
 import time
 import logging
-from collections import defaultdict
+from collections import OrderedDict
 from contextlib import asynccontextmanager
+from typing import Optional
 
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
@@ -41,23 +43,46 @@ class RateLimitState:
     """Simple in-memory rate limiter using a sliding window counter.
 
     Tracks request timestamps per client IP within a configurable window
-    and enforces a maximum number of requests per window.
+    and enforces a maximum number of requests per window. An LRU cap on the
+    number of tracked IPs prevents an attacker from exhausting memory by
+    cycling through a huge set of source IPs (for example via
+    ``X-Forwarded-For`` spoofing when the app is deployed without a trusted
+    proxy in front of it).
     """
 
-    def __init__(self, max_requests: int = 60, window_seconds: int = 60):
+    def __init__(
+        self,
+        max_requests: int = 60,
+        window_seconds: int = 60,
+        max_tracked_ips: int = 10000,
+    ):
         self.max_requests = max_requests
         self.window_seconds = window_seconds
-        self._hits: dict[str, list[float]] = defaultdict(list)
+        self.max_tracked_ips = max_tracked_ips
+        # OrderedDict + move_to_end gives O(1) LRU semantics.
+        self._hits: "OrderedDict[str, list[float]]" = OrderedDict()
+
+    def _touch(self, client_ip: str) -> list[float]:
+        """Get or create the timestamp list for ``client_ip`` with LRU bookkeeping."""
+        if client_ip in self._hits:
+            self._hits.move_to_end(client_ip)
+            return self._hits[client_ip]
+        # Evict least-recently-seen buckets until we have room.
+        while len(self._hits) >= self.max_tracked_ips:
+            self._hits.popitem(last=False)
+        self._hits[client_ip] = []
+        return self._hits[client_ip]
 
     def is_allowed(self, client_ip: str) -> bool:
         now = time.time()
         cutoff = now - self.window_seconds
-        # Prune expired timestamps
-        timestamps = self._hits[client_ip]
-        self._hits[client_ip] = [t for t in timestamps if t > cutoff]
-        if len(self._hits[client_ip]) >= self.max_requests:
+        timestamps = self._touch(client_ip)
+        # Prune expired timestamps.
+        pruned = [t for t in timestamps if t > cutoff]
+        self._hits[client_ip] = pruned
+        if len(pruned) >= self.max_requests:
             return False
-        self._hits[client_ip].append(now)
+        pruned.append(now)
         return True
 
     def remaining(self, client_ip: str) -> int:
@@ -70,7 +95,98 @@ class RateLimitState:
 _rate_limiter = RateLimitState(
     max_requests=int(os.environ.get("RATE_LIMIT_MAX", "60")),
     window_seconds=int(os.environ.get("RATE_LIMIT_WINDOW", "60")),
+    max_tracked_ips=int(os.environ.get("RATE_LIMIT_MAX_TRACKED_IPS", "10000")),
 )
+
+
+# ---------------------------------------------------------------------------
+# Client IP resolution
+# ---------------------------------------------------------------------------
+#
+# ``request.client.host`` is the socket peer. Behind any reverse proxy or
+# load balancer (ALB, Cloudflare, nginx, Fly.io, Railway, Render, etc.) that
+# is the proxy's IP, so every client on Earth would share one rate-limit
+# bucket. We therefore honour ``X-Forwarded-For`` / ``X-Real-IP`` only when
+# the request actually originated from an operator-configured trusted proxy.
+
+def _parse_trusted_proxies(raw: str) -> list:
+    """Parse a comma-separated list of IPs / CIDR blocks into network objects."""
+    networks = []
+    for entry in raw.split(","):
+        entry = entry.strip()
+        if not entry:
+            continue
+        try:
+            networks.append(ipaddress.ip_network(entry, strict=False))
+        except ValueError:
+            logger.warning("Ignoring invalid TRUSTED_PROXIES entry: %r", entry)
+    return networks
+
+
+_TRUSTED_PROXIES = _parse_trusted_proxies(os.environ.get("TRUSTED_PROXIES", ""))
+_TRUSTED_PROXIES_WARNED = False
+
+
+def _ip_in_trusted_networks(ip_str: str) -> bool:
+    try:
+        ip = ipaddress.ip_address(ip_str)
+    except ValueError:
+        return False
+    return any(ip in net for net in _TRUSTED_PROXIES)
+
+
+def _extract_first_forwarded(value: str) -> Optional[str]:
+    """Return the left-most non-empty entry from an ``X-Forwarded-For`` value."""
+    for entry in value.split(","):
+        candidate = entry.strip()
+        if candidate:
+            return candidate
+    return None
+
+
+def _resolve_client_ip(request: Request) -> str:
+    """Resolve the true client IP for rate-limiting.
+
+    Behaviour:
+    - If ``TRUSTED_PROXIES`` is configured AND the request came in from one of
+      those proxies, honour ``X-Real-IP`` or the left-most ``X-Forwarded-For``
+      entry. This is the per-true-client IP we want to rate-limit on.
+    - Otherwise fall back to ``request.client.host`` and emit a one-shot
+      WARNING so operators notice the misconfiguration rather than silently
+      buckshotting every request into a single bucket.
+    """
+    global _TRUSTED_PROXIES_WARNED
+
+    peer = request.client.host if request.client else "unknown"
+
+    if _TRUSTED_PROXIES and _ip_in_trusted_networks(peer):
+        real_ip = request.headers.get("X-Real-IP")
+        if real_ip:
+            return real_ip.strip()
+        fwd = request.headers.get("X-Forwarded-For")
+        if fwd:
+            first = _extract_first_forwarded(fwd)
+            if first:
+                return first
+        return peer
+
+    # No trusted proxy configured - or the peer is not one of them. If
+    # forwarding headers are present anyway, warn once so operators know we
+    # are NOT trusting them.
+    if not _TRUSTED_PROXIES and (
+        request.headers.get("X-Forwarded-For")
+        or request.headers.get("X-Real-IP")
+    ):
+        if not _TRUSTED_PROXIES_WARNED:
+            logger.warning(
+                "Received X-Forwarded-For/X-Real-IP but TRUSTED_PROXIES is "
+                "not configured. Falling back to socket peer for rate "
+                "limiting. Set TRUSTED_PROXIES to the CIDR of your LB/CDN "
+                "so per-client rate limits work correctly."
+            )
+            _TRUSTED_PROXIES_WARNED = True
+
+    return peer
 
 
 # ---------------------------------------------------------------------------
@@ -138,7 +254,7 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
         if request.url.path in self.OPEN_PATHS:
             return await call_next(request)
 
-        client_ip = request.client.host if request.client else "unknown"
+        client_ip = _resolve_client_ip(request)
         if not _rate_limiter.is_allowed(client_ip):
             remaining = _rate_limiter.remaining(client_ip)
             return JSONResponse(
