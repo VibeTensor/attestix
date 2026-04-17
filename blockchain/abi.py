@@ -4,8 +4,33 @@ Only the functions Attestix needs are included. Full ABIs available at:
 https://github.com/ethereum-attestation-service/eas-contracts
 """
 
-# EAS contract functions: attest, getAttestation, isAttestationValid, timestamp
+# EAS contract functions (attest, getAttestation, isAttestationValid,
+# timestamp) plus the Attested and Revoked event fragments. The event
+# fragments are required for ``contract.events.Attested().process_log(log)``
+# ABI decoding.
 EAS_ABI = [
+    {
+        "anonymous": False,
+        "inputs": [
+            {"indexed": True, "internalType": "address", "name": "recipient", "type": "address"},
+            {"indexed": True, "internalType": "address", "name": "attester", "type": "address"},
+            {"indexed": False, "internalType": "bytes32", "name": "uid", "type": "bytes32"},
+            {"indexed": True, "internalType": "bytes32", "name": "schemaUID", "type": "bytes32"},
+        ],
+        "name": "Attested",
+        "type": "event",
+    },
+    {
+        "anonymous": False,
+        "inputs": [
+            {"indexed": True, "internalType": "address", "name": "recipient", "type": "address"},
+            {"indexed": True, "internalType": "address", "name": "attester", "type": "address"},
+            {"indexed": False, "internalType": "bytes32", "name": "uid", "type": "bytes32"},
+            {"indexed": True, "internalType": "bytes32", "name": "schemaUID", "type": "bytes32"},
+        ],
+        "name": "Revoked",
+        "type": "event",
+    },
     {
         "inputs": [{
             "components": [
@@ -61,8 +86,30 @@ EAS_ABI = [
     },
 ]
 
-# SchemaRegistry contract functions: register, getSchema
+# SchemaRegistry contract functions (register, getSchema) plus the Registered
+# event fragment used for decoding SchemaRegistry receipts.
 SCHEMA_REGISTRY_ABI = [
+    {
+        "anonymous": False,
+        "inputs": [
+            {"indexed": True, "internalType": "bytes32", "name": "uid", "type": "bytes32"},
+            {"indexed": True, "internalType": "address", "name": "registerer", "type": "address"},
+            {
+                "indexed": False,
+                "components": [
+                    {"internalType": "bytes32", "name": "uid", "type": "bytes32"},
+                    {"internalType": "address", "name": "resolver", "type": "address"},
+                    {"internalType": "bool", "name": "revocable", "type": "bool"},
+                    {"internalType": "string", "name": "schema", "type": "string"},
+                ],
+                "internalType": "struct SchemaRecord",
+                "name": "schema",
+                "type": "tuple",
+            },
+        ],
+        "name": "Registered",
+        "type": "event",
+    },
     {
         "inputs": [
             {"internalType": "string", "name": "schema", "type": "string"},
@@ -94,5 +141,19 @@ SCHEMA_REGISTRY_ABI = [
 EAS_CONTRACT_ADDRESS = "0x4200000000000000000000000000000000000021"
 SCHEMA_REGISTRY_ADDRESS = "0x4200000000000000000000000000000000000020"
 
-# The Attestix EAS schema definition
+# The Attestix EAS schema definition. Keep this string STABLE: the on-chain
+# schema UID is derived from keccak256(abi.encodePacked(schema, resolver,
+# revocable)) so any change here produces a different UID and breaks
+# verification of previously-anchored attestations.
 ATTESTIX_SCHEMA = "bytes32 artifactHash, string artifactType, string artifactId, string issuerDid"
+
+# Canonical schema parameters used by BlockchainService._ensure_schema_registered.
+# Resolver is the zero address (no custom resolver); attestations are revocable.
+ATTESTIX_SCHEMA_RESOLVER = "0x0000000000000000000000000000000000000000"
+ATTESTIX_SCHEMA_REVOCABLE = True
+
+# Pin the known-good schema UIDs here after running the registration SOP
+# (see paper/internal/runbooks/eas-schema-registration-sop.md). Until then
+# these remain None and the service derives the UID canonically at runtime.
+ATTESTIX_SCHEMA_UID_BASE_SEPOLIA: str | None = None
+ATTESTIX_SCHEMA_UID_BASE_MAINNET: str | None = None
