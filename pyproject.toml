@@ -44,20 +44,37 @@ classifiers = [
     "Topic :: Software Development :: Libraries :: Python Modules",
 ]
 dependencies = [
-    "mcp[cli]>=1.8.0",
-    "cryptography>=44.0.0",
-    "PyJWT[crypto]>=2.9.0",
-    "base58>=2.1.1",
-    "httpx>=0.28.0",
-    "python-dotenv>=1.1.0",
-    "nest-asyncio>=1.6.0",
-    "python-json-logger>=3.3.0",
-    "filelock>=3.13.0",
-    "click>=8.1.0",
+    # Runtime dependencies are pinned with both lower and upper bounds to
+    # prevent silent breakage from major-version drift (mcp 2.x, PyJWT 3.x,
+    # cryptography 47.x, etc.) on fresh `pip install attestix`. See
+    # paper/internal/dependency-audit-v0.3.0-2026-04-17.md for the rationale.
+    "mcp[cli]>=1.8.0,<2.0.0",
+    # cryptography >=46.0.7 closes CVE-2026-34073 (name constraints bypass)
+    # and CVE-2026-39892 (Hash.update buffer overflow).
+    "cryptography>=46.0.7,<47.0.0",
+    # PyJWT >=2.12.0 closes CVE-2026-32597 (crit header validation bypass).
+    # This directly impacts Attestix's JWT / Verifiable Credential / UCAN
+    # verification paths and is the hard blocker for the v0.3.0 release.
+    "PyJWT[crypto]>=2.12.0,<3.0.0",
+    "base58>=2.1.1,<3.0.0",
+    "httpx>=0.28.0,<0.30.0",
+    "python-dotenv>=1.1.0,<2.0.0",
+    "nest-asyncio>=1.6.0,<2.0.0",
+    # python-json-logger 4.x is already pulled transitively in our env; keep
+    # the upper bound generous so we do not break existing installs.
+    "python-json-logger>=3.3.0,<5.0.0",
+    "filelock>=3.13.0,<4.0.0",
+    "click>=8.1.0,<9.0.0",
+    # Transitive pin: mcp pulls python-multipart. Versions <0.0.26 are
+    # vulnerable to CVE-2026-40347 (DoS via large multipart preamble/epilogue)
+    # which is exposed through both the MCP stdio server and the FastAPI
+    # REST API's multipart uploads. Forcing >=0.0.26 here ensures the fix
+    # lands regardless of what mcp's own floor currently is.
+    "python-multipart>=0.0.26,<0.1.0",
 ]
 
 [project.optional-dependencies]
-blockchain = ["web3>=7.0.0"]
+blockchain = ["web3>=7.0.0,<8.0.0"]
 reports = ["weasyprint>=62.0"]
 test = ["pytest>=8.0", "pytest-asyncio>=0.24", "respx>=0.22", "pytest-cov>=5.0"]
 lint = ["ruff>=0.6.0", "mypy>=1.11"]

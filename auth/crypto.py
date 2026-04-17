@@ -5,6 +5,7 @@ Handles key generation, signing, verification, and did:key creation.
 
 import base64
 import json
+import logging
 import os
 import stat
 import sys
@@ -25,6 +26,18 @@ from cryptography.hazmat.primitives.serialization import (
 
 from config import SIGNING_KEY_FILE
 from errors import ErrorCategory, log_and_format_error
+
+logger = logging.getLogger(__name__)
+
+
+class SigningKeyLoadError(RuntimeError):
+    """Raised when an existing signing-key file cannot be loaded.
+
+    This is a fatal error. The caller MUST NOT silently regenerate the key,
+    because doing so rotates the server DID and invalidates every previously
+    issued UAIT, delegation, credential, and on-chain anchor.
+    """
+
 
 # Multicodec prefix for Ed25519 public key (0xed 0x01)
 ED25519_MULTICODEC_PREFIX = bytes([0xED, 0x01])
@@ -144,40 +157,114 @@ def _get_key_encryption_key() -> Optional[bytes]:
 
 def load_or_create_signing_key(
     key_file: Optional[Path] = None,
+    create: bool = True,
 ) -> Tuple[Ed25519PrivateKey, str]:
-    """Load server signing key from file or create a new one.
+    """Load server signing key from file, creating it only if absent.
 
-    If ATTESTIX_KEY_PASSWORD is set, the private key is stored encrypted
-    using Fernet (PBKDF2-derived key). Otherwise falls back to base64.
+    Behavior:
+    - If the key file does NOT exist and ``create`` is True, a new keypair is
+      generated and persisted. A WARNING log message is emitted so operators
+      notice when a new server identity is being minted.
+    - If the key file exists but cannot be loaded (corruption, wrong password,
+      missing password, invalid JSON, etc.) this function raises
+      :class:`SigningKeyLoadError`. It never silently rotates the server DID,
+      because doing so would invalidate every previously issued UAIT,
+      delegation, credential, and on-chain anchor.
+    - If the key file does not exist and ``create`` is False, raises
+      :class:`FileNotFoundError`.
 
-    Returns (private_key, did_key_string).
+    If ``ATTESTIX_KEY_PASSWORD`` is set, the private key is stored encrypted
+    using Fernet (PBKDF2-derived key). Otherwise it is stored base64-encoded.
+
+    Returns:
+        Tuple of (private_key, did_key_string).
     """
     key_path = key_file or SIGNING_KEY_FILE
     fernet_key = _get_key_encryption_key()
 
     if key_path.exists():
+        # Parse the JSON envelope. Any failure here means the file exists but
+        # is unreadable; we MUST fail loud rather than regenerate.
         try:
             with open(key_path, "r") as f:
                 data = json.load(f)
-
-            # Try encrypted format first
-            if "private_key_encrypted" in data and fernet_key:
-                from cryptography.fernet import Fernet
-                f_cipher = Fernet(fernet_key)
-                priv_bytes = f_cipher.decrypt(data["private_key_encrypted"].encode("utf-8"))
-            else:
-                priv_bytes = base64.b64decode(data["private_key_b64"])
-
-            private_key = private_key_from_bytes(priv_bytes)
-            did = data["did_key"]
-            return private_key, did
-        except Exception as e:
+        except (OSError, json.JSONDecodeError, ValueError) as e:
             log_and_format_error(
                 "load_or_create_signing_key", e, ErrorCategory.CRYPTO,
-                user_message="Corrupted signing key file, generating new key",
+                user_message=(
+                    "Existing signing key file is unreadable. Refusing to "
+                    "regenerate because that would rotate the server DID and "
+                    "invalidate previously issued attestations. Restore the "
+                    "file from backup or delete it intentionally to provision "
+                    "a fresh identity."
+                ),
+            )
+            raise SigningKeyLoadError(
+                f"Signing key file {key_path} exists but could not be parsed: {e}"
+            ) from e
+
+        # Decide which format the file uses and decrypt accordingly.
+        if "private_key_encrypted" in data:
+            if not fernet_key:
+                raise SigningKeyLoadError(
+                    f"Signing key file {key_path} is encrypted but "
+                    "ATTESTIX_KEY_PASSWORD is not set. Refusing to regenerate."
+                )
+            try:
+                from cryptography.fernet import Fernet
+                f_cipher = Fernet(fernet_key)
+                priv_bytes = f_cipher.decrypt(
+                    data["private_key_encrypted"].encode("utf-8")
+                )
+            except Exception as e:
+                log_and_format_error(
+                    "load_or_create_signing_key", e, ErrorCategory.CRYPTO,
+                    user_message=(
+                        "Signing key decryption failed (likely wrong "
+                        "ATTESTIX_KEY_PASSWORD). Refusing to regenerate key."
+                    ),
+                )
+                raise SigningKeyLoadError(
+                    f"Signing key decryption failed for {key_path}. "
+                    "Check ATTESTIX_KEY_PASSWORD."
+                ) from e
+        elif "private_key_b64" in data:
+            try:
+                priv_bytes = base64.b64decode(data["private_key_b64"])
+            except Exception as e:
+                raise SigningKeyLoadError(
+                    f"Signing key file {key_path} has invalid base64 body: {e}"
+                ) from e
+        else:
+            raise SigningKeyLoadError(
+                f"Signing key file {key_path} is missing both "
+                "'private_key_encrypted' and 'private_key_b64' fields."
             )
 
-    # Generate new keypair
+        try:
+            private_key = private_key_from_bytes(priv_bytes)
+            did = data["did_key"]
+        except Exception as e:
+            raise SigningKeyLoadError(
+                f"Signing key file {key_path} contains malformed key material: {e}"
+            ) from e
+
+        return private_key, did
+
+    # File does not exist - only generate if explicitly allowed.
+    if not create:
+        raise FileNotFoundError(
+            f"Signing key file {key_path} does not exist and create=False"
+        )
+
+    logger.warning(
+        "No signing key found at %s. Generating a new Ed25519 server "
+        "identity. This key will be the root of trust for all UAITs, "
+        "delegations, credentials, and on-chain anchors issued by this "
+        "instance. Back it up securely.",
+        key_path,
+    )
+
     private_key, public_key = generate_ed25519_keypair()
     did = public_key_to_did_key(public_key)
 

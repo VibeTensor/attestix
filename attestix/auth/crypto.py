@@ -1,6 +1,7 @@
 """Re-export from flat module for namespace compatibility."""
 from auth.crypto import (
     ED25519_MULTICODEC_PREFIX,
+    SigningKeyLoadError,
     canonicalize_json,
     did_key_fragment,
     did_key_to_public_key,
@@ -19,6 +20,7 @@ from auth.crypto import (
 
 __all__ = [
     "ED25519_MULTICODEC_PREFIX",
+    "SigningKeyLoadError",
     "canonicalize_json",
     "did_key_fragment",
     "did_key_to_public_key",

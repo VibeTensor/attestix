@@ -9,8 +9,6 @@ Supports:
 import json
 from typing import Optional
 
-import httpx
-
 from auth.crypto import (
     generate_ed25519_keypair,
     private_key_to_bytes,
@@ -18,11 +16,18 @@ from auth.crypto import (
     public_key_to_did_key,
     did_key_to_public_key,
 )
+from auth.ssrf import fetch_json_pinned, validate_url_host
 from config import UNIVERSAL_RESOLVER_URL
 from errors import ErrorCategory, log_and_format_error
 
 import base58
 import base64
+
+
+# DID Documents are small JSON objects describing verification methods for a
+# single subject. We cap at 256 KB so an attacker cannot OOM the worker by
+# serving a gzip-compressed DID Document that decompresses to gigabytes.
+DID_DOCUMENT_MAX_BYTES = 256 * 1024
 
 
 class DIDService:
@@ -214,7 +219,11 @@ class DIDService:
         }
 
     def _resolve_did_web(self, did: str) -> dict:
-        """Resolve did:web by fetching the DID Document from the web."""
+        """Resolve did:web by fetching the DID Document from the web.
+
+        Uses DNS pinning to defeat rebinding attacks and caps the response
+        body at :data:`DID_DOCUMENT_MAX_BYTES` to block gzip-bomb DoS.
+        """
         try:
             # Validate format: did:web:<domain>(:<path>)*
             import re
@@ -225,8 +234,7 @@ class DIDService:
             parts = raw.split(":")
             domain = parts[0]
 
-            # SSRF protection: block private/local/reserved IPs
-            from auth.ssrf import validate_url_host
+            # SSRF protection: block private/local/reserved IPs up front.
             ssrf_err = validate_url_host(domain)
             if ssrf_err:
                 return {"error": ssrf_err}
@@ -239,14 +247,12 @@ class DIDService:
             path = "/".join(parts[1:]) if len(parts) > 1 else ".well-known"
             url = f"https://{domain}/{path}/did.json"
 
-            with httpx.Client(timeout=10) as client:
-                resp = client.get(url)
-                resp.raise_for_status()
-                return resp.json()
-        except httpx.TimeoutException:
-            return {"error": f"Timeout resolving {did}", "retry_suggested": True}
-        except httpx.HTTPStatusError as e:
-            return {"error": f"HTTP {e.response.status_code} resolving {did}"}
+            fetch_err, payload = fetch_json_pinned(
+                url, max_bytes=DID_DOCUMENT_MAX_BYTES, timeout=10.0,
+            )
+            if fetch_err:
+                return {"error": fetch_err, "did": did}
+            return payload
         except Exception as e:
             return {
                 "error": log_and_format_error(
@@ -262,11 +268,12 @@ class DIDService:
             if not re.match(r"^did:[a-z0-9]+:[a-zA-Z0-9._:%-]+$", did):
                 return {"error": f"Invalid DID format: {did}"}
             url = f"{UNIVERSAL_RESOLVER_URL}{did}"
-            with httpx.Client(timeout=15) as client:
-                resp = client.get(url)
-                resp.raise_for_status()
-                result = resp.json()
-                return result.get("didDocument", result)
+            fetch_err, result = fetch_json_pinned(
+                url, max_bytes=DID_DOCUMENT_MAX_BYTES, timeout=15.0,
+            )
+            if fetch_err:
+                return {"error": fetch_err, "did": did}
+            return result.get("didDocument", result)
         except Exception as e:
             return {
                 "error": log_and_format_error(

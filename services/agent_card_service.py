@@ -6,59 +6,44 @@ Handles fetching, parsing, and generating Google A2A Agent Cards
 
 from typing import Optional
 
-import httpx
-
+from auth.ssrf import fetch_json_pinned
 from errors import ErrorCategory, log_and_format_error
+
+
+# Agent cards are small JSON documents describing an agent's capabilities.
+# Real-world cards are < 10 KB; we cap at 1 MB to tolerate verbose skill lists
+# while still blocking gzip-bomb / memory-exhaustion attacks.
+AGENT_CARD_MAX_BYTES = 1 * 1024 * 1024
 
 
 class AgentCardService:
     """Discover, parse, and generate A2A Agent Cards."""
 
     def discover_agent(self, base_url: str) -> dict:
-        """Fetch /.well-known/agent.json from a URL."""
+        """Fetch /.well-known/agent.json from a URL.
+
+        Uses a DNS-pinned fetcher so the hostname resolves exactly once
+        (preventing DNS rebinding TOCTOU against metadata IPs) and caps the
+        response body at :data:`AGENT_CARD_MAX_BYTES` so that a maliciously
+        crafted gzip-encoded response cannot OOM the process.
+        """
         try:
             url = base_url.rstrip("/")
-
-            # SSRF protection: require https and block private/reserved IPs
             if not url.startswith("https://"):
                 return {"error": "Only HTTPS URLs are supported for agent discovery"}
-            from urllib.parse import urlparse
-            from auth.ssrf import validate_url_host
-            parsed = urlparse(url)
-            ssrf_err = validate_url_host(parsed.hostname or "")
-            if ssrf_err:
-                return {"error": ssrf_err}
 
             agent_json_url = f"{url}/.well-known/agent.json"
 
-            # SSRF protection: disable automatic redirects. A public server could
-            # otherwise redirect us to an internal IP (e.g. 169.254.169.254,
-            # 10.0.0.1) bypassing the initial hostname validation above.
-            with httpx.Client(timeout=10, follow_redirects=False) as client:
-                resp = client.get(agent_json_url)
-                if resp.is_redirect:
-                    return {
-                        "error": (
-                            "Redirect responses are not followed during agent "
-                            "discovery to prevent SSRF. Provide the canonical URL."
-                        ),
-                        "source_url": agent_json_url,
-                    }
-                resp.raise_for_status()
-                card = resp.json()
+            fetch_err, card = fetch_json_pinned(
+                agent_json_url, max_bytes=AGENT_CARD_MAX_BYTES, timeout=10.0,
+            )
+            if fetch_err:
+                return {"error": fetch_err, "source_url": agent_json_url}
 
             return {
                 "source_url": agent_json_url,
                 "agent_card": card,
                 "parsed": self.parse_agent_card(card),
-            }
-        except httpx.TimeoutException:
-            return {"error": f"Timeout fetching agent card from {base_url}",
-                    "retry_suggested": True}
-        except httpx.HTTPStatusError as e:
-            return {
-                "error": f"HTTP {e.response.status_code} fetching {agent_json_url}",
-                "source_url": agent_json_url,
             }
         except Exception as e:
             return {
