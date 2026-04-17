@@ -142,13 +142,26 @@ def blockchain_service_mock():
             mock_w3.eth.max_priority_fee = 100000000  # 0.1 gwei
             mock_w3.eth.get_balance.return_value = 10**18  # 1 ETH
             mock_w3.eth.get_transaction_count.return_value = 0
+
+            # Build a realistic Attested event log so _extract_attestation_uid
+            # can decode it. Topic[0] must be keccak("Attested(address,address,bytes32,bytes32)").
+            # The single non-indexed uid bytes32 sits at the first 32 bytes of data.
+            from web3 import Web3 as _Web3
+            _attested_sig = bytes(
+                _Web3.keccak(text="Attested(address,address,bytes32,bytes32)")
+            )
+            _fake_uid = b"\x01" * 32  # deterministic non-zero UID
             mock_w3.eth.wait_for_transaction_receipt.return_value = {
                 "status": 1,
                 "blockNumber": 12345,
                 "gasUsed": 187000,
                 "logs": [{
-                    "data": b"\x00" * 32 + b"\x01" * 32,
-                    "topics": [b"\x00" * 32, b"\xaa" * 32],
+                    "data": _fake_uid,
+                    "topics": [
+                        _attested_sig,
+                        b"\x00" * 12 + bytes.fromhex("11" * 20),  # recipient
+                        b"\x00" * 12 + bytes.fromhex("11" * 20),  # attester
+                    ],
                 }],
             }
             mock_w3.from_wei = lambda val, unit: val / 10**18 if unit == "ether" else val / 10**9

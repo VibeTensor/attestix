@@ -4,6 +4,84 @@ All notable changes to Attestix are documented here.
 
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.3.0] - 2026-04-17
+
+Security hardening release bundling seven previously merged but unreleased
+pull requests (PR #45 through PR #51). The release ships a critical delegation
+auth bypass fix, corrects Article 43 Annex III conformity logic, lands three
+real framework integrations (LangChain, OpenAI Agents SDK, CrewAI), and adds
+GitHub Actions CI/CD.
+
+Minor version bump (0.2.5 -> 0.3.0) because the batch contains security
+fixes, new public integration surfaces, and an Article 43 behavior change.
+No breaking API changes for MCP tool callers.
+
+### Security
+
+- **CRITICAL: delegation chain auth bypass fixed** (PR #45). Parent tokens in
+  a delegation chain are now fully verified and capability attenuation is
+  strictly enforced. Previously a malicious delegate could craft a child
+  token whose claimed capabilities exceeded those of the parent. Any
+  long-lived delegation tokens issued prior to this release should be
+  reviewed and re-issued.
+- **SSRF hardening** (PR #47). Agent discovery, DID resolution, and credential
+  fetch paths now go through the centralized SSRF guard (private IP blocking,
+  metadata endpoint blocking, DNS rebind defense) on every outbound request.
+- **Timing-safe comparisons** (PR #47). Signature and token equality checks
+  switched to constant-time comparison (`hmac.compare_digest`) to remove a
+  timing oracle on credential and delegation verification.
+- **API error sanitization** (PR #47). Seven REST API router exception paths
+  no longer leak stack traces, file paths, or internal type names to
+  clients; errors are now structured and safe by default.
+
+### Added
+
+- **Real LangChain integration** (PR #42, released now). `integrations/langchain/`
+  ships an actual `BaseCallbackHandler` subclass that logs every LLM, chain,
+  and tool event into the Attestix audit trail. Replaces the previous
+  example-only shim.
+- **Real OpenAI Agents SDK integration** (PR #48). `integrations/openai_agents/`
+  uses `MCPServerStdio` to connect the OpenAI Agents runtime directly to the
+  Attestix MCP server, exposing all 47 tools as native agent capabilities.
+- **Real CrewAI integration** (PR #51). `integrations/crewai/` uses
+  `MCPServerAdapter` so CrewAI crews can load Attestix tools the same way
+  they load any other MCP toolset.
+
+### Fixed
+
+- **Article 43 Annex III conformity assessment correctness** (PR #46). The
+  compliance service now differentiates between Annex III categories when
+  deciding whether self-assessment is permitted versus notified-body
+  assessment being required. High-risk systems covered by Annex III point 1
+  (biometrics) and similar categories are blocked from self-assessment per
+  the Act.
+- **EAS schema UID derivation** (PR #50). On-chain schema UID is now derived
+  using the exact encoding EAS itself uses (schema string, resolver address,
+  revocable flag), matching anchors created on-chain with anchors looked up
+  on-chain. Previously mismatched schema UIDs could cause
+  `isAttestationValid` lookups to miss.
+- **Attested event decoding hardened** (PR #50). `_extract_attestation_uid`
+  now prefers web3.py's ABI-level `events.Attested().process_log` and falls
+  back to a topic-signature match on `keccak("Attested(address,address,bytes32,bytes32)")`.
+  Removes reliance on fragile byte offsets when reading receipt logs.
+- **Test mock log shape** (this release). `tests/conftest.py`
+  `blockchain_service_mock` now emits an Attested-event-shaped log with the
+  correct topic[0] signature so the hardened decoder path is exercised end
+  to end in CI.
+
+### Infrastructure
+
+- **GitHub Actions CI/CD** (PR #49). New `.github/workflows/` pipelines run
+  a pytest matrix (Python 3.10, 3.11, 3.12, 3.13) on pull requests, plus
+  `ruff`, `mypy`, `bandit`, and `pip-audit` jobs. A separate release
+  workflow publishes to PyPI on tag push when `PYPI_API_TOKEN` is set as a
+  repo secret.
+- **pytest plugin compatibility** (this release). Default `addopts` now
+  includes `-p no:logfire` so that transitive installs of
+  `opentelemetry-sdk` (pulled via CrewAI) do not abort collection with
+  `ImportError: cannot import name 'ReadableLogRecord'` when the installed
+  `logfire` version targets a different otel ABI.
+
 ## [0.2.3] - 2026-02-27
 
 ### Added
