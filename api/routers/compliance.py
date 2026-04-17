@@ -28,6 +28,23 @@ class CreateComplianceProfileRequest(BaseModel):
     human_oversight_measures: str = Field("", description="Human oversight measures (required for high-risk)")
     provider_address: str = Field("", description="Provider address")
     authorised_representative: str = Field("", description="EU authorised representative (if applicable)")
+    annex_iii_category: Optional[int] = Field(
+        None,
+        description=(
+            "Annex III point (1-8) for high-risk systems. Point 1 (biometrics) "
+            "mandates third-party assessment per Article 43; Points 2-8 permit "
+            "self-assessment via Annex VI internal control."
+        ),
+    )
+    annex_iii_exception: Optional[str] = Field(
+        None,
+        description=(
+            "Carve-out within Points 2-8 that still requires third-party "
+            "assessment. Valid values: "
+            "'biometric_identification_law_enforcement', "
+            "'financial_fraud_detection', 'political_campaign_organization'."
+        ),
+    )
 
 
 class RecordAssessmentRequest(BaseModel):
@@ -62,6 +79,8 @@ def create_compliance_profile(
         human_oversight_measures=body.human_oversight_measures,
         provider_address=body.provider_address,
         authorised_representative=body.authorised_representative,
+        annex_iii_category=body.annex_iii_category,
+        annex_iii_exception=body.annex_iii_exception,
     )
     if isinstance(result, dict) and "error" in result:
         if "not found" in result["error"].lower():

@@ -26,6 +26,8 @@ def register(mcp):
         human_oversight_measures: str = "",
         provider_address: str = "",
         authorised_representative: str = "",
+        annex_iii_category: int = 0,
+        annex_iii_exception: str = "",
     ) -> str:
         """Create an EU AI Act compliance profile for an agent.
 
@@ -40,6 +42,15 @@ def register(mcp):
             human_oversight_measures: Human oversight mechanisms in place (required for high-risk).
             provider_address: Registered address of the provider.
             authorised_representative: Name of the EU authorised representative (if provider is outside EU).
+            annex_iii_category: For high-risk systems, the Annex III point 1-8.
+                Point 1 (biometrics) requires third-party assessment; Points 2-8
+                permit self-assessment via Annex VI internal control. Use 0 or
+                omit to leave unspecified (defaults to requiring third-party).
+            annex_iii_exception: For Points 2-8, one of the documented carve-outs
+                that still require third-party assessment per Article 43:
+                'biometric_identification_law_enforcement',
+                'financial_fraud_detection', 'political_campaign_organization'.
+                Leave empty if no exception applies.
         """
         err = _validate_required({"agent_id": agent_id, "risk_category": risk_category,
                                    "provider_name": provider_name})
@@ -59,6 +70,8 @@ def register(mcp):
             human_oversight_measures=human_oversight_measures,
             provider_address=provider_address,
             authorised_representative=authorised_representative,
+            annex_iii_category=annex_iii_category if annex_iii_category else None,
+            annex_iii_exception=annex_iii_exception or None,
         )
         return json.dumps(result, indent=2, default=str)
 

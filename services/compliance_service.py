@@ -17,6 +17,39 @@ VALID_RISK_CATEGORIES = {"minimal", "limited", "high", "unacceptable"}
 VALID_ASSESSMENT_TYPES = {"self", "third_party"}
 VALID_ASSESSMENT_RESULTS = {"pass", "conditional", "fail"}
 
+# EU AI Act Annex III high-risk category points (1 through 8).
+# Per Article 43, different conformity assessment procedures apply based on
+# which Annex III point the system falls under.
+VALID_ANNEX_III_CATEGORIES = {1, 2, 3, 4, 5, 6, 7, 8}
+
+# Human-readable descriptions of each Annex III point (Regulation (EU) 2024/1689).
+ANNEX_III_DESCRIPTIONS = {
+    1: "Biometrics (remote identification, categorisation, emotion recognition)",
+    2: "Critical infrastructure (management and operation)",
+    3: "Education and vocational training (access, evaluation, assessment)",
+    4: "Employment, workers management, access to self-employment",
+    5: "Access to essential private and public services and benefits",
+    6: "Law enforcement",
+    7: "Migration, asylum and border control management",
+    8: "Administration of justice and democratic processes",
+}
+
+# Exception flags (within Points 2-8) that still mandate third-party assessment
+# per Article 43. These are documented carve-outs in the Act where internal
+# control (Annex VI) is NOT sufficient and notified body assessment (Annex VII)
+# is required regardless of the headline Annex III point.
+VALID_ANNEX_III_EXCEPTIONS = {
+    # Biometric identification used by or on behalf of law enforcement
+    # (Annex III Point 6 sub-use of biometrics).
+    "biometric_identification_law_enforcement",
+    # Detection of financial fraud affecting access to essential services
+    # (Annex III Point 5 sub-use).
+    "financial_fraud_detection",
+    # Political campaign organization / influencing voter behaviour
+    # (Annex III Point 8 sub-use).
+    "political_campaign_organization",
+}
+
 # EU AI Act Annex V required fields for declaration of conformity
 ANNEX_V_REQUIRED = [
     "provider_name",
@@ -24,6 +57,68 @@ ANNEX_V_REQUIRED = [
     "risk_category",
     "conformity_assessment",
 ]
+
+
+def _requires_third_party_assessment(
+    annex_iii_category: Optional[int],
+    annex_iii_exception: Optional[str],
+) -> tuple:
+    """Determine whether a high-risk system requires third-party assessment.
+
+    Per EU AI Act Article 43:
+      - Annex III Point 1 (biometrics): third-party (Annex VII) required.
+      - Annex III Points 2 to 8: self-assessment via internal control (Annex VI)
+        is permitted, EXCEPT for three documented carve-outs (biometric
+        identification for law enforcement, financial fraud detection, and
+        political campaign organization) which still require Annex VII.
+      - Unspecified Annex III category: default to requiring third-party
+        (fail-safe).
+
+    Returns a tuple of (required: bool, reason: str). `reason` is a human
+    readable explanation referencing the specific Annex III point.
+    """
+    if annex_iii_exception is not None:
+        if annex_iii_exception not in VALID_ANNEX_III_EXCEPTIONS:
+            # Unknown exception flag - fail safe.
+            return (
+                True,
+                "Unknown Annex III exception flag; defaulting to third-party "
+                "assessment (Article 43, fail-safe).",
+            )
+        return (
+            True,
+            f"Annex III exception '{annex_iii_exception}' requires third-party "
+            f"conformity assessment per Article 43 (Annex VII procedure).",
+        )
+
+    if annex_iii_category is None:
+        return (
+            True,
+            "Annex III category not specified for high-risk system; defaulting "
+            "to third-party assessment per Article 43 (fail-safe).",
+        )
+
+    if annex_iii_category == 1:
+        return (
+            True,
+            "Annex III Point 1 (biometrics) requires third-party conformity "
+            "assessment via notified body per Article 43 (Annex VII procedure).",
+        )
+
+    if annex_iii_category in {2, 3, 4, 5, 6, 7, 8}:
+        return (
+            False,
+            f"Annex III Point {annex_iii_category} "
+            f"({ANNEX_III_DESCRIPTIONS[annex_iii_category]}) permits "
+            f"self-assessment via internal control per Article 43 "
+            f"(Annex VI procedure).",
+        )
+
+    return (
+        True,
+        f"Invalid Annex III category {annex_iii_category}; defaulting to "
+        f"third-party assessment per Article 43 (fail-safe).",
+    )
 
 
 class ComplianceService:
@@ -62,8 +157,24 @@ class ComplianceService:
         human_oversight_measures: str = "",
         provider_address: str = "",
         authorised_representative: str = "",
+        annex_iii_category: Optional[int] = None,
+        annex_iii_exception: Optional[str] = None,
     ) -> dict:
-        """Create an EU AI Act compliance profile for an agent."""
+        """Create an EU AI Act compliance profile for an agent.
+
+        Args:
+            annex_iii_category: For high-risk systems, the Annex III point
+                (1 through 8) the system falls under. Point 1 covers biometrics
+                and mandates third-party assessment; Points 2-8 permit
+                self-assessment via internal control (Annex VI). Optional for
+                non-high-risk systems; if omitted for a high-risk system the
+                service defaults to requiring third-party assessment.
+            annex_iii_exception: For high-risk systems in Points 2-8, a flag
+                indicating the system falls into one of the documented
+                carve-outs that still require third-party assessment. Valid
+                values: 'biometric_identification_law_enforcement',
+                'financial_fraud_detection', 'political_campaign_organization'.
+        """
         try:
             if risk_category not in VALID_RISK_CATEGORIES:
                 return {
@@ -76,6 +187,23 @@ class ComplianceService:
                     "error": "Unacceptable-risk AI systems are prohibited under the EU AI Act "
                     "(Article 5). Cannot create a compliance profile for prohibited systems."
                 }
+
+            # Validate Annex III category if provided
+            if annex_iii_category is not None:
+                if annex_iii_category not in VALID_ANNEX_III_CATEGORIES:
+                    return {
+                        "error": f"Invalid annex_iii_category '{annex_iii_category}'. "
+                        f"Must be one of: {sorted(VALID_ANNEX_III_CATEGORIES)} "
+                        f"(see EU AI Act Annex III)."
+                    }
+
+            # Validate Annex III exception flag if provided
+            if annex_iii_exception is not None:
+                if annex_iii_exception not in VALID_ANNEX_III_EXCEPTIONS:
+                    return {
+                        "error": f"Invalid annex_iii_exception '{annex_iii_exception}'. "
+                        f"Must be one of: {sorted(VALID_ANNEX_III_EXCEPTIONS)}."
+                    }
 
             # Verify agent exists
             agent = self.identity_svc.get_identity(agent_id)
@@ -98,6 +226,8 @@ class ComplianceService:
                 "profile_id": profile_id,
                 "agent_id": agent_id,
                 "risk_category": risk_category,
+                "annex_iii_category": annex_iii_category,
+                "annex_iii_exception": annex_iii_exception,
                 "provider": {
                     "name": provider_name,
                     "did": self._server_did,
@@ -212,11 +342,21 @@ class ComplianceService:
             if not profile:
                 return {"error": f"No compliance profile found for {agent_id}. Create one first."}
 
-            # High-risk systems require third-party assessment
+            # Article 43 differentiation: third-party is only required for
+            # specific Annex III categories/exceptions, not all high-risk.
             if profile["risk_category"] == "high" and assessment_type == "self":
-                return {
-                    "error": "High-risk AI systems require third_party conformity assessment (Article 43)."
-                }
+                annex_cat = profile.get("annex_iii_category")
+                annex_exc = profile.get("annex_iii_exception")
+                required, reason = _requires_third_party_assessment(
+                    annex_cat, annex_exc
+                )
+                if required:
+                    return {
+                        "error": (
+                            f"Self-assessment not permitted: {reason} Use "
+                            f"assessment_type='third_party' with a notified body."
+                        )
+                    }
 
             assessment_id = f"assess:{uuid.uuid4().hex[:12]}"
             now = datetime.now(timezone.utc).isoformat()
@@ -281,7 +421,9 @@ class ComplianceService:
             if profile["risk_category"] == "high":
                 if not profile["transparency"].get("human_oversight_measures", "").strip():
                     missing_fields.append("human_oversight_measures")
-                # Re-validate: high-risk requires third-party assessment
+                # Re-validate Article 43: third-party assessment requirement is
+                # tied to specific Annex III categories / exceptions, not all
+                # high-risk systems.
                 data_check = load_compliance()
                 assess_id = profile["conformity"]["assessment_id"]
                 if assess_id:
@@ -290,10 +432,17 @@ class ComplianceService:
                         None
                     )
                     if assessment and assessment.get("assessment_type") != "third_party":
-                        return {
-                            "error": "High-risk AI systems require third_party conformity assessment (Article 43). "
-                            "Current assessment is self-assessment."
-                        }
+                        required, reason = _requires_third_party_assessment(
+                            profile.get("annex_iii_category"),
+                            profile.get("annex_iii_exception"),
+                        )
+                        if required:
+                            return {
+                                "error": (
+                                    f"Cannot issue declaration: {reason} "
+                                    f"Current assessment is self-assessment."
+                                )
+                            }
             if missing_fields:
                 return {
                     "error": f"Cannot generate declaration: missing required fields: {', '.join(missing_fields)}. "
@@ -335,6 +484,8 @@ class ComplianceService:
                     "4_intended_purpose": profile["ai_system"]["intended_purpose"],
                     # 5. Risk classification
                     "5_risk_category": profile["risk_category"],
+                    "5a_annex_iii_category": profile.get("annex_iii_category"),
+                    "5b_annex_iii_exception": profile.get("annex_iii_exception"),
                     # 6. Conformity assessment procedure
                     "6_conformity_assessment_id": profile["conformity"]["assessment_id"],
                     "6a_assessment_type": (

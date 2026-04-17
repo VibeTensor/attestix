@@ -72,7 +72,13 @@ See the [Risk Classification Guide](risk-classification.md). In short:
 
 ### Can high-risk systems use self-assessment?
 
-Attestix currently requires third-party assessment for all high-risk systems. If you attempt `record_conformity_assessment` with `assessment_type="self"` on a high-risk agent, it will return an error. This is more conservative than the Act requires (which allows self-assessment for some Annex III categories) but errs on the side of compliance safety.
+It depends on the Annex III category, per EU AI Act Article 43. Set the `annex_iii_category` field on the compliance profile (1 through 8):
+
+- **Point 1 (biometrics):** third-party assessment required (Annex VII procedure). Self-assessment is blocked.
+- **Points 2-8:** self-assessment via internal control is permitted (Annex VI procedure).
+- **Unspecified category:** Attestix fails safe and blocks self-assessment until you declare the Annex III point.
+
+Three documented carve-outs within Points 2-8 still require third-party assessment even if you set the Annex III point: biometric identification for law enforcement, financial fraud detection, and political campaign organization. Set `annex_iii_exception` to the appropriate flag to force third-party.
 
 ### What is an Annex V declaration?
 
