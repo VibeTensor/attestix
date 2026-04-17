@@ -15,6 +15,12 @@ from collections import OrderedDict
 from contextlib import asynccontextmanager
 from typing import Optional
 
+try:
+    from importlib.metadata import version as _pkg_version
+    __version__ = _pkg_version("attestix")
+except Exception:
+    __version__ = "0.3.0"
+
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
@@ -297,7 +303,7 @@ app = FastAPI(
         "reputation, provenance, delegation, DIDs, agent cards, "
         "and blockchain anchoring."
     ),
-    version="0.2.4",
+    version=__version__,
     lifespan=lifespan,
     docs_url="/docs",
     redoc_url="/redoc",
@@ -330,7 +336,7 @@ def health_check():
     return {
         "status": "healthy",
         "service": "attestix-api",
-        "version": "0.2.4",
+        "version": __version__,
     }
 
 
@@ -363,3 +369,10 @@ app.include_router(delegation.router)
 app.include_router(did.router)
 app.include_router(agent_cards.router)
 app.include_router(blockchain.router)
+
+
+if __name__ == "__main__":
+    import uvicorn
+    host = os.environ.get("ATTESTIX_API_HOST", "127.0.0.1")
+    port = int(os.environ.get("ATTESTIX_API_PORT", "8000"))
+    uvicorn.run("api.main:app", host=host, port=port, reload=False)
