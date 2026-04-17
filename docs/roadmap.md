@@ -62,6 +62,28 @@ The project vision: every AI agent gets a verifiable identity, proves its compli
 
 **Target chain:** Base (Ethereum L2) - sub-$0.01 gas costs, EAS support, growing agent ecosystem.
 
+**Status update (v0.3.0):** EAS integration is complete and testnet-ready on Base Sepolia. Mainnet schema registration is still outstanding.
+
+## Phase 3.5 - Real Framework Integrations and CI/CD (Complete, v0.3.0)
+
+Delivered in the v0.3.0 release on 2026-04-17.
+
+**Real integrations:**
+- LangChain: real `BaseCallbackHandler` that records agent actions and tool calls into the Attestix audit trail
+- OpenAI Agents SDK: real `MCPServerStdio` integration (47 Attestix tools auto-discovered)
+- CrewAI: real `MCPServerAdapter` integration (47 Attestix tools loaded directly)
+
+**Simulated integrations (for reference only):** Dify, Google ADK, Semantic Kernel, Strands.
+
+**CI/CD:**
+- GitHub Actions: pytest matrix on Python 3.10-3.13, ruff + mypy lint, bandit + pip-audit security, PyPI publish workflow
+- Test suite: 358 passing (1 skipped on Windows)
+
+**Security hardening:**
+- Delegation chain authorization fix (parent token verification + capability attenuation)
+- SSRF tightening, API timing normalization, exception sanitization, restrictive key file permissions
+- PyJWT CVE-2026-32597 mitigated, all runtime deps pinned with lower + upper bounds
+
 ## Phase 4 - Ecosystem Bridges (Planned)
 
 Connect to existing agent identity ecosystems for interoperability.
@@ -126,7 +148,8 @@ Connect to existing agent identity ecosystems for interoperability.
 |---------|-------|--------|
 | 0.1.0 | Phase 1 + 2 | Initial release (36 tools) |
 | 0.2.0 | Phase 3 | Blockchain anchoring + security audit + conformance benchmarks (47 tools, 284 tests) |
-| 0.3.0 | Phase 4 | ERC-8004, A2A sync, ANS |
-| 0.4.0 | Phase 4 | Polygon ID / ZK credentials |
-| 0.5.0 | Phase 5 | Multi-chain + enterprise storage |
+| 0.3.0 | Phase 3.5 | Real LangChain/OpenAI Agents/CrewAI integrations, CI/CD, security hardening (358 tests) |
+| 0.4.0 | Phase 4 | Broader GDPR coverage (beyond Article 17), ISO/IEC 42001 alignment, EAS mainnet schema registration |
+| 0.5.0 | Phase 4 | ERC-8004, A2A sync, ANS, Polygon ID / ZK credentials |
+| 0.6.0 | Phase 5 | Multi-chain + enterprise storage |
 | 1.0.0 | Stable | Production-ready with full test suite and third-party audit |

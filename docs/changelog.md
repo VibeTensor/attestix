@@ -4,6 +4,37 @@ All notable changes to Attestix are documented here.
 
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.3.0] - 2026-04-17
+
+### Added
+
+**Real Framework Integrations**
+- LangChain: real `BaseCallbackHandler` integration that records agent actions, tool calls, and LLM events into the Attestix audit trail (PR #42)
+- OpenAI Agents SDK: real `MCPServerStdio` integration. The SDK auto-discovers all 47 Attestix MCP tools (PR #48)
+- CrewAI: real `MCPServerAdapter` integration. CrewAI agents load all 47 Attestix MCP tools directly (PR #51)
+- 7 framework integration examples and 15 integration tests covering LangChain, OpenAI Agents, CrewAI, Dify, Google ADK, Semantic Kernel, and Strands (PR #41)
+
+**CI/CD**
+- GitHub Actions workflows for test matrix (Python 3.10, 3.11, 3.12, 3.13), lint (ruff, mypy), security scanning (bandit, pip-audit), and PyPI publish (PR #49)
+
+**Compliance**
+- Article 43 conformity assessment now differentiates Annex III high-risk categories so providers get the correct assessment path per sub-category (PR #46)
+
+**Blockchain**
+- EAS schema UID derivation corrected to match the on-chain Schema Registry output. Attested event decoding hardened against malformed logs (PR #50)
+
+### Security
+
+- CRITICAL: fixed delegation chain authorization bypass. Parent tokens in the `prf` proof chain are now fully verified and capability attenuation is enforced so children cannot exceed parent capabilities (PR #45)
+- Batch hardening across API, services, and crypto: SSRF allowlist tightened, API response timing normalized, exception leaks sanitized, display_name input sanitized, private key files written with restrictive permissions (PR #47)
+- 4 HIGH severity security blockers fixed, PyJWT CVE-2026-32597 mitigated via version floor, all runtime dependencies pinned with lower + upper bounds to prevent silent breakage from major-version drift (PR #55)
+
+### Changed
+
+- Classifiers upgraded to `Development Status :: 4 - Beta`
+- Python version matrix aligned: 3.10, 3.11, 3.12, 3.13
+- Total automated tests: 284 -> 358 passing (1 skipped on Windows for POSIX chmod). Split: 194 unit + 45 e2e + 15 integration + 14 test_tools + 79 benchmarks + 11 security_hardening
+
 ## [0.2.1] - 2026-02-21
 
 ### Added
