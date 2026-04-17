@@ -116,7 +116,7 @@ flowchart TD
 - **Local-first** - No cloud dependency. All core operations work offline with JSON file storage
 - **Cryptographically signed** - Every artifact is signed with Ed25519. Anyone can verify without contacting Attestix
 - **Standards-based** - W3C Verifiable Credentials, W3C DIDs, UCAN delegation, A2A agent cards
-- **Vendor-neutral** - Works with any AI framework (LangChain, CrewAI, AutoGen, or plain Python)
+- **Vendor-neutral** - Works with any AI framework (LangChain, OpenAI Agents SDK, CrewAI, or plain Python)
 - **EU AI Act ready** - Risk classification, conformity assessments, Annex V declarations, Article 10/11/12 documentation
 
 ---

@@ -113,4 +113,4 @@ print(result)
 - [EU AI Act Compliance Guide](eu-ai-act-compliance.md) - Full compliance workflow
 - [Concepts Explained](concepts.md) - What are UAITs, DIDs, VCs?
 - [API Reference](api-reference.md) - All 47 tools documented
-- [Integration Guide](integration-guide.md) - LangChain, CrewAI, AutoGen integrations
+- [Integration Guide](integration-guide.md) - LangChain, OpenAI Agents SDK, CrewAI integrations

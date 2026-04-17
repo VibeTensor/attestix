@@ -148,7 +148,7 @@ Connect to existing agent identity ecosystems for interoperability.
 |---------|-------|--------|
 | 0.1.0 | Phase 1 + 2 | Initial release (36 tools) |
 | 0.2.0 | Phase 3 | Blockchain anchoring + security audit + conformance benchmarks (47 tools, 284 tests) |
-| 0.3.0 | Phase 3.5 | Real LangChain/OpenAI Agents/CrewAI integrations, CI/CD, security hardening (358 tests) |
+| 0.3.0 | Phase 3.5 | Real LangChain/OpenAI Agents/CrewAI integrations, CI/CD, security hardening (358 tests, 1 skipped on Windows) |
 | 0.4.0 | Phase 4 | Broader GDPR coverage (beyond Article 17), ISO/IEC 42001 alignment, EAS mainnet schema registration |
 | 0.5.0 | Phase 4 | ERC-8004, A2A sync, ANS, Polygon ID / ZK credentials |
 | 0.6.0 | Phase 5 | Multi-chain + enterprise storage |

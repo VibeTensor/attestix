@@ -51,7 +51,7 @@ The paper presents four main contributions:
 
 2. **Compliance automation engine** implementing Articles 5, 9-15, 43, 72-73, and Annex V of the EU AI Act, including automated risk classification, conformity assessment enforcement, and declaration generation.
 
-3. **Open-source MCP implementation** with 47 tools validated by 284 automated tests (91 conformance benchmarks against RFC 8032, W3C VC, W3C DID, and UCAN specifications).
+3. **Open-source MCP implementation** with 47 tools validated by 358 automated tests (1 skipped on Windows; 91 conformance benchmarks against RFC 8032, W3C VC, W3C DID, and UCAN specifications).
 
 4. **Tamper-evident audit mechanism** combining SHA-256 hash-chained logs with Merkle tree aggregation and on-chain anchoring via the Ethereum Attestation Service on Base L2.
 

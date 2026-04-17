@@ -10,7 +10,7 @@ Attestix is an open-source attestation infrastructure that gives AI agents crypt
 
 ### 2. What is the total addressable market?
 
-The AI governance market is projected to reach $4.5B - $7B by 2028 (Gartner, McKinsey estimates). More specifically, every company deploying AI agents in the EU or serving EU customers will need compliance tooling by August 2, 2026. The EU AI Act applies to AI systems "placed on the market or put into service in the Union," which includes non-EU companies serving EU users. The initial beachhead is AI agent developers using MCP-compatible frameworks (Claude, LangChain, CrewAI, AutoGen), estimated at hundreds of thousands of developers globally.
+The AI governance market is projected to reach $4.5B - $7B by 2028 (Gartner, McKinsey estimates). More specifically, every company deploying AI agents in the EU or serving EU customers will need compliance tooling by August 2, 2026. The EU AI Act applies to AI systems "placed on the market or put into service in the Union," which includes non-EU companies serving EU users. The initial beachhead is AI agent developers using MCP-compatible frameworks (Claude, LangChain, OpenAI Agents SDK, CrewAI), estimated at hundreds of thousands of developers globally.
 
 ### 3. What is the business model?
 
@@ -22,7 +22,7 @@ The main competitors are Credo AI ($22.8M raised), Holistic AI (acquired by Delo
 
 ### 5. What traction do you have?
 
-Attestix is published on PyPI (pip install attestix), registered in the MCP Registry (io.github.VibeTensor/attestix), and has a research paper describing the system architecture and evaluation. The project has 284 automated tests including 91 conformance benchmarks validating standards compliance. Early validation includes direct encouragement from Yoshua Bengio (Turing Award, MILA) and business case validation from Matt Pagett (AI safety researcher, NANDA/CBAAC contributor).
+Attestix is published on PyPI (pip install attestix), registered in the MCP Registry (io.github.VibeTensor/attestix), and has a research paper describing the system architecture and evaluation. The project has 358 automated tests (1 skipped on Windows) including 91 conformance benchmarks validating standards compliance. Early validation includes direct encouragement from Yoshua Bengio (Turing Award, MILA) and business case validation from Matt Pagett (AI safety researcher, NANDA/CBAAC contributor).
 
 ### 6. What is the regulatory catalyst?
 
@@ -30,7 +30,7 @@ The EU AI Act enforcement begins August 2, 2026. Fines reach EUR 35 million or 7
 
 ### 7. What is the go-to-market strategy?
 
-Bottom-up developer adoption through open source, PyPI distribution, and MCP Registry integration. Developers install Attestix, use it in their agent workflows, and it becomes embedded in their stack. Enterprise conversion happens when compliance teams discover their engineering teams are already using Attestix and need managed features. Secondary GTM through partnerships with AI agent frameworks (LangChain, CrewAI, AutoGen) and notified bodies performing EU AI Act assessments.
+Bottom-up developer adoption through open source, PyPI distribution, and MCP Registry integration. Developers install Attestix, use it in their agent workflows, and it becomes embedded in their stack. Enterprise conversion happens when compliance teams discover their engineering teams are already using Attestix and need managed features. Secondary GTM through partnerships with AI agent frameworks (LangChain, OpenAI Agents SDK, CrewAI) and notified bodies performing EU AI Act assessments.
 
 ---
 
@@ -38,7 +38,7 @@ Bottom-up developer adoption through open source, PyPI distribution, and MCP Reg
 
 ### 8. How do we integrate Attestix into our existing agent infrastructure?
 
-Three integration paths: (1) as an MCP server that works with any MCP-compatible client (Claude Code, Claude Desktop, custom MCP clients), (2) as a Python library imported directly into your code (from services.identity_service import IdentityService), or (3) as a standalone service behind your API gateway. Integration with LangChain, CrewAI, and AutoGen is documented. A REST API is on the roadmap. Typical integration takes less than a day.
+Three integration paths: (1) as an MCP server that works with any MCP-compatible client (Claude Code, Claude Desktop, custom MCP clients), (2) as a Python library imported directly into your code (from services.identity_service import IdentityService), or (3) as a standalone service behind your API gateway. Integration with LangChain, OpenAI Agents SDK, and CrewAI is documented. A REST API is on the roadmap. Typical integration takes less than a day.
 
 ### 9. Where is our data stored?
 
@@ -46,7 +46,7 @@ All data stays in your environment. By default, Attestix stores data in local JS
 
 ### 10. What security guarantees does Attestix provide?
 
-Every artifact is signed with Ed25519 (RFC 8032). Audit trails are hash-chained with SHA-256 for tamper evidence. Private keys can be encrypted with AES-256-GCM using the ATTESTIX_KEY_PASSWORD environment variable. SSRF protection blocks private IP access, metadata endpoints, and DNS rebinding. Private keys are never exposed in tool responses. The codebase has 284 automated tests including cryptographic conformance benchmarks validated against IETF test vectors.
+Every artifact is signed with Ed25519 (RFC 8032). Audit trails are hash-chained with SHA-256 for tamper evidence. Private keys can be encrypted with AES-256-GCM using the ATTESTIX_KEY_PASSWORD environment variable. SSRF protection blocks private IP access, metadata endpoints, and DNS rebinding. Private keys are never exposed in tool responses. The codebase has 358 automated tests (1 skipped on Windows) including cryptographic conformance benchmarks validated against IETF test vectors.
 
 ### 11. Does using Attestix guarantee we are EU AI Act compliant?
 

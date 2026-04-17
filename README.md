@@ -447,7 +447,7 @@ Full documentation at **[attestix.io/docs](https://attestix.io/docs)**
 | [Risk Classification](https://attestix.io/docs/guides/risk-classification) | How to determine your AI system's risk category |
 | [Architecture](https://attestix.io/docs/guides/architecture) | System design and data flows |
 | [API Reference](https://attestix.io/docs/reference/api-reference) | All 47 tools with parameter tables |
-| [Integration Guide](https://attestix.io/docs/guides/integration-guide) | LangChain, CrewAI, AutoGen, MCP client |
+| [Integration Guide](https://attestix.io/docs/guides/integration-guide) | LangChain, OpenAI Agents SDK, CrewAI, MCP client |
 | [Configuration](https://attestix.io/docs/reference/configuration) | Environment variables, storage, Docker |
 | [Research Paper](https://attestix.io/docs/project/research) | Paper, citation formats, evaluation highlights |
 | [Reputation Scoring](https://attestix.io/docs/guides/reputation) | Recency-weighted trust scoring and categories |
@@ -465,7 +465,6 @@ Attestix generates machine-readable, cryptographically signed compliance documen
 
 Attestix is free and open-source. If you or your organization benefit from it, please consider sponsoring to support continued development, security audits, and infrastructure.
 
-<a href="https://polar.sh/VibeTensor"><img src="https://polar.sh/embed/seeks-funding-shield.svg?org=VibeTensor" alt="Sponsor on Polar" /></a>
 <a href="https://github.com/sponsors/VibeTensor"><img src="https://img.shields.io/badge/Sponsor-GitHub%20Sponsors-ea4aaa?style=flat-square&logo=github" alt="GitHub Sponsors" /></a>
 
 ---
