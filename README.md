@@ -26,7 +26,8 @@
 <p align="center">
   Make your AI agents EU AI Act compliant with cryptographically verifiable proof.<br/>
   Open-source identity, credentials, compliance automation, and trust scoring.<br/>
-  47 MCP tools across 9 modules.
+  47 MCP tools across 9 modules, 44 REST API endpoints, 358 automated tests.<br/>
+  Real integrations with LangChain, OpenAI Agents SDK, and CrewAI.
 </p>
 
 ---
@@ -372,7 +373,7 @@ attestix/
 
 ## Standards Conformance
 
-Every standards claim is validated by 91 automated conformance tests that run in Docker alongside the 193 existing tests (284 total). Run them yourself:
+Every standards claim is validated by 79 automated conformance benchmarks that run alongside the rest of the suite for a total of 358 tests passing (1 skipped on Windows). Run them yourself:
 
 ```bash
 docker build -f Dockerfile.test -t attestix-bench . && docker run --rm attestix-bench
@@ -414,7 +415,7 @@ docker build -f Dockerfile.test -t attestix-bench . && docker run --rm attestix-
 
 ## Research Paper
 
-Attestix is described in a research paper covering system architecture, cryptographic pipeline, EU AI Act compliance automation, and evaluation with 284 automated tests.
+Attestix is described in a research paper covering system architecture, cryptographic pipeline, EU AI Act compliance automation, and evaluation with 358 automated tests.
 
 **[Attestix: A Unified Attestation Infrastructure for Autonomous AI Agents](https://github.com/VibeTensor/attestix/blob/main/paper/attestix-paper.pdf)**
 Pavan Kumar Dubasi, VibeTensor Private Limited, 2026.
