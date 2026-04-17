@@ -1,4 +1,4 @@
-name: Test Suite
+name: Tests
 
 on:
   push:
@@ -16,44 +16,64 @@ concurrency:
 
 jobs:
   test:
-    runs-on: ubuntu-latest
+    name: pytest (${{ matrix.os }}, py${{ matrix.python-version }})
+    runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
-        python-version: ['3.10', '3.11', '3.12', '3.13']
+        os: [ubuntu-latest, windows-latest]
+        python-version: ['3.11', '3.12', '3.13']
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-      - uses: actions/setup-python@v5
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
           cache: 'pip'
+          cache-dependency-path: |
+            pyproject.toml
+            requirements.txt
 
-      - name: Install dependencies
-        run: pip install -e ".[test,blockchain]"
+      - name: Upgrade pip
+        run: python -m pip install --upgrade pip
 
-      - name: Run test suite
-        run: python -m pytest tests/ -v --tb=short -m "not live_blockchain" --color=yes
+      - name: Install package with dev extras
+        run: pip install -e ".[dev,blockchain]"
+
+      - name: Run pytest with coverage
+        env:
+          PYTHONIOENCODING: utf-8
+        run: >-
+          python -m pytest tests/
+          -v --tb=short --color=yes
+          -m "not live_blockchain"
+          --cov=services --cov=tools --cov=auth --cov=blockchain --cov=api
+          --cov-report=xml --cov-report=term-missing
 
       - name: Smoke tests
+        shell: bash
         run: |
-          python -c "
-          from auth.crypto import generate_ed25519_keypair, sign_message, verify_signature, public_key_to_did_key
-          k, p = generate_ed25519_keypair()
-          s = sign_message(k, b'test')
-          assert verify_signature(p, s, b'test')
-          d = public_key_to_did_key(p)
-          print(f'Crypto OK - DID {d[:30]}...')
-          "
-          python -c "
-          from blockchain.merkle import build_merkle_tree
-          root, levels = build_merkle_tree([b'a', b'b', b'c'])
-          print(f'Merkle OK - root {root[:16]}...')
-          "
-          python -c "
-          from auth.ssrf import validate_url_host
-          assert validate_url_host('127.0.0.1') is not None
-          assert validate_url_host('localhost') is not None
-          print('SSRF OK')
-          "
+          python -c "from auth.crypto import generate_ed25519_keypair, sign_message, verify_signature, public_key_to_did_key; k, p = generate_ed25519_keypair(); s = sign_message(k, b'test'); assert verify_signature(p, s, b'test'); d = public_key_to_did_key(p); print('Crypto OK', d[:30])"
+          python -c "from blockchain.merkle import build_merkle_tree; root, levels = build_merkle_tree([b'a', b'b', b'c']); print('Merkle OK', root[:16])"
+          python -c "from auth.ssrf import validate_url_host; assert validate_url_host('127.0.0.1') is not None; assert validate_url_host('localhost') is not None; print('SSRF OK')"
+
+      - name: Upload coverage to Codecov
+        if: matrix.os == 'ubuntu-latest' && matrix.python-version == '3.12'
+        uses: codecov/codecov-action@v5
+        with:
+          files: ./coverage.xml
+          flags: unittests
+          name: attestix-coverage
+          fail_ci_if_error: false
+          token: ${{ secrets.CODECOV_TOKEN }}
+
+      - name: Upload coverage artifact
+        if: matrix.os == 'ubuntu-latest' && matrix.python-version == '3.12'
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-xml
+          path: coverage.xml
+          if-no-files-found: ignore

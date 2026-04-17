@@ -11,9 +11,13 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/VibeTensor/attestix/releases"><img src="https://img.shields.io/badge/version-0.2.5-4f46e5?style=flat-square" alt="v0.2.4"></a>
+  <a href="https://github.com/VibeTensor/attestix/actions/workflows/test.yml"><img src="https://img.shields.io/github/actions/workflow/status/VibeTensor/attestix/test.yml?branch=main&label=tests&style=flat-square" alt="CI"></a>
+  <a href="https://github.com/VibeTensor/attestix/actions/workflows/lint.yml"><img src="https://img.shields.io/github/actions/workflow/status/VibeTensor/attestix/lint.yml?branch=main&label=lint&style=flat-square" alt="Lint"></a>
+  <a href="https://github.com/VibeTensor/attestix/actions/workflows/security.yml"><img src="https://img.shields.io/github/actions/workflow/status/VibeTensor/attestix/security.yml?branch=main&label=security&style=flat-square" alt="Security"></a>
+  <a href="https://codecov.io/gh/VibeTensor/attestix"><img src="https://img.shields.io/codecov/c/github/VibeTensor/attestix?style=flat-square" alt="Coverage"></a>
   <a href="https://pypi.org/project/attestix/"><img src="https://img.shields.io/pypi/v/attestix?color=4f46e5&style=flat-square" alt="PyPI"></a>
   <a href="https://pypi.org/project/attestix/"><img src="https://img.shields.io/pypi/pyversions/attestix?color=4f46e5&style=flat-square" alt="Python"></a>
+  <a href="https://pypi.org/project/attestix/"><img src="https://img.shields.io/pypi/dm/attestix?color=4f46e5&style=flat-square" alt="Downloads"></a>
   <a href="https://github.com/VibeTensor/attestix/blob/main/LICENSE"><img src="https://img.shields.io/github/license/VibeTensor/attestix?color=4f46e5&style=flat-square" alt="License"></a>
   <a href="https://attestix.io/docs"><img src="https://img.shields.io/badge/docs-attestix.io%2Fdocs-4f46e5?style=flat-square" alt="Docs"></a>
   <a href="https://attestix.io"><img src="https://img.shields.io/badge/website-attestix.io-4f46e5?style=flat-square" alt="Website"></a>

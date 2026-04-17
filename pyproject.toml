@@ -59,7 +59,20 @@ dependencies = [
 [project.optional-dependencies]
 blockchain = ["web3>=7.0.0"]
 reports = ["weasyprint>=62.0"]
-test = ["pytest>=8.0", "pytest-asyncio>=0.24", "respx>=0.22"]
+test = ["pytest>=8.0", "pytest-asyncio>=0.24", "respx>=0.22", "pytest-cov>=5.0"]
+lint = ["ruff>=0.6.0", "mypy>=1.11"]
+security = ["pip-audit>=2.7", "bandit>=1.7", "safety>=3.2"]
+dev = [
+    "pytest>=8.0",
+    "pytest-asyncio>=0.24",
+    "respx>=0.22",
+    "pytest-cov>=5.0",
+    "ruff>=0.6.0",
+    "mypy>=1.11",
+    "pip-audit>=2.7",
+    "bandit>=1.7",
+    "build>=1.2",
+]
 
 [project.urls]
 Homepage = "https://github.com/VibeTensor/attestix"
@@ -95,6 +108,103 @@ asyncio_mode = "auto"
 testpaths = ["tests"]
 markers = [
     "live_blockchain: requires funded Base Sepolia wallet (deselect with -m 'not live_blockchain')",
+]
+
+[tool.ruff]
+line-length = 120
+target-version = "py310"
+extend-exclude = [
+    "build",
+    "dist",
+    ".venv",
+    "site",
+    "magicuidesign-agent-template",
+    "magicuidesign-devtool-template",
+    "website",
+    "attestix.egg-info",
+]
+
+[tool.ruff.lint]
+# Keep initial rule set conservative so CI passes out of the box; expand later
+# with `ruff check --fix` in a dedicated cleanup PR.
+select = ["E", "F", "W"]
+ignore = [
+    "E501",  # line-length handled by formatter
+    "E402",  # module level import not at top of file (dynamic path tweaks)
+    "E701",  # multiple statements on one line (colon)
+    "E702",  # multiple statements on one line (semicolon)
+    "E722",  # bare except (legacy code has some)
+    "E741",  # ambiguous variable name
+    "F401",  # unused imports (re-exports in __init__ files)
+    "F403",  # star imports
+    "F405",  # may be undefined from star imports
+    "F541",  # f-string without placeholders
+    "F811",  # redefinition
+    "F841",  # local variable assigned but not used
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["F401", "F811", "E402", "E401"]
+"examples/**" = ["F401", "E402"]
+"demo/**" = ["F401", "E402", "E401"]
+
+[tool.mypy]
+python_version = "3.10"
+ignore_missing_imports = true
+follow_imports = "silent"
+warn_unused_ignores = false
+warn_redundant_casts = true
+# Keep mypy permissive initially; tighten over time.
+check_untyped_defs = false
+disallow_untyped_defs = false
+exclude = [
+    "build/",
+    "dist/",
+    "site/",
+    "website/",
+    "magicuidesign-agent-template/",
+    "magicuidesign-devtool-template/",
+    "tests/",
+    "examples/",
+    "demo/",
+    "paper/",
+]
+
+[tool.bandit]
+exclude_dirs = [
+    "tests",
+    "build",
+    "dist",
+    "site",
+    "website",
+    "magicuidesign-agent-template",
+    "magicuidesign-devtool-template",
+    "examples",
+    "demo",
+    ".venv",
+]
+skips = ["B101", "B311", "B404", "B603", "B607"]
+
+[tool.coverage.run]
+source = ["services", "tools", "auth", "blockchain", "api"]
+branch = true
+omit = [
+    "tests/*",
+    "examples/*",
+    "demo/*",
+    "build/*",
+    "dist/*",
+    "*/__init__.py",
+]
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = false
+exclude_lines = [
+    "pragma: no cover",
+    "if __name__ == .__main__.:",
+    "raise NotImplementedError",
+    "if TYPE_CHECKING:",
 ]
 
 [tool.setuptools.package-data]

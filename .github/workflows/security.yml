@@ -1,0 +1,93 @@
+name: Security
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+    # Weekly: every Monday at 06:00 UTC.
+    - cron: '0 6 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: security-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  pip-audit:
+    name: pip-audit (dependencies)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+          cache-dependency-path: pyproject.toml
+
+      - name: Install package and pip-audit
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[blockchain]"
+          pip install "pip-audit>=2.7"
+
+      - name: Run pip-audit
+        # Advisory on PR, enforced on schedule + push to main.
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            pip-audit --progress-spinner off || echo "pip-audit findings present (advisory on PR)."
+          else
+            pip-audit --progress-spinner off --strict
+          fi
+
+  bandit:
+    name: bandit (source code SAST)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+          cache-dependency-path: pyproject.toml
+
+      - name: Install bandit
+        run: |
+          python -m pip install --upgrade pip
+          pip install "bandit[toml]>=1.7"
+
+      - name: Run bandit (medium+ severity, medium+ confidence)
+        run: bandit -r services tools auth blockchain api -c pyproject.toml -ll -ii
+
+  safety:
+    name: safety (CVE scan, advisory)
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+          cache-dependency-path: pyproject.toml
+
+      - name: Install safety
+        run: |
+          python -m pip install --upgrade pip
+          pip install "safety>=3.2"
+
+      - name: Run safety check
+        run: safety check --file=requirements.txt --full-report || true
