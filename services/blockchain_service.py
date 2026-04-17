@@ -132,6 +132,35 @@ class BlockchainService:
 
     # --- Schema Management ---
 
+    @staticmethod
+    def compute_schema_uid(
+        schema: str,
+        resolver: str = "0x0000000000000000000000000000000000000000",
+        revocable: bool = True,
+    ) -> str:
+        """Compute the canonical EAS schema UID.
+
+        Mirrors SchemaRegistry._getUID in the EAS contracts:
+            keccak256(abi.encodePacked(schema, resolver, revocable))
+
+        Reference:
+        https://github.com/ethereum-attestation-service/eas-contracts/blob/master/contracts/SchemaRegistry.sol
+
+        Returns a 0x-prefixed 66-character hex string.
+        """
+        from web3 import Web3
+        from eth_abi.packed import encode_packed
+
+        resolver_checksum = Web3.to_checksum_address(resolver)
+        packed = encode_packed(
+            ["string", "address", "bool"],
+            [schema, resolver_checksum, bool(revocable)],
+        )
+        digest_hex = Web3.keccak(packed).hex()
+        if not digest_hex.startswith("0x"):
+            digest_hex = "0x" + digest_hex
+        return digest_hex
+
     def _load_schema_uid(self) -> Optional[str]:
         """Load cached schema UID from blockchain config file."""
         try:
@@ -171,12 +200,40 @@ class BlockchainService:
             zero_addr = Web3.to_checksum_address(
                 "0x0000000000000000000000000000000000000000"
             )
+            revocable = True
+
+            # EAS schema UIDs are deterministic:
+            #   keccak256(abi.encodePacked(schema, resolver, revocable))
+            # Derive the UID offline so we can (a) skip registration if the
+            # schema already exists on-chain and (b) use it as a safe fallback
+            # if log parsing ever fails. Hashing the schema string alone
+            # produces the WRONG UID and breaks on-chain verification.
+            canonical_uid = self.compute_schema_uid(
+                ATTESTIX_SCHEMA, zero_addr, revocable
+            )
+
+            # If already registered on-chain, reuse without spending gas.
+            try:
+                uid_bytes = bytes.fromhex(canonical_uid[2:])
+                existing = self._schema_registry.functions.getSchema(
+                    uid_bytes
+                ).call()
+                existing_uid = existing[0] if existing else b"\x00" * 32
+                if isinstance(existing_uid, (bytes, bytearray)) and any(
+                    existing_uid
+                ):
+                    self._schema_uid = canonical_uid
+                    self._save_schema_uid(canonical_uid)
+                    return True, canonical_uid
+            except Exception:
+                # getSchema lookup failed; fall through and register.
+                pass
 
             with self._tx_lock:
                 tx = self._schema_registry.functions.register(
                     ATTESTIX_SCHEMA,
                     zero_addr,
-                    True,
+                    revocable,
                 ).build_transaction({
                     "from": self._account.address,
                     "nonce": self._w3.eth.get_transaction_count(
@@ -189,27 +246,38 @@ class BlockchainService:
                 })
 
                 signed = self._account.sign_transaction(tx)
-                tx_hash = self._w3.eth.send_raw_transaction(signed.raw_transaction)
-            receipt = self._w3.eth.wait_for_transaction_receipt(tx_hash, timeout=60)
+                tx_hash = self._w3.eth.send_raw_transaction(
+                    signed.raw_transaction
+                )
+            receipt = self._w3.eth.wait_for_transaction_receipt(
+                tx_hash, timeout=60
+            )
 
             if receipt["status"] != 1:
                 return False, "Schema registration transaction reverted"
 
-            # Extract schema UID from the Registered event log
+            # Extract schema UID from Registered(bytes32 indexed uid, ...):
+            # topics[0] is the event signature, topics[1] is the indexed uid.
             schema_uid_hex = None
-            if receipt["logs"]:
-                # The first topic after the event signature is the schema UID
-                log = receipt["logs"][0]
-                if len(log.get("topics", [])) > 1:
-                    schema_uid_hex = "0x" + log["topics"][1].hex()
-                elif log.get("data"):
-                    schema_uid_hex = "0x" + log["data"].hex()[:64]
+            for log in receipt.get("logs", []):
+                topics = log.get("topics", [])
+                if len(topics) > 1:
+                    topic = topics[1]
+                    if isinstance(topic, (bytes, bytearray)):
+                        topic_hex = bytes(topic).hex()
+                    else:
+                        topic_hex = str(topic).replace("0x", "")
+                    if topic_hex and int(topic_hex, 16) != 0:
+                        schema_uid_hex = (
+                            topic_hex if topic_hex.startswith("0x")
+                            else "0x" + topic_hex
+                        )
+                        break
 
             if not schema_uid_hex:
-                # Fallback: hash the schema deterministically
-                schema_uid_hex = "0x" + Web3.keccak(
-                    text=ATTESTIX_SCHEMA
-                ).hex()
+                # Safe fallback: canonical UID matches the on-chain UID by
+                # construction. Never hash the schema text alone.
+                schema_uid_hex = canonical_uid
 
             self._schema_uid = schema_uid_hex
             self._save_schema_uid(schema_uid_hex)
@@ -220,6 +288,82 @@ class BlockchainService:
                 "_ensure_schema_registered", e, ErrorCategory.BLOCKCHAIN,
             )
             return False, msg
+
+    # --- Event Decoding ---
+
+    def _extract_attestation_uid(self, receipt) -> str:
+        """Decode the Attested event from a tx receipt and return the UID.
+
+        Uses ``contract.events.Attested().process_log(log)`` (web3.py's ABI
+        decoder) so we do not rely on fragile byte offsets. Falls back to
+        manual decoding when the Attested event is not on the ABI or the log
+        is not parseable. Returns "unknown" if no Attested log is present.
+        """
+        logs = receipt.get("logs") if isinstance(receipt, dict) else getattr(
+            receipt, "logs", None
+        )
+        if not logs:
+            return "unknown"
+
+        # Prefer structured ABI decoding when the event is on the ABI.
+        attested_event = None
+        try:
+            attested_event = self._eas_contract.events.Attested()
+        except Exception:
+            attested_event = None
+
+        if attested_event is not None:
+            for log in logs:
+                try:
+                    decoded = attested_event.process_log(log)
+                except Exception:
+                    # Not an Attested event or ABI mismatch; try next log.
+                    continue
+                args = decoded.get("args", {}) if hasattr(decoded, "get") \
+                    else getattr(decoded, "args", {})
+                uid = None
+                if hasattr(args, "get"):
+                    uid = args.get("uid")
+                else:
+                    uid = getattr(args, "uid", None)
+                if isinstance(uid, (bytes, bytearray)) and any(uid):
+                    return "0x" + bytes(uid).hex()
+
+        # Manual fallback: match Attested event by topic[0] signature and
+        # read the single non-indexed ``uid`` word (first 32 bytes of data).
+        try:
+            from web3 import Web3
+            sig_topic = bytes(
+                Web3.keccak(text="Attested(address,address,bytes32,bytes32)")
+            )
+            for log in logs:
+                topics = log.get("topics") if isinstance(log, dict) else getattr(
+                    log, "topics", []
+                )
+                if not topics:
+                    continue
+                first = topics[0]
+                first_bytes = (
+                    bytes(first) if isinstance(first, (bytes, bytearray))
+                    else bytes.fromhex(str(first).replace("0x", ""))
+                )
+                if first_bytes != sig_topic:
+                    continue
+                data = log.get("data") if isinstance(log, dict) else getattr(
+                    log, "data", b""
+                )
+                data_bytes = (
+                    bytes(data) if isinstance(data, (bytes, bytearray))
+                    else bytes.fromhex(str(data).replace("0x", ""))
+                )
+                if len(data_bytes) >= 32:
+                    uid = data_bytes[:32]
+                    if any(uid):
+                        return "0x" + uid.hex()
+        except Exception:
+            pass
+
+        return "unknown"
 
     # --- Hashing ---
 
@@ -311,20 +455,19 @@ class BlockchainService:
                     "error": "Attestation transaction reverted. Check gas and balance."
                 }
 
-            # Extract attestation UID from Attested event log
-            # EAS Attested event: Attested(address indexed recipient, address indexed attester, bytes32 uid, bytes32 indexed schema)
-            # uid is in the data field (non-indexed), not in topics
-            attestation_uid = "unknown"
-            if receipt["logs"]:
-                for log in receipt["logs"]:
-                    data_hex = log.get("data", b"")
-                    if isinstance(data_hex, bytes) and len(data_hex) >= 32:
-                        attestation_uid = "0x" + data_hex[:32].hex()
-                        break
-                    elif isinstance(data_hex, str) and len(data_hex) >= 66:
-                        clean = data_hex.replace("0x", "")
-                        attestation_uid = "0x" + clean[:64]
-                        break
+            # Extract attestation UID via the Attested event ABI decoder.
+            # EAS interface:
+            #   Attested(address indexed recipient,
+            #            address indexed attester,
+            #            bytes32 uid,
+            #            bytes32 indexed schemaUID)
+            # The uid is the single non-indexed field, so naive byte slicing
+            # (which was previously used) is fragile: it assumed the first log
+            # was always Attested and that log.data started with the uid. We
+            # now use contract.events.Attested().process_log(log) with a
+            # topic-signature fallback so the uid is decoded correctly even
+            # when other contracts emit logs in the same transaction.
+            attestation_uid = self._extract_attestation_uid(receipt)
 
             anchor_id = f"anchor:{uuid.uuid4().hex[:12]}"
             now = datetime.now(timezone.utc).isoformat()
