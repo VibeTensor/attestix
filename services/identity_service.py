@@ -26,6 +26,11 @@ from config import (
 from errors import ErrorCategory, log_and_format_error
 
 
+#: Maximum allowed display_name length. Mirrors the API layer constraint so
+#: programmatic callers that bypass FastAPI still get a validation error.
+MAX_DISPLAY_NAME_LENGTH = 500
+
+
 class IdentityService:
     """Manages UAIT lifecycle."""
 
@@ -62,6 +67,23 @@ class IdentityService:
         expiry_days: Optional[int] = None,
     ) -> dict:
         """Create a new UAIT from any identity source."""
+        # Defense in depth: validate even when callers skip the API layer.
+        # Issue #32 - reject empty/whitespace/overlong display_name.
+        if display_name is None:
+            raise ValueError("display_name is required")
+        if not isinstance(display_name, str):
+            raise ValueError("display_name must be a string")
+        stripped = display_name.strip()
+        if not stripped:
+            raise ValueError("display_name must not be empty or whitespace-only")
+        if len(stripped) > MAX_DISPLAY_NAME_LENGTH:
+            raise ValueError(
+                f"display_name must be at most {MAX_DISPLAY_NAME_LENGTH} characters"
+            )
+        if any(ord(ch) < 0x20 and ch != "\t" for ch in stripped):
+            raise ValueError("display_name contains disallowed control characters")
+        display_name = stripped
+
         agent_id = f"attestix:{uuid.uuid4().hex[:16]}"
         now = datetime.now(timezone.utc)
         exp_days = expiry_days if expiry_days is not None else DEFAULT_EXPIRY_DAYS

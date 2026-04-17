@@ -4,6 +4,7 @@ Manages training data provenance, model lineage tracking, and
 Article 12 EU AI Act automatic action logging (audit trail).
 """
 
+import logging
 from typing import Dict, List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -11,6 +12,8 @@ from pydantic import BaseModel, Field
 
 from api.deps import get_provenance_service
 from services.provenance_service import ProvenanceService
+
+logger = logging.getLogger("attestix.api.provenance")
 
 router = APIRouter(prefix="/v1/provenance", tags=["provenance"])
 
@@ -66,7 +69,8 @@ def record_training_data(
         data_governance_measures=body.data_governance_measures,
     )
     if isinstance(result, dict) and "error" in result:
-        raise HTTPException(status_code=400, detail=result["error"])
+        logger.warning("Training data recording failed: %s", result["error"])
+        raise HTTPException(status_code=400, detail="Training data recording failed")
     return result
 
 
@@ -84,7 +88,8 @@ def record_model_lineage(
         evaluation_metrics=body.evaluation_metrics,
     )
     if isinstance(result, dict) and "error" in result:
-        raise HTTPException(status_code=400, detail=result["error"])
+        logger.warning("Model lineage recording failed: %s", result["error"])
+        raise HTTPException(status_code=400, detail="Model lineage recording failed")
     return result
 
 
@@ -103,7 +108,8 @@ def log_action(
         human_override=body.human_override,
     )
     if isinstance(result, dict) and "error" in result:
-        raise HTTPException(status_code=400, detail=result["error"])
+        logger.warning("Action logging failed: %s", result["error"])
+        raise HTTPException(status_code=400, detail="Action logging failed")
     return result
 
 
@@ -125,7 +131,8 @@ def get_audit_trail(
         limit=limit,
     )
     if results and isinstance(results[0], dict) and "error" in results[0]:
-        raise HTTPException(status_code=500, detail=results[0]["error"])
+        logger.error("Audit trail query failed: %s", results[0]["error"])
+        raise HTTPException(status_code=500, detail="Audit trail query failed")
     return results
 
 
@@ -137,5 +144,6 @@ def get_provenance(
     """Get full provenance record for an agent (training data, model lineage, audit summary)."""
     result = svc.get_provenance(agent_id)
     if isinstance(result, dict) and "error" in result:
-        raise HTTPException(status_code=500, detail=result["error"])
+        logger.error("Provenance lookup failed for %s: %s", agent_id, result["error"])
+        raise HTTPException(status_code=500, detail="Provenance lookup failed")
     return result

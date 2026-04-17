@@ -31,8 +31,19 @@ class AgentCardService:
 
             agent_json_url = f"{url}/.well-known/agent.json"
 
-            with httpx.Client(timeout=10, follow_redirects=True) as client:
+            # SSRF protection: disable automatic redirects. A public server could
+            # otherwise redirect us to an internal IP (e.g. 169.254.169.254,
+            # 10.0.0.1) bypassing the initial hostname validation above.
+            with httpx.Client(timeout=10, follow_redirects=False) as client:
                 resp = client.get(agent_json_url)
+                if resp.is_redirect:
+                    return {
+                        "error": (
+                            "Redirect responses are not followed during agent "
+                            "discovery to prevent SSRF. Provide the canonical URL."
+                        ),
+                        "source_url": agent_json_url,
+                    }
                 resp.raise_for_status()
                 card = resp.json()
 

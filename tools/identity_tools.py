@@ -44,15 +44,20 @@ def register(mcp):
 
         svc = get_service(IdentityService)
         caps = [c.strip() for c in capabilities.split(",") if c.strip()] if capabilities else []
-        result = svc.create_identity(
-            display_name=display_name,
-            source_protocol=source_protocol,
-            identity_token=identity_token,
-            capabilities=caps,
-            description=description,
-            issuer_name=issuer_name,
-            expiry_days=expiry_days,
-        )
+        try:
+            result = svc.create_identity(
+                display_name=display_name,
+                source_protocol=source_protocol,
+                identity_token=identity_token,
+                capabilities=caps,
+                description=description,
+                issuer_name=issuer_name,
+                expiry_days=expiry_days,
+            )
+        except ValueError as ve:
+            # Input validation errors from the service layer (Issue #32).
+            # Surface them as a structured error rather than crashing the tool.
+            result = {"error": str(ve)}
         return json.dumps(result, indent=2, default=str)
 
     @mcp.tool()
@@ -68,11 +73,14 @@ def register(mcp):
 
         token_info = extract_identity_from_token(identity_token)
         svc = get_service(IdentityService)
-        result = svc.create_identity(
-            display_name=f"Resolved-{token_info['token_type']}",
-            source_protocol=token_info["token_type"],
-            identity_token=identity_token,
-        )
+        try:
+            result = svc.create_identity(
+                display_name=f"Resolved-{token_info['token_type']}",
+                source_protocol=token_info["token_type"],
+                identity_token=identity_token,
+            )
+        except ValueError as ve:
+            result = {"error": str(ve)}
         return json.dumps(result, indent=2, default=str)
 
     @mcp.tool()

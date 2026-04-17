@@ -4,6 +4,7 @@ Discover, parse, and generate Google A2A Agent Cards
 (the /.well-known/agent.json standard).
 """
 
+import logging
 from typing import Dict, List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -11,6 +12,8 @@ from pydantic import BaseModel, Field
 
 from api.deps import get_agent_card_service
 from services.agent_card_service import AgentCardService
+
+logger = logging.getLogger("attestix.api.agent_cards")
 
 router = APIRouter(prefix="/v1/agent-cards", tags=["agent-cards"])
 
@@ -61,11 +64,13 @@ def discover_agent(
     """
     result = svc.discover_agent(body.base_url)
     if isinstance(result, dict) and "error" in result:
-        if "timeout" in result["error"].lower():
-            raise HTTPException(status_code=504, detail=result["error"])
-        if "http" in result["error"].lower() and any(c.isdigit() for c in result["error"]):
-            raise HTTPException(status_code=502, detail=result["error"])
-        raise HTTPException(status_code=400, detail=result["error"])
+        error_msg = result["error"]
+        logger.warning("Agent discovery failed for %s: %s", body.base_url, error_msg)
+        if "timeout" in error_msg.lower():
+            raise HTTPException(status_code=504, detail="Agent discovery timed out")
+        if "http" in error_msg.lower() and any(c.isdigit() for c in error_msg):
+            raise HTTPException(status_code=502, detail="Upstream agent discovery error")
+        raise HTTPException(status_code=400, detail="Agent discovery failed")
     return result
 
 
@@ -80,7 +85,8 @@ def parse_agent_card(
     """
     result = svc.parse_agent_card(body.card)
     if isinstance(result, dict) and "error" in result:
-        raise HTTPException(status_code=400, detail=result["error"])
+        logger.warning("Agent card parsing failed: %s", result["error"])
+        raise HTTPException(status_code=400, detail="Agent card parsing failed")
     return result
 
 
@@ -105,5 +111,6 @@ def generate_agent_card(
         version=body.version,
     )
     if isinstance(result, dict) and "error" in result:
-        raise HTTPException(status_code=400, detail=result["error"])
+        logger.warning("Agent card generation failed: %s", result["error"])
+        raise HTTPException(status_code=400, detail="Agent card generation failed")
     return result

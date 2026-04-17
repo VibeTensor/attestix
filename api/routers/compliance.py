@@ -4,6 +4,7 @@ EU AI Act compliance profiles, conformity assessments (Article 43),
 and declarations of conformity (Annex V).
 """
 
+import logging
 from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -11,6 +12,8 @@ from pydantic import BaseModel, Field
 
 from api.deps import get_compliance_service
 from services.compliance_service import ComplianceService
+
+logger = logging.getLogger("attestix.api.compliance")
 
 router = APIRouter(prefix="/v1/compliance", tags=["compliance"])
 
@@ -64,9 +67,11 @@ def create_compliance_profile(
         authorised_representative=body.authorised_representative,
     )
     if isinstance(result, dict) and "error" in result:
-        if "not found" in result["error"].lower():
-            raise HTTPException(status_code=404, detail=result["error"])
-        raise HTTPException(status_code=400, detail=result["error"])
+        error_msg = result["error"]
+        logger.warning("Compliance profile creation failed: %s", error_msg)
+        if "not found" in error_msg.lower():
+            raise HTTPException(status_code=404, detail="Agent not found")
+        raise HTTPException(status_code=400, detail="Compliance profile creation failed")
     return result
 
 
@@ -84,7 +89,8 @@ def list_compliance_profiles(
         limit=limit,
     )
     if results and isinstance(results[0], dict) and "error" in results[0]:
-        raise HTTPException(status_code=500, detail=results[0]["error"])
+        logger.error("Compliance profile listing failed: %s", results[0]["error"])
+        raise HTTPException(status_code=500, detail="Compliance profile listing failed")
     return results
 
 
@@ -114,9 +120,11 @@ def get_compliance_status(
     """
     result = svc.get_compliance_status(profile_id)
     if isinstance(result, dict) and "error" in result:
-        if "not found" in result["error"].lower():
-            raise HTTPException(status_code=404, detail=result["error"])
-        raise HTTPException(status_code=400, detail=result["error"])
+        error_msg = result["error"]
+        logger.warning("Compliance status check failed for %s: %s", profile_id, error_msg)
+        if "not found" in error_msg.lower():
+            raise HTTPException(status_code=404, detail="Compliance profile not found")
+        raise HTTPException(status_code=400, detail="Compliance status check failed")
     return result
 
 
@@ -135,9 +143,11 @@ def record_conformity_assessment(
         ce_marking_eligible=body.ce_marking_eligible,
     )
     if isinstance(result, dict) and "error" in result:
-        if "not found" in result["error"].lower():
-            raise HTTPException(status_code=404, detail=result["error"])
-        raise HTTPException(status_code=400, detail=result["error"])
+        error_msg = result["error"]
+        logger.warning("Conformity assessment failed: %s", error_msg)
+        if "not found" in error_msg.lower():
+            raise HTTPException(status_code=404, detail="Compliance profile not found")
+        raise HTTPException(status_code=400, detail="Conformity assessment failed")
     return result
 
 
@@ -149,7 +159,12 @@ def generate_declaration_of_conformity(
     """Generate an EU AI Act Annex V declaration of conformity."""
     result = svc.generate_declaration_of_conformity(body.agent_id)
     if isinstance(result, dict) and "error" in result:
-        if "not found" in result["error"].lower():
-            raise HTTPException(status_code=404, detail=result["error"])
-        raise HTTPException(status_code=400, detail=result["error"])
+        error_msg = result["error"]
+        logger.warning(
+            "Declaration generation failed for %s: %s",
+            body.agent_id, error_msg,
+        )
+        if "not found" in error_msg.lower():
+            raise HTTPException(status_code=404, detail="Compliance profile not found")
+        raise HTTPException(status_code=400, detail="Declaration generation failed")
     return result

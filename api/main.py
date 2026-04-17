@@ -6,6 +6,7 @@ EU AI Act compliance, reputation, provenance, delegation, DIDs,
 agent cards, and blockchain anchoring.
 """
 
+import hmac
 import os
 import time
 import logging
@@ -112,7 +113,9 @@ class APIKeyMiddleware(BaseHTTPMiddleware):
                 content={"error": "Missing API key. Provide X-API-Key header or Authorization: Bearer <key>"},
             )
 
-        if provided_key != api_key:
+        # Constant-time comparison to prevent byte-by-byte timing attacks
+        # that could reveal the configured API key.
+        if not hmac.compare_digest(provided_key, api_key):
             return JSONResponse(
                 status_code=403,
                 content={"error": "Invalid API key"},

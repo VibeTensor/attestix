@@ -4,13 +4,16 @@ Manages Unified Agent Identity Tokens (UAITs): create, read, list,
 verify, translate, revoke, and GDPR purge.
 """
 
+import logging
 from typing import List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 from api.deps import get_identity_service
 from services.identity_service import IdentityService
+
+logger = logging.getLogger("attestix.api.identity")
 
 router = APIRouter(prefix="/v1/identities", tags=["identity"])
 
@@ -19,14 +22,41 @@ router = APIRouter(prefix="/v1/identities", tags=["identity"])
 # Request / Response models
 # ---------------------------------------------------------------------------
 
+#: Maximum allowed length for an agent display name (defense in depth against
+#: UI abuse, log-injection, and storage bloat).
+MAX_DISPLAY_NAME_LENGTH = 500
+
+
 class CreateIdentityRequest(BaseModel):
-    display_name: str = Field(..., description="Human-readable name for the agent")
+    display_name: str = Field(
+        ...,
+        min_length=1,
+        max_length=MAX_DISPLAY_NAME_LENGTH,
+        description="Human-readable name for the agent (1-500 characters, non-empty)",
+    )
     source_protocol: str = Field(..., description="Identity source protocol (e.g., oauth2, api_key, did)")
     identity_token: str = Field("", description="Optional identity token to extract info from")
     capabilities: Optional[List[str]] = Field(None, description="List of capability strings")
     description: str = Field("", description="Description of the agent")
     issuer_name: str = Field("", description="Name of the identity issuer")
     expiry_days: Optional[int] = Field(None, description="Days until the identity expires")
+
+    @field_validator("display_name")
+    @classmethod
+    def _validate_display_name(cls, value: str) -> str:
+        if value is None:
+            raise ValueError("display_name is required")
+        stripped = value.strip()
+        if not stripped:
+            raise ValueError("display_name must not be empty or whitespace-only")
+        if len(stripped) > MAX_DISPLAY_NAME_LENGTH:
+            raise ValueError(
+                f"display_name must be at most {MAX_DISPLAY_NAME_LENGTH} characters"
+            )
+        # Reject control characters that could break logs, JSON, or terminals.
+        if any(ord(ch) < 0x20 and ch not in ("\t",) for ch in stripped):
+            raise ValueError("display_name contains disallowed control characters")
+        return stripped
 
 
 class TranslateIdentityRequest(BaseModel):
@@ -60,7 +90,8 @@ def create_identity(
         expiry_days=body.expiry_days,
     )
     if isinstance(result, dict) and "error" in result:
-        raise HTTPException(status_code=400, detail=result["error"])
+        logger.warning("Identity creation failed: %s", result["error"])
+        raise HTTPException(status_code=400, detail="Identity creation failed")
     return result
 
 
@@ -111,7 +142,11 @@ def translate_identity(
     if result is None:
         raise HTTPException(status_code=404, detail=f"Identity {agent_id} not found")
     if isinstance(result, dict) and "error" in result:
-        raise HTTPException(status_code=400, detail=result["error"])
+        logger.warning(
+            "Identity translation failed for %s: %s",
+            agent_id, result["error"],
+        )
+        raise HTTPException(status_code=400, detail="Identity translation failed")
     return result
 
 
@@ -137,5 +172,9 @@ def purge_agent_data(
     """GDPR Article 17 - Right to erasure. Purge all data for an agent."""
     result = svc.purge_agent_data(agent_id)
     if isinstance(result, dict) and "error" in result:
-        raise HTTPException(status_code=400, detail=result["error"])
+        logger.warning(
+            "Agent data purge failed for %s: %s",
+            agent_id, result["error"],
+        )
+        raise HTTPException(status_code=400, detail="Agent data purge failed")
     return result
