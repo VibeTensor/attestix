@@ -39,8 +39,50 @@ class DelegationService:
             capabilities: List of capability strings being delegated.
             expiry_hours: How long the delegation is valid.
             parent_token: Optional parent delegation token for chaining.
+
+        Security:
+            When parent_token is provided, the parent is fully verified
+            (signature, expiry, revocation, and recursively its own prf
+            chain) BEFORE a new delegation is issued. The requested
+            capabilities must also be a subset of the parent's att
+            (UCAN capability attenuation). This prevents chain forgery
+            and capability escalation attacks.
         """
         try:
+            # Verify parent delegation and enforce capability attenuation
+            # before issuing a new token. This is critical: without this
+            # check, any caller could supply an arbitrary string as a
+            # parent and claim delegated authority they never received.
+            if parent_token is not None:
+                parent_result = self.verify_delegation(parent_token)
+                if not parent_result.get("valid"):
+                    return {
+                        "error": (
+                            "Invalid parent delegation: "
+                            f"{parent_result.get('reason', 'unknown reason')}"
+                        )
+                    }
+
+                # Explicitly reject expired parents even if the JWT
+                # library did not raise (belt and suspenders).
+                if parent_result.get("expired"):
+                    return {"error": "Invalid parent delegation: parent token has expired"}
+
+                # Capability attenuation: a child delegation may only
+                # grant a subset of the parent's capabilities. Issuing
+                # capabilities not held by the parent is a privilege
+                # escalation and must be rejected.
+                parent_caps = set(parent_result.get("capabilities") or [])
+                requested_caps = set(capabilities or [])
+                if not requested_caps.issubset(parent_caps):
+                    escalated = sorted(requested_caps - parent_caps)
+                    return {
+                        "error": (
+                            "Capability escalation denied: requested capabilities "
+                            f"{escalated} are not held by parent delegation"
+                        )
+                    }
+
             now = int(time.time())
             exp = now + (expiry_hours * 3600)
             jti = secrets.token_urlsafe(16)
@@ -99,11 +141,25 @@ class DelegationService:
                 )
             }
 
-    def verify_delegation(self, token: str) -> dict:
+    def verify_delegation(self, token: str, _seen: Optional[set] = None) -> dict:
         """Verify a UCAN delegation token.
 
-        Checks: signature validity, expiry, revocation, and structure.
+        Checks: signature validity, expiry, revocation, structure, and
+        recursively the validity of every parent token referenced in the
+        `prf` (proof) chain. If any ancestor is invalid (bad signature,
+        expired, revoked, or itself has a bad parent), the whole chain
+        is rejected.
+
+        Args:
+            token: The JWT delegation token to verify.
+            _seen: Internal set of jti values already seen during
+                recursion. Used to detect cycles and prevent infinite
+                recursion on malicious/looped proof chains.
         """
+        # Track jtis seen in this verification run to prevent cycles.
+        if _seen is None:
+            _seen = set()
+
         try:
             # Get server public key for verification
             public_key = did_key_to_public_key(self._server_did)
@@ -122,6 +178,48 @@ class DelegationService:
                 for d in data["delegations"]:
                     if d.get("jti") == jti and d.get("revoked"):
                         return {"valid": False, "reason": "Token has been revoked"}
+
+            # Detect cycles in the proof chain. A well-formed chain is
+            # acyclic, so seeing the same jti twice indicates tampering
+            # or a malicious loop. Bail out rather than recurse forever.
+            if jti and jti in _seen:
+                return {
+                    "valid": False,
+                    "reason": "Cycle detected in delegation proof chain",
+                }
+            if jti:
+                _seen.add(jti)
+
+            # Recursively verify every parent token in the prf chain.
+            # Without this, an attacker could forge a parent_token value
+            # at creation time (if validation is bypassed) or present
+            # this token to downstream consumers who rely on the chain
+            # for authority. Any invalid ancestor invalidates the whole
+            # chain.
+            proof_chain = claims.get("prf", []) or []
+            for parent_token in proof_chain:
+                if not isinstance(parent_token, str) or not parent_token:
+                    return {
+                        "valid": False,
+                        "reason": "Malformed parent token in proof chain",
+                    }
+                parent_result = self.verify_delegation(parent_token, _seen=_seen)
+                if not parent_result.get("valid"):
+                    return {
+                        "valid": False,
+                        "reason": (
+                            "Invalid parent in proof chain: "
+                            f"{parent_result.get('reason', 'unknown reason')}"
+                        ),
+                    }
+                # Also reject if a parent is expired. jwt.decode raises
+                # ExpiredSignatureError by default, but we guard against
+                # any future change that might relax that.
+                if parent_result.get("expired"):
+                    return {
+                        "valid": False,
+                        "reason": "Parent delegation in proof chain has expired",
+                    }
 
             return {
                 "valid": True,
