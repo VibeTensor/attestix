@@ -12,7 +12,7 @@ A single copy-paste script that demonstrates the full Attestix workflow:
   9. Create a delegation token (UCAN)
 
 Every parameter name in this script matches the actual service method
-signatures. Tested against Attestix v0.2.4.
+signatures. Tested against Attestix v0.3.0.
 
 Usage:
     python examples/quickstart.py
@@ -212,7 +212,7 @@ def main():
     print("=" * 60)
 
     credential = credential_svc.issue_credential(
-        subject_id=agent_id,
+        agent_id=agent_id,
         credential_type="AgentIdentityCredential",
         issuer_name="Acme Finance Ltd.",
         claims={
