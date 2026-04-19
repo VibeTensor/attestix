@@ -14,6 +14,16 @@ interface StepResultProps {
 export function StepResult({ result, onStartOver }: StepResultProps) {
   return (
     <div className="space-y-6">
+      {/* Top-of-page legal advisory (not a footer disclaimer) */}
+      <div className="rounded-lg border border-amber-500/40 bg-amber-500/10 p-4 text-sm text-amber-200">
+        <div className="font-semibold">Educational tool, not legal advice.</div>
+        <div className="mt-1 leading-relaxed">
+          The classification below is a first-pass heuristic. It does not
+          replace a qualified EU AI Act lawyer. Your actual obligations depend
+          on your full system design, deployment context, and intended use.
+        </div>
+      </div>
+
       {/* Risk Level Card */}
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}

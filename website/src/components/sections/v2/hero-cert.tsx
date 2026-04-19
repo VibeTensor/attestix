@@ -50,6 +50,10 @@ export function HeroCert() {
           <div className="v">{c.basis}</div>
         </div>
         <div className="atx-cert-row">
+          <div className="k">Sample</div>
+          <div className="v">illustrative \u00B7 not a real certificate</div>
+        </div>
+        <div className="atx-cert-row">
           <div className="k">Issued</div>
           <div className="v">{c.issued}</div>
         </div>

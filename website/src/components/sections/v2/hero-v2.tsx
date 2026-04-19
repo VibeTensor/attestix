@@ -10,8 +10,8 @@ export function HeroV2() {
       <div className="mb-10 inline-flex flex-wrap items-center gap-3 rounded-atx-sm border border-atx-line-soft bg-atx-bg-sunken px-3.5 py-2 font-mono-atx text-[11.5px] text-atx-ink-mid">
         <span className="inline-block h-1.5 w-1.5 rounded-full bg-atx-err" />
         <span>
-          Enforcement in <AtxCountdown /> &middot; Fines up to &euro;35M or 7%
-          global revenue
+          Main enforcement wave in <AtxCountdown /> (high-risk systems, Aug 2,
+          2026) &middot; Fines up to &euro;35M or 7% global revenue
         </span>
       </div>
       <div className="grid items-start gap-14 lg:grid-cols-[1.15fr_1fr]">

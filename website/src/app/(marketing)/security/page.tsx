@@ -8,9 +8,11 @@ export const metadata = constructMetadata({
     "Responsible disclosure, security fixes, and vulnerability handling for Attestix.",
 });
 
-// Disclosure dates reflect when the fix landed on main, not when the
-// report was received. All four shipped together in the v0.3.0 security
-// batch after coordinated internal review.
+// ATX-* are internal tracking IDs, not CVE IDs. Dates reflect when the
+// fix landed on main. All four shipped together in the v0.3.0 security
+// batch after coordinated internal review. Upstream dependency CVEs are
+// linked directly; project-scoped findings are tracked internally and
+// will be promoted to CVE IDs when disclosed externally.
 const DISCLOSURES = [
   {
     id: "ATX-2026-04",
@@ -19,14 +21,17 @@ const DISCLOSURES = [
     title: "Delegation chain auth bypass",
     fix: "Parent token verification + capability attenuation enforced in UCAN chain.",
     version: "0.3.0",
+    reference: null,
   },
   {
     id: "ATX-2026-03",
     date: "2026-04-15",
     severity: "HIGH",
-    title: "PyJWT CVE mitigation (CVE-2026-32597)",
+    title: "PyJWT upstream CVE mitigation",
     fix: "Pinned PyJWT >= 2.12.0 with dependency lock.",
     version: "0.3.0",
+    reference:
+      "https://github.com/jpadilla/pyjwt/security/advisories",
   },
   {
     id: "ATX-2026-02",
@@ -35,6 +40,7 @@ const DISCLOSURES = [
     title: "Server-side request forgery in agent-card fetch",
     fix: "URL allowlist, private-IP block, redirect limit.",
     version: "0.3.0",
+    reference: null,
   },
   {
     id: "ATX-2026-01",
@@ -43,6 +49,7 @@ const DISCLOSURES = [
     title: "API timing side-channel on credential verify",
     fix: "Constant-time signature comparison.",
     version: "0.3.0",
+    reference: null,
   },
 ];
 
@@ -108,6 +115,12 @@ export default function SecurityPage() {
       <h2 className="mt-16 font-mono-atx text-[11px] uppercase tracking-[0.14em] text-atx-ink-dim">
         Recent disclosures
       </h2>
+      <p className="mt-3 max-w-[720px] text-[13.5px] leading-[1.6] text-atx-ink-mid">
+        ATX-* are internal tracking IDs assigned during the coordinated fix
+        cycle, not CVE numbers. Upstream dependency fixes link to the
+        upstream advisory. Project-scoped findings are promoted to CVE
+        assignments when disclosed externally.
+      </p>
       <div className="mt-6 overflow-hidden rounded-atx-md border border-atx-line-soft">
         <table className="w-full border-collapse text-left text-[13px]">
           <thead className="bg-atx-bg-sunken">

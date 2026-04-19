@@ -572,10 +572,15 @@
   }
 }
 
-/* Fumadocs sidebar: mono uppercase eyebrows on section labels.
- * Fumadocs renders folder headings with data-folder="true". */
+/* Fumadocs sidebar: mono uppercase eyebrows on folder section labels.
+ * Fumadocs v15.8 renders folder headings either with data-folder="true"
+ * (older markup) or as collapsible buttons within [data-collapse]; cover
+ * both so the selector stays valid across minor upgrades. */
 #nd-sidebar [data-folder="true"] > button,
-#nd-sidebar [data-folder="true"] > span {
+#nd-sidebar [data-folder="true"] > span,
+#nd-sidebar [data-collapse] > button,
+#nd-sidebar button[data-sidebar-folder],
+#nd-sidebar [data-sidebar-folder] > span {
   font-family: var(--font-mono-atx);
   font-size: 10.5px;
   letter-spacing: 0.14em;

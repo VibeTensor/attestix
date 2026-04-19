@@ -25,10 +25,10 @@ const BENCHES: Bench[] = [
   },
   {
     label: "VC issuance end-to-end",
-    value: "3.2",
+    value: "17",
     unit: "ms median",
-    detail: "Canonicalise (JCS) + sign (Ed25519) + persist",
-    spark: [18, 17, 16, 17, 15, 16, 15, 15, 14, 15, 14, 14],
+    detail: "Canonicalise (JCS) + sign (Ed25519) + persist JSON store",
+    spark: [19, 18, 17, 18, 17, 17, 16, 17, 16, 17, 16, 17],
   },
   {
     label: "Audit chain verify",

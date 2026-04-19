@@ -229,7 +229,7 @@ profile = compliance_svc.create_compliance_profile(
     article: "Article 43 \u00B7 Third-party",
     desc: "High-risk systems are blocked from self-assessment. Record the notified body third-party assessment.",
     bullets: [
-      "Notified body: NB-0482 \u00B7 T\u00DCV S\u00FCd",
+      "Notified body (example): NB-XXXX \u00B7 Your certified auditor",
       "Assessment type: third_party",
       "Evidence attached",
     ],
@@ -237,7 +237,7 @@ profile = compliance_svc.create_compliance_profile(
 compliance_svc.record_conformity_assessment(
   <span class="k">agent_id</span>=<span class="s">"attestix:f9bdb7a94ccb40f1"</span>,
   <span class="k">assessment_type</span>=<span class="s">"third_party"</span>,
-  <span class="k">notified_body</span>={<span class="k">"id"</span>: <span class="s">"NB-0482"</span>, <span class="k">"name"</span>: <span class="s">"Notified Body"</span>},
+  <span class="k">notified_body</span>={<span class="k">"id"</span>: <span class="s">"NB-XXXX"</span>, <span class="k">"name"</span>: <span class="s">"Your certified auditor"</span>},
   <span class="k">evidence_urls</span>=[<span class="s">"ipfs://QmX4...fB2"</span>],
 )
 
@@ -297,16 +297,21 @@ vp = credential_svc.create_verifiable_presentation(
   },
 ];
 
+// Strip entries fall into two tiers: standards Attestix validates against
+// via the conformance benchmark suite (RFC 8032, W3C VC, W3C DID, UCAN v0.9,
+// MCP) and integration surfaces Attestix interoperates with (EAS, framework
+// SDKs). Aspirational items (IEEE 7000, ISO/IEC 42001, ERC-8004) were
+// removed pending actual implementation.
 export const ATX_STANDARDS: string[] = [
   "MCP Protocol / 47 tools",
   "W3C Verifiable Credentials 1.1",
   "W3C DID Core 1.0",
   "UCAN v0.9 delegation",
   "RFC 8032 / Ed25519",
+  "RFC 8785 / JSON canonicalization",
+  "RFC 6962 / Merkle trees",
   "EU AI Act Annex V",
-  "IEEE 7000 / algorithmic transparency",
-  "ISO/IEC 42001 AIMS",
-  "ERC-8004 / agent identity",
+  "GDPR Article 17 / erasure",
   "Ethereum Attestation Service",
   "LangChain / CrewAI / OpenAI Agents SDK",
 ];
@@ -333,7 +338,7 @@ export const ATX_CERT_SAMPLE: AtxCertSample = {
   issuerName: "VibeTensor",
   issuerDid: "did:web:vibetensor.com",
   riskTier: "HIGH \u00B7 EU AI Act Article 6(2)",
-  basis: "Article 43 third-party conformity \u00B7 NB-0482 Notified Body",
+  basis: "Article 43 third-party conformity \u00B7 NB-XXXX Your certified auditor",
   issued: "2026-04-18T14:02:41Z",
   validThru: "2027-04-18",
   proofValue:
