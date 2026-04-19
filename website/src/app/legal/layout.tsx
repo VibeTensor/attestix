@@ -1,5 +1,5 @@
 import { Header } from "@/components/sections/header";
-import { Footer } from "@/components/sections/footer";
+import { FooterV2 } from "@/components/sections/v2/footer-v2";
 
 export default function LegalLayout({
   children,
@@ -7,14 +7,17 @@ export default function LegalLayout({
   children: React.ReactNode;
 }) {
   return (
-    <>
+    <div className="min-h-screen bg-atx-bg text-atx-ink">
       <Header />
-      <div className="container max-w-[var(--container-max-width)] mx-auto px-6 py-12">
+      <main
+        id="main-content"
+        className="mx-auto max-w-[1080px] px-7 py-16"
+      >
         <article className="prose prose-sm dark:prose-invert max-w-none">
           {children}
         </article>
-      </div>
-      <Footer />
-    </>
+      </main>
+      <FooterV2 />
+    </div>
   );
 }

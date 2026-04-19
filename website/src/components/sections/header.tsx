@@ -2,69 +2,84 @@
 
 import { Icons } from "@/components/icons";
 import { MobileDrawer } from "@/components/mobile-drawer";
-import { buttonVariants } from "@/components/ui/button";
 import { siteConfig } from "@/lib/config";
-import { cn } from "@/lib/utils";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 const navLinks = [
-  { label: "Architecture", href: "#architecture" },
-  { label: "Tech Stack", href: "#tech-stack" },
-  { label: "Docs", href: "/docs", external: false },
-  { label: "Demos", href: "/demo", external: false },
-  { label: "Research", href: "/docs/project/research", external: false },
+  { label: "Overview", href: "/", anchor: true },
+  { label: "Modules", href: "/#modules", anchor: true },
+  { label: "Workflow", href: "/#workflow", anchor: true },
+  { label: "Docs", href: "/docs" },
+  { label: "Blog", href: "/blog" },
 ];
 
 export function Header() {
+  const pathname = usePathname();
   return (
-    <header className="sticky top-0 h-[var(--header-height)] z-50 p-0 bg-background/60 backdrop-blur">
-      <div className="flex justify-between items-center container mx-auto p-2">
+    <header className="sticky top-0 z-50 border-b border-atx-line-soft bg-atx-bg/80 backdrop-blur-md">
+      <div className="mx-auto flex h-[60px] max-w-[1320px] items-center gap-7 px-7">
         <Link
           href="/"
           aria-label="Attestix home"
-          className="relative mr-6 flex items-center space-x-2"
+          className="flex items-center gap-2"
         >
-          <Icons.logo className="w-auto h-7" />
-          <span className="font-semibold text-lg">{siteConfig.name}</span>
+          <span className="text-[22px] text-atx-accent">
+            <Icons.logo className="h-6 w-auto" />
+          </span>
+          <span className="font-serif text-[20px] leading-none text-atx-ink">
+            Attestix
+            <sub className="ml-0.5 font-mono-atx text-[10px] text-atx-ink-dim">
+              v{siteConfig.version}
+            </sub>
+          </span>
         </Link>
-        <nav className="hidden lg:flex items-center gap-8">
-          {navLinks.map((link) => (
-            <Link
-              key={link.label}
-              href={link.href}
-              target={link.external ? "_blank" : undefined}
-              rel={link.external ? "noopener noreferrer" : undefined}
-              className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors relative after:absolute after:-bottom-1 after:left-0 after:h-[2px] after:w-0 after:bg-primary after:transition-all hover:after:w-full"
-            >
-              {link.label}
-            </Link>
-          ))}
+
+        <nav className="hidden items-center gap-6 lg:flex">
+          {navLinks.map((link) => {
+            const active =
+              link.href === pathname ||
+              (link.href !== "/" && pathname.startsWith(link.href.split("#")[0]) && !link.anchor);
+            return (
+              <Link
+                key={link.label}
+                href={link.href}
+                className={`font-mono-atx text-[11px] uppercase tracking-[0.14em] transition-colors hover:text-atx-accent ${
+                  active ? "text-atx-ink" : "text-atx-ink-dim"
+                }`}
+              >
+                {link.label}
+              </Link>
+            );
+          })}
+        </nav>
+
+        <div className="ml-auto hidden items-center gap-4 lg:flex">
+          <div className="flex items-center gap-2 font-mono-atx text-[10.5px] uppercase tracking-[0.12em] text-atx-ink-dim">
+            <span className="inline-block h-1.5 w-1.5 rounded-full bg-atx-ok" />
+            <span>main</span>
+          </div>
           <Link
-            href="https://github.com/VibeTensor/attestix"
+            href={siteConfig.links.github}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-1.5 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+            aria-label="Attestix on GitHub"
+            className="text-atx-ink-dim transition-colors hover:text-atx-ink"
           >
             <Icons.github className="h-4 w-4" />
-            GitHub
           </Link>
-        </nav>
-        <div className="hidden lg:block">
           <Link
             href="/docs/getting-started"
-            className={cn(
-              buttonVariants({ variant: "default" }),
-              "h-8 text-primary-foreground rounded-lg group tracking-tight font-medium"
-            )}
+            className="inline-flex h-8 items-center gap-2 rounded-atx-sm border border-atx-line bg-atx-bg-sunken px-3 font-mono-atx text-[11.5px] text-atx-ink transition-colors hover:border-atx-accent hover:text-atx-accent"
           >
-            {siteConfig.cta}
+            <span className="text-atx-accent">$</span> pip install
           </Link>
         </div>
-        <div className="mt-2 cursor-pointer block lg:hidden">
+
+        <div className="ml-auto cursor-pointer lg:hidden">
           <MobileDrawer />
         </div>
       </div>
-      <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-border to-transparent" />
     </header>
   );
 }

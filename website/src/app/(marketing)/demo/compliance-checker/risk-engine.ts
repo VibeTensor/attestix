@@ -21,7 +21,7 @@ const RISK_METADATA: Record<RiskLevel, Omit<RiskAssessment, "articles" | "obliga
     description:
       "Your AI system falls into a category that is prohibited under the EU AI Act. These systems pose a clear threat to safety, livelihoods, or fundamental rights.",
     timeline:
-      "Prohibited systems must cease operation by February 2, 2025. If your system is still active, you are already past the deadline and face immediate enforcement action.",
+      "Prohibited AI practices have been banned since February 2, 2025. Any system still operating in this category is subject to immediate enforcement action under Article 5 of the EU AI Act.",
     fineRange: "Up to 35 million EUR or 7% of global annual turnover, whichever is higher",
     color: "text-red-400",
     bgColor: "bg-red-500/10",

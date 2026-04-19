@@ -1,7 +1,7 @@
 import { siteConfig } from "@/lib/config";
 import { constructMetadata } from "@/lib/utils";
 import { Header } from "@/components/sections/header";
-import { Footer } from "@/components/sections/footer";
+import { FooterV2 } from "@/components/sections/v2/footer-v2";
 import Link from "next/link";
 
 export const metadata = constructMetadata({
@@ -248,7 +248,7 @@ Your content here (paste the markdown from the MDX file)`}</code>
           </div>
         </article>
       </main>
-      <Footer />
+      <FooterV2 />
     </>
   );
 }

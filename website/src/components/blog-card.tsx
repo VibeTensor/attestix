@@ -13,29 +13,37 @@ export default function BlogCard({
   return (
     <Link
       href={`/blog/${data.slug}`}
-      className="bg-background transition-colors hover:bg-secondary/20 p-4 last:border-b-0 lg:border-r last:lg:border-r-0 border-b lg:border-b-0"
+      className="group flex flex-col overflow-hidden rounded-atx-md border border-atx-line-soft bg-atx-panel transition-colors hover:border-atx-accent/60 hover:bg-atx-panel-hi"
     >
-      {data.image && (
-        <Image
-          className="object-cover border"
-          src={data.image}
-          width={1200}
-          height={630}
-          alt={data.title}
-          priority={priority}
-        />
-      )}
-      {!data.image && <div className="bg-muted h-[180px] mb-4 rounded" />}
-      <p className="my-2">
+      <div className="relative aspect-[16/9] w-full overflow-hidden border-b border-atx-line-soft bg-atx-bg-sunken">
+        {data.image ? (
+          <Image
+            src={data.image}
+            width={1200}
+            height={630}
+            alt={data.title}
+            priority={priority}
+            className="h-full w-full object-cover"
+          />
+        ) : null}
+      </div>
+      <div className="flex flex-1 flex-col gap-2 p-5">
         <time
           dateTime={data.publishedAt}
-          className="text-xs text-muted-foreground"
+          className="font-mono-atx text-[10.5px] uppercase tracking-[0.14em] text-atx-ink-faint"
         >
           {formatDate(data.publishedAt)}
         </time>
-      </p>
-      <h3 className="text-xl font-medium mb-2">{data.title}</h3>
-      <p className="text-muted-foreground">{data.summary}</p>
+        <h3 className="font-serif text-[22px] leading-[1.25] text-atx-ink">
+          {data.title}
+        </h3>
+        <p className="text-[13.5px] leading-[1.55] text-atx-ink-mid">
+          {data.summary}
+        </p>
+        <div className="mt-auto pt-4 font-mono-atx text-[11px] uppercase tracking-[0.14em] text-atx-accent">
+          read article <span className="inline-block transition-transform group-hover:translate-x-0.5">&rarr;</span>
+        </div>
+      </div>
     </Link>
   );
 }

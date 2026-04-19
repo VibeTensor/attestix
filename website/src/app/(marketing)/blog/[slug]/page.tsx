@@ -1,5 +1,5 @@
 import Author from "@/components/blog-author";
-import { CTA } from "@/components/sections/cta";
+import { CtaV2 } from "@/components/sections/v2/cta-v2";
 import { getBlogPosts, getPost } from "@/lib/blog";
 import { siteConfig } from "@/lib/config";
 import { formatDate } from "@/lib/utils";
@@ -129,7 +129,7 @@ export default async function Page(props: {
           dangerouslySetInnerHTML={{ __html: post.source }}
         ></article>
       </div>
-      <CTA />
+      <CtaV2 />
     </section>
   );
 }
