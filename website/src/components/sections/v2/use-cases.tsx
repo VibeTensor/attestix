@@ -65,7 +65,7 @@ const USE_CASES: UseCase[] = [
     agentName: "supply-chain-optimizer",
     industry: "Logistics",
     tier: "limited",
-    article: "Article 52",
+    article: "Article 50",
     summary:
       "Optimises supplier routing and inventory levels across warehouses. Limited-risk under the EU AI Act. Transparency obligations apply.",
     outcome:

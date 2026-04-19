@@ -8,9 +8,6 @@ export const metadata: Metadata = {
   alternates: {
     canonical: "/console",
   },
-  other: {
-    "http-equiv:refresh": "0;url=/console",
-  },
 };
 
 export default function DemoRedirectPage() {

@@ -14,15 +14,23 @@ export function AtxSubstackSubscribe() {
 
   const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    const trimmed = email.trim();
+    if (!trimmed || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)) {
       setStatus("err");
       setMessage("Please enter a valid email.");
       return;
     }
     setStatus("submitting");
-    const target = `${DEFAULT_PUBLICATION}/subscribe?email=${encodeURIComponent(email)}`;
+    const target = `${DEFAULT_PUBLICATION}/subscribe?email=${encodeURIComponent(trimmed)}`;
     try {
-      window.open(target, "_blank", "noopener,noreferrer");
+      const handle = window.open(target, "_blank", "noopener,noreferrer");
+      if (!handle) {
+        setStatus("err");
+        setMessage(
+          "Popup blocked. Please allow popups or open the Substack link directly."
+        );
+        return;
+      }
       setStatus("ok");
       setMessage("Opened Substack in a new tab to confirm your email.");
     } catch {

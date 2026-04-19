@@ -53,7 +53,11 @@ const COLUMNS: FooterColumn[] = [
   {
     heading: "Legal",
     links: [
-      { label: "Apache 2.0", href: "https://github.com/VibeTensor/attestix/blob/main/LICENSE", external: true },
+      {
+        label: "Apache 2.0",
+        href: `${siteConfig.links.github}/blob/main/LICENSE`,
+        external: true,
+      },
       { label: "Privacy", href: "/legal/privacy" },
       { label: "Terms", href: "/legal/terms" },
       { label: "Cookies", href: "/legal/cookies" },
@@ -100,6 +104,9 @@ export function FooterV2() {
                       className="text-[13px] text-atx-ink-mid transition-colors hover:text-atx-accent"
                     >
                       {l.label}
+                      {l.external ? (
+                        <span className="sr-only"> (opens in new tab)</span>
+                      ) : null}
                     </Link>
                   </li>
                 ))}
@@ -112,10 +119,7 @@ export function FooterV2() {
           <span>
             &copy; 2026 VibeTensor Private Limited / Attestix v{siteConfig.version}
           </span>
-          <span className="flex items-center gap-2">
-            <span className="inline-block h-1.5 w-1.5 rounded-full bg-atx-ok" />
-            all systems nominal
-          </span>
+          <span>apache 2.0 / open source</span>
         </div>
       </div>
     </footer>

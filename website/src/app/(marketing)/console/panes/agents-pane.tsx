@@ -165,7 +165,16 @@ export function AgentsPane({ onSelect, openCreate }: Props) {
                 <tr
                   key={a.id}
                   onClick={() => onSelect(a.id)}
-                  className="cursor-pointer transition-colors hover:bg-atx-panel-hi"
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      onSelect(a.id);
+                    }
+                  }}
+                  tabIndex={0}
+                  role="button"
+                  aria-label={`Open ${a.name}`}
+                  className="cursor-pointer transition-colors hover:bg-atx-panel-hi focus:bg-atx-panel-hi focus:outline-none focus-visible:ring-2 focus-visible:ring-atx-accent"
                 >
                   <td className="border-b border-atx-line-soft px-4 py-3">
                     <div className="text-atx-ink">{a.name}</div>
@@ -243,6 +252,11 @@ export function AgentsPane({ onSelect, openCreate }: Props) {
         </div>
       ) : (
         <div className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+          {filtered.length === 0 && (
+            <div className="col-span-full rounded-atx-md border border-atx-line-soft bg-atx-panel px-4 py-10 text-center font-mono-atx text-[12px] text-atx-ink-dim">
+              no agents match your filter
+            </div>
+          )}
           {filtered.map((a) => (
             <button
               key={a.id}

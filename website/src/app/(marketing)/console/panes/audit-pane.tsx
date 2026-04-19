@@ -93,7 +93,7 @@ export function AuditList({ items }: { items: ConsoleAudit[] }) {
                 <Row k="prev_hash" v={a.prev} dim />
                 <Row
                   k="verify"
-                  v="SHA-256(prev + actor + action + target + ts) = hash \u2713"
+                  v="SHA-256(prev_hash + canonical_json(entry)) = hash \u2713"
                   ok
                 />
               </div>
@@ -125,7 +125,7 @@ function Row({
   return (
     <div className="grid grid-cols-[90px_1fr] gap-3">
       <span className="text-atx-ink-faint">{k}</span>
-      <span className={`break-all ${tone}`}>{v.replace(/\\u2713/g, "\u2713")}</span>
+      <span className={`break-all ${tone}`}>{v}</span>
     </div>
   );
 }

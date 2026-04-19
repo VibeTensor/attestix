@@ -59,19 +59,25 @@ export function AgentDetail({ agent, audit, onBack }: Props) {
         <div className="flex gap-2">
           <button
             type="button"
-            className="inline-flex h-8 items-center gap-1.5 rounded-atx-sm border border-atx-line px-3 font-mono-atx text-[11px] text-atx-ink hover:border-atx-ink-dim"
+            disabled
+            title="Demo preview. Runs in the installed package."
+            className="inline-flex h-8 cursor-not-allowed items-center gap-1.5 rounded-atx-sm border border-atx-line px-3 font-mono-atx text-[11px] text-atx-ink-dim opacity-60"
           >
             <AtxIcon name="cred" /> issue VC
           </button>
           <button
             type="button"
-            className="inline-flex h-8 items-center gap-1.5 rounded-atx-sm border border-atx-line px-3 font-mono-atx text-[11px] text-atx-ink hover:border-atx-ink-dim"
+            disabled
+            title="Demo preview. Runs in the installed package."
+            className="inline-flex h-8 cursor-not-allowed items-center gap-1.5 rounded-atx-sm border border-atx-line px-3 font-mono-atx text-[11px] text-atx-ink-dim opacity-60"
           >
             <AtxIcon name="chain" /> anchor
           </button>
           <button
             type="button"
-            className="inline-flex h-8 items-center rounded-atx-sm border border-atx-err/40 bg-atx-err/[0.08] px-3 font-mono-atx text-[11px] text-atx-err hover:bg-atx-err/[0.15]"
+            disabled
+            title="Demo preview. Runs in the installed package."
+            className="inline-flex h-8 cursor-not-allowed items-center rounded-atx-sm border border-atx-err/40 bg-atx-err/[0.04] px-3 font-mono-atx text-[11px] text-atx-err opacity-60"
           >
             revoke
           </button>
@@ -115,9 +121,17 @@ export function AgentDetail({ agent, audit, onBack }: Props) {
         {tab === "compliance" && <ComplianceProfile agent={agent} />}
         {tab === "credentials" && (
           <div className="space-y-4">
-            {CONSOLE_CREDENTIALS.map((c) => (
-              <CredentialCard key={c.id} c={c} />
-            ))}
+            {CONSOLE_CREDENTIALS.filter((c) => c.subject === agent.id).map(
+              (c) => (
+                <CredentialCard key={c.id} c={c} />
+              )
+            )}
+            {CONSOLE_CREDENTIALS.filter((c) => c.subject === agent.id)
+              .length === 0 && (
+              <div className="rounded-atx-md border border-atx-line-soft bg-atx-panel px-5 py-8 text-center font-mono-atx text-[12px] text-atx-ink-dim">
+                No credentials issued for this agent yet.
+              </div>
+            )}
           </div>
         )}
         {tab === "audit" && (

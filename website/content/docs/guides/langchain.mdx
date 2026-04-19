@@ -57,6 +57,9 @@ Set `issue_vc_on_success=True` (default) and Attestix issues a `ChainExecutionCr
 Verify it offline with any W3C VC verifier, or via:
 
 ```python
+from attestix.services.credential_service import CredentialService
+
+credential_svc = CredentialService()
 credential_svc.verify_credential(credential_id)
 ```
 
@@ -75,7 +78,7 @@ callback = AttestixCallback(
 ## Verify offline
 
 ```python
-from services.credential_service import CredentialService
+from attestix.services.credential_service import CredentialService
 
 credential_svc = CredentialService()
 ok = credential_svc.verify_credential(credential_id)

@@ -104,10 +104,14 @@ export function AtxCommandPalette() {
 
   return (
     <div
+      role="presentation"
       className="fixed inset-0 z-[110] flex items-start justify-center bg-black/60 backdrop-blur-sm"
       onClick={() => setOpen(false)}
     >
       <div
+        role="dialog"
+        aria-modal="true"
+        aria-label="Jump to"
         className="mt-24 w-full max-w-[640px] overflow-hidden rounded-atx-md border border-atx-line bg-atx-panel shadow-[var(--atx-shadow-md)]"
         onClick={(e) => e.stopPropagation()}
       >

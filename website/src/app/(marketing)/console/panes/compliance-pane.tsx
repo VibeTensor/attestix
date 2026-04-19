@@ -42,11 +42,13 @@ export function CompliancePane({ onSelect }: Props) {
             key={a.id}
             type="button"
             onClick={() => onSelect(a.id)}
-            className="grid w-full grid-cols-[1fr_140px_140px_100px] items-center gap-4 border-b border-atx-line-soft bg-atx-panel px-4 py-3 text-left transition-colors last:border-b-0 hover:bg-atx-panel-hi"
+            className="flex w-full flex-col gap-2 border-b border-atx-line-soft bg-atx-panel px-4 py-3 text-left transition-colors last:border-b-0 hover:bg-atx-panel-hi md:grid md:grid-cols-[1fr_140px_140px_100px] md:items-center md:gap-4"
           >
-            <div>
-              <div className="text-[13.5px] text-atx-ink">{a.name}</div>
-              <div className="mt-0.5 font-mono-atx text-[10.5px] text-atx-ink-faint">
+            <div className="min-w-0">
+              <div className="truncate text-[13.5px] text-atx-ink">
+                {a.name}
+              </div>
+              <div className="mt-0.5 truncate font-mono-atx text-[10.5px] text-atx-ink-faint">
                 {a.id}
               </div>
             </div>
@@ -56,7 +58,7 @@ export function CompliancePane({ onSelect }: Props) {
             <div className="font-mono-atx text-[11px] uppercase tracking-[0.12em] text-atx-ink-dim">
               {STATUS_LABEL[a.status]}
             </div>
-            <div className="text-right font-mono-atx text-[11px] text-atx-accent">
+            <div className="font-mono-atx text-[11px] text-atx-accent md:text-right">
               inspect &rarr;
             </div>
           </button>

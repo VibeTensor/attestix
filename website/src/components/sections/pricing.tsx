@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { AtxEyebrow } from "@/components/atx/atx-eyebrow";
 import { siteConfig } from "@/lib/config";
 
@@ -49,7 +50,7 @@ function PricingTier({ tier }: { tier: Tier }) {
         ))}
       </ul>
 
-      <a
+      <Link
         href={href}
         className={`mt-8 inline-flex h-10 items-center justify-center rounded-atx-md px-5 text-[13px] font-medium transition-colors ${
           isEnterprise
@@ -58,7 +59,7 @@ function PricingTier({ tier }: { tier: Tier }) {
         }`}
       >
         {tier.cta}
-      </a>
+      </Link>
     </div>
   );
 }

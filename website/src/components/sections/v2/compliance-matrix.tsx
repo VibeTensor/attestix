@@ -143,7 +143,10 @@ const FILTERS: { slug: Audience; label: string }[] = [
 export function ComplianceMatrixSection() {
   const [filter, setFilter] = useState<Audience>("all");
   const rows = ROWS.filter(
-    (r) => filter === "all" || r.audience.includes(filter)
+    (r) =>
+      filter === "all" ||
+      r.audience.includes(filter) ||
+      r.audience.includes("all")
   );
 
   return (

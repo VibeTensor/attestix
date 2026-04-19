@@ -48,7 +48,7 @@ with MCPServerAdapter(server_params) as attestix_tools:
 Before the crew runs, issue a single compliance profile that every agent references:
 
 ```python
-from services.compliance_service import ComplianceService
+from attestix.services.compliance_service import ComplianceService
 
 profile = ComplianceService().create_compliance_profile(
     agent_id="attestix:crew-q4-report",
@@ -90,7 +90,7 @@ with MCPServerAdapter(server_params) as attestix_tools:
 Each task emits a VC on success. Bundle them for a regulator with a Verifiable Presentation:
 
 ```python
-from services.credential_service import CredentialService
+from attestix.services.credential_service import CredentialService
 
 vp = CredentialService().create_verifiable_presentation(
     holder_id="attestix:crew-q4-report",

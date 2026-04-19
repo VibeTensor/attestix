@@ -87,14 +87,15 @@ export function BenchmarksSection() {
             </h2>
           </div>
           <p className="text-[15px] leading-[1.65] text-atx-ink-mid">
-            Every compliance primitive is measured. Attestix stays under a
-            millisecond for sign-verify, under 5 ms end-to-end for credential
-            issuance, and can verify a 10k-entry audit chain in under 50 ms.
-            Run the suite yourself with{" "}
+            Illustrative performance targets derived from the conformance
+            benchmark suite. Attestix stays under a millisecond for
+            sign-verify, under 5 ms end-to-end for credential issuance, and
+            verifies a 10k-entry audit chain in under 50 ms on commodity
+            hardware. Run{" "}
             <code className="rounded-atx-xs border border-atx-line-soft bg-atx-bg-sunken px-1.5 py-0.5 font-mono-atx text-[12px] text-atx-accent">
               pytest tests/benchmarks/
-            </code>
-            .
+            </code>{" "}
+            to reproduce on your own machine.
           </p>
         </div>
 

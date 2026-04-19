@@ -21,7 +21,9 @@ export function CredentialsPane() {
         </div>
         <button
           type="button"
-          className="inline-flex h-8 items-center gap-1.5 rounded-atx-sm bg-atx-accent px-3 font-mono-atx text-[11.5px] font-medium text-[oklch(0.14_0.01_180)] hover:bg-atx-accent-deep"
+          disabled
+          title="Demo preview. Runs in the installed package."
+          className="inline-flex h-8 cursor-not-allowed items-center gap-1.5 rounded-atx-sm border border-atx-accent/40 bg-atx-accent-soft px-3 font-mono-atx text-[11.5px] font-medium text-atx-accent opacity-60"
         >
           <AtxIcon name="plus" /> issue credential
         </button>
@@ -84,16 +86,13 @@ export function CredentialCard({ c }: { c: ConsoleCredential }) {
         <span>
           status <span className="text-atx-ok">{c.status}</span>
         </span>
-        <span className="flex gap-4">
-          <a href="#" className="text-atx-accent hover:underline">
-            verify signature
-          </a>
-          <a href="#" className="hover:text-atx-ink">
-            present
-          </a>
-          <a href="#" className="hover:text-atx-ink">
-            download JSON
-          </a>
+        <span
+          className="flex gap-4 text-atx-ink-faint"
+          aria-label="Demo actions, available in the installed package"
+        >
+          <span>verify signature</span>
+          <span>present</span>
+          <span>download JSON</span>
         </span>
       </div>
     </div>

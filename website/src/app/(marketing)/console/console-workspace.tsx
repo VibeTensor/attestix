@@ -155,7 +155,9 @@ export function ConsoleWorkspace() {
             <button
               key={t.name}
               type="button"
-              className="flex w-full items-center gap-2 rounded-atx-sm px-2 py-2 text-left font-mono-atx text-[12px] text-atx-ink-dim hover:bg-atx-panel-hi hover:text-atx-ink"
+              disabled
+              title="Demo preview. Available in the installed package."
+              className="flex w-full cursor-not-allowed items-center gap-2 rounded-atx-sm px-2 py-2 text-left font-mono-atx text-[12px] text-atx-ink-faint opacity-60"
             >
               <span className="text-[14px]">
                 <AtxIcon name={t.icon} />

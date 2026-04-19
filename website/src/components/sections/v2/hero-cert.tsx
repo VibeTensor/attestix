@@ -43,13 +43,11 @@ export function HeroCert() {
 
         <div className="atx-cert-row">
           <div className="k">Risk tier</div>
-          <div className="v">HIGH &middot; EU AI Act Article 6(2)</div>
+          <div className="v">{c.riskTier}</div>
         </div>
         <div className="atx-cert-row">
           <div className="k">Basis</div>
-          <div className="v">
-            Article 43 third-party conformity &middot; NB-0482 Notified Body
-          </div>
+          <div className="v">{c.basis}</div>
         </div>
         <div className="atx-cert-row">
           <div className="k">Issued</div>
@@ -63,7 +61,8 @@ export function HeroCert() {
         <div className="atx-cert-sig">
           proof.type = Ed25519Signature2020
           <br />
-          proofValue = {c.proofValue}&hellip;xqLbFgH2NvQrWsEd
+          proofValue = {c.proofValue.slice(0, 32)}&hellip;
+          {c.proofValue.slice(-16)}
         </div>
 
         <div className="atx-cert-foot">

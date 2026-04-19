@@ -31,15 +31,17 @@ You will need:
 
 ```bash
 export BASE_RPC_URL=https://sepolia.base.org
-export BASE_WALLET_KEY=your_private_key_hex_no_0x_prefix
+export EVM_PRIVATE_KEY=0xyour_private_key_hex_here
 ```
 
 Or via `.env`:
 
 ```
 BASE_RPC_URL=https://sepolia.base.org
-BASE_WALLET_KEY=0x0000000000000000000000000000000000000000000000000000000000000000
+EVM_PRIVATE_KEY=0x0000000000000000000000000000000000000000000000000000000000000000
 ```
+
+`EVM_PRIVATE_KEY` is the full hex private key with the `0x` prefix. **Treat it as a secret. Never commit it. Never share it.** Use a dedicated test wallet for testnet work; do not reuse mainnet keys.
 
 ## Step 2 / Fund the wallet
 
@@ -48,7 +50,7 @@ Use any Base Sepolia faucet. Recommended:
 - Coinbase Developer Platform faucet for Base Sepolia: https://portal.cdp.coinbase.com/products/faucet
 - Alchemy Base Sepolia faucet: https://www.alchemy.com/faucets/base-sepolia
 
-Send around 0.001 ETH to the address derived from `BASE_WALLET_KEY`.
+Send around 0.001 ETH to the address derived from `EVM_PRIVATE_KEY`.
 
 Check balance via the Attestix CLI:
 

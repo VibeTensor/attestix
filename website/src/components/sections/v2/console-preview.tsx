@@ -78,6 +78,14 @@ function PreviewCard() {
                   <td className="py-2 text-atx-accent">{a.r}</td>
                   <td className="py-2">
                     <span
+                      aria-label={
+                        a.s === "compl"
+                          ? "compliant"
+                          : a.s === "gap"
+                            ? "gaps"
+                            : "revoked"
+                      }
+                      role="img"
                       className={`inline-block h-1.5 w-1.5 rounded-full ${
                         a.s === "compl"
                           ? "bg-atx-ok"

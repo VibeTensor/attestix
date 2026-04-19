@@ -84,6 +84,25 @@ export function AnchorsChain({ agent }: { agent: ConsoleAgent }) {
     { k: "Status", v: "CONFIRMED / 14 blocks", ok: true },
   ];
 
+  const isAnchored = Boolean(agent.anchorTxn);
+
+  if (!isAnchored) {
+    return (
+      <div className="rounded-atx-md border border-atx-line-soft bg-atx-panel px-5 py-8 text-center">
+        <div className="font-mono-atx text-[10.5px] uppercase tracking-[0.14em] text-atx-ink-dim">
+          Not anchored
+        </div>
+        <p className="mt-2 text-[13px] leading-[1.55] text-atx-ink-mid">
+          This agent has no on-chain evidence yet. Call{" "}
+          <code className="rounded-atx-xs border border-atx-line-soft bg-atx-bg-sunken px-1.5 py-0.5 font-mono-atx text-[11.5px] text-atx-accent">
+            anchor_identity
+          </code>{" "}
+          to submit it to Base L2 testnet.
+        </p>
+      </div>
+    );
+  }
+
   return (
     <div>
       <div className="flex flex-wrap items-stretch gap-0">

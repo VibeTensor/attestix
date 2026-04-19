@@ -58,7 +58,6 @@ export function ConsoleBanner() {
         <button
           type="button"
           onClick={dismiss}
-          aria-label="Dismiss banner"
           className="inline-flex h-8 items-center rounded-atx-sm bg-atx-accent px-3 font-mono-atx text-[11.5px] font-medium text-[oklch(0.14_0.01_180)] hover:bg-atx-accent-deep"
         >
           Got it
