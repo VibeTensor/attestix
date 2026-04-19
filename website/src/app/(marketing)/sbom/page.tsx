@@ -5,7 +5,7 @@ import Link from "next/link";
 export const metadata = constructMetadata({
   title: "SBOM",
   description:
-    "Attestix software bill of materials. Mirror of pyproject.toml plus the authoritative CycloneDX SBOM published with every GitHub release.",
+    "Attestix software bill of materials. Mirror of pyproject.toml at the v0.3.0 release. See GitHub for the machine-readable CycloneDX artefact when published.",
 });
 
 interface Dep {
@@ -241,17 +241,18 @@ export default function SbomPage() {
         >
           pyproject.toml
         </Link>{" "}
-        at the v0.3.0 release. For the authoritative machine-readable SBOM
-        (CycloneDX), see the{" "}
+        at the v0.3.0 release. Generated CycloneDX artefacts are available
+        alongside published GitHub releases when attached; for the most
+        current pinned set, read{" "}
         <Link
-          href="https://github.com/VibeTensor/attestix/releases"
+          href="https://github.com/VibeTensor/attestix/blob/main/pyproject.toml"
           target="_blank"
           rel="noopener noreferrer"
           className="text-atx-accent hover:underline"
         >
-          GitHub release artefacts
-        </Link>
-        .
+          pyproject.toml
+        </Link>{" "}
+        on main.
       </p>
 
       <DepTable title="Runtime dependencies" deps={RUNTIME} />

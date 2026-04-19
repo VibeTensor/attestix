@@ -4,6 +4,23 @@ import { useEffect, useRef, useState } from "react";
 
 let mermaidInitialized = false;
 
+// Palette mirrors the v2 atx token set so Mermaid diagrams read as part of
+// the Attestix design, not a foreign indigo overlay. Colours are resolved
+// at module load from CSS custom properties when available; otherwise the
+// literals below are the same oklch values expressed as hex fallbacks.
+const PALETTE = {
+	bg: "#1e2426",            // --atx-bg-sunken
+	panel: "#2a3236",         // --atx-panel
+	panelHi: "#33393d",       // --atx-panel-hi
+	line: "#454c50",          // --atx-line
+	lineSoft: "#373d41",      // --atx-line-soft
+	ink: "#f0ebde",           // --atx-ink
+	inkMid: "#c4b9a5",        // --atx-ink-mid
+	inkDim: "#8b8170",        // --atx-ink-dim
+	accent: "#c49455",        // --atx-accent (gold)
+	accentDeep: "#a67a41",    // --atx-accent-deep
+};
+
 export function Mermaid({ chart }: { chart: string }) {
 	const ref = useRef<HTMLDivElement>(null);
 	const [svg, setSvg] = useState<string>("");
@@ -17,56 +34,50 @@ export function Mermaid({ chart }: { chart: string }) {
 			if (!mermaidInitialized) {
 				mermaid.initialize({
 					startOnLoad: false,
-					theme: "dark",
+					theme: "base",
 					themeVariables: {
-						/* Global text and background */
-						background: "#1e1b4b",
-						mainBkg: "#312e81",
-						textColor: "#e2e8f0",
+						background: PALETTE.bg,
+						mainBkg: PALETTE.panel,
+						textColor: PALETTE.ink,
 						fontSize: "14px",
 
-						/* Primary palette */
-						primaryColor: "#4f46e5",
-						primaryTextColor: "#fff",
-						primaryBorderColor: "#6366f1",
-						lineColor: "#94a3b8",
-						secondaryColor: "#1e1b4b",
-						secondaryTextColor: "#e2e8f0",
-						tertiaryColor: "#1e293b",
-						tertiaryTextColor: "#e2e8f0",
+						primaryColor: PALETTE.accent,
+						primaryTextColor: PALETTE.bg,
+						primaryBorderColor: PALETTE.accentDeep,
+						lineColor: PALETTE.inkDim,
+						secondaryColor: PALETTE.panelHi,
+						secondaryTextColor: PALETTE.ink,
+						tertiaryColor: PALETTE.panel,
+						tertiaryTextColor: PALETTE.ink,
 
-						/* Notes */
-						noteBkgColor: "#1e293b",
-						noteTextColor: "#e2e8f0",
-						noteBorderColor: "#475569",
+						noteBkgColor: PALETTE.panelHi,
+						noteTextColor: PALETTE.ink,
+						noteBorderColor: PALETTE.line,
 
-						/* Sequence diagram actors and signals */
-						actorBkg: "#4f46e5",
-						actorTextColor: "#fff",
-						actorBorder: "#818cf8",
-						actorLineColor: "#94a3b8",
-						signalColor: "#e2e8f0",
-						signalTextColor: "#e2e8f0",
+						actorBkg: PALETTE.panel,
+						actorTextColor: PALETTE.ink,
+						actorBorder: PALETTE.accent,
+						actorLineColor: PALETTE.inkDim,
+						signalColor: PALETTE.inkMid,
+						signalTextColor: PALETTE.ink,
 
-						/* Labels and loops */
-						labelBoxBkgColor: "#1e293b",
-						labelBoxBorderColor: "#475569",
-						labelTextColor: "#e2e8f0",
-						loopTextColor: "#e2e8f0",
+						labelBoxBkgColor: PALETTE.panelHi,
+						labelBoxBorderColor: PALETTE.line,
+						labelTextColor: PALETTE.ink,
+						loopTextColor: PALETTE.ink,
 
-						/* Activation bars */
-						activationBorderColor: "#6366f1",
-						activationBkgColor: "#312e81",
-						sequenceNumberColor: "#fff",
+						activationBorderColor: PALETTE.accent,
+						activationBkgColor: PALETTE.panel,
+						sequenceNumberColor: PALETTE.bg,
 
-						/* Flowchart nodes */
-						nodeBorder: "#6366f1",
-						clusterBkg: "#1e1b4b",
-						clusterBorder: "#475569",
-						titleColor: "#e2e8f0",
-						edgeLabelBackground: "#1e293b",
+						nodeBorder: PALETTE.accent,
+						clusterBkg: PALETTE.bg,
+						clusterBorder: PALETTE.line,
+						titleColor: PALETTE.ink,
+						edgeLabelBackground: PALETTE.panel,
 					},
-					fontFamily: "var(--font-geist-sans), system-ui, sans-serif",
+					fontFamily:
+						"var(--font-sans), var(--font-geist-sans), system-ui, sans-serif",
 					fontSize: 14,
 					flowchart: { curve: "basis", padding: 16 },
 					sequence: { mirrorActors: false, bottomMarginAdj: 2 },
@@ -84,12 +95,14 @@ export function Mermaid({ chart }: { chart: string }) {
 		}
 
 		render();
-		return () => { cancelled = true; };
+		return () => {
+			cancelled = true;
+		};
 	}, [chart]);
 
 	if (!svg) {
 		return (
-			<div className="my-6 flex items-center justify-center rounded-lg border border-border bg-muted/50 p-8 text-sm text-muted-foreground">
+			<div className="my-6 flex items-center justify-center rounded-atx-md border border-atx-line-soft bg-atx-bg-sunken p-8 text-sm text-atx-ink-dim">
 				Loading diagram...
 			</div>
 		);
@@ -99,7 +112,7 @@ export function Mermaid({ chart }: { chart: string }) {
 		<div
 			ref={ref}
 			data-mermaid=""
-			className="my-6 flex justify-center overflow-x-auto rounded-lg border border-border bg-fd-card p-4 [&_svg]:max-w-full"
+			className="my-6 flex justify-center overflow-x-auto rounded-atx-md border border-atx-line-soft bg-atx-bg-sunken p-4 [&_svg]:max-w-full"
 			dangerouslySetInnerHTML={{ __html: svg }}
 		/>
 	);
