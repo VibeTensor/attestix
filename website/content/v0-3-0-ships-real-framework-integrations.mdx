@@ -1,0 +1,99 @@
+---
+title: "v0.3.0 ships: real framework integrations, CI/CD, and the security hardening batch"
+publishedAt: "2026-04-20"
+summary: Attestix v0.3.0 introduces production-ready integrations for LangChain, OpenAI Agents SDK, and CrewAI, plus a security hardening batch and an automated CI/CD pipeline.
+author: "Pavan Kumar Dubasi"
+---
+
+Attestix v0.3.0 ships with three production-ready framework integrations, a security hardening batch, and a GitHub Actions CI/CD pipeline. Every supported AI agent framework now has a first-party way to plug Attestix into its audit trail.
+
+## Framework integrations
+
+Before v0.3.0, Attestix was a standalone MCP server. Agents could use its tools, but the integrations were shallow and developers had to wire up callbacks by hand. v0.3.0 changes that with three first-party integrations covering the frameworks our target users actually ship on.
+
+**LangChain BaseCallbackHandler.** Drop Attestix into any LangChain agent with a single callback. Every tool call, LLM call, and chain step is hash-chained into the Attestix audit trail. On chain completion, Attestix auto-issues a `ChainExecutionCredential` with the input hash, output hash, tool sequence, and duration. The credential is Ed25519-signed and verifiable offline.
+
+```python
+from langchain.agents import AgentExecutor
+from attestix.integrations.langchain import AttestixCallback
+
+executor = AgentExecutor(
+    agent=my_agent,
+    tools=tools,
+    callbacks=[AttestixCallback(agent_id="attestix:f9bdb7a94ccb40f1")],
+)
+```
+
+**OpenAI Agents SDK MCPServerStdio.** All 47 Attestix tools are now discoverable as native MCP tools by the OpenAI Agents SDK. Wrap the server in an `async with` and pass it to the agent. No per-tool wrapping, no custom adapters.
+
+```python
+async with MCPServerStdio(
+    name="Attestix",
+    params={"command": "attestix", "args": ["mcp"]},
+) as attestix:
+    agent = Agent(mcp_servers=[attestix])
+    result = await Runner.run(agent, input="Analyse Q4 data")
+```
+
+**CrewAI MCPServerAdapter.** Every agent in a CrewAI crew gets the full Attestix tool surface via the `tools` field. Role hand-offs between crew members are recorded as UCAN delegations with capability attenuation, so the entire crew becomes attestable by default.
+
+```python
+with MCPServerAdapter(server_params) as attestix_tools:
+    analyst = Agent(role="Financial analyst", tools=attestix_tools, ...)
+    task = Task(agent=analyst, ...)
+    crew = Crew(agents=[analyst], tasks=[task])
+    result = crew.kickoff()
+```
+
+All three integrations ship with end-to-end integration tests covering identity registration, tool discovery, compliance workflow execution, and audit-trail verification. Dify, Google ADK, Semantic Kernel, and Strands remain supported as configuration-only examples through the generic MCP transport.
+
+## Security hardening batch
+
+v0.3.0 ships four coordinated security fixes. They are tracked with internal `ATX-*` identifiers and land together in the 0.3.0 release.
+
+- **Delegation chain authentication bypass** (ATX-2026-04, HIGH). Parent tokens in UCAN chains are now fully verified at every step, and capability attenuation is enforced. A delegatee cannot escalate privileges beyond its delegator.
+- **SSRF hardening on agent-card fetch** (ATX-2026-02, MEDIUM). Redirect following now re-checks every target against the private-IP and metadata-endpoint allowlist. Previously only the initial request was validated.
+- **Constant-time credential verification** (ATX-2026-01, MEDIUM). Moved to the constant-time Ed25519 verification path in `cryptography >= 46.0.7` and removed a timing side-channel on `verify_credential`.
+- **PyJWT upstream CVE mitigation** (ATX-2026-03, HIGH). Pinned PyJWT `>= 2.12.0` to close a JWT header validation bypass that impacts Verifiable Credential and UCAN verification paths.
+
+Additional hardening: exception messages are now sanitised so internal file paths and stack traces no longer leak to MCP clients; signing-key files are created with mode `0o600` on POSIX; the `display_name` field rejects control characters and oversized values.
+
+## CI/CD pipeline
+
+v0.3.0 ships with a GitHub Actions workflow that runs on every push and pull request:
+
+- pytest matrix across Python 3.10, 3.11, 3.12, and 3.13 on both Ubuntu and Windows
+- ruff for style and common-error checks, mypy for type coverage (advisory)
+- bandit SAST, pip-audit for transitive CVE scanning, safety as advisory second opinion
+- Automated PyPI publish on version tag
+
+Merges to main are gated on lint and pytest. The conformance benchmark suite is part of every run, validating W3C, IETF, and UCAN standards compliance on every change. Total automated test count: 358 (267 functional + 91 conformance), up from 284 in v0.2.4.
+
+## Dependency pins
+
+Runtime dependencies are now pinned with both lower and upper bounds to prevent silent breakage from major-version drift. The v0.3.0 lower bounds close several upstream CVEs:
+
+- `cryptography >= 46.0.7, < 47.0.0` (name constraints bypass and Hash.update buffer overflow)
+- `PyJWT >= 2.12.0, < 3.0.0` (critical JWT header validation bypass)
+- `mcp >= 1.8.0, < 2.0.0`
+- `python-multipart >= 0.0.26, < 0.1.0` (transitive DoS via multipart preamble)
+
+See `pyproject.toml` and the changelog for the full dependency audit.
+
+## EAS and conformity assessment corrections
+
+Two correctness fixes shipped with v0.3.0. `anchor_credential` and `verify_anchor` on Base L2 testnet now compute the EAS schema UID correctly, so anchored artefacts resolve to their on-chain attestation. The compliance service now differentiates Annex III categories: systems in Annex III Point 1 (biometric categorisation) still require third-party assessment, while systems in Annex III Points 2 through 8 permit the internal control procedure, with a fail-safe default to third-party for edge cases. This matches the EU AI Act text more faithfully than the earlier blanket rejection.
+
+## What is next
+
+Framework integrations stabilise Attestix for production use on the three dominant agent stacks. The security batch closes the remaining gaps in delegation, SSRF, timing, and upstream CVEs. CI/CD keeps the quality bar consistent on every merge.
+
+Next up: broader GDPR coverage beyond Article 17, Base L2 mainnet schema registration after an external security review, and i18n scaffolding so Annex V declarations can ship in the issuer's language.
+
+Install or upgrade:
+
+```bash
+pip install --upgrade attestix
+```
+
+Framework-specific extras install on demand. See the integration guides for LangChain, OpenAI Agents SDK, and CrewAI at attestix.io/docs.
