@@ -1,0 +1,131 @@
+---
+title: OpenAI Agents SDK Integration
+description: Expose all 47 Attestix tools natively to the OpenAI Agents SDK via MCPServerStdio. Production-ready in v0.3.0.
+---
+
+The OpenAI Agents SDK consumes Attestix as a native MCP server. All 47 tools are discovered automatically, with no per-tool wrapping.
+
+## Install
+
+```bash
+pip install attestix[openai-agents]
+```
+
+Verified against `openai-agents` SDK v0.14.x.
+
+## Minimal wiring
+
+`MCPServerStdio` is an async context manager. Wrap it in `async with` so the server handle closes cleanly when the agent run ends.
+
+```python
+import asyncio
+from agents import Agent, Runner
+from agents.mcp import MCPServerStdio
+
+async def main():
+    async with MCPServerStdio(
+        name="Attestix",
+        params={"command": "attestix", "args": ["mcp"]},
+    ) as attestix:
+        agent = Agent(
+            name="quarterly-analyst",
+            instructions="You are a financial analyst.",
+            mcp_servers=[attestix],
+        )
+        result = await Runner.run(agent, input="Run Q4 analysis")
+        print(result.final_output)
+
+asyncio.run(main())
+```
+
+## Restricting which tools are exposed
+
+Use `tool_filter` with `create_static_tool_filter` to scope the Attestix tool surface for a given agent.
+
+```python
+from agents.mcp import MCPServerStdio, create_static_tool_filter
+
+attestix_filter = create_static_tool_filter(
+    allowed_tool_names=[
+        "create_agent_identity",
+        "issue_credential",
+        "record_training_data",
+    ],
+)
+
+async with MCPServerStdio(
+    name="Attestix",
+    params={"command": "attestix", "args": ["mcp"]},
+    tool_filter=attestix_filter,
+    cache_tools_list=True,
+) as attestix:
+    agent = Agent(
+        name="compliance-agent",
+        mcp_servers=[attestix],
+    )
+```
+
+## Auto-issued audit entries
+
+Every tool call made through the MCP server is appended to the Attestix hash-chained audit trail. No extra code needed on the SDK side.
+
+## Streaming and tool-use events
+
+`Runner.run_streamed` returns a `RunResultStreaming`. Iterate its `stream_events` async iterator.
+
+```python
+result = Runner.run_streamed(agent, input="Run Q4 analysis")
+async for event in result.stream_events():
+    if event.type == "run_item_stream_event" and event.name == "tool_called":
+        print(event.item)
+```
+
+Audit-trail entries can be inspected after the run via the Attestix CLI or by calling the audit service directly in your own code.
+
+## HTTP transport
+
+If the Attestix MCP server runs as a separate service, use `MCPServerStreamableHttp` (SDK v0.14 name). Wrap it in `async with`.
+
+```python
+from agents.mcp import MCPServerStreamableHttp
+
+async with MCPServerStreamableHttp(
+    name="Attestix",
+    params={"url": "http://localhost:8501/mcp"},
+) as attestix:
+    agent = Agent(
+        name="quarterly-analyst",
+        mcp_servers=[attestix],
+    )
+```
+
+Start the Attestix MCP server in HTTP mode with:
+
+```bash
+attestix mcp --transport http --port 8501
+```
+
+## Multi-agent orchestration
+
+Wire Attestix into every agent in an orchestration so the entire graph is attestable. Role hand-offs are recorded as first-class audit events.
+
+```python
+async with MCPServerStdio(
+    name="Attestix",
+    params={"command": "attestix", "args": ["mcp"]},
+) as attestix:
+    analyst = Agent(name="analyst", mcp_servers=[attestix])
+    summarizer = Agent(name="summarizer", mcp_servers=[attestix])
+    supervisor = Agent(
+        name="supervisor",
+        mcp_servers=[attestix],
+        handoffs=[analyst, summarizer],
+    )
+    await Runner.run(supervisor, input="Prepare the Q4 board pack.")
+```
+
+UCAN delegations make the hand-off chain verifiable.
+
+## Sample repository
+
+Full runnable example at [github.com/VibeTensor/attestix/tree/main/examples](https://github.com/VibeTensor/attestix/tree/main/examples).

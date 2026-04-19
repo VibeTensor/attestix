@@ -1,0 +1,142 @@
+---
+title: MCP Tools Reference
+description: Complete reference for all 47 Attestix MCP tools across 9 modules, with parameters, return types, and EU AI Act article mapping.
+---
+
+All 47 Attestix tools exposed via the Model Context Protocol. Grouped by the 9 modules. For REST and Python library signatures see the [API reference](/docs/reference/api-reference).
+
+Every tool is discoverable by any MCP-compatible client (Claude Desktop, Cursor, Continue, VS Code, Windsurf) once Attestix is installed:
+
+```bash
+pip install attestix
+attestix mcp
+```
+
+## 01 / Identity (8 tools)
+
+Unified Agent Identity Tokens bridging MCP OAuth, A2A, DIDs, and API keys.
+
+| Tool | Purpose |
+|------|---------|
+| `create_agent_identity` | Issue a UAIT with a fresh did:key and Ed25519 keypair |
+| `get_identity` | Retrieve a stored agent identity by ID |
+| `list_identities` | List all agent identities in the local store |
+| `verify_identity` | Verify an identity's Ed25519 signature against its DID |
+| `revoke_identity` | Revoke an identity (soft delete with audit entry) |
+| `translate_identity` | Translate between UAIT formats (MCP, A2A, DID, OAuth) |
+| `resolve_identity` | Resolve an agent by DID or agent card URL |
+| `erase_identity` | GDPR Article 17 hard delete with tombstone |
+
+## 02 / Agent Cards (3 tools)
+
+A2A-compatible agent card generation and discovery.
+
+| Tool | Purpose |
+|------|---------|
+| `generate_agent_card` | Generate an A2A agent card JSON from an identity |
+| `parse_agent_card` | Parse and validate a remote agent card |
+| `discover_agent` | Fetch `/.well-known/agent.json` from a URL |
+
+## 03 / DID (3 tools)
+
+W3C Decentralized Identifiers.
+
+| Tool | Purpose |
+|------|---------|
+| `create_did_key` | Create a `did:key` identifier with Ed25519VerificationKey2020 |
+| `create_did_web` | Create a `did:web` identifier for a domain |
+| `resolve_did` | Resolve any DID method (key, web, universal resolver) |
+
+## 04 / Delegation (4 tools)
+
+UCAN v0.9 capability delegation with signed JWTs.
+
+| Tool | Purpose |
+|------|---------|
+| `create_delegation` | Issue a UCAN delegating capabilities with attenuation |
+| `verify_delegation` | Verify a UCAN chain end-to-end |
+| `list_delegations` | List delegations issued by an agent |
+| `revoke_delegation` | Revoke a delegation (propagates to children) |
+
+## 05 / Reputation (3 tools)
+
+Recency-weighted trust scoring.
+
+| Tool | Purpose |
+|------|---------|
+| `record_interaction` | Record a signed interaction outcome for scoring |
+| `get_reputation` | Get the current reputation for an agent |
+| `query_reputation` | Search and filter reputation across a cohort |
+
+## 06 / Compliance (7 tools)
+
+EU AI Act risk profiles, Article 43 conformity, Annex V declarations.
+
+| Tool | Purpose |
+|------|---------|
+| `create_compliance_profile` | Classify risk and unfold obligations per tier |
+| `get_compliance_profile` | Retrieve a stored compliance profile |
+| `list_compliance_profiles` | List all compliance profiles |
+| `record_conformity_assessment` | Record Article 43 assessment (blocks self on high-risk) |
+| `get_compliance_status` | Get the current completeness status |
+| `generate_declaration_of_conformity` | Generate Annex V declaration as a W3C VC |
+| `export_compliance_pack` | Bundle profile + evidence + declaration for regulators |
+
+## 07 / Credentials (8 tools)
+
+W3C Verifiable Credentials 1.1 with Ed25519Signature2020.
+
+| Tool | Purpose |
+|------|---------|
+| `issue_credential` | Issue a W3C VC with Ed25519Signature2020 proof |
+| `verify_credential` | Verify a VC signature offline |
+| `list_credentials` | List credentials for a subject or issuer |
+| `get_credential` | Retrieve a credential by URN |
+| `revoke_credential` | Revoke a credential with reason code |
+| `create_verifiable_presentation` | Bundle VCs into a VP with audience binding |
+| `verify_presentation` | Verify a VP including replay protection |
+| `export_credential` | Export a VC as JSON or JWT |
+
+## 08 / Provenance (5 tools)
+
+Article 10 data governance, Article 11 lineage, Article 12 audit trail.
+
+| Tool | Purpose |
+|------|---------|
+| `record_training_data` | Document training dataset with bias tests |
+| `record_model_lineage` | Record base model, fine-tunes, eval metrics |
+| `log_action` | Append an action to the hash-chained audit trail |
+| `get_provenance` | Get the provenance record for an agent |
+| `get_audit_trail` | Retrieve the audit trail, optionally scoped |
+
+## 09 / Blockchain (6 tools)
+
+Anchor to Base L2 testnet via Ethereum Attestation Service. Mainnet schema registration is planned.
+
+| Tool | Purpose |
+|------|---------|
+| `anchor_identity` | Anchor an identity hash to Base L2 testnet |
+| `anchor_credential` | Anchor a credential hash to Base L2 testnet |
+| `anchor_audit_batch` | Merkle-batch audit entries and anchor the root |
+| `get_anchor_status` | Query the on-chain status of an anchor |
+| `verify_anchor` | Verify an anchor resolves to a local artefact |
+| `estimate_anchor_cost` | Estimate gas cost for a pending anchor |
+
+## Claim the MCP server
+
+Clients that support MCP servers can add Attestix via `stdio`:
+
+```json
+{
+  "mcpServers": {
+    "attestix": {
+      "command": "attestix",
+      "args": ["mcp"]
+    }
+  }
+}
+```
+
+Or connect over HTTP with `attestix mcp --transport http --port 8501`.
+
+See the [integration guides](/docs/guides/integration-guide) for framework-specific wiring into LangChain, OpenAI Agents SDK, and CrewAI.

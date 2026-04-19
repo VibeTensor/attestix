@@ -1,11 +1,10 @@
-"use client";
-
-import { MagicCard } from "@/components/ui/magic-card";
-import { BlurFade } from "@/components/ui/blur-fade";
-import { buttonVariants } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
-import { Shield, Calculator, Fingerprint, BarChart3, ArrowRight } from "lucide-react";
 import Link from "next/link";
+import {
+  Shield,
+  Calculator,
+  Fingerprint,
+  BarChart3,
+} from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
 interface DemoCard {
@@ -48,70 +47,57 @@ const demos: DemoCard[] = [
 
 export function DemoGrid() {
   return (
-    <div className="container mx-auto px-4">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
-        {demos.map((demo, index) => (
-          <BlurFade key={demo.href} delay={0.1 + index * 0.1} inView>
-            <Link href={demo.href} className="block h-full group">
-              <MagicCard
-                className="h-full rounded-xl border border-border transition-transform duration-300 group-hover:scale-[1.02]"
-                gradientColor="#4F46E520"
-                gradientFrom="#4F46E5"
-                gradientTo="#818CF8"
-                gradientSize={250}
-                gradientOpacity={0.15}
-              >
-                <div className="p-6 flex flex-col gap-4 h-full">
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                      <demo.icon className="h-5 w-5" />
-                    </div>
-                    <h2 className="text-lg font-semibold text-foreground">
-                      {demo.title}
-                    </h2>
-                  </div>
-                  <p className="text-sm text-muted-foreground leading-relaxed flex-1">
-                    {demo.description}
-                  </p>
-                  <div className="flex items-center gap-1.5 text-sm font-medium text-primary transition-colors group-hover:text-primary/80">
-                    Try it
-                    <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-                  </div>
-                </div>
-              </MagicCard>
-            </Link>
-          </BlurFade>
+    <>
+      <div className="grid gap-5 md:grid-cols-2">
+        {demos.map((demo, i) => (
+          <Link
+            key={demo.href}
+            href={demo.href}
+            className="group flex flex-col gap-4 rounded-atx-md border border-atx-line-soft bg-atx-panel p-6 transition-colors hover:border-atx-accent/60 hover:bg-atx-panel-hi"
+          >
+            <div className="flex items-center justify-between font-mono-atx text-[11px] uppercase tracking-[0.14em] text-atx-ink-faint">
+              <span>{String(i + 1).padStart(2, "0")} / 04</span>
+              <span className="text-atx-accent transition-transform group-hover:translate-x-0.5">
+                &rarr;
+              </span>
+            </div>
+            <div className="text-[28px] text-atx-accent">
+              <demo.icon className="h-7 w-7" />
+            </div>
+            <h2 className="font-serif text-[22px] leading-tight text-atx-ink">
+              {demo.title}
+            </h2>
+            <p className="text-[13.5px] leading-[1.55] text-atx-ink-mid">
+              {demo.description}
+            </p>
+          </Link>
         ))}
       </div>
 
-      {/* Bottom CTA */}
-      <BlurFade delay={0.6} inView>
-        <div className="mt-16 text-center">
-          <p className="text-lg text-muted-foreground mb-6">
-            Ready to implement these for real?
-          </p>
-          <div className="flex flex-wrap items-center justify-center gap-4">
-            <Link
-              href="/docs/getting-started"
-              className={cn(
-                buttonVariants({ variant: "default", size: "lg" }),
-                "rounded-lg font-medium"
-              )}
-            >
-              Get Started
-            </Link>
-            <Link
-              href="/docs"
-              className={cn(
-                buttonVariants({ variant: "outline", size: "lg" }),
-                "rounded-lg font-medium"
-              )}
-            >
-              Read the Docs
-            </Link>
+      <div className="mt-14 flex flex-col items-start gap-4 rounded-atx-md border border-atx-line-soft bg-atx-bg-sunken p-8 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <div className="font-mono-atx text-[11px] uppercase tracking-[0.14em] text-atx-ink-dim">
+            Next
           </div>
+          <p className="mt-2 font-serif text-[22px] leading-tight text-atx-ink">
+            Ready to ship this for real?
+          </p>
         </div>
-      </BlurFade>
-    </div>
+        <div className="flex flex-wrap gap-3">
+          <Link
+            href="/docs/getting-started"
+            className="inline-flex h-10 items-center rounded-atx-md bg-atx-accent px-5 text-[13px] font-medium text-[oklch(0.14_0.01_180)] transition-colors hover:bg-atx-accent-deep"
+          >
+            Get started
+          </Link>
+          <Link
+            href="/docs"
+            className="inline-flex h-10 items-center rounded-atx-md border border-atx-line px-5 text-[13px] font-medium text-atx-ink transition-colors hover:border-atx-ink-dim hover:bg-atx-panel"
+          >
+            Read the docs
+          </Link>
+        </div>
+      </div>
+    </>
   );
 }

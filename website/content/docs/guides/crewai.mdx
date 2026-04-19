@@ -1,0 +1,105 @@
+---
+title: CrewAI Integration
+description: Attach Attestix to every CrewAI agent via MCPServerAdapter. Production-ready in v0.3.0. Crews become attestable by default.
+---
+
+CrewAI agents receive Attestix tools through the `tools` field, populated by the `MCPServerAdapter`. Every agent in the crew discovers all 47 Attestix tools, and role hand-offs are recorded as UCAN delegations.
+
+## Install
+
+```bash
+pip install attestix[crewai]
+```
+
+## Minimal wiring
+
+`MCPServerAdapter` is a context manager that yields the discovered tool list. Pass it into the agent's `tools` field.
+
+```python
+from crewai import Agent, Crew, Task
+from crewai_tools import MCPServerAdapter
+from mcp import StdioServerParameters
+
+server_params = StdioServerParameters(
+    command="attestix",
+    args=["mcp"],
+)
+
+with MCPServerAdapter(server_params) as attestix_tools:
+    analyst = Agent(
+        role="Financial analyst",
+        goal="Analyse quarterly data",
+        backstory="Senior quant with 10 years of regulatory reporting experience.",
+        tools=attestix_tools,
+    )
+
+    task = Task(
+        description="Produce the Q4 report",
+        agent=analyst,
+        expected_output="A signed compliance declaration.",
+    )
+
+    crew = Crew(agents=[analyst], tasks=[task])
+    result = crew.kickoff()
+```
+
+## Crew-wide compliance profile
+
+Before the crew runs, issue a single compliance profile that every agent references:
+
+```python
+from attestix.services.compliance_service import ComplianceService
+
+profile = ComplianceService().create_compliance_profile(
+    agent_id="attestix:crew-q4-report",
+    risk_category="high",
+    provider_name="VibeTensor",
+    intended_purpose="Quarterly financial analysis for board review",
+)
+```
+
+All audit entries from the crew link to this profile for traceability.
+
+## Role hand-offs as UCAN
+
+When an agent hands a task to another agent, Attestix records a UCAN delegation with the attenuated capabilities. Useful for Article 14 (human oversight) evidence.
+
+## Sequential vs hierarchical crews
+
+Both topologies work. For hierarchical crews with a manager agent, issue the compliance profile under the manager and let it flow down via delegation.
+
+```python
+from crewai import Crew, Process
+
+with MCPServerAdapter(server_params) as attestix_tools:
+    manager = Agent(role="Manager", tools=attestix_tools, ...)
+    analyst = Agent(role="Analyst", tools=attestix_tools, ...)
+    reviewer = Agent(role="Reviewer", tools=attestix_tools, ...)
+
+    crew = Crew(
+        agents=[manager, analyst, reviewer],
+        tasks=[report_task],
+        process=Process.hierarchical,
+        manager_agent=manager,
+    )
+    result = crew.kickoff()
+```
+
+## Verify the crew output
+
+Each task emits a VC on success. Bundle them for a regulator with a Verifiable Presentation:
+
+```python
+from attestix.services.credential_service import CredentialService
+
+vp = CredentialService().create_verifiable_presentation(
+    holder_id="attestix:crew-q4-report",
+    credentials=[credential_id],
+    verifier="did:web:eu.regulator",
+    challenge="ch_q4_2026",
+)
+```
+
+## Sample repository
+
+See [github.com/VibeTensor/attestix/tree/main/examples](https://github.com/VibeTensor/attestix/tree/main/examples) for a complete crew with three roles and a signed hand-off chain.

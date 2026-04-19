@@ -11,7 +11,9 @@ export default function Layout({ children }: { children: ReactNode }) {
         title: (
           <div className="flex items-center gap-2">
             <Icons.logo className="h-5 w-5" />
-            <span className="font-semibold">Attestix</span>
+            <span className="font-serif text-[18px] leading-none">
+              Attestix
+            </span>
           </div>
         ),
         url: "/",
@@ -32,7 +34,9 @@ export default function Layout({ children }: { children: ReactNode }) {
         },
       ]}
     >
-      {children}
+      <div id="main-content" tabIndex={-1}>
+        {children}
+      </div>
     </DocsLayout>
   );
 }

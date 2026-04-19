@@ -1,7 +1,7 @@
 import { siteConfig } from "@/lib/config";
 import { constructMetadata } from "@/lib/utils";
 import { Header } from "@/components/sections/header";
-import { Footer } from "@/components/sections/footer";
+import { FooterV2 } from "@/components/sections/v2/footer-v2";
 import Link from "next/link";
 
 export const metadata = constructMetadata({
@@ -16,7 +16,11 @@ export default function CrossPostGuide() {
   return (
     <>
       <Header />
-      <main className="container max-w-3xl mx-auto px-4 py-24">
+      <main
+        id="main-content"
+        tabIndex={-1}
+        className="container max-w-3xl mx-auto px-4 py-24"
+      >
         <article className="prose dark:prose-invert prose-headings:text-foreground prose-p:text-muted-foreground prose-strong:text-foreground prose-a:text-primary prose-code:text-primary max-w-none">
           <h1>Cross-Posting Guide</h1>
           <p>
@@ -248,7 +252,7 @@ Your content here (paste the markdown from the MDX file)`}</code>
           </div>
         </article>
       </main>
-      <Footer />
+      <FooterV2 />
     </>
   );
 }
