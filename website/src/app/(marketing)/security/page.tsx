@@ -8,6 +8,9 @@ export const metadata = constructMetadata({
     "Responsible disclosure, security fixes, and vulnerability handling for Attestix.",
 });
 
+// Disclosure dates reflect when the fix landed on main, not when the
+// report was received. All four shipped together in the v0.3.0 security
+// batch after coordinated internal review.
 const DISCLOSURES = [
   {
     id: "ATX-2026-04",
@@ -19,15 +22,15 @@ const DISCLOSURES = [
   },
   {
     id: "ATX-2026-03",
-    date: "2026-04-17",
+    date: "2026-04-15",
     severity: "HIGH",
-    title: "PyJWT CVE mitigation",
-    fix: "Pinned PyJWT >= 2.8.1 with dependency lock.",
+    title: "PyJWT CVE mitigation (CVE-2026-32597)",
+    fix: "Pinned PyJWT >= 2.12.0 with dependency lock.",
     version: "0.3.0",
   },
   {
     id: "ATX-2026-02",
-    date: "2026-04-17",
+    date: "2026-04-10",
     severity: "MEDIUM",
     title: "Server-side request forgery in agent-card fetch",
     fix: "URL allowlist, private-IP block, redirect limit.",
@@ -35,7 +38,7 @@ const DISCLOSURES = [
   },
   {
     id: "ATX-2026-01",
-    date: "2026-04-17",
+    date: "2026-04-02",
     severity: "MEDIUM",
     title: "API timing side-channel on credential verify",
     fix: "Constant-time signature comparison.",

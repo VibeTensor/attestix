@@ -76,15 +76,17 @@ agent = <span class="k">Agent</span>(
     ],
     code: `<span class="c">from</span> crewai <span class="c">import</span> Agent, Crew
 <span class="c">from</span> crewai_tools <span class="c">import</span> MCPServerAdapter
+<span class="c">from</span> mcp <span class="c">import</span> StdioServerParameters
 
-attestix = <span class="k">MCPServerAdapter</span>({<span class="s">"command"</span>: <span class="s">"attestix"</span>, <span class="s">"args"</span>: [<span class="s">"mcp"</span>]})
+params = <span class="k">StdioServerParameters</span>(command=<span class="s">"attestix"</span>, args=[<span class="s">"mcp"</span>])
 
-analyst = <span class="k">Agent</span>(
-  role=<span class="s">"Financial analyst"</span>,
-  goal=<span class="s">"Analyse quarterly data"</span>,
-  mcps=[attestix],
-)
-crew = <span class="k">Crew</span>(agents=[analyst])`,
+<span class="c">with</span> <span class="k">MCPServerAdapter</span>(params) <span class="c">as</span> attestix_tools:
+  analyst = <span class="k">Agent</span>(
+    role=<span class="s">"Financial analyst"</span>,
+    goal=<span class="s">"Analyse quarterly data"</span>,
+    tools=attestix_tools,
+  )
+  crew = <span class="k">Crew</span>(agents=[analyst])`,
   },
   {
     slug: "dify",

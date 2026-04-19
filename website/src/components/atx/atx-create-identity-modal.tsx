@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 interface Props {
   onClose: () => void;
@@ -40,6 +40,20 @@ export function AtxCreateIdentityModal({ onClose }: Props) {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [stage, setStage] = useState<Stage>("form");
   const [result, setResult] = useState<Result | null>(null);
+  const dialogRef = useRef<HTMLDivElement | null>(null);
+  const timerRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", onKey);
+    dialogRef.current?.focus();
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      if (timerRef.current) window.clearTimeout(timerRef.current);
+    };
+  }, [onClose]);
 
   const submit = () => {
     const e: Record<string, string> = {};
@@ -52,7 +66,8 @@ export function AtxCreateIdentityModal({ onClose }: Props) {
     setErrors(e);
     if (Object.keys(e).length) return;
     setStage("signing");
-    window.setTimeout(() => {
+    if (timerRef.current) window.clearTimeout(timerRef.current);
+    timerRef.current = window.setTimeout(() => {
       setResult({
         id: `attestix:${rand16()}`,
         did: `did:key:z6Mk${randMulti(44)}`,
@@ -74,9 +89,15 @@ export function AtxCreateIdentityModal({ onClose }: Props) {
     <div
       className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm"
       onClick={onClose}
+      role="presentation"
     >
       <div
-        className="w-full max-w-[560px] overflow-hidden rounded-atx-md border border-atx-line bg-atx-panel shadow-[var(--atx-shadow-md)]"
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="atx-create-identity-title"
+        tabIndex={-1}
+        className="w-full max-w-[560px] overflow-hidden rounded-atx-md border border-atx-line bg-atx-panel shadow-[var(--atx-shadow-md)] focus:outline-none"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-start justify-between border-b border-atx-line-soft px-7 py-5">
@@ -84,7 +105,10 @@ export function AtxCreateIdentityModal({ onClose }: Props) {
             <div className="font-mono-atx text-[10.5px] uppercase tracking-[0.14em] text-atx-ink-dim">
               &sect; attestix / identity / create
             </div>
-            <h3 className="mt-1 font-serif text-[22px] leading-tight text-atx-ink">
+            <h3
+              id="atx-create-identity-title"
+              className="mt-1 font-serif text-[22px] leading-tight text-atx-ink"
+            >
               New agent identity
             </h3>
           </div>
@@ -149,7 +173,7 @@ export function AtxCreateIdentityModal({ onClose }: Props) {
             </div>
             <div className="flex items-center justify-between border-t border-atx-line-soft px-7 py-4">
               <span className="font-mono-atx text-[11px] text-atx-ink-dim">
-                Ed25519 keypair generated locally, never transmitted
+                Preview values. Real signing runs locally via pip install.
               </span>
               <div className="flex gap-2">
                 <button
@@ -174,9 +198,9 @@ export function AtxCreateIdentityModal({ onClose }: Props) {
         {stage === "signing" && (
           <div className="space-y-2 px-7 py-14 text-center font-mono-atx text-[12px] text-atx-ink-dim">
             <div className="text-atx-accent">
-              &#9670; generating Ed25519 keypair...
+              &#9670; simulating Ed25519 keypair generation...
             </div>
-            <div>&#9670; deriving did:key from public key</div>
+            <div>&#9670; deriving did:key from mock public key</div>
             <div>&#9670; signing UAIT payload...</div>
             <div className="text-atx-ink-faint">
               &#9671; registering in local store

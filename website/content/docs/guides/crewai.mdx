@@ -3,7 +3,7 @@ title: CrewAI Integration
 description: Attach Attestix to every CrewAI agent via MCPServerAdapter. Production-ready in v0.3.0. Crews become attestable by default.
 ---
 
-CrewAI agents receive Attestix through the `mcps` field. Every agent in the crew discovers all 47 Attestix tools, and role hand-offs are recorded as UCAN delegations.
+CrewAI agents receive Attestix tools through the `tools` field, populated by the `MCPServerAdapter`. Every agent in the crew discovers all 47 Attestix tools, and role hand-offs are recorded as UCAN delegations.
 
 ## Install
 
@@ -13,30 +13,34 @@ pip install attestix[crewai]
 
 ## Minimal wiring
 
+`MCPServerAdapter` is a context manager that yields the discovered tool list. Pass it into the agent's `tools` field.
+
 ```python
 from crewai import Agent, Crew, Task
 from crewai_tools import MCPServerAdapter
+from mcp import StdioServerParameters
 
-attestix = MCPServerAdapter({
-    "command": "attestix",
-    "args": ["mcp"],
-})
-
-analyst = Agent(
-    role="Financial analyst",
-    goal="Analyse quarterly data",
-    backstory="Senior quant with 10 years of regulatory reporting experience.",
-    mcps=[attestix],
+server_params = StdioServerParameters(
+    command="attestix",
+    args=["mcp"],
 )
 
-task = Task(
-    description="Produce the Q4 report",
-    agent=analyst,
-    expected_output="A signed compliance declaration.",
-)
+with MCPServerAdapter(server_params) as attestix_tools:
+    analyst = Agent(
+        role="Financial analyst",
+        goal="Analyse quarterly data",
+        backstory="Senior quant with 10 years of regulatory reporting experience.",
+        tools=attestix_tools,
+    )
 
-crew = Crew(agents=[analyst], tasks=[task])
-result = crew.kickoff()
+    task = Task(
+        description="Produce the Q4 report",
+        agent=analyst,
+        expected_output="A signed compliance declaration.",
+    )
+
+    crew = Crew(agents=[analyst], tasks=[task])
+    result = crew.kickoff()
 ```
 
 ## Crew-wide compliance profile
@@ -65,11 +69,20 @@ When an agent hands a task to another agent, Attestix records a UCAN delegation 
 Both topologies work. For hierarchical crews with a manager agent, issue the compliance profile under the manager and let it flow down via delegation.
 
 ```python
-crew = Crew(
-    agents=[manager, analyst, reviewer],
-    tasks=[report_task],
-    process="hierarchical",
-)
+from crewai import Crew, Process
+
+with MCPServerAdapter(server_params) as attestix_tools:
+    manager = Agent(role="Manager", tools=attestix_tools, ...)
+    analyst = Agent(role="Analyst", tools=attestix_tools, ...)
+    reviewer = Agent(role="Reviewer", tools=attestix_tools, ...)
+
+    crew = Crew(
+        agents=[manager, analyst, reviewer],
+        tasks=[report_task],
+        process=Process.hierarchical,
+        manager_agent=manager,
+    )
+    result = crew.kickoff()
 ```
 
 ## Verify the crew output

@@ -20,7 +20,7 @@ export default function DemoRedirectPage() {
         <meta httpEquiv="refresh" content="0;url=/console" />
       </noscript>
       <AtxEyebrow>Demos moved</AtxEyebrow>
-      <h1 className="mt-3 font-serif text-[clamp(36px,4.8vw-,60px)] leading-[1.05] tracking-[-0.012em] text-atx-ink">
+      <h1 className="mt-3 font-serif text-[clamp(36px,4.8vw,60px)] leading-[1.05] tracking-[-0.012em] text-atx-ink">
         The playground is now
         <br />
         the <em className="italic text-atx-accent">full console.</em>

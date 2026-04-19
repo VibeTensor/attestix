@@ -34,7 +34,9 @@ export default function Layout({ children }: { children: ReactNode }) {
         },
       ]}
     >
-      {children}
+      <div id="main-content" tabIndex={-1}>
+        {children}
+      </div>
     </DocsLayout>
   );
 }

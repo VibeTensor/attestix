@@ -17,12 +17,12 @@ export type Post = {
 };
 
 function parseFrontmatter(fileContent: string) {
-  let frontmatterRegex = /---\s*([\s\S]*?)\s*---/;
-  let match = frontmatterRegex.exec(fileContent);
+  const frontmatterRegex = /^---\r?\n([\s\S]*?)\r?\n---(?:\r?\n|$)/;
+  const match = frontmatterRegex.exec(fileContent);
   if (!match) {
-    throw new Error("Missing frontmatter delimiters in MDX file");
+    throw new Error("Missing frontmatter delimiters at start of MDX file");
   }
-  let frontMatterBlock = match[1];
+  const frontMatterBlock = match[1];
   let content = fileContent.replace(frontmatterRegex, "").trim();
   let frontMatterLines = frontMatterBlock.trim().split("\n");
   let metadata: Partial<Post> = {};

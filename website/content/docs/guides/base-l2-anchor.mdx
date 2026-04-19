@@ -45,18 +45,24 @@ BASE_WALLET_KEY=0x00000000000000000000000000000000000000000000000000000000000000
 
 Use any Base Sepolia faucet. Recommended:
 
-- Coinbase Base faucet
-- Alchemy Sepolia faucet (bridgeable to Base)
+- Coinbase Developer Platform faucet for Base Sepolia: https://portal.cdp.coinbase.com/products/faucet
+- Alchemy Base Sepolia faucet: https://www.alchemy.com/faucets/base-sepolia
 
-Send 0.001 ETH to the address derived from `BASE_WALLET_KEY`.
+Send around 0.001 ETH to the address derived from `BASE_WALLET_KEY`.
 
-Check balance:
+Check balance via the Attestix CLI:
+
+```bash
+attestix blockchain balance
+```
+
+Or programmatically in Python:
 
 ```python
 from services.blockchain_service import BlockchainService
 
 svc = BlockchainService()
-print(svc.wallet_balance())  # -> 0.001 ETH
+print(svc.balance())  # e.g. 0.0012 ETH on Base Sepolia
 ```
 
 ## Step 3 / Estimate cost

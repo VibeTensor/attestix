@@ -29,8 +29,8 @@ export function AtxCookieConsent() {
 
   return (
     <div
-      role="dialog"
-      aria-label="Cookie consent"
+      role="region"
+      aria-label="Cookie notice"
       className="fixed inset-x-4 bottom-4 z-[90] mx-auto max-w-[720px] rounded-atx-md border border-atx-line bg-atx-panel/95 p-5 shadow-[var(--atx-shadow-md)] backdrop-blur-md"
     >
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start">

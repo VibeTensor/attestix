@@ -48,7 +48,7 @@ export default function Home() {
       />
       <div className="bg-atx-bg text-atx-ink">
         <Header />
-        <main id="main-content">
+        <main id="main-content" tabIndex={-1}>
           <HeroV2 />
           <StandardsStrip />
           <ProblemSection />

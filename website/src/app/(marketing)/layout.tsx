@@ -9,7 +9,7 @@ export default async function Layout({ children }: MarketingLayoutProps) {
   return (
     <div className="min-h-screen bg-atx-bg text-atx-ink">
       <Header />
-      <main id="main-content">{children}</main>
+      <main id="main-content" tabIndex={-1}>{children}</main>
       <FooterV2 />
     </div>
   );

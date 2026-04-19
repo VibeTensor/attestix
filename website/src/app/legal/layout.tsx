@@ -7,11 +7,12 @@ export default function LegalLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="min-h-screen bg-atx-bg text-atx-ink">
+    <div className="flex min-h-screen flex-col bg-atx-bg text-atx-ink">
       <Header />
       <main
         id="main-content"
-        className="mx-auto max-w-[1080px] px-7 py-16"
+        tabIndex={-1}
+        className="mx-auto w-full max-w-[1080px] flex-1 px-7 py-16"
       >
         <article className="prose prose-sm dark:prose-invert max-w-none">
           {children}

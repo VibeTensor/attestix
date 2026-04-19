@@ -123,96 +123,59 @@ export default function DemoCallPage() {
         </div>
 
         <div className="rounded-atx-md border border-atx-line-soft bg-atx-panel p-7">
-          <form
-            action="mailto:info@vibetensor.com"
-            method="post"
-            encType="text/plain"
-            className="space-y-4"
-          >
-            <div className="font-mono-atx text-[11px] uppercase tracking-[0.14em] text-atx-ink-dim">
-              Request a 30-min slot
+          <div className="font-mono-atx text-[11px] uppercase tracking-[0.14em] text-atx-ink-dim">
+            Request a 30-min slot
+          </div>
+
+          <p className="mt-4 text-[13.5px] leading-[1.6] text-atx-ink-mid">
+            Pick a time that works for your team. Replies land within one
+            business day. If you prefer to send the details directly, the
+            email link below opens your mail client.
+          </p>
+
+          <div className="mt-6 flex flex-wrap gap-3">
+            <a
+              href="mailto:info@vibetensor.com?subject=Attestix%20demo%20request&body=Please%20reply%20with%20a%20slot%20that%20works%20for%20the%20team.%0A%0ACompany%3A%20%0ARole%3A%20%0AFrameworks%20in%20use%3A%20%0ARisk%20tier%3A%20%0AArticles%20in%20scope%3A%20%0ATimeline%3A%20%0AQuestions%3A%20"
+              className="inline-flex h-10 items-center gap-2 rounded-atx-md bg-atx-accent px-5 text-[13px] font-medium text-[oklch(0.14_0.01_180)] transition-colors hover:bg-atx-accent-deep"
+            >
+              Email us &rarr;
+            </a>
+            <a
+              href="https://cal.com/vibetensor/attestix"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex h-10 items-center rounded-atx-md border border-atx-line px-5 text-[13px] font-medium text-atx-ink transition-colors hover:border-atx-ink-dim hover:bg-atx-bg-sunken"
+            >
+              Open calendar
+            </a>
+          </div>
+
+          <div className="mt-8 space-y-2 rounded-atx-sm border border-atx-line-soft bg-atx-bg-sunken p-4">
+            <div className="font-mono-atx text-[10.5px] uppercase tracking-[0.14em] text-atx-ink-dim">
+              Include in your message
             </div>
+            <ul className="space-y-1 font-mono-atx text-[11.5px] text-atx-ink-mid">
+              <li>Name and work email</li>
+              <li>Company and your role</li>
+              <li>Preferred times in your timezone</li>
+              <li>Frameworks you ship with (LangChain, OpenAI, CrewAI)</li>
+              <li>Risk tier, articles in scope, and target timeline</li>
+            </ul>
+          </div>
 
-            <div className="grid gap-4 md:grid-cols-2">
-              <Field label="Name" name="Name" required />
-              <Field label="Work email" name="Email" required type="email" />
-              <Field label="Company" name="Company" required />
-              <Field label="Role" name="Role" />
-            </div>
-
-            <Field
-              label="Preferred times (your timezone)"
-              name="Preferred"
-              placeholder="e.g. Tuesday 10am CET, Wednesday 3pm CET"
-            />
-
-            <div className="space-y-1.5">
-              <label className="block font-mono-atx text-[10.5px] uppercase tracking-[0.14em] text-atx-ink-dim">
-                What should we focus on?
-              </label>
-              <textarea
-                name="Focus"
-                rows={5}
-                placeholder="Risk tier, frameworks in use, articles in scope, timeline, specific questions"
-                className="w-full rounded-atx-sm border border-atx-line bg-atx-bg-sunken px-3 py-2 font-mono-atx text-[12.5px] text-atx-ink outline-none focus:border-atx-accent"
-              />
-            </div>
-
-            <div className="flex flex-wrap items-center gap-3 pt-2">
-              <button
-                type="submit"
-                className="inline-flex h-10 items-center gap-2 rounded-atx-md bg-atx-accent px-5 text-[13px] font-medium text-[oklch(0.14_0.01_180)] transition-colors hover:bg-atx-accent-deep"
-              >
-                Send request &rarr;
-              </button>
-              <span className="font-mono-atx text-[11px] uppercase tracking-[0.1em] text-atx-ink-faint">
-                Opens your mail client
-              </span>
-            </div>
-
-            <p className="pt-4 text-[12px] leading-[1.55] text-atx-ink-dim">
-              Prefer to email directly? Reach us at{" "}
-              <a
-                href="mailto:info@vibetensor.com?subject=Attestix%20demo%20request"
-                className="text-atx-accent hover:underline"
-              >
-                info@vibetensor.com
-              </a>
-              . We reply within one business day.
-            </p>
-          </form>
+          <p className="pt-5 text-[12px] leading-[1.55] text-atx-ink-dim">
+            Direct email:{" "}
+            <a
+              href="mailto:info@vibetensor.com?subject=Attestix%20demo%20request"
+              className="text-atx-accent hover:underline"
+            >
+              info@vibetensor.com
+            </a>
+            . We reply within one business day.
+          </p>
         </div>
       </div>
     </section>
   );
 }
 
-function Field({
-  label,
-  name,
-  required,
-  type = "text",
-  placeholder,
-}: {
-  label: string;
-  name: string;
-  required?: boolean;
-  type?: string;
-  placeholder?: string;
-}) {
-  return (
-    <div className="space-y-1.5">
-      <label className="block font-mono-atx text-[10.5px] uppercase tracking-[0.14em] text-atx-ink-dim">
-        {label}
-        {required ? <span className="ml-1 text-atx-err">*</span> : null}
-      </label>
-      <input
-        type={type}
-        name={name}
-        required={required}
-        placeholder={placeholder}
-        className="w-full rounded-atx-sm border border-atx-line bg-atx-bg-sunken px-3 py-2 font-mono-atx text-[12.5px] text-atx-ink outline-none focus:border-atx-accent"
-      />
-    </div>
-  );
-}
