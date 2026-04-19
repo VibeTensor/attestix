@@ -1,12 +1,30 @@
 import { TailwindIndicator } from "@/components/tailwind-indicator";
+import { AtxCommandPalette } from "@/components/atx/atx-command-palette";
+import { AtxCookieConsent } from "@/components/atx/atx-cookie-consent";
 import { siteConfig } from "@/lib/config";
 import { cn, constructMetadata } from "@/lib/utils";
 import { RootProvider } from "fumadocs-ui/provider";
 import SearchDialog from "@/components/search";
 import { GeistMono } from "geist/font/mono";
 import { GeistSans } from "geist/font/sans";
+import { Instrument_Serif, JetBrains_Mono } from "next/font/google";
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
+
+const instrumentSerif = Instrument_Serif({
+  subsets: ["latin"],
+  weight: ["400"],
+  style: ["normal", "italic"],
+  variable: "--font-serif",
+  display: "swap",
+});
+
+const jetbrainsMono = JetBrains_Mono({
+  subsets: ["latin"],
+  weight: ["400", "500", "600"],
+  variable: "--font-mono-atx",
+  display: "swap",
+});
 
 export const metadata: Metadata = constructMetadata({
   title: `${siteConfig.name} - ${siteConfig.description}`,
@@ -38,7 +56,7 @@ export default function RootLayout({
     <html
       lang="en"
       suppressHydrationWarning
-      className={`dark ${GeistSans.variable} ${GeistMono.variable}`}
+      className={`dark ${GeistSans.variable} ${GeistMono.variable} ${instrumentSerif.variable} ${jetbrainsMono.variable}`}
     >
       <body
         className={cn(
@@ -46,7 +64,7 @@ export default function RootLayout({
         )}
       >
         <a
-          href="#hero"
+          href="#main-content"
           className="sr-only focus:not-sr-only focus:absolute focus:z-[100] focus:top-2 focus:left-2 focus:bg-primary focus:text-primary-foreground focus:px-4 focus:py-2 focus:rounded-md focus:text-sm focus:font-medium"
         >
           Skip to main content
@@ -60,6 +78,8 @@ export default function RootLayout({
           search={{ SearchDialog }}
         >
           {children}
+          <AtxCommandPalette />
+          <AtxCookieConsent />
           <TailwindIndicator />
         </RootProvider>
       </body>

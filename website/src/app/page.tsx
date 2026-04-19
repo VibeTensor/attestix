@@ -1,13 +1,17 @@
-import { Architecture } from "@/components/sections/architecture";
-import { CTA } from "@/components/sections/cta";
-import { Examples } from "@/components/sections/examples";
-import { Footer } from "@/components/sections/footer";
 import { Header } from "@/components/sections/header";
-import { Hero } from "@/components/sections/hero";
-import { Statistics } from "@/components/sections/statistics";
-import { TechStack } from "@/components/sections/tech-stack";
-import { Testimonials } from "@/components/sections/testimonials";
-import { UseCases } from "@/components/sections/use-cases";
+import { HeroV2 } from "@/components/sections/v2/hero-v2";
+import { StandardsStrip } from "@/components/sections/v2/standards-strip";
+import { ProblemSection } from "@/components/sections/v2/problem";
+import { ModulesSection } from "@/components/sections/v2/modules";
+import { WorkflowSection } from "@/components/sections/v2/workflow";
+import { ConsolePreviewSection } from "@/components/sections/v2/console-preview";
+import { ValidationSection } from "@/components/sections/v2/validation";
+import { FrameworksSection } from "@/components/sections/v2/frameworks";
+import { UseCasesSection } from "@/components/sections/v2/use-cases";
+import { BenchmarksSection } from "@/components/sections/v2/benchmarks";
+import { ComplianceMatrixSection } from "@/components/sections/v2/compliance-matrix";
+import { CtaV2 } from "@/components/sections/v2/cta-v2";
+import { FooterV2 } from "@/components/sections/v2/footer-v2";
 import { siteConfig } from "@/lib/config";
 
 const jsonLd = {
@@ -42,18 +46,24 @@ export default function Home() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
-      <main>
+      <div className="bg-atx-bg text-atx-ink">
         <Header />
-        <Hero />
-        <Architecture />
-        <TechStack />
-        <Examples />
-        <UseCases />
-        <Statistics />
-        <Testimonials />
-        <CTA />
-        <Footer />
-      </main>
+        <main id="main-content">
+          <HeroV2 />
+          <StandardsStrip />
+          <ProblemSection />
+          <ModulesSection />
+          <WorkflowSection />
+          <ConsolePreviewSection />
+          <ValidationSection />
+          <FrameworksSection />
+          <UseCasesSection />
+          <BenchmarksSection />
+          <ComplianceMatrixSection />
+          <CtaV2 />
+        </main>
+        <FooterV2 />
+      </div>
     </>
   );
 }

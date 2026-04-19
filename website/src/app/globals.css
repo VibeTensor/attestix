@@ -6,53 +6,54 @@
 
 @source '../node_modules/fumadocs-ui/dist/**/*.js';
 
-/* Fumadocs brand overrides - indigo theme
+/* Fumadocs brand overrides - Attestix v2 (gold primary, warm ink)
  * Variables must use --color-fd-* prefix (Tailwind v4 convention)
  * Light mode: :root overrides @theme defaults from neutral.css
  * Dark mode: .dark overrides neutral.css .dark block
+ * Values mirror --atx-* tokens so docs and marketing share one palette.
  */
 :root {
-  --color-fd-background: oklch(0.985 0.002 264);
-  --color-fd-foreground: oklch(0.13 0.02 264);
-  --color-fd-muted: oklch(0.955 0.008 264);
-  --color-fd-muted-foreground: oklch(0.48 0.02 264);
-  --color-fd-popover: oklch(0.985 0.002 264);
-  --color-fd-popover-foreground: oklch(0.15 0.02 264);
-  --color-fd-card: oklch(0.97 0.005 264);
-  --color-fd-card-foreground: oklch(0.13 0.02 264);
-  --color-fd-border: oklch(0.88 0.015 264 / 60%);
-  --color-fd-primary: oklch(0.46 0.24 264);
-  --color-fd-primary-foreground: oklch(0.98 0.005 264);
-  --color-fd-secondary: oklch(0.95 0.008 264);
-  --color-fd-secondary-foreground: oklch(0.20 0.02 264);
-  --color-fd-accent: oklch(0.94 0.012 264);
-  --color-fd-accent-foreground: oklch(0.20 0.02 264);
-  --color-fd-ring: oklch(0.46 0.24 264);
+  --color-fd-background: oklch(0.985 0.004 85);
+  --color-fd-foreground: oklch(0.18 0.012 180);
+  --color-fd-muted: oklch(0.955 0.006 85);
+  --color-fd-muted-foreground: oklch(0.52 0.012 180);
+  --color-fd-popover: oklch(0.985 0.004 85);
+  --color-fd-popover-foreground: oklch(0.18 0.012 180);
+  --color-fd-card: oklch(0.97 0.006 85);
+  --color-fd-card-foreground: oklch(0.18 0.012 180);
+  --color-fd-border: oklch(0.86 0.010 85 / 70%);
+  --color-fd-primary: oklch(0.58 0.13 75);
+  --color-fd-primary-foreground: oklch(0.985 0.004 85);
+  --color-fd-secondary: oklch(0.955 0.006 85);
+  --color-fd-secondary-foreground: oklch(0.38 0.012 180);
+  --color-fd-accent: oklch(0.94 0.012 85);
+  --color-fd-accent-foreground: oklch(0.18 0.012 180);
+  --color-fd-ring: oklch(0.58 0.13 75);
 }
 
 .dark {
-  --color-fd-background: oklch(0.14 0.015 264);
-  --color-fd-foreground: oklch(0.97 0.003 264);
-  --color-fd-muted: oklch(0.22 0.015 264);
-  --color-fd-muted-foreground: oklch(0.75 0.008 264);
-  --color-fd-popover: oklch(0.17 0.012 264);
-  --color-fd-popover-foreground: oklch(0.97 0.003 264);
-  --color-fd-card: oklch(0.17 0.012 264);
-  --color-fd-card-foreground: oklch(0.97 0.003 264);
-  --color-fd-border: oklch(0.40 0.015 264);
-  --color-fd-primary: oklch(0.78 0.14 264);
-  --color-fd-primary-foreground: oklch(0.10 0.02 264);
-  --color-fd-secondary: oklch(0.22 0.015 264);
-  --color-fd-secondary-foreground: oklch(0.95 0.003 264);
-  --color-fd-accent: oklch(0.26 0.018 264);
-  --color-fd-accent-foreground: oklch(0.95 0.003 264);
-  --color-fd-ring: oklch(0.78 0.14 264);
+  --color-fd-background: oklch(0.18 0.012 180);
+  --color-fd-foreground: oklch(0.96 0.010 85);
+  --color-fd-muted: oklch(0.14 0.010 180);
+  --color-fd-muted-foreground: oklch(0.58 0.012 85);
+  --color-fd-popover: oklch(0.235 0.015 175);
+  --color-fd-popover-foreground: oklch(0.96 0.010 85);
+  --color-fd-card: oklch(0.235 0.015 175);
+  --color-fd-card-foreground: oklch(0.96 0.010 85);
+  --color-fd-border: oklch(0.32 0.018 175);
+  --color-fd-primary: oklch(0.78 0.14 80);
+  --color-fd-primary-foreground: oklch(0.14 0.01 180);
+  --color-fd-secondary: oklch(0.27 0.018 175);
+  --color-fd-secondary-foreground: oklch(0.96 0.010 85);
+  --color-fd-accent: oklch(0.27 0.018 175);
+  --color-fd-accent-foreground: oklch(0.96 0.010 85);
+  --color-fd-ring: oklch(0.78 0.14 80);
 }
 
 .dark #nd-sidebar {
-  --color-fd-muted: oklch(0.22 0.015 264);
-  --color-fd-secondary: oklch(0.25 0.015 264);
-  --color-fd-muted-foreground: oklch(0.75 0.008 264);
+  --color-fd-muted: oklch(0.21 0.014 180);
+  --color-fd-secondary: oklch(0.235 0.015 175);
+  --color-fd-muted-foreground: oklch(0.78 0.012 85);
 }
 
 /* Remove backtick pseudo-elements from inline code.
@@ -68,39 +69,39 @@
  * which mis-resolves in dark mode (produces ~37% lightness instead of ~87%).
  * Bypassing by setting explicit high-contrast values on .prose. */
 .dark .prose {
-  --tw-prose-body: oklch(0.88 0.005 264);
-  --tw-prose-headings: oklch(0.97 0.003 264);
-  --tw-prose-lead: oklch(0.82 0.008 264);
-  --tw-prose-links: oklch(0.78 0.14 264);
-  --tw-prose-bold: oklch(0.97 0.003 264);
-  --tw-prose-quotes: oklch(0.85 0.008 264);
-  --tw-prose-counters: oklch(0.72 0.010 264);
-  --tw-prose-bullets: oklch(0.58 0.015 264);
-  --tw-prose-captions: oklch(0.68 0.010 264);
-  --tw-prose-code: oklch(0.92 0.005 264);
-  --tw-prose-th-borders: oklch(0.40 0.015 264);
-  --tw-prose-td-borders: oklch(0.30 0.012 264);
-  color: oklch(0.88 0.005 264);
+  --tw-prose-body: oklch(0.78 0.012 85);
+  --tw-prose-headings: oklch(0.96 0.010 85);
+  --tw-prose-lead: oklch(0.78 0.012 85);
+  --tw-prose-links: oklch(0.78 0.14 80);
+  --tw-prose-bold: oklch(0.96 0.010 85);
+  --tw-prose-quotes: oklch(0.78 0.012 85);
+  --tw-prose-counters: oklch(0.58 0.012 85);
+  --tw-prose-bullets: oklch(0.42 0.010 85);
+  --tw-prose-captions: oklch(0.58 0.012 85);
+  --tw-prose-code: oklch(0.96 0.010 85);
+  --tw-prose-th-borders: oklch(0.32 0.018 175);
+  --tw-prose-td-borders: oklch(0.26 0.014 175);
+  color: oklch(0.78 0.012 85);
 }
 
 .dark .prose :where(h1, h2, h3, h4, h5, h6):not(:where([class~="not-prose"],[class~="not-prose"] *)) {
-  color: oklch(0.97 0.003 264);
+  color: oklch(0.96 0.010 85);
 }
 
 .dark .prose :where(strong):not(:where([class~="not-prose"],[class~="not-prose"] *)) {
-  color: oklch(0.97 0.003 264);
+  color: oklch(0.96 0.010 85);
 }
 
 .dark .prose :where(a):not(:where([class~="not-prose"],[class~="not-prose"] *)) {
-  color: oklch(0.78 0.14 264);
+  color: oklch(0.78 0.14 80);
 }
 
 .dark .prose :where(p, li, dd, dt):not(:where([class~="not-prose"],[class~="not-prose"] *)) {
-  color: oklch(0.88 0.005 264);
+  color: oklch(0.78 0.012 85);
 }
 
 .dark .prose :where(blockquote):not(:where([class~="not-prose"],[class~="not-prose"] *)) {
-  color: oklch(0.82 0.008 264);
+  color: oklch(0.78 0.012 85);
 }
 
 /* Table layout: fill container width, scroll on overflow via .prose-no-margin wrapper */
@@ -125,11 +126,11 @@
 }
 
 .dark .prose :where(th):not(:where([class~="not-prose"],[class~="not-prose"] *)) {
-  color: oklch(0.97 0.003 264);
+  color: oklch(0.96 0.010 85);
 }
 
 .dark .prose :where(td):not(:where([class~="not-prose"],[class~="not-prose"] *)) {
-  color: oklch(0.88 0.005 264);
+  color: oklch(0.78 0.012 85);
 }
 
 /* Mermaid SVG: force light text on dark backgrounds as fallback */
@@ -200,6 +201,38 @@
 
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  --font-serif: var(--font-serif);
+  --font-mono-atx: var(--font-mono-atx);
+
+  /* Attestix v2 palette (Tailwind utility friendly) */
+  --color-atx-bg:        var(--atx-bg);
+  --color-atx-bg-elev:   var(--atx-bg-elev);
+  --color-atx-bg-sunken: var(--atx-bg-sunken);
+  --color-atx-panel:     var(--atx-panel);
+  --color-atx-panel-hi:  var(--atx-panel-hi);
+  --color-atx-line:      var(--atx-line);
+  --color-atx-line-soft: var(--atx-line-soft);
+  --color-atx-ink:       var(--atx-ink);
+  --color-atx-ink-mid:   var(--atx-ink-mid);
+  --color-atx-ink-dim:   var(--atx-ink-dim);
+  --color-atx-ink-faint: var(--atx-ink-faint);
+  --color-atx-gold:      var(--atx-gold);
+  --color-atx-gold-deep: var(--atx-gold-deep);
+  --color-atx-gold-soft: var(--atx-gold-soft);
+  --color-atx-indigo:    var(--atx-indigo);
+  --color-atx-indigo-soft: var(--atx-indigo-soft);
+  --color-atx-ok:        var(--atx-ok);
+  --color-atx-warn:      var(--atx-warn);
+  --color-atx-err:       var(--atx-err);
+  --color-atx-info:      var(--atx-info);
+  --color-atx-accent:      var(--atx-accent);
+  --color-atx-accent-deep: var(--atx-accent-deep);
+  --color-atx-accent-soft: var(--atx-accent-soft);
+
+  --radius-atx-xs: var(--atx-r-xs);
+  --radius-atx-sm: var(--atx-r-sm);
+  --radius-atx-md: var(--atx-r-md);
+  --radius-atx-lg: var(--atx-r-lg);
 
   --bg-size-grid-1: 100% 100%;
   --bg-size-grid-2: 50% 100%;
@@ -408,6 +441,154 @@
   --sidebar-accent-foreground: oklch(0.94 0.008 264);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.56 0.22 264);
+}
+
+/*
+ * ============================================================
+ * Attestix v2 design tokens (institutional / editorial aesthetic)
+ * Namespaced as --atx-* so they do not collide with the existing
+ * indigo/gold system or the Fumadocs --color-fd-* chain.
+ * Consumed only by v2 landing components; other pages are unaffected.
+ * ============================================================
+ */
+
+:root {
+  /* Base palette (dark is the default look for v2) */
+  --atx-bg:          oklch(0.18 0.012 180);
+  --atx-bg-elev:     oklch(0.21 0.014 180);
+  --atx-bg-sunken:   oklch(0.14 0.010 180);
+  --atx-panel:       oklch(0.235 0.015 175);
+  --atx-panel-hi:    oklch(0.27 0.018 175);
+  --atx-line:        oklch(0.32 0.018 175);
+  --atx-line-soft:   oklch(0.26 0.014 175);
+  --atx-ink:         oklch(0.96 0.010 85);
+  --atx-ink-mid:     oklch(0.78 0.012 85);
+  --atx-ink-dim:     oklch(0.58 0.012 85);
+  --atx-ink-faint:   oklch(0.42 0.010 85);
+
+  /* Accents */
+  --atx-gold:        oklch(0.78 0.14 80);
+  --atx-gold-deep:   oklch(0.66 0.13 75);
+  --atx-gold-soft:   oklch(0.78 0.14 80 / 0.14);
+  --atx-indigo:      oklch(0.66 0.17 275);
+  --atx-indigo-soft: oklch(0.66 0.17 275 / 0.18);
+
+  /* Semantic */
+  --atx-ok:    oklch(0.72 0.14 150);
+  --atx-warn:  oklch(0.78 0.14 70);
+  --atx-err:   oklch(0.64 0.17 25);
+  --atx-info:  oklch(0.70 0.12 230);
+
+  /* Shadows */
+  --atx-shadow-sm: 0 1px 0 oklch(1 0 0 / 0.03), 0 1px 2px oklch(0 0 0 / 0.3);
+  --atx-shadow-md: 0 1px 0 oklch(1 0 0 / 0.04), 0 8px 24px -8px oklch(0 0 0 / 0.5);
+
+  /* Tight radii (institutional feel) */
+  --atx-r-xs: 2px;
+  --atx-r-sm: 3px;
+  --atx-r-md: 4px;
+  --atx-r-lg: 6px;
+
+  /* Density knobs */
+  --atx-pad-section: 96px;
+  --atx-pad-x: 28px;
+  --atx-row-h: 44px;
+
+  /* Active accent (swappable via [data-atx-accent]) */
+  --atx-accent:      var(--atx-gold);
+  --atx-accent-deep: var(--atx-gold-deep);
+  --atx-accent-soft: var(--atx-gold-soft);
+}
+
+/* v2 light mode (opt-in via [data-atx-mode="light"] on a section wrapper) */
+[data-atx-mode="light"] {
+  --atx-bg:        oklch(0.985 0.004 85);
+  --atx-bg-elev:   oklch(0.97 0.006 85);
+  --atx-bg-sunken: oklch(0.955 0.006 85);
+  --atx-panel:     oklch(1 0 0);
+  --atx-panel-hi:  oklch(0.985 0.004 85);
+  --atx-line:      oklch(0.86 0.010 85);
+  --atx-line-soft: oklch(0.92 0.008 85);
+  --atx-ink:       oklch(0.18 0.012 180);
+  --atx-ink-mid:   oklch(0.38 0.012 180);
+  --atx-ink-dim:   oklch(0.52 0.012 180);
+  --atx-ink-faint: oklch(0.70 0.010 180);
+  --atx-gold:      oklch(0.58 0.13 75);
+  --atx-gold-deep: oklch(0.48 0.12 70);
+  --atx-gold-soft: oklch(0.58 0.13 75 / 0.12);
+  --atx-indigo:      oklch(0.52 0.19 275);
+  --atx-indigo-soft: oklch(0.52 0.19 275 / 0.10);
+}
+
+/* Accent swaps */
+[data-atx-accent="indigo"] {
+  --atx-accent:      var(--atx-indigo);
+  --atx-accent-deep: var(--atx-indigo);
+  --atx-accent-soft: var(--atx-indigo-soft);
+}
+[data-atx-accent="ink"] {
+  --atx-accent:      var(--atx-ink);
+  --atx-accent-deep: var(--atx-ink-mid);
+  --atx-accent-soft: oklch(0.78 0 0 / 0.1);
+}
+[data-atx-accent="oxblood"] {
+  --atx-accent:      oklch(0.56 0.14 25);
+  --atx-accent-deep: oklch(0.46 0.13 25);
+  --atx-accent-soft: oklch(0.56 0.14 25 / 0.14);
+}
+
+/* Density */
+[data-atx-density="compact"] {
+  --atx-pad-section: 64px;
+  --atx-pad-x: 20px;
+  --atx-row-h: 34px;
+}
+
+/* Type bias (body font inside v2 wrappers) */
+[data-atx-type-bias="mono"]    { --atx-ff-body: var(--font-mono-atx); }
+[data-atx-type-bias="serif"]   { --atx-ff-body: var(--font-serif); }
+[data-atx-type-bias="balanced"]{ --atx-ff-body: var(--font-sans); }
+
+/* v2 workflow code-block syntax colors */
+.atx-code .c { color: var(--atx-ink-faint); font-style: italic; }
+.atx-code .k { color: var(--atx-accent); }
+.atx-code .s { color: var(--atx-ok); }
+.atx-code .n { color: var(--atx-info); }
+.atx-code .y { color: var(--atx-warn); }
+
+/* v2 standards strip marquee. Keyframes declared at the top level so
+ * the animation resolves even if Tailwind preflight strips custom keyframes
+ * from other contexts. The component sets `animation` inline as a safety net. */
+@keyframes atxMarqueeScroll {
+  0%   { transform: translate3d(0, 0, 0); }
+  100% { transform: translate3d(-50%, 0, 0); }
+}
+.atx-marquee:hover {
+  animation-play-state: paused;
+}
+@media (prefers-reduced-motion: reduce) {
+  .atx-marquee {
+    animation: none !important;
+  }
+}
+
+/* Fumadocs sidebar: mono uppercase eyebrows on section labels.
+ * Fumadocs renders folder headings with data-folder="true". */
+#nd-sidebar [data-folder="true"] > button,
+#nd-sidebar [data-folder="true"] > span {
+  font-family: var(--font-mono-atx);
+  font-size: 10.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-fd-muted-foreground);
+}
+
+/* Fumadocs docs prose: serif h1 for editorial consistency with marketing */
+.fd-docs article h1:first-of-type,
+#nd-page h1:first-of-type {
+  font-family: var(--font-serif);
+  font-weight: 400;
+  letter-spacing: -0.01em;
 }
 
 @layer base {
