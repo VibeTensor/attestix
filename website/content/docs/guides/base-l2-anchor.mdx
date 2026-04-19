@@ -1,0 +1,136 @@
+---
+title: Base L2 Testnet Anchor Walkthrough
+description: Anchor an Attestix artefact hash to Base L2 testnet via the Ethereum Attestation Service. End-to-end guide with Sepolia faucets, gas estimates, and verification.
+---
+
+This guide walks through anchoring an Attestix identity or credential to Base L2 testnet (Sepolia). Mainnet schema registration is planned for a future release; testnet is the default target today.
+
+## Why anchor?
+
+An Attestix artefact (identity, credential, audit batch) is already Ed25519-signed and hash-chained. Anchoring commits the hash to a public ledger so any third party can:
+
+- Confirm the artefact existed at a specific block height.
+- Detect silent mutation of the local store.
+- Link an Attestix issuer DID to an on-chain provenance record.
+
+Anchoring is optional. Attestix works fully offline without it.
+
+## Prerequisites
+
+```bash
+pip install attestix
+```
+
+You will need:
+
+1. A Base Sepolia RPC endpoint.
+2. A funded wallet on Base Sepolia (0.001 ETH is plenty, free from public faucets).
+3. The EAS schema UID for Attestix. This ships with the package.
+
+## Step 1 / Configure the testnet RPC
+
+```bash
+export BASE_RPC_URL=https://sepolia.base.org
+export BASE_WALLET_KEY=your_private_key_hex_no_0x_prefix
+```
+
+Or via `.env`:
+
+```
+BASE_RPC_URL=https://sepolia.base.org
+BASE_WALLET_KEY=0x0000000000000000000000000000000000000000000000000000000000000000
+```
+
+## Step 2 / Fund the wallet
+
+Use any Base Sepolia faucet. Recommended:
+
+- Coinbase Base faucet
+- Alchemy Sepolia faucet (bridgeable to Base)
+
+Send 0.001 ETH to the address derived from `BASE_WALLET_KEY`.
+
+Check balance:
+
+```python
+from services.blockchain_service import BlockchainService
+
+svc = BlockchainService()
+print(svc.wallet_balance())  # -> 0.001 ETH
+```
+
+## Step 3 / Estimate cost
+
+```python
+svc.estimate_anchor_cost(artifact_id="attestix:f9bdb7a94ccb40f1")
+```
+
+Typical numbers on Base Sepolia:
+
+| Field | Value |
+|-------|-------|
+| Gas | ~48,000 |
+| Gas price | ~1 gwei |
+| Total | under $0.01 (testnet ETH has no market value) |
+
+## Step 4 / Anchor an identity
+
+```python
+tx_hash = svc.anchor_identity(agent_id="attestix:f9bdb7a94ccb40f1")
+print(tx_hash)  # -> 0x8f2e4c9b...
+```
+
+## Step 5 / Anchor a credential
+
+```python
+tx_hash = svc.anchor_credential(credential_id="urn:uuid:9e2f7a3c-...")
+```
+
+## Step 6 / Anchor a batch
+
+Merkle-batch 100 artefacts into a single on-chain write:
+
+```python
+tx_hash = svc.anchor_audit_batch(
+    artifact_ids=[...],  # up to 10,000 per batch
+)
+```
+
+Gas cost stays ~48k regardless of batch size. The proof size grows as `O(log n)` per artefact.
+
+## Step 7 / Verify an anchor
+
+```python
+status = svc.verify_anchor(artifact_id="attestix:f9bdb7a94ccb40f1")
+# -> { "confirmed": True, "block": 23047881, "tx": "0x8f2e...", "schema": "AttestixAgentIdentityV1" }
+```
+
+Run this on a different machine to prove the local store has not been tampered with.
+
+## Step 8 / Inspect on a block explorer
+
+Paste the tx hash into Base Sepolia block explorer. You will see:
+
+- The EAS attestation call
+- The Attestix schema reference
+- The artefact hash as a bytes32 field
+
+Anyone can run the same verification without contacting Attestix or VibeTensor.
+
+## Troubleshooting
+
+### `Error: BASE_RPC_URL not set`
+
+See [configuration](/docs/reference/configuration) for all environment variables.
+
+### `Error: insufficient funds`
+
+Top up the wallet at a Base Sepolia faucet.
+
+### `Error: schema UID mismatch`
+
+Upgrade to the latest Attestix package: `pip install --upgrade attestix`.
+
+## Mainnet status
+
+Mainnet schema registration is on the [roadmap](/docs/project/roadmap). Once the mainnet schema is registered and validated, `BASE_RPC_URL` can be pointed at `https://mainnet.base.org` and the same flow applies with real gas cost. Until then, use testnet.

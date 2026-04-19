@@ -1,0 +1,103 @@
+---
+title: OpenAI Agents SDK Integration
+description: Expose all 47 Attestix tools natively to the OpenAI Agents SDK via MCPServerStdio. Production-ready in v0.3.0.
+---
+
+The OpenAI Agents SDK consumes Attestix as a native MCP server. All 47 tools are discovered automatically, with no per-tool wrapping.
+
+## Install
+
+```bash
+pip install attestix[openai-agents]
+```
+
+## Minimal wiring
+
+```python
+from agents import Agent, Runner
+from agents.mcp import MCPServerStdio
+
+attestix = MCPServerStdio(
+    params={
+        "command": "attestix",
+        "args": ["mcp"],
+    },
+)
+
+agent = Agent(
+    name="quarterly-analyst",
+    instructions="You are a financial analyst.",
+    mcp_servers=[attestix],
+)
+
+result = await Runner.run(agent, input="Run Q4 analysis")
+```
+
+## Tool discovery
+
+The SDK automatically calls `list_tools` on the Attestix MCP server and exposes all 47 tools to the agent. You can narrow the scope with `allowed_tools`:
+
+```python
+attestix = MCPServerStdio(
+    params={"command": "attestix", "args": ["mcp"]},
+    allowed_tools=[
+        "create_agent_identity",
+        "issue_credential",
+        "record_training_data",
+    ],
+)
+```
+
+## Auto-issued audit entries
+
+Every tool call made through the MCP server is appended to the Attestix hash-chained audit trail. No extra code needed.
+
+## Streaming and tool-use events
+
+```python
+async for event in Runner.run_streamed(agent, input="..."):
+    if event.type == "tool_call":
+        print(f"{event.tool_name}({event.arguments})")
+```
+
+The audit trail captures tool-call events. Inspect them via:
+
+```python
+from services.provenance_service import ProvenanceService
+
+trail = ProvenanceService().get_audit_trail(agent_id="attestix:...")
+```
+
+## HTTP transport
+
+If the Attestix MCP server runs as a separate HTTP service:
+
+```python
+from agents.mcp import MCPServerHTTP
+
+attestix = MCPServerHTTP(url="http://localhost:8501/mcp")
+```
+
+Start the server with:
+
+```bash
+attestix mcp --transport http --port 8501
+```
+
+## Multi-agent orchestration
+
+Wire Attestix into every agent in an orchestration so the entire graph is attestable:
+
+```python
+supervisor = Agent(
+    name="supervisor",
+    mcp_servers=[attestix],
+    handoffs=[analyst, summarizer],
+)
+```
+
+UCAN delegations record the hand-offs as first-class events.
+
+## Sample repository
+
+Full example in [github.com/VibeTensor/attestix/tree/main/examples](https://github.com/VibeTensor/attestix/tree/main/examples).

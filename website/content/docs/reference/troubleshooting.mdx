@@ -180,25 +180,25 @@ compliance_svc.record_conformity_assessment(
 Error: ATTESTIX_BASE_RPC_URL environment variable not set
 ```
 
-**Solution:** Set the Base L2 RPC URL in your environment:
+**Solution:** Set the Base L2 testnet RPC URL in your environment. Attestix anchors to Base Sepolia today; mainnet support ships once the mainnet schema is registered.
 
 ```bash
-export ATTESTIX_BASE_RPC_URL="https://mainnet.base.org"
+export ATTESTIX_BASE_RPC_URL="https://sepolia.base.org"
 ```
 
 Or use a provider like Alchemy:
 
 ```bash
-export ATTESTIX_BASE_RPC_URL="https://base-mainnet.g.alchemy.com/v2/YOUR_KEY"
+export ATTESTIX_BASE_RPC_URL="https://base-sepolia.g.alchemy.com/v2/YOUR_KEY"
 ```
 
 See the [Configuration](/docs/reference/configuration) page for all environment variables.
 
 ### Transaction fails with "insufficient funds"
 
-**Cause:** Blockchain anchoring requires a small amount of ETH on Base L2 for gas fees (typically less than $0.01).
+**Cause:** Blockchain anchoring requires a small amount of testnet ETH on Base Sepolia for gas fees (free from public faucets).
 
-**Solution:** Fund the wallet associated with `ATTESTIX_WALLET_PRIVATE_KEY` with a small amount of ETH on Base L2.
+**Solution:** Fund the wallet associated with `ATTESTIX_WALLET_PRIVATE_KEY` with testnet ETH on Base Sepolia. Public faucets include the Coinbase Base faucet and the Alchemy Sepolia faucet.
 
 ### Anchoring is optional
 

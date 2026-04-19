@@ -1,0 +1,115 @@
+---
+title: Offline Verification Walkthrough
+description: How a regulator, auditor, or other agent verifies an Attestix Verifiable Credential without any network access.
+---
+
+This guide walks through verifying an Attestix-issued Verifiable Credential with no internet connection. All that is required is the public key of the issuer, which is embedded in the DID.
+
+## Scenario
+
+You are a regulator. A supplier has sent you a Declaration of Conformity VC for their high-risk AI system. You want to confirm:
+
+1. The VC was signed by the claimed issuer.
+2. The signature has not been tampered with.
+3. The audit trail behind it is internally consistent.
+
+No network calls. Everything should verify from the JSON blob and the public key.
+
+## Prerequisites
+
+```bash
+pip install attestix
+```
+
+## Step 1 / Fetch the artefacts
+
+Ask the supplier to send:
+
+- The Verifiable Credential JSON (Annex V Declaration of Conformity)
+- The issuer's DID document (or the embedded public key)
+- Optionally, the hash-chained audit trail export
+
+All three come from `export_compliance_pack`:
+
+```python
+from services.compliance_service import ComplianceService
+
+pack = ComplianceService().export_compliance_pack(
+    agent_id="attestix:f9bdb7a94ccb40f1"
+)
+# pack -> zip with credential.json, did-document.json, audit.ndjson
+```
+
+## Step 2 / Verify the signature
+
+```python
+from services.credential_service import CredentialService
+
+credential_svc = CredentialService()
+
+with open("credential.json") as f:
+    vc = json.load(f)
+
+ok = credential_svc.verify_credential_offline(
+    credential=vc,
+    did_document_path="did-document.json",
+)
+# -> True (or False with a reason)
+```
+
+Internally this:
+
+1. Canonicalises the VC with [RFC 8785](https://www.rfc-editor.org/rfc/rfc8785) JCS.
+2. Extracts the `proofValue` field.
+3. Looks up the `verificationMethod` key in the DID document.
+4. Verifies the Ed25519 signature per [RFC 8032](https://www.rfc-editor.org/rfc/rfc8032).
+
+If the signature is valid, you have cryptographic proof that the issuer controlled the private key at signing time.
+
+## Step 3 / Verify the audit chain
+
+```python
+from services.provenance_service import ProvenanceService
+
+ok, first_bad_index = ProvenanceService().verify_audit_chain(
+    trail_path="audit.ndjson"
+)
+# -> (True, None) or (False, 42)
+```
+
+Each entry is checked with `SHA-256(prev_hash + actor + action + target + ts) = hash`. Any tamper with any row invalidates all subsequent rows.
+
+## Step 4 / Verify the declaration against the profile
+
+```python
+ok = ComplianceService().verify_declaration_offline(
+    declaration_path="credential.json",
+    profile_path="profile.json",
+)
+```
+
+Confirms the declaration references the correct risk category, notified body, and covered articles.
+
+## Full example script
+
+A runnable script is included in the repo at `examples/offline_verify.py`:
+
+```bash
+python examples/offline_verify.py ./compliance-pack.zip
+```
+
+Output:
+
+```
+[ok] signature verified (Ed25519Signature2020)
+[ok] audit chain consistent (1,247 entries)
+[ok] declaration references profile:3c8f21e9
+[ok] 9 / 9 obligations met (Articles 9, 10, 11, 12, 13, 14, 15, 43, Annex V)
+VERIFY = PASS
+```
+
+## Why this matters
+
+Every other compliance artefact you receive as a regulator comes as a PDF or a dashboard screenshot. Neither is cryptographically bindable to a specific operator or point in time. Attestix artefacts are.
+
+The same function is what a peer agent calls when it decides whether to trust another agent's capability claim. See [UCAN delegation](/docs/guides/integration-guide) for how delegation chains are verified the same way.

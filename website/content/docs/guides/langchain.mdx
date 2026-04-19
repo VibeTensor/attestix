@@ -1,0 +1,88 @@
+---
+title: LangChain Integration
+description: Drop Attestix into a LangChain agent with the BaseCallbackHandler. Production-ready in v0.3.0. Every tool call, LLM call, and chain step gets hash-chained and signed.
+---
+
+Attestix ships with a first-party `BaseCallbackHandler` implementation that writes every LangChain event into the Attestix audit trail and auto-issues a Verifiable Credential for each chain completion.
+
+## Install
+
+```bash
+pip install attestix[langchain]
+```
+
+## Minimal wiring
+
+```python
+from langchain.agents import AgentExecutor
+from langchain_openai import ChatOpenAI
+from attestix.integrations.langchain import AttestixCallback
+
+callback = AttestixCallback(
+    agent_id="attestix:f9bdb7a94ccb40f1",
+    record_llm_tokens=True,
+)
+
+executor = AgentExecutor(
+    agent=my_agent,
+    tools=tools,
+    callbacks=[callback],
+)
+
+result = executor.invoke({"input": "Run Q4 analysis"})
+```
+
+Every tool call, LLM call, and chain step is captured with the SHA-256 hash chain advancing each step.
+
+## What the callback records
+
+| Event | Captured |
+|-------|----------|
+| `on_chain_start` | agent id, chain name, input hash |
+| `on_tool_start` | tool name, args hash, parent chain id |
+| `on_tool_end` | output hash, duration, prev hash |
+| `on_llm_start` | model name, prompt hash, token count |
+| `on_llm_end` | completion hash, tokens used, cost estimate |
+| `on_chain_end` | final output hash, total tokens, VC issuance |
+| `on_chain_error` | exception type, stack hash |
+
+## Auto-issued credentials
+
+Set `issue_vc_on_success=True` (default) and Attestix issues a `ChainExecutionCredential` with:
+
+- Claim: input hash, output hash, tool chain, duration.
+- Proof: `Ed25519Signature2020` over the canonicalised JSON.
+- Subject: the agent ID.
+
+Verify it offline with any W3C VC verifier, or via:
+
+```python
+credential_svc.verify_credential(credential_id)
+```
+
+## Delegating to sub-agents
+
+If the chain spawns a sub-chain with its own agent, Attestix issues a UCAN delegation with capability attenuation:
+
+```python
+callback = AttestixCallback(
+    agent_id=parent_id,
+    child_agent_id=child_id,
+    delegate_capabilities=["summarize", "redact"],
+)
+```
+
+## Verify offline
+
+```python
+from services.credential_service import CredentialService
+
+credential_svc = CredentialService()
+ok = credential_svc.verify_credential(credential_id)
+```
+
+See the [offline verify guide](/docs/guides/offline-verify) for a full walkthrough.
+
+## Sample repository
+
+The [examples directory](https://github.com/VibeTensor/attestix/tree/main/examples) contains a complete LangChain agent with Attestix wired end-to-end.
