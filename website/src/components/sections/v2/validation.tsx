@@ -28,8 +28,8 @@ export function ValidationSection() {
             Attestix has been reviewed by an Ethereum founding member and
             founder of the Ethereum Attestation Service, an INRIA PRIVATICS
             researcher, a GenAI governance director, and senior engineers
-            building adjacent infrastructure at enterprise scale. Their exact
-            words are preserved below. Full correspondence on file.
+            building adjacent infrastructure at enterprise scale. Their
+            exact words are preserved below.
           </p>
         </div>
 

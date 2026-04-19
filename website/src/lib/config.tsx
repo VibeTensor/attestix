@@ -166,23 +166,6 @@ export const siteConfig = {
       detail: "Anindya leads GenAI governance architecture. He confirmed Attestix primitives align with the enterprise AI risk patterns he has been building, validating Attestix as a fit for large-organisation governance rollouts.",
     },
     {
-      id: 4,
-      // Anonymised on the public site until attribution permission is obtained.
-      // Real attribution tracked in internal CRM notes, not in this file.
-      text: "The fact you are open source is really interesting. I will reach out to the appropriate team.",
-      name: "Name on file",
-      anonymous: true,
-      role: "",
-      company: "",
-      validation: "policy" as const,
-      context: "On the value of open source compliance tooling for the EU AI Act",
-      askedBy: "Pavan Kumar Dubasi",
-      question: "Walked through the Attestix architecture for producing cryptographically verifiable evidence of compliance, with the provider remaining legally liable.",
-      event: "Direct Correspondence",
-      venue: "2026",
-      detail: "Conversation centred on liability, where providers remain legally responsible for their systems. Attestix is positioned as the evidence generation tool, not a guarantor. Genuine interest in the open source angle. Display anonymised until attribution permission obtained.",
-    },
-    {
       id: 5,
       text: "Highly relevant to EU AI Act compliance. Focus on articles 9 to 15.",
       name: "Hanene Brachemi Meftah",
