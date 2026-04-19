@@ -50,7 +50,7 @@ Email: pkd@vibetensor.com}
 \maketitle
 
 \begin{abstract}
-The rapid proliferation of autonomous AI agents operating across organizational boundaries introduces fundamental challenges in identity verification, trust establishment, and regulatory compliance. Existing identity and access management frameworks, designed for human users and static machine credentials, are inadequate for dynamic, capability-driven agent ecosystems. We present Attestix, an open-source attestation infrastructure that provides a unified trust layer for AI agents through nine integrated modules: cryptographic identity management, W3C Verifiable Credentials, Decentralized Identifiers (DIDs), UCAN-based delegation chains, exponential-decay reputation scoring, automated EU AI Act compliance, data provenance tracking with tamper-evident audit logs, and blockchain anchoring via the Ethereum Attestation Service. Attestix is implemented as a Model Context Protocol (MCP) server exposing 47 tools, enabling any MCP-compatible AI agent to acquire, present, and verify cryptographic attestations without modifications to the agent's core logic. We describe the system architecture, detail the cryptographic pipeline built on Ed25519 signatures with RFC 8785 JSON canonicalization, and present evaluation results from 284 automated tests including 91 conformance benchmarks that validate standards compliance against RFC 8032 canonical vectors, W3C VC/DID specifications, and UCAN v0.9.0, demonstrating sub-millisecond cryptographic operations. Attestix bridges the gap between emerging agent communication protocols (Google A2A, Anthropic MCP) and established trust standards (W3C VC, DID, UCAN), providing the first integrated compliance-aware attestation framework purpose-built for agentic AI.
+The rapid proliferation of autonomous AI agents operating across organizational boundaries introduces fundamental challenges in identity verification, trust establishment, and regulatory compliance. Existing identity and access management frameworks, designed for human users and static machine credentials, are inadequate for dynamic, capability-driven agent ecosystems. We present Attestix, an open-source attestation infrastructure that provides a unified trust layer for AI agents through nine integrated modules: cryptographic identity management, W3C Verifiable Credentials, Decentralized Identifiers (DIDs), UCAN-based delegation chains, exponential-decay reputation scoring, automated EU AI Act compliance, data provenance tracking with tamper-evident audit logs, and blockchain anchoring via the Ethereum Attestation Service. Attestix is implemented as a Model Context Protocol (MCP) server exposing 47 tools, enabling any MCP-compatible AI agent to acquire, present, and verify cryptographic attestations without modifications to the agent's core logic. We describe the system architecture, detail the cryptographic pipeline built on Ed25519 signatures with RFC 8785 JSON canonicalization, and present evaluation results from 358 automated tests (267 functional tests including unit, integration, end-to-end, and framework compatibility suites, plus 91 conformance benchmarks) that validate standards compliance against RFC 8032 canonical vectors, W3C VC/DID specifications, and UCAN v0.9.0, demonstrating sub-millisecond cryptographic operations. Version 0.3.0 adds production integrations for LangChain, OpenAI Agents SDK, and CrewAI, a GitHub Actions CI/CD matrix, and a coordinated security-hardening batch covering delegation chain auth bypass, SSRF defences, timing-safe verification, and upstream CVE dependency pins. Attestix bridges the gap between emerging agent communication protocols (Google A2A, Anthropic MCP) and established trust standards (W3C VC, DID, UCAN), providing the first integrated compliance-aware attestation framework purpose-built for agentic AI.
 \end{abstract}
 
 \begin{IEEEkeywords}
@@ -73,13 +73,20 @@ This shift creates three critical gaps:
 
 We present Attestix, an open-source attestation infrastructure that addresses all three gaps through a unified architecture. Attestix operates as a Model Context Protocol (MCP) server, exposing 47 cryptographic tools across nine modules that any MCP-compatible agent can invoke. The key insight is that attestation should be a \emph{composable infrastructure layer} rather than an application-level concern, analogous to how TLS provides transport security without requiring applications to implement cryptographic primitives.
 
+\subsection{Threat Model and Scope}
+\label{sec:threat}
+
+We target an honest-but-auditable operator running the Attestix server. The trust root is the operator's Ed25519 signing key, generated on first launch and stored with POSIX mode \texttt{0o600}; key compromise invalidates every downstream attestation and is treated as a catastrophic failure requiring re-issuance. We assume the following are in scope: forged UAIT identities presented by a remote agent, unauthorised delegation expansion, SSRF through agent-card fetch, JSON-RPC protocol injection, silent dependency drift, replay of Verifiable Presentations, and tampering of the hash-chained audit log detected by the chain invariant. We assume the following are out of scope: side-channel attacks against the underlying Ed25519 implementation (we rely on the constant-time primitives exposed by the cryptography library at the pinned version), physical extraction of the signing key from disk, threshold or HSM-backed key storage, and post-quantum migration. Verifiers are assumed to have access to the issuer's DID document and to perform standard W3C Verifiable Credential verification. Attestix is an evidence-generation tool, not a legal guarantor: regulators and auditors remain the final authority on EU AI Act conformity.
+
 \subsection{Contributions}
 
 \begin{itemize}
     \item A \textbf{unified attestation architecture} integrating DID-based identity, W3C Verifiable Credentials, UCAN delegation, reputation scoring, EU AI Act compliance automation, provenance tracking, and blockchain anchoring into a single coherent framework.
     \item A \textbf{compliance automation engine} that implements Articles 5, 9--15, 43, 72--73, and Annex V of the EU AI Act, including automated risk classification, conformity assessment enforcement, and declaration of conformity generation.
-    \item An \textbf{open-source implementation}\footnote{Source code: \url{https://github.com/VibeTensor/attestix}} as an MCP server with 47 tools, validated by 284 automated tests including 91 conformance benchmarks against RFC 8032, W3C VC/DID, and UCAN specifications, demonstrating that comprehensive attestation can be delivered as a protocol-level service with sub-millisecond cryptographic operations.
-    \item A \textbf{tamper-evident audit mechanism} combining SHA-256 hash-chained logs with Merkle tree aggregation and on-chain anchoring via the Ethereum Attestation Service on Base L2.
+    \item An \textbf{open-source implementation}\footnote{Source code: \url{https://github.com/VibeTensor/attestix}} as an MCP server with 47 tools, validated by 358 automated tests including 91 conformance benchmarks against RFC 8032, W3C VC/DID, and UCAN specifications, demonstrating that comprehensive attestation can be delivered as a protocol-level service with sub-millisecond cryptographic operations.
+    \item A \textbf{tamper-evident audit mechanism} combining SHA-256 hash-chained logs with Merkle tree aggregation and on-chain anchoring via the Ethereum Attestation Service on Base L2 (currently deployed on Base Sepolia testnet; mainnet schema registration is planned).
+    \item \textbf{Production framework integrations} for LangChain (BaseCallbackHandler), OpenAI Agents SDK (MCPServerStdio), and CrewAI (MCPServerAdapter), enabling any agent built on these frameworks to invoke all 47 Attestix tools without wrapper code, plus example integrations for Dify, Google ADK, Semantic Kernel, and Strands.
+    \item A \textbf{GitHub Actions CI/CD pipeline} running the pytest matrix across Python 3.10--3.13 on Linux and Windows, with ruff, mypy, bandit, pip-audit, and safety scans gating every pull request, and a coordinated security-hardening batch remediating delegation chain authentication, SSRF, timing side-channels, and upstream dependency CVEs (PyJWT, cryptography, python-multipart).
 \end{itemize}
 
 % ============================================================
@@ -106,7 +113,7 @@ The \textbf{EU AI Act} (Regulation 2024/1689) establishes a risk-based regulator
 
 Several recent works address subsets of the agent trust problem. Garzon et al.~\cite{garzon2025agents} propose equipping agents with DIDs and VCs for authentication, demonstrating feasibility but without compliance integration or reputation scoring. Huang et al.~\cite{huang2025zerotrust} present a zero-trust identity framework using DIDs and VCs with an Agent Naming Service, but focus on access control rather than regulatory compliance. Bodea et al.~\cite{bodea2025trusted} address hardware-level trust through Trusted Execution Environments (TEEs), complementary to Attestix's cryptographic approach. Chan et al.~\cite{chan2025infrastructure} survey agent infrastructure needs broadly, identifying identity binding, attribution, and interaction shaping as key functions.
 
-Attestix differentiates itself by providing a \emph{unified} implementation integrating all these concerns into a single deployable service, with specific focus on automated EU AI Act compliance that no prior system addresses.
+Attestix differentiates itself by integrating DID-based identity, W3C Verifiable Credentials, UCAN delegation, reputation scoring, EU AI Act obligation tracking, provenance, and on-chain anchoring into a single MCP-native service. Rather than claiming novelty across every primitive, our contribution is the \emph{composition}: to the best of our knowledge, no prior system implements the same breadth of standards in a single open-source MCP server backed by a conformance benchmark suite. Prior work either addresses subsets (Garzon~\cite{garzon2025agents}: DID/VC only; Huang~\cite{huang2025zerotrust}: access control; Bodea~\cite{bodea2025trusted}: TEE; Chan~\cite{chan2025infrastructure}: survey) or stops at the design / whitepaper level. We report the integration itself and the conformance evidence rather than claiming performance primacy, which would require a baseline study that prior work does not yet enable.
 
 % ============================================================
 \section{System Architecture}
@@ -144,7 +151,7 @@ Blockchain & 6 & EAS on Base L2 \\
 \subsection{Cryptographic Foundation}
 \label{sec:crypto}
 
-All operations use \textbf{Ed25519} (EdDSA over Curve25519)~\cite{rfc8032} exclusively, chosen for deterministic signatures, compact 64-byte output, timing-attack resistance, and widespread DID ecosystem adoption.
+All operations use \textbf{Ed25519} (EdDSA over Curve25519)~\cite{rfc8032} exclusively, chosen for deterministic signatures, compact 64-byte output, the timing-attack resistance of the underlying constant-time implementation exposed by the cryptography library (pinned to \texttt{\textgreater=\,46.0.7}, see Section~\ref{sec:security-measures}), and widespread DID ecosystem adoption. Attestix does not roll its own Ed25519; the timing-attack resistance claim is inherited from the upstream library, and migration to a post-quantum signature algorithm (e.g., NIST FIPS 204 ML-DSA) is listed in Section~\ref{sec:limitations}.
 
 \subsubsection{Key Management}
 
@@ -180,7 +187,7 @@ Verification checks: existence, non-revocation, non-expiry, and cryptographic si
 
 \subsection{Delegation Layer}
 
-Delegation uses \textbf{UCAN v0.9.0} tokens as JWTs with EdDSA signatures, including capability attenuation (\texttt{att}), proof chains (\texttt{prf}), and cryptographic token IDs (\texttt{jti}). Chain verification recursively validates parent tokens and confirms capability subset invariants.
+Delegation uses \textbf{UCAN v0.9.0} tokens as JWTs with EdDSA signatures, including capability attenuation (\texttt{att}), proof chains (\texttt{prf}), and cryptographic token IDs (\texttt{jti}). Chain verification enforces two invariants relevant to the v0.3.0 delegation-chain auth-bypass remediation: (i) \emph{recursive parent validation}, where every parent token referenced in \texttt{prf} is fully verified (signature, expiry, revocation), preventing forged parent references from being admitted to the chain; and (ii) \emph{capability subset}, where a child token's \texttt{att} must be a subset of every ancestor's \texttt{att}, preventing privilege escalation across the chain.
 
 \subsection{Compliance Layer}
 
@@ -210,7 +217,9 @@ Annex V & Declaration & 12-field generation \\
 \end{tabular}
 \end{table}
 
-A key design decision: the system \textbf{actively rejects self-assessment for high-risk AI systems} (Article 43), requiring third-party conformity assessment. Gap analysis computes compliance completion as a percentage, enabling continuous monitoring.
+A key design decision: the system \textbf{enforces Article 43 conformity assessment requirements based on Annex III categorization}. Systems classified under Annex III Point 1 (biometric categorization) require a third-party conformity assessment; Attestix blocks \texttt{create\_compliance\_profile()} when the risk category falls in Point 1 and the assessment type is not \texttt{third\_party}. Systems in Annex III Points 2--8 permit the internal control procedure per Article 43(2), with a fail-safe default to third-party assessment for unknown or edge-case categorizations. The v0.3.0 security batch corrected a prior regression that applied the biometric-only rule to every high-risk category, which over-enforced third-party assessment for systems the regulation actually allows to self-assess. Gap analysis computes compliance completion as a percentage, enabling continuous monitoring.
+
+The twelve rows above describe what Attestix \emph{records} and, where applicable, what it \emph{blocks} at creation or verification time. Attestix does not replace legal counsel or a notified body; deployers remain the controller for Article 16--22 obligations. A clearer breakdown of automation versus recording: Articles 5 and 43 are \emph{enforced} at creation time (prohibited practices are rejected; biometric high-risk systems are blocked from self-assessment); Articles 10, 11, 12, 72, and 73 are \emph{recorded} (metadata captured; obligations still require deployer process); Articles 9, 13, 14, and 15 are \emph{tracked} (checklists, flags, audit entries that surface completion state but do not enforce it). Annex V is \emph{generated} as a signed Verifiable Credential.
 
 \subsection{Reputation Layer}
 
@@ -226,11 +235,11 @@ Two mechanisms serve EU AI Act Articles 10--12:
 
 \textbf{Provenance entries}: structured records for training data (Article 10) and model lineage (Article 11).
 
-\textbf{Hash-chained audit log}: each entry includes:
+\textbf{Hash-chained audit log}: each entry $i$ has a SHA-256 chain hash defined as
 \begin{equation}
-H_i = \text{SHA256}(H_{i-1} \| \text{canonical}(\text{entry}_i))
+H_i = \text{SHA256}(H_{i-1} \; \| \; \text{JCS}(\text{entry}_i \setminus \{\text{chain\_hash}, \text{signature}\}))
 \end{equation}
-where $H_0 = \texttt{"0"^{64}}$, providing tamper evidence. Entries record action type, input/output summaries, decision rationale, and human override flags.
+where $H_0$ is the hex string \texttt{"0"\textsuperscript{64}} (genesis marker), $\|$ is byte concatenation, and $\text{JCS}$ is RFC 8785 JSON Canonicalization applied to the entry minus its own \texttt{chain\_hash} and \texttt{signature} fields. Each entry records action type, actor DID, target, timestamp, input/output summaries, decision rationale, and human override flags, plus an Ed25519 signature over the same canonical bytes. A third-party verifier re-canonicalises every entry and recomputes the chain bottom-up; any tampering with any row invalidates all subsequent hashes.
 
 \subsection{Blockchain Anchoring}
 
@@ -240,18 +249,34 @@ Attestix anchors artifact hashes on \textbf{Base L2} using the \textbf{Ethereum 
 \section{Implementation}
 \label{sec:implementation}
 
-Attestix is implemented in Python 3.10+ using \texttt{FastMCP}. The codebase comprises approximately 6,000 lines of production code across 31 files, 284 test cases (193 functional + 91 conformance benchmarks), and 5 example scripts.
+Attestix is implemented in Python 3.10+ using \texttt{FastMCP}. The codebase comprises approximately 6,000 lines of production code across 31 files, 358 test cases (267 functional plus 91 conformance benchmarks) and example scripts for seven agent frameworks. Runtime dependencies are pinned with both lower and upper bounds to prevent silent major-version drift; key pins for v0.3.0 close upstream CVEs in PyJWT (\textgreater= 2.12.0, JWT header validation bypass), \texttt{cryptography} (\textgreater= 46.0.7, two disclosed issues), and \texttt{python-multipart} (\textgreater= 0.0.26, DoS via multipart preamble / epilogue).
 
 \subsection{MCP Integration}
 
 The 47 tools are registered via module-level \texttt{register(mcp)} functions with \texttt{@mcp.tool()} decorators. stdout is redirected to stderr to prevent JSON-RPC protocol corruption.
 
-\subsection{Security Measures}
+\subsection{Framework Integrations}
+\label{sec:framework-integrations}
 
-\textbf{SSRF Protection}: outbound HTTP passes through validation blocking private IPs, localhost, metadata endpoints, with DNS pinning against rebinding.
-\textbf{Error Sanitization}: responses contain only exception type names.
-\textbf{GDPR}: \texttt{purge\_agent\_data()} cascades deletion across all stores.
-\textbf{Storage}: atomic writes with file locking and corruption recovery.
+Version 0.3.0 ships three production integrations that expose the full 47-tool Attestix surface to mainstream autonomous-agent frameworks without requiring per-tool wrapper code:
+\begin{itemize}
+    \item \textbf{LangChain} via an \texttt{AttestixCallback} class implementing \texttt{BaseCallbackHandler}. Every tool call, LLM call, and chain step is appended to the hash-chained audit trail, and on chain completion a \texttt{ChainExecutionCredential} is auto-issued with input hash, output hash, tool sequence, and duration.
+    \item \textbf{OpenAI Agents SDK} via \texttt{MCPServerStdio}, launched as an async context manager; the SDK auto-discovers all 47 tools, and a \texttt{create\_static\_tool\_filter} scopes exposure per agent.
+    \item \textbf{CrewAI} via \texttt{MCPServerAdapter}, yielding the tool list into the agent's \texttt{tools} field; role hand-offs between crew members are recorded as UCAN delegations with capability attenuation.
+\end{itemize}
+Four additional frameworks (Dify, Google ADK, Microsoft Semantic Kernel, Strands) consume Attestix through the generic MCP transport and ship as example configurations rather than first-party integrations.
+
+\subsection{Security Measures}
+\label{sec:security-measures}
+
+\textbf{SSRF Protection}: outbound HTTP passes through an allowlist blocking private IP ranges (RFC 1918, loopback, link-local), localhost aliases, and cloud metadata endpoints (\texttt{169.254.169.254}, \texttt{metadata.google.internal}); DNS pinning validates resolved addresses before dispatch and zero redirects are permitted, closing a rebinding vector present prior to v0.3.0.
+\textbf{Signature Verification}: Ed25519 verification uses the constant-time implementation from \texttt{cryptography \textgreater= 46.0.7}, resistant to timing attacks on the verification path.
+\textbf{Error Sanitization}: exception responses expose only sanitized type names; stack traces and internal file paths are never propagated to MCP or REST clients. Logging is routed to \texttt{stderr} to prevent stdout corruption of the JSON-RPC protocol.
+\textbf{Delegation Integrity}: the v0.3.0 security batch added recursive parent-token verification and capability-subset enforcement on every UCAN chain verification, closing a delegation-chain authentication bypass.
+\textbf{File Security}: on POSIX systems, the signing-key file is created with mode \texttt{0o600} (owner read/write only); key encryption uses Fernet with PBKDF2-HMAC-SHA256 (480,000 iterations) when \texttt{ATTESTIX\_KEY\_PASSWORD} is set.
+\textbf{Dependency Integrity}: runtime deps carry pinned lower and upper bounds, with lower bounds set to close upstream CVEs (PyJWT \textgreater= 2.12.0, cryptography \textgreater= 46.0.7, python-multipart \textgreater= 0.0.26).
+\textbf{GDPR (technical erasure)}: \texttt{purge\_agent\_data()} performs the technical component of Article 17 by cascading deletion across identities, credentials, compliance profiles, conformity assessments, declarations, delegations, provenance, audit logs, and reputation interactions. Article 17 also imposes organisational obligations (third-party notification, exception handling for retention duties, proof-of-erasure to the data subject) that remain the deployer's responsibility; Attestix automates the data-plane cascade only.
+\textbf{Storage}: atomic writes with file locking and corruption recovery through backup rotation.
 
 % ============================================================
 \section{Evaluation}
@@ -259,7 +284,7 @@ The 47 tools are registered via module-level \texttt{register(mcp)} functions wi
 
 \subsection{Functional Correctness}
 
-The test suite includes 284 automated tests: 193 functional tests (unit, integration, end-to-end) and 91 conformance benchmark tests. Functional tests cover multi-agent delegation, enterprise compliance, blockchain anchoring, and persona simulations (healthcare, finance, content moderation, supply chain, cybersecurity, government regulator). All tests are validated in clean Docker containers via \texttt{Dockerfile.test}.
+The test suite includes 358 automated tests: 267 functional tests spanning unit, integration, end-to-end, and framework-compatibility suites, plus 91 conformance benchmark tests. Functional tests cover multi-agent delegation, enterprise compliance, blockchain anchoring, and persona simulations (healthcare, finance, content moderation, supply chain, cybersecurity, government regulator), as well as the three framework integrations introduced in v0.3.0. All tests are validated in clean Docker containers via \texttt{Dockerfile.test} and in the GitHub Actions CI matrix. The v0.3.0 release (2026-04-17) passes the full matrix across Python 3.10--3.13 on Ubuntu and Windows with one Windows-only skip (POSIX chmod assertion on the key file); the commit SHA, workflow run URL, and \texttt{requirements-lock.txt} are published with the GitHub release so that a third party can reproduce the run.
 
 \subsection{Standards Conformance}
 
@@ -321,6 +346,20 @@ Blockchain anchor (Base L2) & 3--8 s & Network \\
 
 All cryptographic primitives complete sub-millisecond. Service-layer operations include JSON file I/O and complete in low double-digit milliseconds. Blockchain latency is dominated by network round-trip and is acceptable for non-real-time compliance workflows. The performance benchmark tests enforce hard upper-bound thresholds to prevent performance regressions.
 
+\textbf{Reference hardware and reproducibility.} The median latencies above are measured inside the CI runner for \texttt{pytest tests/benchmarks/} (Ubuntu x64, Python 3.12, 2 vCPU, Docker-confined, no specialised crypto hardware) and should be treated as \emph{reference} numbers. Results on dedicated hardware with AVX-accelerated cryptography are materially faster; results on resource-constrained agents may be slower. A third party can reproduce the exact numbers by running \texttt{make bench} at the tagged v0.3.0 commit against the pinned \texttt{requirements-lock.txt} and \texttt{Dockerfile.test}. Variance is not reported: benchmark samples showed standard deviations under 15\% of the median for every cryptographic primitive and under 25\% for service operations during the v0.3.0 cut; we avoid over-claiming by omitting percentiles rather than reporting from a single run.
+
+\textbf{No baseline comparison.} Prior work (Garzon, Huang, Bodea) does not publish comparable sign, verify, or VC-issuance latency numbers for systems we could align on workload; a formal baseline study would require re-implementing or instrumenting their prototypes, which is out of scope here. We therefore report absolute figures with thresholds rather than a comparison table.
+
+\subsection{Continuous Integration and Security Audits}
+\label{sec:ci}
+
+Every push and pull request to the main branch exercises a GitHub Actions matrix across Python 3.10--3.13 on Ubuntu and Windows, running the full pytest suite (267 functional tests plus the 91-test conformance benchmark suite). Static-analysis jobs include \texttt{ruff} style and common-error checks, \texttt{mypy} type analysis, \texttt{bandit} static application security testing at medium confidence or above, \texttt{pip-audit} for transitive CVE detection, and \texttt{safety} as an advisory second opinion. All security scans were green at the v0.3.0 release (2026-04-17). The pre-release hardening batch closed a delegation chain authentication bypass, added SSRF validation on all outbound requests, moved to constant-time signature verification, sanitized API error responses, corrected Article 43 Annex III differentiation, and fixed the EAS schema UID derivation used by \texttt{anchor\_credential} and \texttt{verify\_anchor}.
+
+\subsection{Framework Integration Validation}
+\label{sec:framework-validation}
+
+The three v0.3.0 framework integrations (LangChain, OpenAI Agents SDK, CrewAI) are exercised end-to-end in the CI matrix. For each framework the test suite verifies: (i) Attestix identity registration produces a valid UAIT with the expected \texttt{did:key}, (ii) all 47 tools are discoverable via the framework's tool-invocation pathway, (iii) a representative compliance workflow (risk classification, training-data record, conformity assessment, Annex V declaration, Ed25519Signature2020 VC) executes without error, and (iv) every tool call is logged to the hash-chained audit trail with the expected actor and linkage. Example implementations for Dify, Google ADK, Semantic Kernel, and Strands are shipped as configuration-only examples.
+
 \subsection{Standards Coverage Summary}
 
 \begin{table}[htbp]
@@ -335,10 +374,15 @@ W3C VC Data Model 1.1 & Full lifecycle & 24 tests \\
 W3C DID Core 1.0 & did:key, did:web, resolver & 16 tests \\
 Ed25519 (RFC 8032) & Sign/verify/derive & 18 tests \\
 UCAN v0.9.0 & Delegation chains & 16 tests \\
-RFC 8785 (JCS) & JSON canonicalization & Implicit \\
-RFC 6962 Sec. 2.1 & Merkle trees & Unit tests \\
-EU AI Act (2024/1689) & 12 articles + Annex V & E2E tests \\
-EAS / EIP-1559 & On-chain anchoring & Mock tests \\
+RFC 8785 (JCS) & JSON canonicalization & Exercised by \\
+ & & every VC/audit test \\
+RFC 6962 Sec. 2.1 & Merkle leaf/node hash & Unit tests \\
+EU AI Act (2024/1689) & Enforced: Art. 5, 43 & E2E tests \\
+ & Recorded: Art. 10--12, 72--73 & \\
+ & Tracked: Art. 9, 13--15 & \\
+ & Generated: Annex V & \\
+EAS on Base Sepolia & On-chain anchoring & Integration + \\
+ & (testnet today) & mock tests \\
 A2A Protocol & Agent cards & Unit tests \\
 MCP & 47-tool server & 5 tests \\
 \bottomrule
@@ -374,13 +418,24 @@ Open Source & \checkmark & Proto & -- & -- & -- \\
 \end{table}
 
 \subsection{Limitations and Future Work}
+\label{sec:limitations}
 
-Current limitations include: single-server trust model (planned: distributed key management), JSON file storage (planned: database backend), static reputation parameters (planned: adaptive Bayesian inference), and no TEE integration. Future work includes zero-knowledge selective disclosure, multi-regulatory framework support (NIST AI RMF, ISO/IEC 42001), and threshold signing for distributed deployments.
+\textbf{Shipped in v0.3.0.} Three framework integrations (LangChain, OpenAI Agents SDK, CrewAI) previously listed as future work have shipped and are exercised end-to-end in CI. A GitHub Actions CI/CD pipeline validates the full pytest and conformance suite on every push across the Python 3.10--3.13 matrix with coordinated static-analysis and security scans.
+
+\textbf{Current limitations.} Single-server trust model (planned: distributed key management, threshold signing, HSM-backed keys); JSON file storage (planned: database backend); static reputation parameters (planned: adaptive Bayesian inference); no TEE integration; on-chain anchoring currently on Base Sepolia testnet only, with mainnet schema registration deferred pending a further security review. The framework integrations are validated end-to-end in CI but have not yet been load-tested under production traffic and are best described as \emph{reference implementations} rather than production-hardened.
+
+\textbf{EU AI Act scope boundary.} The compliance layer is an evidence generator, not a legal guarantor. Attestix automates the data-plane pieces that regulators can verify (risk classification, provenance, audit trails, Annex V declaration issuance) and enforces a small number of bright-line rules (Article 5 prohibited practices, Article 43 biometric third-party assessment). Articles that require organisational process (Article 9 risk management, Article 14 human oversight, Article 72 post-market monitoring, Article 73 incident reporting) are \emph{tracked} but still require the deployer's own governance. Annex III categorisation is based on the deployer's declaration of intended purpose; we do not infer the category from system behaviour.
+
+\textbf{GDPR scope boundary.} Article 17 is implemented as a technical cascade only. Articles 19 (notification), 20 (data portability), 21 (objection), and 28 (processor obligations) are out of scope for v0.3.0 and listed as future work.
+
+\textbf{Cryptographic migration.} Attestix is pinned to Ed25519 via the \texttt{cryptography} library. Post-quantum migration (NIST FIPS 204 ML-DSA, or the UCAN / VC working-group equivalents) will require schema versioning and client-side algorithm negotiation and is not yet planned.
+
+\textbf{Future work.} Zero-knowledge selective disclosure; broader GDPR support beyond Article 17; DPDPA implementation for India; LGPD mapping for Brazil; NIST AI RMF and ISO/IEC 42001 controls as multi-regulatory compliance profiles; Base L2 mainnet schema registration and cross-chain anchor verification; i18n scaffolding for multi-language declarations; Trust-Over-IP ecosystem governance mappings; threshold signing and HSM-backed keys for distributed deployments.
 
 % ============================================================
 \section{Conclusion}
 
-We presented Attestix, the first integrated attestation infrastructure for autonomous AI agents combining cryptographic identity, verifiable credentials, capability delegation, regulatory compliance, reputation scoring, provenance tracking, and blockchain anchoring in a single MCP server. The system implements twelve EU AI Act articles, provides sub-millisecond cryptographic operations (0.08\,ms key generation, 0.28\,ms sign/verify), and bridges emerging agent protocols with established trust standards. Standards compliance is validated by 91 conformance benchmark tests covering RFC 8032 Ed25519 canonical vectors, W3C VC Data Model 1.1, W3C DID Core 1.0, and UCAN v0.9.0, all executed in Docker alongside 193 functional tests. Attestix is available as open-source under Apache 2.0 at \url{https://github.com/VibeTensor/attestix} and on PyPI as \texttt{attestix}.
+We presented Attestix, an integrated attestation infrastructure for autonomous AI agents combining cryptographic identity, verifiable credentials, capability delegation, regulatory evidence generation, reputation scoring, provenance tracking, and blockchain anchoring in a single MCP server. The system implements twelve EU AI Act articles, provides sub-millisecond cryptographic operations (0.08\,ms key generation, 0.28\,ms sign/verify), and bridges emerging agent protocols with established trust standards. Standards compliance is validated by 91 conformance benchmark tests covering RFC 8032 Ed25519 canonical vectors, W3C VC Data Model 1.1, W3C DID Core 1.0, and UCAN v0.9.0, all executed in Docker and in the GitHub Actions matrix alongside 267 functional tests (including framework-integration suites for LangChain, OpenAI Agents SDK, and CrewAI). Version 0.3.0 adds a coordinated security-hardening batch covering delegation chain authentication, SSRF, timing side-channels, and upstream dependency CVEs. Attestix is available as open-source under Apache 2.0 at \url{https://github.com/VibeTensor/attestix} and on PyPI as \texttt{attestix}.
 
 \section*{Acknowledgments}
 This work was conducted at VibeTensor Private Limited. The author thanks the W3C, UCAN, and MCP communities for foundational standards.

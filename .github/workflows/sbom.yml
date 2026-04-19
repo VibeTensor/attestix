@@ -1,0 +1,68 @@
+name: SBOM
+
+on:
+  push:
+    branches: [main]
+  release:
+    types: [published]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: sbom-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  cyclonedx:
+    name: Generate CycloneDX SBOM
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+          cache-dependency-path: pyproject.toml
+
+      - name: Install package and cyclonedx-bom
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[blockchain]"
+          pip install "cyclonedx-bom>=5.0.0,<6.0.0"
+
+      - name: Generate CycloneDX SBOM (JSON)
+        run: |
+          cyclonedx-py environment --output-format json --output-file attestix-sbom.cyclonedx.json
+          echo "SBOM size: $(wc -c < attestix-sbom.cyclonedx.json) bytes"
+
+      - name: Validate SBOM is well-formed JSON
+        run: python -c "import json, sys; json.load(open('attestix-sbom.cyclonedx.json')); print('SBOM JSON parsed successfully')"
+
+      - name: Compute SBOM SHA-256
+        run: |
+          sha256sum attestix-sbom.cyclonedx.json > attestix-sbom.cyclonedx.json.sha256
+          cat attestix-sbom.cyclonedx.json.sha256
+
+      - name: Upload SBOM as workflow artefact (30-day retention)
+        uses: actions/upload-artifact@v4
+        with:
+          name: attestix-sbom-cyclonedx
+          path: |
+            attestix-sbom.cyclonedx.json
+            attestix-sbom.cyclonedx.json.sha256
+          retention-days: 30
+
+      - name: Attach SBOM to the GitHub release
+        if: github.event_name == 'release'
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            attestix-sbom.cyclonedx.json
+            attestix-sbom.cyclonedx.json.sha256
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
