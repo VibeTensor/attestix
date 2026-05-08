@@ -42,30 +42,33 @@ export function ValidationSection() {
         </div>
 
         <div className="mt-14 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
-          {siteConfig.highlights.map((h) => (
-            <figure
-              key={h.id}
-              className="flex flex-col rounded-atx-md border border-atx-line-soft bg-atx-panel p-7"
-            >
-              <div className="font-mono-atx text-[10.5px] uppercase tracking-[0.14em] text-atx-ink-faint">
-                {h.event}
-              </div>
-              <blockquote className="mt-5 font-serif text-[22px] leading-[1.3] text-atx-ink">
-                &ldquo;{h.text}&rdquo;
-              </blockquote>
-              <figcaption className="mt-auto pt-6 text-[13px] leading-[1.5]">
-                <div className="font-medium text-atx-ink">
-                  {displayName(h)}
+          {siteConfig.highlights.map((h) => {
+            const subline = displaySubline(h);
+            return (
+              <figure
+                key={h.id}
+                className="flex flex-col rounded-atx-md border border-atx-line-soft bg-atx-panel p-7"
+              >
+                <div className="font-mono-atx text-[10.5px] uppercase tracking-[0.14em] text-atx-ink-faint">
+                  {h.event}
                 </div>
-                {displaySubline(h) ? (
-                  <div className="text-atx-ink-mid">{displaySubline(h)}</div>
-                ) : null}
-                <div className="mt-3 font-mono-atx text-[10.5px] uppercase tracking-[0.12em] text-atx-ink-faint">
-                  {h.venue}
-                </div>
-              </figcaption>
-            </figure>
-          ))}
+                <blockquote className="mt-5 font-serif text-[22px] leading-[1.3] text-atx-ink">
+                  &ldquo;{h.text}&rdquo;
+                </blockquote>
+                <figcaption className="mt-auto pt-6 text-[13px] leading-[1.5]">
+                  <div className="font-medium text-atx-ink">
+                    {displayName(h)}
+                  </div>
+                  {subline ? (
+                    <div className="text-atx-ink-mid">{subline}</div>
+                  ) : null}
+                  <div className="mt-3 font-mono-atx text-[10.5px] uppercase tracking-[0.12em] text-atx-ink-faint">
+                    {h.venue}
+                  </div>
+                </figcaption>
+              </figure>
+            );
+          })}
         </div>
       </div>
     </section>
