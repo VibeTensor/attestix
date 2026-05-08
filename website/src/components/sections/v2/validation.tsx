@@ -4,9 +4,17 @@ import { siteConfig } from "@/lib/config";
 type Highlight = (typeof siteConfig.highlights)[number];
 
 function displayName(h: Highlight) {
-  return "anonymous" in h && h.anonymous === true
-    ? "Name on file"
-    : h.name;
+  if ("anonymous" in h && h.anonymous === true) {
+    return h.role ?? "Name on file";
+  }
+  return h.name;
+}
+
+function displaySubline(h: Highlight) {
+  if ("anonymous" in h && h.anonymous === true) {
+    return h.company ?? null;
+  }
+  return h.role ?? null;
 }
 
 export function ValidationSection() {
@@ -25,10 +33,10 @@ export function ValidationSection() {
             </h2>
           </div>
           <p className="text-[15px] leading-[1.65] text-atx-ink-mid">
-            Attestix has been reviewed by an Ethereum founding member and
-            founder of the Ethereum Attestation Service, an INRIA PRIVATICS
-            researcher, a GenAI governance director, and senior engineers
-            building adjacent infrastructure at enterprise scale. Their
+            Attestix has been reviewed by senior engineers building public
+            attestation infrastructure, a European AI-privacy researcher, a
+            GenAI governance director, and engineers building adjacent
+            systems at enterprise scale. Names are kept on file. Their
             exact words are preserved below.
           </p>
         </div>
@@ -49,11 +57,8 @@ export function ValidationSection() {
                 <div className="font-medium text-atx-ink">
                   {displayName(h)}
                 </div>
-                {h.role ? (
-                  <div className="text-atx-ink-mid">{h.role}</div>
-                ) : null}
-                {h.company ? (
-                  <div className="text-atx-ink-dim">{h.company}</div>
+                {displaySubline(h) ? (
+                  <div className="text-atx-ink-mid">{displaySubline(h)}</div>
                 ) : null}
                 <div className="mt-3 font-mono-atx text-[10.5px] uppercase tracking-[0.12em] text-atx-ink-faint">
                   {h.venue}

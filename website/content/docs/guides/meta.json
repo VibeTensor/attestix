@@ -10,7 +10,6 @@
     "openai-agents-sdk",
     "crewai",
     "offline-verify",
-    "base-l2-anchor",
-    "architecture"
+    "base-l2-anchor"
   ]
 }
