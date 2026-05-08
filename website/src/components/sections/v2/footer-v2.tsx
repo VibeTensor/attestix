@@ -29,7 +29,7 @@ const COLUMNS: FooterColumn[] = [
       { label: "Getting started", href: "/docs/getting-started" },
       { label: "EU AI Act guide", href: "/docs/guides/eu-ai-act-compliance" },
       { label: "Risk classification", href: "/docs/guides/risk-classification" },
-      { label: "Architecture", href: "/docs/guides/architecture" },
+      { label: "Offline verify", href: "/docs/guides/offline-verify" },
     ],
   },
   {
