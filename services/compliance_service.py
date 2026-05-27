@@ -8,9 +8,11 @@ import uuid
 from datetime import datetime, timezone
 from typing import Dict, List, Optional
 
+from audit import AuditEventEmitter, resolve_emitter, safe_emit
 from config import load_compliance, save_compliance
 from errors import ErrorCategory, log_and_format_error
 from signing import InProcessSigner, Signer
+from storage.repository import DEFAULT_TENANT
 
 
 VALID_RISK_CATEGORIES = {"minimal", "limited", "high", "unacceptable"}
@@ -124,13 +126,22 @@ def _requires_third_party_assessment(
 class ComplianceService:
     """Manages EU AI Act compliance profiles, assessments, and declarations."""
 
-    def __init__(self, signer: Optional[Signer] = None):
+    def __init__(
+        self,
+        signer: Optional[Signer] = None,
+        emitter: Optional[AuditEventEmitter] = None,
+        tenant_id: str = DEFAULT_TENANT,
+    ):
         # v0.4.0: sign through the pluggable Signer seam (default = in-process
         # Ed25519, byte-for-byte identical to v0.3.0).
         self._signer = signer or InProcessSigner()
         self._server_did = self._signer.did
         self._identity_svc = None
         self._credential_svc = None
+        # v0.4.0 (T033/T034): per-service audit emitter + tenant context (side
+        # channel; tenant defaults to "default" for v0.3.0 parity).
+        self._emitter = resolve_emitter(emitter)
+        self._tenant_id = tenant_id
 
     @property
     def identity_svc(self):
@@ -265,6 +276,17 @@ class ComplianceService:
             # Link compliance profile to UAIT
             self.identity_svc.update_compliance_ref(agent_id, profile_id)
 
+            safe_emit(
+                self._emitter,
+                action="compliance.create_profile",
+                target_id=profile_id,
+                target_collection="compliance",
+                actor=self._server_did,
+                tenant_id=self._tenant_id,
+                after={"profile_id": profile_id, "agent_id": agent_id,
+                       "risk_category": risk_category},
+            )
+
             return profile
         except Exception as e:
             msg = log_and_format_error(
@@ -301,6 +323,15 @@ class ComplianceService:
                     p["signature"] = self._signer.sign(signable)
 
                     save_compliance(data)
+                    safe_emit(
+                        self._emitter,
+                        action="compliance.update_profile",
+                        target_id=p["profile_id"],
+                        target_collection="compliance",
+                        actor=self._server_did,
+                        tenant_id=self._tenant_id,
+                        after={"profile_id": p["profile_id"], "agent_id": agent_id},
+                    )
                     return p
             return {"error": f"No compliance profile found for {agent_id}"}
         except Exception as e:
@@ -392,6 +423,17 @@ class ComplianceService:
                     break
 
             save_compliance(data)
+
+            safe_emit(
+                self._emitter,
+                action="compliance.record_assessment",
+                target_id=assessment_id,
+                target_collection="compliance",
+                actor=self._server_did,
+                tenant_id=self._tenant_id,
+                after={"assessment_id": assessment_id, "agent_id": agent_id,
+                       "assessment_type": assessment_type, "result": result},
+            )
 
             return assessment
         except Exception as e:
@@ -550,6 +592,16 @@ class ComplianceService:
                     "eu_ai_act_compliant": True,
                 },
                 expiry_days=365,
+            )
+
+            safe_emit(
+                self._emitter,
+                action="compliance.generate_declaration",
+                target_id=declaration_id,
+                target_collection="compliance",
+                actor=self._server_did,
+                tenant_id=self._tenant_id,
+                after={"declaration_id": declaration_id, "agent_id": agent_id},
             )
 
             return declaration

@@ -17,9 +17,11 @@ from auth.crypto import (
     verify_json_signature,
     did_key_to_public_key,
 )
+from audit import AuditEventEmitter, resolve_emitter, safe_emit
 from config import load_credentials, save_credentials
 from errors import ErrorCategory, log_and_format_error
 from signing import InProcessSigner, Signer
+from storage.repository import DEFAULT_TENANT
 
 
 # W3C VC contexts
@@ -44,12 +46,21 @@ class CredentialService:
     # Fields excluded from signing (mutable after issuance)
     MUTABLE_FIELDS = {"proof", "credentialStatus"}
 
-    def __init__(self, signer: Optional[Signer] = None):
+    def __init__(
+        self,
+        signer: Optional[Signer] = None,
+        emitter: Optional[AuditEventEmitter] = None,
+        tenant_id: str = DEFAULT_TENANT,
+    ):
         # v0.4.0: sign through the pluggable Signer seam (default = in-process
         # Ed25519, byte-for-byte identical to v0.3.0). An injected Signer (e.g.
         # KMS) swaps the backend with no change to public method signatures.
         self._signer = signer or InProcessSigner()
         self._server_did = self._signer.did
+        # v0.4.0 (T033/T034): per-service audit emitter + tenant context (side
+        # channel; tenant defaults to "default" for v0.3.0 parity).
+        self._emitter = resolve_emitter(emitter)
+        self._tenant_id = tenant_id
 
     def issue_credential(
         self,
@@ -136,6 +147,17 @@ class CredentialService:
             data["credentials"].append(credential)
             save_credentials(data)
 
+            safe_emit(
+                self._emitter,
+                action="credential.issue",
+                target_id=cred_id,
+                target_collection="credentials",
+                actor=self._server_did,
+                tenant_id=self._tenant_id,
+                after={"id": cred_id, "type": credential["type"],
+                       "subject": subject_id},
+            )
+
             return credential
         except Exception as e:
             msg = log_and_format_error(
@@ -210,6 +232,15 @@ class CredentialService:
                         "revoked_at": datetime.now(timezone.utc).isoformat(),
                     }
                     save_credentials(data)
+                    safe_emit(
+                        self._emitter,
+                        action="credential.revoke",
+                        target_id=credential_id,
+                        target_collection="credentials",
+                        actor=self._server_did,
+                        tenant_id=self._tenant_id,
+                        after={"id": credential_id, "revoked": True},
+                    )
                     return {
                         "revoked": True,
                         "credential_id": credential_id,

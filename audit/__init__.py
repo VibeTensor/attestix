@@ -15,6 +15,7 @@ from audit.events import (
     verify_chain,
 )
 from audit.emitter import AUDIT_COLLECTION, AuditEventEmitter
+from audit.service_hook import resolve_emitter, safe_emit
 
 __all__ = [
     "AuditEvent",
@@ -23,4 +24,6 @@ __all__ = [
     "GENESIS_HASH",
     "compute_change_digest",
     "verify_chain",
+    "resolve_emitter",
+    "safe_emit",
 ]

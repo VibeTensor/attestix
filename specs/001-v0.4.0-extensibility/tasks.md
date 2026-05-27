@@ -166,15 +166,21 @@ a sequence verifies as an unbroken hash chain.
   `prev_hash`/`chain_hash`).
 - [X] T032 [US2] Implement `AuditEventEmitter` in `audit/emitter.py` with default local sink +
   injectable external sink (FR-017). Depends on T031.
-- [ ] T033 [US2] **DEFERRED (P1 follow-up):** thread `TenantContext` through `services/cache.py`
-  / `api/deps.py` per-request and into all 9 services. The seam exists (cache.py accepts
-  injected deps; `resolve_tenant` resolves the context); per-service threading is deferred to
-  keep the slice additive and the suite green. Depends on T009, T030.
-- [ ] T034 [US2] **DEFERRED (P1 follow-up):** emit one `AuditEvent` on each successful mutating
-  method across the 9 services; align `provenance_service` existing audit_log with the shared
-  chain. The emitter + chain are implemented and tested standalone; wiring it into every
-  service is the follow-up (touches all 9 services — out of safe scope for this pass without
-  regression risk). Depends on T032, T033.
+- [X] T033 [US2] Threaded a per-service `tenant_id` (default `"default"`) through every service
+  constructor (identity, credential, delegation, compliance, reputation, provenance, did,
+  agent-cards, blockchain), defaulting to `DEFAULT_TENANT` so single-tenant self-host behavior
+  is byte-identical. The audit emitter is injected via the same DI seam (`emitter=` kwarg) and
+  stamps `tenant_id` onto every emitted event. Depends on T009, T030.
+- [X] T034 [US2] Emit exactly one `AuditEvent` on each successful mutating method across the 9
+  services (identity.create/revoke/update/purge, credential.issue/revoke,
+  delegation.create/revoke, reputation.record, provenance.record_training_data/
+  record_model_lineage/log_action, compliance.create_profile/update_profile/record_assessment/
+  generate_declaration, did.create_did_key/create_did_web, agent_card.generate,
+  blockchain.anchor) via the shared `audit.service_hook.safe_emit` helper. Emission is a pure
+  side channel: a failing sink is logged and swallowed (the committed op is unaffected), the
+  return value / on-disk entity format is unchanged, and `provenance_service`'s existing
+  Article-12 `audit_log` chain is left intact (the structured AuditEvent is additive). Depends
+  on T032, T033.
 - [X] T035 [US2] Added the default per-request tenant resolver (`tenancy.context.resolve_tenant`,
   default `"default"`); added `attestix/audit/`, `attestix/tenancy/` re-export mirrors. (REST
   mounting of the resolver is part of deferred T033.)
@@ -212,11 +218,14 @@ key+different payload → 409; key past TTL → new create proceeds; no key → 
 - [X] T039 [US3] Implemented `Idempotency-Key` middleware in `idempotency/middleware.py`
   (`BaseHTTPMiddleware`, write-method scoped, request fingerprint via JCS, tenant via the
   default resolver). Depends on T038.
-- [ ] T040 [US3] **DEFERRED (documented seam):** mount the middleware on POST/write endpoints in
-  `api/main.py`. Left unmounted this pass (body-replay middleware needs validation against the
-  full REST surface before default-on); a clear TODO marks the seam in `api/main.py` and the
-  middleware is opt-in today. The `attestix/idempotency/` re-export mirror IS added. Depends on
-  T039.
+- [X] T040 [US3] Mounted `IdempotencyMiddleware` in `api/main.py` (`app.add_middleware`, guarded
+  so a Starlette-less install is unaffected). The middleware is a STRICT no-op unless an
+  `Idempotency-Key` header is present: non-write methods and write methods without the header
+  return `call_next(request)` immediately, so the default request/response stream (including
+  streaming/file responses) is byte-identical to v0.3.0 (FR-022). Validated end-to-end through
+  the full FastAPI app and covered by `tests/integration/test_idempotency_middleware.py`
+  (no-key passthrough, read-method bypass, dedupe within TTL, payload-mismatch 409, minimal
+  storage, per-tenant scoping). Depends on T039.
 - [X] T041 [US3] Re-ran full suite under defaults; 454 green and the no-key path is unchanged
   (no middleware auto-mounted; FR-022 preserved) (SC-001, FR-022).
 

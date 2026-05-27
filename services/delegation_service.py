@@ -12,16 +12,26 @@ from typing import List, Optional
 
 import jwt
 
+from audit import AuditEventEmitter, resolve_emitter, safe_emit
 from auth.crypto import load_or_create_signing_key, did_key_to_public_key
 from config import load_delegations, save_delegations
 from errors import ErrorCategory, log_and_format_error
+from storage.repository import DEFAULT_TENANT
 
 
 class DelegationService:
     """Manages UCAN-style delegation tokens between agents."""
 
-    def __init__(self):
+    def __init__(
+        self,
+        emitter: Optional[AuditEventEmitter] = None,
+        tenant_id: str = DEFAULT_TENANT,
+    ):
         self._private_key, self._server_did = load_or_create_signing_key()
+        # v0.4.0 (T033/T034): per-service audit emitter + tenant context (side
+        # channel; tenant defaults to "default" for v0.3.0 parity).
+        self._emitter = resolve_emitter(emitter)
+        self._tenant_id = tenant_id
 
     def create_delegation(
         self,
@@ -128,6 +138,17 @@ class DelegationService:
             data = load_delegations()
             data["delegations"].append(delegation_record)
             save_delegations(data)
+
+            safe_emit(
+                self._emitter,
+                action="delegation.create",
+                target_id=jti,
+                target_collection="delegations",
+                actor=self._server_did,
+                tenant_id=self._tenant_id,
+                after={"jti": jti, "issuer": issuer_agent_id,
+                       "audience": audience_agent_id},
+            )
 
             return {
                 "token": token,
@@ -274,6 +295,15 @@ class DelegationService:
                     d["revocation_reason"] = reason
                     d["revoked_at"] = datetime.now(timezone.utc).isoformat()
                     save_delegations(data)
+                    safe_emit(
+                        self._emitter,
+                        action="delegation.revoke",
+                        target_id=jti,
+                        target_collection="delegations",
+                        actor=self._server_did,
+                        tenant_id=self._tenant_id,
+                        after={"jti": jti, "revoked": True},
+                    )
                     return {
                         "revoked": True,
                         "jti": jti,

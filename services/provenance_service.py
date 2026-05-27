@@ -10,9 +10,11 @@ import uuid
 from datetime import datetime, timezone
 from typing import Dict, List, Optional
 
+from audit import AuditEventEmitter, resolve_emitter, safe_emit
 from config import load_provenance, save_provenance
 from errors import ErrorCategory, log_and_format_error
 from signing import InProcessSigner, Signer
+from storage.repository import DEFAULT_TENANT
 
 
 VALID_ACTION_TYPES = {"inference", "delegation", "data_access", "external_call"}
@@ -24,11 +26,22 @@ class ProvenanceService:
     # Genesis hash for the first entry in a chain
     GENESIS_HASH = "0" * 64
 
-    def __init__(self, signer: Optional[Signer] = None):
+    def __init__(
+        self,
+        signer: Optional[Signer] = None,
+        emitter: Optional[AuditEventEmitter] = None,
+        tenant_id: str = DEFAULT_TENANT,
+    ):
         # v0.4.0: sign through the pluggable Signer seam (default = in-process
         # Ed25519, byte-for-byte identical to v0.3.0).
         self._signer = signer or InProcessSigner()
         self._server_did = self._signer.did
+        # v0.4.0 (T033/T034): per-service audit emitter + tenant context. NOTE:
+        # this service keeps its OWN hash-chained `audit_log` (Article 12) intact;
+        # the shared AuditEvent emission here is the additive structured-audit
+        # side channel and does not replace the existing provenance chain.
+        self._emitter = resolve_emitter(emitter)
+        self._tenant_id = tenant_id
 
     @staticmethod
     def _chain_hash(previous_hash: str, entry_data: dict) -> str:
@@ -84,6 +97,17 @@ class ProvenanceService:
             data["entries"].append(entry)
             save_provenance(data)
 
+            safe_emit(
+                self._emitter,
+                action="provenance.record_training_data",
+                target_id=entry_id,
+                target_collection="provenance",
+                actor=self._server_did,
+                tenant_id=self._tenant_id,
+                after={"entry_id": entry_id, "agent_id": agent_id,
+                       "entry_type": "training_data"},
+            )
+
             return entry
         except Exception as e:
             msg = log_and_format_error(
@@ -123,6 +147,17 @@ class ProvenanceService:
             data = load_provenance()
             data["entries"].append(entry)
             save_provenance(data)
+
+            safe_emit(
+                self._emitter,
+                action="provenance.record_model_lineage",
+                target_id=entry_id,
+                target_collection="provenance",
+                actor=self._server_did,
+                tenant_id=self._tenant_id,
+                after={"entry_id": entry_id, "agent_id": agent_id,
+                       "entry_type": "model_lineage"},
+            )
 
             return entry
         except Exception as e:
@@ -175,6 +210,17 @@ class ProvenanceService:
 
             data["audit_log"].append(log_entry)
             save_provenance(data)
+
+            safe_emit(
+                self._emitter,
+                action="provenance.log_action",
+                target_id=log_id,
+                target_collection="provenance",
+                actor=self._server_did,
+                tenant_id=self._tenant_id,
+                after={"log_id": log_id, "agent_id": agent_id,
+                       "action_type": action_type},
+            )
 
             return log_entry
         except Exception as e:

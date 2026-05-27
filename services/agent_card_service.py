@@ -6,8 +6,10 @@ Handles fetching, parsing, and generating Google A2A Agent Cards
 
 from typing import Optional
 
+from audit import AuditEventEmitter, resolve_emitter, safe_emit
 from auth.ssrf import fetch_json_pinned
 from errors import ErrorCategory, log_and_format_error
+from storage.repository import DEFAULT_TENANT
 
 
 # Agent cards are small JSON documents describing an agent's capabilities.
@@ -18,6 +20,19 @@ AGENT_CARD_MAX_BYTES = 1 * 1024 * 1024
 
 class AgentCardService:
     """Discover, parse, and generate A2A Agent Cards."""
+
+    #: Actor recorded on agent-card audit events (no server DID of its own).
+    AUDIT_ACTOR = "attestix:agent-card-service"
+
+    def __init__(
+        self,
+        emitter: Optional[AuditEventEmitter] = None,
+        tenant_id: str = DEFAULT_TENANT,
+    ):
+        # v0.4.0 (T033/T034): per-service audit emitter + tenant context (side
+        # channel; tenant defaults to "default" for v0.3.0 parity).
+        self._emitter = resolve_emitter(emitter)
+        self._tenant_id = tenant_id
 
     def discover_agent(self, base_url: str) -> dict:
         """Fetch /.well-known/agent.json from a URL.
@@ -148,6 +163,16 @@ class AgentCardService:
             "defaultInputModes": ["text/plain"],
             "defaultOutputModes": ["text/plain"],
         }
+
+        safe_emit(
+            self._emitter,
+            action="agent_card.generate",
+            target_id=card["id"],
+            target_collection="agent_cards",
+            actor=self.AUDIT_ACTOR,
+            tenant_id=self._tenant_id,
+            after={"id": card["id"], "name": name, "url": url},
+        )
 
         return {
             "agent_card": card,

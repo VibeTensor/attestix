@@ -9,8 +9,10 @@ import time
 from datetime import datetime, timezone
 from typing import List, Optional
 
+from audit import AuditEventEmitter, resolve_emitter, safe_emit
 from config import load_reputation, save_reputation
 from errors import ErrorCategory, log_and_format_error
+from storage.repository import DEFAULT_TENANT
 
 # Scoring constants
 HALF_LIFE_DAYS = 30
@@ -26,6 +28,20 @@ OUTCOME_WEIGHTS = {
 
 class ReputationService:
     """Manages agent reputation through interaction tracking."""
+
+    #: Actor recorded on reputation audit events. Reputation has no signer/server
+    #: DID of its own, so the service identifies itself as the actor.
+    AUDIT_ACTOR = "attestix:reputation-service"
+
+    def __init__(
+        self,
+        emitter: Optional[AuditEventEmitter] = None,
+        tenant_id: str = DEFAULT_TENANT,
+    ):
+        # v0.4.0 (T033/T034): per-service audit emitter + tenant context (side
+        # channel; tenant defaults to "default" for v0.3.0 parity).
+        self._emitter = resolve_emitter(emitter)
+        self._tenant_id = tenant_id
 
     def record_interaction(
         self,
@@ -73,6 +89,17 @@ class ReputationService:
             }
 
             save_reputation(data)
+
+            safe_emit(
+                self._emitter,
+                action="reputation.record",
+                target_id=agent_id,
+                target_collection="reputation",
+                actor=self.AUDIT_ACTOR,
+                tenant_id=self._tenant_id,
+                after={"agent_id": agent_id, "outcome": outcome,
+                       "category": category},
+            )
 
             return {
                 "recorded": True,

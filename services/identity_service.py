@@ -21,8 +21,10 @@ from config import (
     load_identities,
     save_identities,
 )
+from audit import AuditEventEmitter, resolve_emitter, safe_emit
 from errors import ErrorCategory, log_and_format_error
 from signing import InProcessSigner, Signer
+from storage.repository import DEFAULT_TENANT
 
 
 #: Maximum allowed display_name length. Mirrors the API layer constraint so
@@ -37,13 +39,23 @@ class IdentityService:
     MUTABLE_FIELDS = {"signature", "revoked", "revocation_reason", "revoked_at",
                       "reputation_score", "eu_compliance"}
 
-    def __init__(self, signer: Optional[Signer] = None):
+    def __init__(
+        self,
+        signer: Optional[Signer] = None,
+        emitter: Optional[AuditEventEmitter] = None,
+        tenant_id: str = DEFAULT_TENANT,
+    ):
         # v0.4.0: sign through the pluggable Signer seam. Defaults to the
         # in-process Ed25519 signer, which wraps load_or_create_signing_key and
         # reproduces v0.3.0 signatures byte-for-byte. Passing an alternate Signer
         # (e.g. KMS) swaps the backend with no change to this method's signature.
         self._signer = signer or InProcessSigner()
         self._server_did = self._signer.did
+        # v0.4.0 (T033/T034): per-service audit emitter + tenant context. The
+        # emitter is a side channel (see audit.service_hook); tenant defaults to
+        # "default" so single-tenant self-host behavior is byte-identical.
+        self._emitter = resolve_emitter(emitter)
+        self._tenant_id = tenant_id
 
     def _signable_payload(self, uait: dict) -> dict:
         """Extract only immutable fields for signing/verification."""
@@ -129,6 +141,16 @@ class IdentityService:
         data["agents"].append(uait)
         save_identities(data)
 
+        safe_emit(
+            self._emitter,
+            action="identity.create",
+            target_id=agent_id,
+            target_collection="identities",
+            actor=self._server_did,
+            tenant_id=self._tenant_id,
+            after={"agent_id": agent_id, "source_protocol": source_protocol},
+        )
+
         return uait
 
     def get_identity(self, agent_id: str) -> Optional[dict]:
@@ -167,6 +189,15 @@ class IdentityService:
                 agent["revocation_reason"] = reason
                 agent["revoked_at"] = datetime.now(timezone.utc).isoformat()
                 save_identities(data)
+                safe_emit(
+                    self._emitter,
+                    action="identity.revoke",
+                    target_id=agent_id,
+                    target_collection="identities",
+                    actor=self._server_did,
+                    tenant_id=self._tenant_id,
+                    after={"agent_id": agent_id, "revoked": True},
+                )
                 return agent
         return None
 
@@ -326,6 +357,17 @@ class IdentityService:
         rep_data["scores"].pop(agent_id, None)
         save_reputation(rep_data)
 
+        safe_emit(
+            self._emitter,
+            action="identity.purge",
+            target_id=agent_id,
+            target_collection="identities",
+            actor=self._server_did,
+            tenant_id=self._tenant_id,
+            before={"agent_id": agent_id},
+            after=None,
+        )
+
         return purged
 
     def update_compliance_ref(self, agent_id: str, profile_id: str):
@@ -335,6 +377,15 @@ class IdentityService:
             if agent["agent_id"] == agent_id:
                 agent["eu_compliance"] = profile_id
                 save_identities(data)
+                safe_emit(
+                    self._emitter,
+                    action="identity.update",
+                    target_id=agent_id,
+                    target_collection="identities",
+                    actor=self._server_did,
+                    tenant_id=self._tenant_id,
+                    after={"agent_id": agent_id, "eu_compliance": profile_id},
+                )
                 return
         return
 
@@ -345,6 +396,15 @@ class IdentityService:
             if agent["agent_id"] == agent_id:
                 agent["reputation_score"] = round(score, 4)
                 save_identities(data)
+                safe_emit(
+                    self._emitter,
+                    action="identity.update",
+                    target_id=agent_id,
+                    target_collection="identities",
+                    actor=self._server_did,
+                    tenant_id=self._tenant_id,
+                    after={"agent_id": agent_id, "reputation_score": round(score, 4)},
+                )
                 return
         return
 

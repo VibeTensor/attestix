@@ -13,6 +13,7 @@ import uuid
 from datetime import datetime, timezone
 from typing import Optional, Tuple
 
+from audit import AuditEventEmitter, resolve_emitter, safe_emit
 from auth.crypto import load_or_create_signing_key, _normalize_for_signing
 from config import (
     _get_env,
@@ -21,6 +22,7 @@ from config import (
     BLOCKCHAIN_CONFIG_FILE,
 )
 from errors import ErrorCategory, log_and_format_error
+from storage.repository import DEFAULT_TENANT
 
 
 VALID_ARTIFACT_TYPES = {"identity", "credential", "declaration", "audit_batch"}
@@ -42,7 +44,11 @@ NETWORKS = {
 class BlockchainService:
     """Manages EAS attestation anchoring on Base L2."""
 
-    def __init__(self):
+    def __init__(
+        self,
+        emitter: Optional[AuditEventEmitter] = None,
+        tenant_id: str = DEFAULT_TENANT,
+    ):
         self._private_key_ed, self._server_did = load_or_create_signing_key()
         self._w3 = None
         self._account = None
@@ -53,6 +59,10 @@ class BlockchainService:
         self._configured = False
         self._init_error = None
         self._tx_lock = threading.Lock()
+        # v0.4.0 (T033/T034): per-service audit emitter + tenant context (side
+        # channel; tenant defaults to "default" for v0.3.0 parity).
+        self._emitter = resolve_emitter(emitter)
+        self._tenant_id = tenant_id
         self._try_init()
 
     def _try_init(self):
@@ -497,6 +507,18 @@ class BlockchainService:
             data = load_anchors()
             data["anchors"].append(anchor)
             save_anchors(data)
+
+            safe_emit(
+                self._emitter,
+                action="blockchain.anchor",
+                target_id=anchor_id,
+                target_collection="anchors",
+                actor=self._server_did,
+                tenant_id=self._tenant_id,
+                after={"anchor_id": anchor_id, "artifact_type": artifact_type,
+                       "artifact_id": artifact_id,
+                       "attestation_uid": attestation_uid},
+            )
 
             return anchor
 
