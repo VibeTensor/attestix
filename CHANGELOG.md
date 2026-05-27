@@ -4,6 +4,37 @@ All notable changes to Attestix are documented here.
 
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.4.0-rc.1] - 2026-05-28
+
+First v0.4.0 release candidate. Ships the extensibility layer that lets the
+engine be wrapped (e.g. by a hosted control plane) without forking, while
+self-host behavior is unchanged. Additive and backward-compatible: existing
+v0.3.0 installs require no config change and all prior tests pass unmodified.
+
+### Added
+
+- **Pluggable storage** — a `Repository` interface with a default
+  `FileRepository` (on-disk format byte-for-byte unchanged) plus a
+  `MemoryRepository`; optional `pg` extra for a Postgres-backed adapter.
+- **Pluggable signer** — a `Signer` interface with a default `InProcessSigner`
+  (output byte-identical to v0.3.0); optional `kms` extra for AWS KMS.
+- **Tenant context** — an optional `tenant_id` on resources (defaults to
+  `"default"`; legacy records with no tenant_id read as `"default"`).
+- **Structured audit events** — every state change across the 9 services emits
+  one hash-chained `AuditEvent` (side-channel; service outputs and on-disk
+  format unchanged); per-tenant chains with `verify_chain` tamper detection.
+- **Idempotency keys** — first-class on POST/write endpoints via an opt-in
+  `IdempotencyMiddleware` (strict no-op without an `Idempotency-Key` header,
+  24h TTL, minimal stored representation — no raw key material or signed bodies).
+
+### Notes
+
+- Backward compatible: no breaking public-API changes; all new behavior is
+  opt-in with defaults that reproduce v0.3.0.
+- Test suite grew from 358 to 481 passing; the RFC conformance benchmarks are
+  unaffected.
+- Closes the cloud-prerequisite issues #66, #67, #68, #69, #70.
+
 ## [0.3.0] - 2026-04-17
 
 Security hardening release bundling seven previously merged but unreleased
