@@ -18,7 +18,7 @@ Modules:
     - attestix.blockchain: Merkle trees and EAS anchoring
 """
 
-__version__ = "0.3.0"
+__version__ = "0.4.0rc1"
 
 # Re-export submodules for convenient access
 from attestix import services
