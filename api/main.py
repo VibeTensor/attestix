@@ -326,24 +326,28 @@ app.add_middleware(RateLimitMiddleware)
 app.add_middleware(APIKeyMiddleware)
 
 # ---------------------------------------------------------------------------
-# Idempotency (v0.4.0 US3 / P3) — seam, NOT yet auto-mounted
+# Idempotency (v0.4.0 US3 / P3) — mounted as a strict no-op without a key
 # ---------------------------------------------------------------------------
-# The reusable idempotency store + helper ship in `idempotency/` and are covered
-# by contract tests (tests/integration/test_idempotency.py). The REST boundary is
-# `idempotency.middleware.IdempotencyMiddleware` (a BaseHTTPMiddleware honoring the
-# `Idempotency-Key` header on write methods).
+# `idempotency.middleware.IdempotencyMiddleware` honors the Stripe-style
+# `Idempotency-Key` header on write methods (POST/PUT/PATCH/DELETE), backed by the
+# reusable store + helper in `idempotency/` (covered by
+# tests/integration/test_idempotency.py and tests/integration/test_idempotency_middleware.py).
 #
-# TODO(v0.4.0 P3 follow-up): mount it here once the body-replay behavior is
-# validated against the full REST test surface:
+# Mount contract (FR-022, FR-024): the middleware is a STRICT no-op unless an
+# `Idempotency-Key` header is present. Its `dispatch` returns `call_next(request)`
+# immediately for non-write methods AND for write methods without the header, so
+# the request/response stream is never touched in the default path — a self-hoster
+# who never sends a key gets byte-identical v0.3.0 behavior, including for
+# streaming/file responses (those endpoints simply pass through). The request body
+# is read (and replayed via `request._receive`) only on a write request that
+# actually carries the key, so the body-replay path is opt-in per request.
 #
-#     from idempotency.middleware import IdempotencyMiddleware
-#     if IdempotencyMiddleware is not None:
-#         app.add_middleware(IdempotencyMiddleware)
-#
-# It is left unmounted in this slice so the default app keeps exact v0.3.0 request
-# handling (no body-reading middleware in the default path); a no key sent → no
-# idempotency bookkeeping regardless (FR-022). Operators / the hosted cloud can
-# opt in with the two lines above today.
+# Guarded so a default install lacking the Starlette stack (in which case
+# `IdempotencyMiddleware is None`) still imports/serves unchanged.
+from idempotency.middleware import IdempotencyMiddleware as _IdempotencyMiddleware
+
+if _IdempotencyMiddleware is not None:
+    app.add_middleware(_IdempotencyMiddleware)
 
 
 # ---------------------------------------------------------------------------

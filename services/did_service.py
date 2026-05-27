@@ -16,9 +16,11 @@ from auth.crypto import (
     public_key_to_did_key,
     did_key_to_public_key,
 )
+from audit import AuditEventEmitter, resolve_emitter, safe_emit
 from auth.ssrf import fetch_json_pinned, validate_url_host
 from config import UNIVERSAL_RESOLVER_URL
 from errors import ErrorCategory, log_and_format_error
+from storage.repository import DEFAULT_TENANT
 
 import base58
 import base64
@@ -32,6 +34,19 @@ DID_DOCUMENT_MAX_BYTES = 256 * 1024
 
 class DIDService:
     """Resolves and creates DID documents."""
+
+    #: Actor recorded on DID audit events (DIDService has no server DID of its own).
+    AUDIT_ACTOR = "attestix:did-service"
+
+    def __init__(
+        self,
+        emitter: Optional[AuditEventEmitter] = None,
+        tenant_id: str = DEFAULT_TENANT,
+    ):
+        # v0.4.0 (T033/T034): per-service audit emitter + tenant context (side
+        # channel; tenant defaults to "default" for v0.3.0 parity).
+        self._emitter = resolve_emitter(emitter)
+        self._tenant_id = tenant_id
 
     def _store_keypair(self, keypair_id: str, priv_b64: str, pub_multibase: str, did: str):
         """Store a generated keypair locally (never return private keys in tool responses)."""
@@ -101,6 +116,16 @@ class DIDService:
             keypair_id = f"keypair:{did.split(':')[-1][:16]}"
             self._store_keypair(keypair_id, priv_b64, pub_multibase, did)
 
+            safe_emit(
+                self._emitter,
+                action="did.create_did_key",
+                target_id=did,
+                target_collection="did",
+                actor=self.AUDIT_ACTOR,
+                tenant_id=self._tenant_id,
+                after={"did": did, "keypair_id": keypair_id},
+            )
+
             return {
                 "did": did,
                 "did_document": did_document,
@@ -161,6 +186,16 @@ class DIDService:
             # Store keypair locally instead of returning private key in tool response
             keypair_id = f"keypair:{domain}:{did.split(':')[-1][:8]}"
             self._store_keypair(keypair_id, priv_b64, pub_multibase, did)
+
+            safe_emit(
+                self._emitter,
+                action="did.create_did_web",
+                target_id=did,
+                target_collection="did",
+                actor=self.AUDIT_ACTOR,
+                tenant_id=self._tenant_id,
+                after={"did": did, "keypair_id": keypair_id, "domain": domain},
+            )
 
             return {
                 "did": did,
