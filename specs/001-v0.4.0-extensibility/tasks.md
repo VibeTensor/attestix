@@ -67,9 +67,15 @@ and delivered independently. Downstream consumer: hosted **cloud Milestone M2**
 - [ ] T009 Extend `services/cache.py::get_service` and `api/deps.py` to accept and pass an
   injected Repository, Signer, and tenant into service constructors, defaulting to the
   selected defaults. Depends on T008.
+- [ ] T046 **(prerequisite for US2/US3)** Resolve open [NEEDS CLARIFICATION] items
+  (idempotency concurrency guarantee, REST-only vs MCP idempotency scope, no-op-update audit
+  emission, default REST tenant resolution) and update spec/data-model accordingly. These
+  decisions define expected behavior for the Phase 4 (US2) and Phase 5 (US3) tests and
+  implementation, so they MUST be settled before those stories begin.
 
 **Checkpoint**: Interfaces exist and can be injected; defaults resolve to file storage +
-in-process signer + `"default"` tenant. No service behavior changed yet.
+in-process signer + `"default"` tenant. No service behavior changed yet. Open contract
+ambiguities are resolved (T046), so US2/US3 can be specified against an unambiguous contract.
 
 ---
 
@@ -130,6 +136,10 @@ suites green for every impl. **MVP for cloud M2.**
 
 ## Phase 4: User Story 2 - Tenant isolation + structured audit events (Priority: P2)
 
+**⚠️ Prerequisite**: T046 (resolve open clarifications) MUST be complete before this phase —
+the no-op-update audit emission and default REST tenant-resolution decisions define this
+story's expected behavior.
+
 **Goal**: Every resource carries `tenant_id` (default `"default"`); reads/lists/writes are
 tenant-scoped; every committed state change emits one chainable `AuditEvent`.
 
@@ -172,6 +182,10 @@ a sequence verifies as an unbroken hash chain.
 
 ## Phase 5: User Story 3 - Idempotency keys (Priority: P3)
 
+**⚠️ Prerequisite**: T046 (resolve open clarifications) MUST be complete before this phase —
+the idempotency concurrency guarantee and REST-only-vs-MCP idempotency scope decisions define
+this story's expected behavior.
+
 **Goal**: Optional Stripe-style idempotency key on writes; replay within 24h returns the
 original result; mismatched payload → conflict; no key → v0.3.0 behavior.
 
@@ -210,9 +224,6 @@ verified.
   `0.4.0`; confirm no breaking public-surface change (SC-009).
 - [ ] T045 Confirm default `pip install attestix==0.4.0` pulls no new mandatory dependency
   (SC-010).
-- [ ] T046 Resolve open [NEEDS CLARIFICATION] items (idempotency concurrency guarantee,
-  REST-only vs MCP idempotency scope, no-op-update audit emission, default REST tenant
-  resolution) and update spec/data-model accordingly.
 - [ ] T047 [P] Record EU AI Act risk-classification rationale for the v0.4.0 layer in `docs/`
   (infra component — storage / signing / tenant / audit / idempotency interfaces; performs no
   AI inference or automated decision-making; Annex III non-applicability). MUST be recorded
@@ -237,10 +248,11 @@ verified.
 - **Setup (Phase 1)**: no dependencies — start immediately.
 - **Foundational (Phase 2)**: depends on Setup — BLOCKS all user stories.
 - **US1 (Phase 3 / P1)**: depends on Foundational. **MVP; unblocks cloud M2.**
-- **US2 (Phase 4 / P2)**: depends on Foundational; builds on US1 (events record against the
-  Repository; tenant enforced at the Repository boundary).
-- **US3 (Phase 5 / P3)**: depends on Foundational; depends on US1 (key store via Repository)
-  and benefits from US2 (per-tenant keys).
+- **US2 (Phase 4 / P2)**: depends on Foundational **and on T046 (clarifications resolved)**;
+  builds on US1 (events record against the Repository; tenant enforced at the Repository
+  boundary).
+- **US3 (Phase 5 / P3)**: depends on Foundational **and on T046 (clarifications resolved)**;
+  depends on US1 (key store via Repository) and benefits from US2 (per-tenant keys).
 - **Polish (Phase 6)**: after desired stories complete.
 
 ### User Story Dependencies

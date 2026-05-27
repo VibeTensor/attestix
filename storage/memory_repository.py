@@ -31,6 +31,10 @@ class MemoryRepository(Repository):
         tenant_id: str = DEFAULT_TENANT,
         id_field: str = "id",
     ) -> dict:
+        if id_field not in record:
+            raise ValueError(
+                f"record must include the id field {id_field!r} on create"
+            )
         stored = deepcopy(record)
         stored["tenant_id"] = tenant_id
         self._bucket(collection, tenant_id).append(stored)
@@ -76,10 +80,17 @@ class MemoryRepository(Repository):
         tenant_id: str = DEFAULT_TENANT,
         id_field: str = "id",
     ) -> Optional[dict]:
+        if id_field in record and record[id_field] != record_id:
+            raise ValueError(
+                f"{id_field!r} in record ({record[id_field]!r}) must match "
+                f"record_id {record_id!r}; update must not change identity"
+            )
         bucket = self._bucket(collection, tenant_id)
         for idx, rec in enumerate(bucket):
             if rec.get(id_field) == record_id:
                 stored = deepcopy(record)
+                # Persist the canonical id so an id-less payload stays queryable.
+                stored[id_field] = record_id
                 stored["tenant_id"] = tenant_id
                 bucket[idx] = stored
                 return deepcopy(stored)

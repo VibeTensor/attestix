@@ -43,6 +43,9 @@ class Repository(ABC):
       under tenant ``"default"`` (FR-013).
     - **Idempotent delete**: :meth:`delete` of a missing id returns ``False`` and
       does not raise.
+    - **Id integrity**: :meth:`create` rejects a record missing ``id_field`` and
+      :meth:`update` rejects a record whose ``id_field`` disagrees with
+      ``record_id`` (both raise ``ValueError``), so identity cannot be corrupted.
     - **No cross-tenant merge**: an identical ``record_id`` under two tenants is two
       distinct records.
     - **Durability / atomicity**: a failed write surfaces an error and does not
@@ -68,6 +71,13 @@ class Repository(ABC):
         Returns the stored record. The returned record is tenant-tagged
         (``tenant_id`` is set on the persisted copy); callers MUST treat the return
         value as authoritative rather than the input ``record``.
+
+        ``record`` MUST contain ``id_field``; implementations raise ``ValueError``
+        if it is absent (an id-less record would be unqueryable). This layer does
+        not deduplicate: ``create`` does not check whether the same ``id_field``
+        value already exists under ``tenant_id`` and does not raise/return the
+        existing record on collision — callers needing upsert semantics use
+        :meth:`update`, and idempotency-by-key is enforced at a higher layer.
         """
         raise NotImplementedError
 
@@ -114,7 +124,10 @@ class Repository(ABC):
         """Replace the record identified by ``record_id`` within ``tenant_id``.
 
         Returns the stored record, or ``None`` if no matching record exists in the
-        tenant scope.
+        tenant scope. If ``record`` carries ``id_field``, it MUST equal
+        ``record_id`` — implementations raise ``ValueError`` rather than silently
+        change a record's identity. The persisted copy always carries
+        ``id_field == record_id`` so an id-less payload stays queryable.
         """
         raise NotImplementedError
 

@@ -35,6 +35,17 @@ def get_service(
     Returns:
         Cached or newly created service instance.
     """
+    # DI safety: when dependencies are injected, the cache key (class +
+    # instance_id) cannot distinguish different injected backends. Require a
+    # non-default instance_id so two callers injecting different signers/
+    # repositories never collide onto one cached instance. With no kwargs the
+    # default-instance behavior is unchanged (v0.3.0 parity).
+    if kwargs and instance_id == "default":
+        raise ValueError(
+            "get_service(): instance_id must be non-'default' when injecting "
+            "dependencies via kwargs, so distinct backends do not share a cache slot."
+        )
+
     cache_key = f"{service_class.__name__}:{instance_id}"
     now = time.time()
 

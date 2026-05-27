@@ -93,7 +93,11 @@ def test_tampered_payload_fails_verification(signer):
 
 
 def test_did_is_stable(signer):
-    assert signer.did == signer.did
+    # Read the property twice into separate variables so this genuinely tests
+    # stability across reads rather than comparing an expression with itself.
+    did_first = signer.did
+    did_second = signer.did
+    assert did_first == did_second
 
 
 def test_did_matches_public_key(signer):
@@ -105,8 +109,18 @@ def test_did_matches_public_key(signer):
 
 
 def test_no_private_key_method_in_contract(signer):
-    # The Signer contract exposes no API returning private key bytes.
-    for attr in ("private_key", "private_bytes", "private_key_bytes", "secret"):
+    # The Signer contract exposes no API returning private key material. The
+    # blacklist also covers keypair-returning names so a signer cannot hand back
+    # the raw key as part of a (private_key, did) tuple.
+    for attr in (
+        "private_key",
+        "private_bytes",
+        "private_key_bytes",
+        "secret",
+        "keypair",
+        "key_pair",
+        "get_keypair",
+    ):
         assert not hasattr(signer, attr), (
             f"Signer must not expose private material via .{attr}()"
         )

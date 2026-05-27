@@ -36,8 +36,8 @@ violation and MUST be justified in the plan's Complexity Tracking before work be
 
 ### III. Test-First & Conformance-Gated (NON-NEGOTIABLE)
 
-The full suite (358 tests: 267 functional + 91 RFC conformance benchmarks) MUST stay green
-on every PR across Python 3.10–3.13. The 91 conformance benchmarks
+The full functional + RFC conformance suite MUST stay green
+on every PR across Python 3.10–3.13. The RFC conformance benchmarks
 (`tests/benchmarks/`, covering RFC 8032 Ed25519, RFC 8785 JCS, W3C VC, W3C DID, UCAN, MCP)
 encode the standards-fidelity guarantees and MUST NOT regress; a change that alters
 conformance behavior is presumed wrong until proven a standards correction. Every new public

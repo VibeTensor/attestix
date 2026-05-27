@@ -40,9 +40,12 @@ fi
 # Ensure the feature directory exists
 mkdir -p "$FEATURE_DIR"
 
-# Copy plan template if it exists
+# Copy plan template if it exists. Preserve an existing plan by default; set
+# FORCE=1 (or --force, handled upstream) to overwrite an existing plan on purpose.
 TEMPLATE=$(resolve_template "plan-template" "$REPO_ROOT") || true
-if [[ -n "$TEMPLATE" ]] && [[ -f "$TEMPLATE" ]]; then
+if [[ -f "$IMPL_PLAN" ]] && [[ "${FORCE:-0}" != "1" ]]; then
+    echo "Plan already exists at $IMPL_PLAN; leaving it unchanged (set FORCE=1 to overwrite)"
+elif [[ -n "$TEMPLATE" ]] && [[ -f "$TEMPLATE" ]]; then
     cp "$TEMPLATE" "$IMPL_PLAN"
     echo "Copied plan template to $IMPL_PLAN"
 else

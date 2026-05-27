@@ -58,6 +58,25 @@ def test_create_returns_stored_record(repo):
     assert stored["tenant_id"] == "default"
 
 
+def test_create_rejects_missing_id_field(repo):
+    # A record without the id_field would be unqueryable; create must reject it
+    # and must NOT store the record (no identity corruption across adapters).
+    with pytest.raises(ValueError):
+        repo.create(COLLECTION, {"display_name": "no id here"}, id_field=ID_FIELD)
+    assert repo.list(COLLECTION, id_field=ID_FIELD) == []
+
+
+def test_update_rejects_mismatched_id(repo):
+    # update must not silently change a record's identity.
+    repo.create(COLLECTION, _record("a:1", v=1), id_field=ID_FIELD)
+    with pytest.raises(ValueError):
+        repo.update(
+            COLLECTION, "a:1", _record("a:2", v=2), id_field=ID_FIELD
+        )
+    # The original record is untouched.
+    assert repo.get(COLLECTION, "a:1", id_field=ID_FIELD)["v"] == 1
+
+
 def test_round_trip_get(repo):
     repo.create(COLLECTION, _record("a:1", note="hello"), id_field=ID_FIELD)
     got = repo.get(COLLECTION, "a:1", id_field=ID_FIELD)
@@ -139,18 +158,23 @@ def test_update_respects_tenant(repo):
 
 def test_delete_returns_true_when_removed(repo):
     repo.create(COLLECTION, _record("a:1"), id_field=ID_FIELD)
-    assert repo.delete(COLLECTION, "a:1", id_field=ID_FIELD) is True
+    # Evaluate the side-effectful call outside the assert so it is not stripped
+    # under `python -O` (assertions are removed but their expressions vanish too).
+    deleted = repo.delete(COLLECTION, "a:1", id_field=ID_FIELD)
+    assert deleted is True
     assert repo.get(COLLECTION, "a:1", id_field=ID_FIELD) is None
 
 
 def test_idempotent_delete_of_missing(repo):
     # Deleting a missing id returns False and does NOT raise.
-    assert repo.delete(COLLECTION, "ghost", id_field=ID_FIELD) is False
+    deleted = repo.delete(COLLECTION, "ghost", id_field=ID_FIELD)
+    assert deleted is False
 
 
 def test_delete_respects_tenant(repo):
     repo.create(COLLECTION, _record("a:1"), tenant_id="acme", id_field=ID_FIELD)
-    assert repo.delete(COLLECTION, "a:1", tenant_id="globex", id_field=ID_FIELD) is False
+    deleted = repo.delete(COLLECTION, "a:1", tenant_id="globex", id_field=ID_FIELD)
+    assert deleted is False
     assert repo.get(COLLECTION, "a:1", tenant_id="acme", id_field=ID_FIELD) is not None
 
 

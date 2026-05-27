@@ -4,9 +4,19 @@ The default in-process signer MUST produce signatures byte-identical to the
 v0.3.0 path (``sign_json_payload(private_key, payload)``) for the same input.
 This locks the default-signer parity guarantee so any future refactor that drifts
 the output is caught immediately.
+
+The fixed keypair is generated externally (via ``auth.crypto``) and injected into
+``InProcessSigner``, so the test never asks a signer instance to export its
+private material — the signer boundary intentionally has no private-key export
+path.
 """
 
-from auth.crypto import sign_json_payload, verify_json_signature
+from auth.crypto import (
+    generate_ed25519_keypair,
+    public_key_to_did_key,
+    sign_json_payload,
+    verify_json_signature,
+)
 from signing import InProcessSigner
 
 
@@ -20,10 +30,16 @@ def _fixed_payloads():
     ]
 
 
+def _injected_signer():
+    """Build a signer from an externally generated keypair (no key export)."""
+    private_key, public_key = generate_ed25519_keypair()
+    did = public_key_to_did_key(public_key)
+    return InProcessSigner(private_key=private_key, did=did), private_key
+
+
 def test_inprocess_signer_byte_identical_to_v030():
     """For a fixed key + fixed input, signer.sign == sign_json_payload(key, ...)."""
-    signer = InProcessSigner()
-    private_key, _ = signer.keypair()
+    signer, private_key = _injected_signer()
 
     for payload in _fixed_payloads():
         via_signer = signer.sign(payload)
@@ -49,9 +65,9 @@ def test_inprocess_signer_did_matches_loaded_key():
 
 def test_inprocess_signer_injected_keypair_is_used():
     """An explicitly injected (private_key, did) pair is used as-is."""
-    base = InProcessSigner()
-    pk, did = base.keypair()
-    injected = InProcessSigner(private_key=pk, did=did)
+    private_key, public_key = generate_ed25519_keypair()
+    did = public_key_to_did_key(public_key)
+    injected = InProcessSigner(private_key=private_key, did=did)
     assert injected.did == did
     payload = {"check": "injected"}
-    assert injected.sign(payload) == sign_json_payload(pk, payload)
+    assert injected.sign(payload) == sign_json_payload(private_key, payload)

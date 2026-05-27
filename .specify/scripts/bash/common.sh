@@ -287,6 +287,29 @@ get_feature_paths() {
         return 1
     fi
 
+    # Security: FEATURE_DIR can originate from SPECIFY_FEATURE_DIRECTORY or
+    # feature.json (both external inputs) and may contain ".." traversal. Collapse
+    # "." / ".." segments lexically (the dir may not exist yet, so we cannot rely
+    # on `cd`/realpath) and require the result to stay inside REPO_ROOT so
+    # downstream scripts can never read/write outside the project tree. This is
+    # path-format agnostic, so it behaves identically on Linux CI and Git-bash.
+    local _canon_feature _seg
+    local -a _stack=()
+    IFS='/' read -r -a _seg <<< "$feature_dir"
+    for s in "${_seg[@]}"; do
+        case "$s" in
+            ''|.) ;;                       # drop empty + "." segments
+            ..) [[ ${#_stack[@]} -gt 0 ]] && unset '_stack[${#_stack[@]}-1]'; _stack=("${_stack[@]}") ;;
+            *) _stack+=("$s") ;;
+        esac
+    done
+    _canon_feature="/$(IFS=/; echo "${_stack[*]}")"
+    if [[ "$_canon_feature" != "$repo_root" && "$_canon_feature" != "$repo_root"/* ]]; then
+        echo "ERROR: FEATURE_DIR must be inside REPO_ROOT (got '$feature_dir')" >&2
+        return 1
+    fi
+    feature_dir="$_canon_feature"
+
     # Use printf '%q' to safely quote values, preventing shell injection
     # via crafted branch names or paths containing special characters
     printf 'REPO_ROOT=%q\n' "$repo_root"

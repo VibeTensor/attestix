@@ -78,11 +78,11 @@ done
 SCRIPT_DIR="$(CDPATH="" cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/common.sh"
 
-# Get feature paths and validate branch
+# Get feature paths (branch validation happens later, after the paths-only
+# early return, so `--paths-only` stays non-validating).
 _paths_output=$(get_feature_paths) || { echo "ERROR: Failed to resolve feature paths" >&2; exit 1; }
 eval "$_paths_output"
 unset _paths_output
-check_feature_branch "$CURRENT_BRANCH" "$HAS_GIT" || exit 1
 
 # If paths-only mode, output paths and exit (support JSON + paths-only combined)
 if $PATHS_ONLY; then
@@ -110,6 +110,12 @@ if $PATHS_ONLY; then
         echo "TASKS: $TASKS"
     fi
     exit 0
+fi
+
+# Validate branch only when required (mirrors setup-plan.sh / setup-tasks.sh).
+# If feature.json pins an existing feature directory, branch naming is not required.
+if ! feature_json_matches_feature_dir "$REPO_ROOT" "$FEATURE_DIR"; then
+    check_feature_branch "$CURRENT_BRANCH" "$HAS_GIT" || exit 1
 fi
 
 # Validate required directories and files

@@ -11,7 +11,7 @@ This is the OSS / self-host default: a fresh install with no configuration signs
 with this in-process key, exactly as v0.3.0.
 """
 
-from typing import Optional, Tuple
+from typing import Optional
 
 from cryptography.hazmat.primitives.asymmetric.ed25519 import (
     Ed25519PrivateKey,
@@ -19,7 +19,6 @@ from cryptography.hazmat.primitives.asymmetric.ed25519 import (
 )
 
 from auth.crypto import (
-    did_key_to_public_key,
     load_or_create_signing_key,
     sign_json_payload,
 )
@@ -69,14 +68,3 @@ class InProcessSigner(Signer):
     @property
     def did(self) -> str:
         return self._did
-
-    def keypair(self) -> Tuple[Ed25519PrivateKey, str]:
-        """Return ``(private_key, did)``.
-
-        Provided so existing services that still expose ``server_did`` and need the
-        raw key for legacy code paths can adopt the signer with no behavior change.
-        This is intentionally NOT part of the :class:`Signer` contract (KMS/HSM
-        signers do not expose private material); it is a default-signer-only
-        convenience for the in-process wrapper.
-        """
-        return self._private_key, self._did
