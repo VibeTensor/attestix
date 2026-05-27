@@ -325,6 +325,26 @@ app.add_middleware(RateLimitMiddleware)
 # API key auth
 app.add_middleware(APIKeyMiddleware)
 
+# ---------------------------------------------------------------------------
+# Idempotency (v0.4.0 US3 / P3) — seam, NOT yet auto-mounted
+# ---------------------------------------------------------------------------
+# The reusable idempotency store + helper ship in `idempotency/` and are covered
+# by contract tests (tests/integration/test_idempotency.py). The REST boundary is
+# `idempotency.middleware.IdempotencyMiddleware` (a BaseHTTPMiddleware honoring the
+# `Idempotency-Key` header on write methods).
+#
+# TODO(v0.4.0 P3 follow-up): mount it here once the body-replay behavior is
+# validated against the full REST test surface:
+#
+#     from idempotency.middleware import IdempotencyMiddleware
+#     if IdempotencyMiddleware is not None:
+#         app.add_middleware(IdempotencyMiddleware)
+#
+# It is left unmounted in this slice so the default app keeps exact v0.3.0 request
+# handling (no body-reading middleware in the default path); a no key sent → no
+# idempotency bookkeeping regardless (FR-022). Operators / the hosted cloud can
+# opt in with the two lines above today.
+
 
 # ---------------------------------------------------------------------------
 # Health check

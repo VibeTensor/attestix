@@ -121,6 +121,9 @@ packages = [
     # v0.4.0 extensibility seams (flat layout)
     "storage",
     "signing",
+    "tenancy",
+    "audit",
+    "idempotency",
     # REST API
     "api",
     "api.routers",
@@ -133,6 +136,9 @@ packages = [
     # v0.4.0 extensibility seams (namespace mirror)
     "attestix.storage",
     "attestix.signing",
+    "attestix.tenancy",
+    "attestix.audit",
+    "attestix.idempotency",
 ]
 py-modules = ["main", "cli", "config", "errors"]
 

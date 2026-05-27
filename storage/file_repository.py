@@ -47,6 +47,10 @@ _COLLECTIONS = {
         {"entries": [], "audit_log": []},
     ),
     "anchors": ("ANCHORS_FILE", "anchors", {"anchors": []}),
+    # v0.4.0 US2: structured audit events (one document, hash-chained per tenant).
+    "audit": ("AUDIT_FILE", "events", {"events": []}),
+    # v0.4.0 US3: idempotency keys (24h TTL, minimal stored representation).
+    "idempotency": ("IDEMPOTENCY_FILE", "keys", {"keys": []}),
 }
 
 

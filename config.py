@@ -31,6 +31,11 @@ COMPLIANCE_FILE = DATA_DIR / "compliance.json"
 CREDENTIALS_FILE = DATA_DIR / "credentials.json"
 PROVENANCE_FILE = DATA_DIR / "provenance.json"
 ANCHORS_FILE = DATA_DIR / "anchors.json"
+# v0.4.0 extensibility layer (US2 structured audit events, US3 idempotency keys).
+# Both are file-backed by default through the same FileRepository as every other
+# collection, so the self-host default needs no new services.
+AUDIT_FILE = DATA_DIR / "audit.json"
+IDEMPOTENCY_FILE = DATA_DIR / "idempotency.json"
 BLOCKCHAIN_CONFIG_FILE = DATA_DIR / ".blockchain_config.json"
 LOG_FILE = DATA_DIR / "attestix_errors.log"
 SIGNING_KEY_FILE = DATA_DIR / ".signing_key.json"
