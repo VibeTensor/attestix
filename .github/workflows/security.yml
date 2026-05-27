@@ -40,13 +40,16 @@ jobs:
 
       - name: Run pip-audit
         # Advisory on PR, enforced on schedule + push to main.
-        # --skip-editable avoids auditing the locally-installed editable
-        # package itself (which is not resolvable on PyPI before release).
+        # --skip-editable skips the locally-installed editable attestix itself.
+        # No --strict: under --strict pip-audit fails on any un-auditable dep,
+        # and an editable self-install can never be audited (it errors even with
+        # --skip-editable). Without --strict, pip-audit still exits non-zero on
+        # any real dependency vulnerability — which is the behaviour we enforce.
         run: |
           if [ "${{ github.event_name }}" = "pull_request" ]; then
             pip-audit --progress-spinner off --skip-editable || echo "pip-audit findings present (advisory on PR)."
           else
-            pip-audit --progress-spinner off --skip-editable --strict
+            pip-audit --progress-spinner off --skip-editable
           fi
 
   bandit:
