@@ -23,6 +23,10 @@ class ErrorCategory(str, Enum):
     CREDENTIAL = "CREDENTIAL"
     PROVENANCE = "PROVENANCE"
     BLOCKCHAIN = "BLOCKCHAIN"
+    # v0.4.0 extensibility layer: pluggable signer / tenant context / idempotency.
+    SIGNER = "SIGNER"
+    TENANCY = "TENANCY"
+    IDEMPOTENCY = "IDEMPOTENCY"
 
 
 def setup_logging(log_file: str = "attestix_errors.log"):

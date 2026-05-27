@@ -98,71 +98,93 @@ def _safe_save(filepath: Path, data: dict):
         temp.replace(filepath)
 
 
+# --- Default file Repository backing for the public load_*/save_* shims ---
+#
+# v0.4.0 introduces a pluggable storage seam (storage.Repository). The public
+# load_*/save_* functions below are retained as thin shims over the default
+# file-backed Repository so external callers that import them keep working
+# unchanged (backward compatibility, constitution principle II). The Repository
+# is resolved lazily to avoid an import cycle (storage.file_repository imports
+# this module) and so test monkeypatching of the *_FILE paths is still honored
+# (FileRepository reads those paths from this module on each call).
+
+_file_repository = None
+
+
+def _repo():
+    """Return the process-wide default file Repository (lazy, cycle-safe)."""
+    global _file_repository
+    if _file_repository is None:
+        from storage.file_repository import FileRepository
+        _file_repository = FileRepository()
+    return _file_repository
+
+
 # --- Identity storage ---
 
 def load_identities() -> dict:
-    return _safe_load(IDENTITIES_FILE, {"agents": []})
+    return _repo().load_document("identities")
 
 
 def save_identities(data: dict):
-    _safe_save(IDENTITIES_FILE, data)
+    _repo().save_document("identities", data)
 
 
 # --- Reputation storage ---
 
 def load_reputation() -> dict:
-    return _safe_load(REPUTATION_FILE, {"interactions": [], "scores": {}})
+    return _repo().load_document("reputation")
 
 
 def save_reputation(data: dict):
-    _safe_save(REPUTATION_FILE, data)
+    _repo().save_document("reputation", data)
 
 
 # --- Delegation storage ---
 
 def load_delegations() -> dict:
-    return _safe_load(DELEGATIONS_FILE, {"delegations": []})
+    return _repo().load_document("delegations")
 
 
 def save_delegations(data: dict):
-    _safe_save(DELEGATIONS_FILE, data)
+    _repo().save_document("delegations", data)
 
 
 # --- Compliance storage ---
 
 def load_compliance() -> dict:
-    return _safe_load(COMPLIANCE_FILE, {"profiles": [], "assessments": [], "declarations": []})
+    return _repo().load_document("compliance")
 
 
 def save_compliance(data: dict):
-    _safe_save(COMPLIANCE_FILE, data)
+    _repo().save_document("compliance", data)
 
 
 # --- Credential storage ---
 
 def load_credentials() -> dict:
-    return _safe_load(CREDENTIALS_FILE, {"credentials": []})
+    return _repo().load_document("credentials")
 
 
 def save_credentials(data: dict):
-    _safe_save(CREDENTIALS_FILE, data)
+    _repo().save_document("credentials", data)
 
 
 # --- Provenance storage ---
 
 def load_provenance() -> dict:
-    return _safe_load(PROVENANCE_FILE, {"entries": [], "audit_log": []})
+    return _repo().load_document("provenance")
 
 
 def save_provenance(data: dict):
-    _safe_save(PROVENANCE_FILE, data)
+    _repo().save_document("provenance", data)
 
 
 # --- Anchor storage ---
 
 def load_anchors() -> dict:
-    return _safe_load(ANCHORS_FILE, {"anchors": []})
+    return _repo().load_document("anchors")
 
 
 def save_anchors(data: dict):
-    _safe_save(ANCHORS_FILE, data)
+    _repo().save_document("anchors", data)

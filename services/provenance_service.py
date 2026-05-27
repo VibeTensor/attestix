@@ -10,9 +10,9 @@ import uuid
 from datetime import datetime, timezone
 from typing import Dict, List, Optional
 
-from auth.crypto import load_or_create_signing_key, sign_json_payload
 from config import load_provenance, save_provenance
 from errors import ErrorCategory, log_and_format_error
+from signing import InProcessSigner, Signer
 
 
 VALID_ACTION_TYPES = {"inference", "delegation", "data_access", "external_call"}
@@ -24,8 +24,11 @@ class ProvenanceService:
     # Genesis hash for the first entry in a chain
     GENESIS_HASH = "0" * 64
 
-    def __init__(self):
-        self._private_key, self._server_did = load_or_create_signing_key()
+    def __init__(self, signer: Optional[Signer] = None):
+        # v0.4.0: sign through the pluggable Signer seam (default = in-process
+        # Ed25519, byte-for-byte identical to v0.3.0).
+        self._signer = signer or InProcessSigner()
+        self._server_did = self._signer.did
 
     @staticmethod
     def _chain_hash(previous_hash: str, entry_data: dict) -> str:
@@ -75,7 +78,7 @@ class ProvenanceService:
             }
 
             signable = {k: v for k, v in entry.items() if k != "signature"}
-            entry["signature"] = sign_json_payload(self._private_key, signable)
+            entry["signature"] = self._signer.sign(signable)
 
             data = load_provenance()
             data["entries"].append(entry)
@@ -115,7 +118,7 @@ class ProvenanceService:
             }
 
             signable = {k: v for k, v in entry.items() if k != "signature"}
-            entry["signature"] = sign_json_payload(self._private_key, signable)
+            entry["signature"] = self._signer.sign(signable)
 
             data = load_provenance()
             data["entries"].append(entry)
@@ -168,7 +171,7 @@ class ProvenanceService:
             log_entry["chain_hash"] = self._chain_hash(prev_hash, log_entry)
 
             signable = {k: v for k, v in log_entry.items() if k != "signature"}
-            log_entry["signature"] = sign_json_payload(self._private_key, signable)
+            log_entry["signature"] = self._signer.sign(signable)
 
             data["audit_log"].append(log_entry)
             save_provenance(data)

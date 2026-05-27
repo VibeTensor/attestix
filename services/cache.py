@@ -23,11 +23,29 @@ def get_service(
         service_class: The class to instantiate.
         instance_id: Key for distinguishing multiple instances.
         ttl: Time-to-live in seconds.
-        **kwargs: Passed to the constructor if creating new instance.
+        **kwargs: Passed to the constructor if creating a new instance. This is
+            the v0.4.0 dependency-injection seam: a deployment can inject an
+            alternate backend, e.g. ``get_service(IdentityService,
+            signer=my_kms_signer)`` or a service that accepts a ``repository=``,
+            and distinguish it from the default with a non-"default"
+            ``instance_id``. With no kwargs, services construct their defaults
+            (in-process Ed25519 signer + file storage), reproducing v0.3.0
+            behavior exactly.
 
     Returns:
         Cached or newly created service instance.
     """
+    # DI safety: when dependencies are injected, the cache key (class +
+    # instance_id) cannot distinguish different injected backends. Require a
+    # non-default instance_id so two callers injecting different signers/
+    # repositories never collide onto one cached instance. With no kwargs the
+    # default-instance behavior is unchanged (v0.3.0 parity).
+    if kwargs and instance_id == "default":
+        raise ValueError(
+            "get_service(): instance_id must be non-'default' when injecting "
+            "dependencies via kwargs, so distinct backends do not share a cache slot."
+        )
+
     cache_key = f"{service_class.__name__}:{instance_id}"
     now = time.time()
 

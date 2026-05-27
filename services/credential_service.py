@@ -14,13 +14,12 @@ logger = logging.getLogger(__name__)
 
 from auth.crypto import (
     did_key_fragment,
-    load_or_create_signing_key,
-    sign_json_payload,
     verify_json_signature,
     did_key_to_public_key,
 )
 from config import load_credentials, save_credentials
 from errors import ErrorCategory, log_and_format_error
+from signing import InProcessSigner, Signer
 
 
 # W3C VC contexts
@@ -45,8 +44,12 @@ class CredentialService:
     # Fields excluded from signing (mutable after issuance)
     MUTABLE_FIELDS = {"proof", "credentialStatus"}
 
-    def __init__(self):
-        self._private_key, self._server_did = load_or_create_signing_key()
+    def __init__(self, signer: Optional[Signer] = None):
+        # v0.4.0: sign through the pluggable Signer seam (default = in-process
+        # Ed25519, byte-for-byte identical to v0.3.0). An injected Signer (e.g.
+        # KMS) swaps the backend with no change to public method signatures.
+        self._signer = signer or InProcessSigner()
+        self._server_did = self._signer.did
 
     def issue_credential(
         self,
@@ -119,7 +122,7 @@ class CredentialService:
 
             # Create Ed25519Signature2020 proof (exclude mutable fields)
             proof_payload = {k: v for k, v in credential.items() if k not in self.MUTABLE_FIELDS}
-            signature = sign_json_payload(self._private_key, proof_payload)
+            signature = self._signer.sign(proof_payload)
 
             credential["proof"] = {
                 "type": "Ed25519Signature2020",
@@ -303,7 +306,7 @@ class CredentialService:
 
             # Sign the presentation (includes challenge/domain for replay protection)
             proof_payload = {k: v for k, v in vp.items() if k != "proof"}
-            signature = sign_json_payload(self._private_key, proof_payload)
+            signature = self._signer.sign(proof_payload)
 
             vp["proof"] = {
                 "type": "Ed25519Signature2020",

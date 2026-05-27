@@ -11,8 +11,6 @@ from typing import List, Optional
 
 from auth.crypto import (
     did_key_fragment,
-    load_or_create_signing_key,
-    sign_json_payload,
     verify_json_signature,
     did_key_to_public_key,
 )
@@ -24,6 +22,7 @@ from config import (
     save_identities,
 )
 from errors import ErrorCategory, log_and_format_error
+from signing import InProcessSigner, Signer
 
 
 #: Maximum allowed display_name length. Mirrors the API layer constraint so
@@ -38,8 +37,13 @@ class IdentityService:
     MUTABLE_FIELDS = {"signature", "revoked", "revocation_reason", "revoked_at",
                       "reputation_score", "eu_compliance"}
 
-    def __init__(self):
-        self._private_key, self._server_did = load_or_create_signing_key()
+    def __init__(self, signer: Optional[Signer] = None):
+        # v0.4.0: sign through the pluggable Signer seam. Defaults to the
+        # in-process Ed25519 signer, which wraps load_or_create_signing_key and
+        # reproduces v0.3.0 signatures byte-for-byte. Passing an alternate Signer
+        # (e.g. KMS) swaps the backend with no change to this method's signature.
+        self._signer = signer or InProcessSigner()
+        self._server_did = self._signer.did
 
     def _signable_payload(self, uait: dict) -> dict:
         """Extract only immutable fields for signing/verification."""
@@ -116,9 +120,9 @@ class IdentityService:
             "signature": None,
         }
 
-        # Sign only immutable fields
+        # Sign only immutable fields (through the pluggable Signer seam)
         signable = self._signable_payload(uait)
-        uait["signature"] = sign_json_payload(self._private_key, signable)
+        uait["signature"] = self._signer.sign(signable)
 
         # Persist
         data = load_identities()
