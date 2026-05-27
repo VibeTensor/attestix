@@ -34,6 +34,8 @@ def tmp_attestix(tmp_path, monkeypatch):
         "CREDENTIALS_FILE",
         "PROVENANCE_FILE",
         "ANCHORS_FILE",
+        "AUDIT_FILE",
+        "IDEMPOTENCY_FILE",
         "BLOCKCHAIN_CONFIG_FILE",
         "SIGNING_KEY_FILE",
         "LOG_FILE",

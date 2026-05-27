@@ -140,9 +140,13 @@ A single optional field added to every persisted resource and to audit/idempoten
 The on-disk JSON shape becomes a **superset** of v0.3.0 (one new optional key), so existing
 readers and the 358 tests are unaffected (Complexity Tracking item, SC-001/SC-002). Tenant
 resolution at the boundary (REST/MCP → `tenant_id`) is provided via a resolver hook in
-`tenancy/context.py`; the OSS default resolves to `"default"`. [NEEDS CLARIFICATION: whether
-the OSS ships a concrete REST tenant-resolution mechanism or leaves it to the integrator —
-see spec Assumptions.]
+`tenancy/context.py`; the OSS default resolves to `"default"`. **Resolved (T046):** the OSS
+ships a concrete default resolver (`tenancy.context.resolve_tenant`) that reads an optional
+`X-Attestix-Tenant` header (case-insensitive) and resolves to `"default"` when it is absent or
+blank, so single-tenant self-host has zero behavior change while multi-tenant operators get a
+working header-based mapping without writing a resolver. An integrator/cloud may still inject
+its own resolution upstream. A context that must not default silently validates via
+`TenantContext.require_tenant()`.
 
 ## 4. AuditEvent (FR-015…FR-018)
 
@@ -177,8 +181,12 @@ class AuditEvent:
 **Emitter** (`audit/emitter.py`): default sink appends locally (preserving today's local
 audit behavior); an injectable sink lets an external consumer (cloud) receive events for an
 external hash-chained log (FR-017). The emitter computes `prev_hash`/`chain_hash` per tenant.
-[NEEDS CLARIFICATION: whether a no-op update emits an event or is suppressed — see spec Edge
-Cases.]
+**Resolved (T046 — no-op update):** the emitter emits exactly one event per *committed*
+mutating operation, **including a no-op update** (an update that changes nothing). The
+`change_digest` captures before/after, so a downstream consumer can detect a no-op; the engine
+does not special-case suppression in every service. This keeps "exactly one event per
+state-changing operation" (FR-015) uniform. A *failed* operation emits no event (FR-018): the
+caller emits only after the Repository write commits.
 
 > **PII / encryption-at-rest note (FR-028).** `actor` (an identity / DID) and `target_id`
 > may constitute personal data under DPDP Act 2023 §2(t) and GDPR Art.4(1) when integrators
@@ -231,15 +239,23 @@ class IdempotencyKey:
 `idempotency` collection) so the default install uses file storage and the cloud uses
 Postgres automatically. TTL is enforced on read (expired → ignored) plus a periodic reclaim.
 The default file-backed store is single-process; concurrency guarantees beyond
-first-writer-wins-via-lock are out of scope for the default impl. [NEEDS CLARIFICATION:
-exact concurrency guarantee for the default (file) idempotency store under concurrent
-same-key requests — see spec Edge Cases.]
+first-writer-wins-via-lock are out of scope for the default impl. **Resolved (T046 —
+concurrency):** the default store is **first-writer-wins via the file Repository's existing
+`filelock` + atomic rename**. The `run_idempotent` helper reserves the key (writes an
+`in_progress` record) before executing; a concurrent same-key call that observes a non-expired
+record does NOT re-execute (a still-`in_progress` record surfaces a conflict rather than a
+duplicate write). Guarantees beyond single-process first-writer-wins (e.g. multi-worker
+deployments) require an external store such as the Postgres adapter.
 
 **Boundary**: enforced primarily at the REST layer via `idempotency/middleware.py`
 (a `BaseHTTPMiddleware`, matching the existing middleware pattern in `api/main.py`) reading
-an `Idempotency-Key` header on `POST`/write endpoints. [NEEDS CLARIFICATION: whether MCP
-tools and direct service calls also accept idempotency keys, or REST-only — see spec
-Assumptions.]
+an `Idempotency-Key` header on `POST`/write endpoints. **Resolved (T046 — scope):** the store
+and the `run_idempotent` helper are **surface-agnostic** — the REST `Idempotency-Key` header is
+the documented *primary* boundary, but MCP tools and direct service calls may use the same
+helper. The OSS ships the store + helper + an opt-in `IdempotencyMiddleware`; the middleware is
+provided but **not auto-mounted** in v0.4.0 P3 (the default app keeps exact v0.3.0 request
+handling — no key → no bookkeeping, FR-022) with a clear TODO at the `api/main.py` seam, to be
+mounted after its body-replay behavior is validated against the full REST surface.
 
 ## Cross-reference: where each contract attaches in the codebase
 

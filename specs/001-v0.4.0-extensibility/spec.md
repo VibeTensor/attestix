@@ -166,9 +166,10 @@ key older than the TTL no longer suppresses a new create.
   stored result.
 - **Concurrent requests with the same idempotency key**: only one write may take effect;
   concurrent duplicates resolve to the same stored result (the underlying store must support
-  a first-writer-wins guarantee). [NEEDS CLARIFICATION: exact concurrency guarantee for the
-  default file-based idempotency store — first-writer-wins via lock vs. best-effort — given
-  the file repository is single-process.]
+  a first-writer-wins guarantee). **Resolved (T046):** the default file store is
+  first-writer-wins via the file Repository's existing `filelock` + atomic rename; the helper
+  reserves the key before executing and a concurrent same-key call observing a non-expired
+  record does not re-execute. Multi-worker guarantees require an external store (Postgres).
 - **Storage adapter failure mid-write** (DB connection drop, disk full, lock timeout): the
   operation MUST surface an error and MUST NOT emit a success audit event; partial writes MUST
   not corrupt other tenants' data.
@@ -176,8 +177,11 @@ key older than the TTL no longer suppresses a new create.
   distinct records, never merged.
 - **Idempotency key store growth**: expired keys MUST be reclaimable so the store does not
   grow unbounded (TTL-based cleanup).
-- **Audit event for a no-op update** (update that changes nothing): [NEEDS CLARIFICATION:
-  whether a no-op update emits an audit event or is suppressed].
+- **Audit event for a no-op update** (update that changes nothing): **Resolved (T046):** a
+  no-op update emits one event like any other committed mutating operation; the `change_digest`
+  captures before/after so a downstream consumer can detect the no-op. The engine does not
+  special-case suppression (keeps FR-015 "exactly one event per state-changing operation"
+  uniform).
 
 ## Requirements *(mandatory)*
 
@@ -341,8 +345,10 @@ key older than the TTL no longer suppresses a new create.
 - The existing provenance hash-chained audit log (`prev_hash`/`chain_hash` with a genesis
   hash) is the precedent and reference behavior for AuditEvent chaining.
 - The REST layer is the primary surface for idempotency keys (Stripe-style header); whether
-  MCP tools also accept idempotency keys is left to the plan. [NEEDS CLARIFICATION: scope of
-  idempotency keys — REST-only vs. also MCP tools and direct service calls.]
+  MCP tools also accept idempotency keys is left to the plan. **Resolved (T046):** the store +
+  `run_idempotent` helper are surface-agnostic — REST is the documented primary boundary, but
+  MCP/direct callers may use the same helper. The opt-in `IdempotencyMiddleware` ships but is
+  not auto-mounted in v0.4.0 P3 (TODO seam in `api/main.py`).
 - Tenant resolution at the boundary (how a REST request or MCP call maps to a `tenant_id`) is
   defined by the integrator/cloud; the OSS provides the slot and the default. [NEEDS
   CLARIFICATION: whether the OSS ships a default tenant-resolution mechanism for the REST
