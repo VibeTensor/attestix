@@ -8,9 +8,9 @@ import uuid
 from datetime import datetime, timezone
 from typing import Dict, List, Optional
 
-from auth.crypto import load_or_create_signing_key, sign_json_payload
 from config import load_compliance, save_compliance
 from errors import ErrorCategory, log_and_format_error
+from signing import InProcessSigner, Signer
 
 
 VALID_RISK_CATEGORIES = {"minimal", "limited", "high", "unacceptable"}
@@ -124,8 +124,11 @@ def _requires_third_party_assessment(
 class ComplianceService:
     """Manages EU AI Act compliance profiles, assessments, and declarations."""
 
-    def __init__(self):
-        self._private_key, self._server_did = load_or_create_signing_key()
+    def __init__(self, signer: Optional[Signer] = None):
+        # v0.4.0: sign through the pluggable Signer seam (default = in-process
+        # Ed25519, byte-for-byte identical to v0.3.0).
+        self._signer = signer or InProcessSigner()
+        self._server_did = self._signer.did
         self._identity_svc = None
         self._credential_svc = None
 
@@ -254,7 +257,7 @@ class ComplianceService:
             }
 
             signable = {k: v for k, v in profile.items() if k != "signature"}
-            profile["signature"] = sign_json_payload(self._private_key, signable)
+            profile["signature"] = self._signer.sign(signable)
 
             data["profiles"].append(profile)
             save_compliance(data)
@@ -295,7 +298,7 @@ class ComplianceService:
 
                     # Re-sign
                     signable = {k: v for k, v in p.items() if k != "signature"}
-                    p["signature"] = sign_json_payload(self._private_key, signable)
+                    p["signature"] = self._signer.sign(signable)
 
                     save_compliance(data)
                     return p
@@ -374,7 +377,7 @@ class ComplianceService:
             }
 
             signable = {k: v for k, v in assessment.items() if k != "signature"}
-            assessment["signature"] = sign_json_payload(self._private_key, signable)
+            assessment["signature"] = self._signer.sign(signable)
 
             data = load_compliance()
             data["assessments"].append(assessment)
@@ -520,7 +523,7 @@ class ComplianceService:
             }
 
             signable = {k: v for k, v in declaration.items() if k != "signature"}
-            declaration["signature"] = sign_json_payload(self._private_key, signable)
+            declaration["signature"] = self._signer.sign(signable)
 
             data = load_compliance()
             data["declarations"].append(declaration)
