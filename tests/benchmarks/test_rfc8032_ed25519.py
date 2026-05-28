@@ -6,7 +6,7 @@ produce results identical to the IETF reference vectors.
 
 import pytest
 
-from auth.crypto import (
+from attestix.auth.crypto import (
     private_key_from_bytes,
     public_key_to_bytes,
     sign_message,

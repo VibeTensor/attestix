@@ -33,11 +33,11 @@ from typing import Callable, Dict, List, Optional
 PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
 
-from services.identity_service import IdentityService
-from services.compliance_service import ComplianceService
-from services.provenance_service import ProvenanceService
-from services.credential_service import CredentialService
-from services.reputation_service import ReputationService
+from attestix.services.identity_service import IdentityService
+from attestix.services.compliance_service import ComplianceService
+from attestix.services.provenance_service import ProvenanceService
+from attestix.services.credential_service import CredentialService
+from attestix.services.reputation_service import ReputationService
 
 
 # ---------------------------------------------------------------------------

@@ -8,8 +8,8 @@ WITHOUT a tenant_id field must read back under tenant "default" (FR-013).
 
 import pytest
 
-from storage import FileRepository, MemoryRepository
-from tenancy import DEFAULT_TENANT, TenantContext, default_tenant_context, resolve_tenant
+from attestix.storage import FileRepository, MemoryRepository
+from attestix.tenancy import DEFAULT_TENANT, TenantContext, default_tenant_context, resolve_tenant
 
 COLLECTION = "identities"
 ID_FIELD = "agent_id"

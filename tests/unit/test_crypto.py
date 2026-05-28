@@ -1,6 +1,6 @@
 """Tests for Ed25519 key operations, signing, and verification in auth/crypto.py."""
 
-from auth.crypto import (
+from attestix.auth.crypto import (
     generate_ed25519_keypair,
     private_key_to_bytes,
     public_key_to_bytes,

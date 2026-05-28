@@ -88,9 +88,9 @@ PROJECT_ROOT = str(Path(__file__).resolve().parent.parent.parent)
 if PROJECT_ROOT not in sys.path:
     sys.path.insert(0, PROJECT_ROOT)
 
-from services.identity_service import IdentityService
-from services.compliance_service import ComplianceService
-from services.provenance_service import ProvenanceService
+from attestix.services.identity_service import IdentityService
+from attestix.services.compliance_service import ComplianceService
+from attestix.services.provenance_service import ProvenanceService
 
 
 # ---------------------------------------------------------------------------

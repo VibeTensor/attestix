@@ -11,7 +11,7 @@ import time
 import jwt
 import pytest
 
-from auth.crypto import did_key_to_public_key
+from attestix.auth.crypto import did_key_to_public_key
 
 
 class TestUCANJWTHeader:

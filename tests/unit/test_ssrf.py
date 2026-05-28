@@ -2,7 +2,7 @@
 
 from unittest.mock import patch
 
-from auth.ssrf import validate_url_host
+from attestix.auth.ssrf import validate_url_host
 
 
 class TestBlockedHosts:
@@ -47,7 +47,7 @@ class TestAllowedHosts:
 
     def test_allows_public_ip(self):
         # Mock DNS resolution to return a public IP
-        with patch("auth.ssrf.socket.getaddrinfo") as mock_dns:
+        with patch("attestix.auth.ssrf.socket.getaddrinfo") as mock_dns:
             mock_dns.return_value = [
                 (2, 1, 0, "", ("93.184.216.34", 0)),  # example.com
             ]
@@ -62,7 +62,7 @@ class TestDnsRebinding:
 
     def test_blocks_hostname_resolving_to_private(self):
         """A public hostname that resolves to 127.0.0.1 should be blocked."""
-        with patch("auth.ssrf.socket.getaddrinfo") as mock_dns:
+        with patch("attestix.auth.ssrf.socket.getaddrinfo") as mock_dns:
             mock_dns.return_value = [
                 (2, 1, 0, "", ("127.0.0.1", 0)),
             ]

@@ -1,19 +1,21 @@
-"""Attestix idempotency - re-exports from the flat module for namespace parity.
+"""Idempotency keys for Attestix (v0.4.0 extensibility layer, US3 / P3).
 
-    # Namespaced (recommended)
-    from attestix.idempotency import RepositoryIdempotencyStore, run_idempotent
+A client-supplied idempotency key makes a write replay-safe for 24 hours
+(Stripe-style): a retried request returns the original result instead of creating
+a duplicate. A self-hoster who never sends a key sees no change (FR-022).
 
-    # Flat (also supported)
-    from idempotency import RepositoryIdempotencyStore, run_idempotent
+This package ships the reusable, surface-agnostic pieces — the
+:class:`IdempotencyStore` (default Repository-backed, 24h TTL, reclaim) and the
+:func:`run_idempotent` helper — plus an opt-in REST :class:`IdempotencyMiddleware`.
+The store stores only a minimal representation of the original response
+(status + resource id + response hash), never raw private-key material or a second
+unencrypted copy of signed VC / identity data (FR-029).
 """
 
-from idempotency import (
+from attestix.idempotency.store import (
     IDEMPOTENCY_COLLECTION,
-    IDEMPOTENCY_HEADER,
     TTL,
-    WRITE_METHODS,
     IdempotencyConflictError,
-    IdempotencyMiddleware,
     IdempotencyStore,
     RepositoryIdempotencyStore,
     minimal_stored_response,
@@ -21,10 +23,15 @@ from idempotency import (
     response_hash,
     run_idempotent,
 )
+from attestix.idempotency.middleware import (
+    IDEMPOTENCY_HEADER,
+    WRITE_METHODS,
+    IdempotencyMiddleware,
+)
 
-# Re-export submodules for `from attestix.idempotency.X import Y` parity.
-from idempotency import store
-from idempotency import middleware
+# Submodule re-exports for `from attestix.idempotency.X import Y` parity.
+from attestix.idempotency import store
+from attestix.idempotency import middleware
 
 __all__ = [
     "IdempotencyStore",

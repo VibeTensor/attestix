@@ -16,7 +16,7 @@ import pytest
 # ---------------------------------------------------------------------------
 def call_tool(tool_name: str, **kwargs) -> dict | list:
     """Invoke an MCP tool by name and return parsed JSON."""
-    from main import mcp
+    from attestix.main import mcp
     import asyncio
 
     tools = mcp._tool_manager._tools

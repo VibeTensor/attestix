@@ -28,11 +28,11 @@ sys.path.insert(
     ),
 )
 
-from services.identity_service import IdentityService
-from services.compliance_service import ComplianceService
-from services.provenance_service import ProvenanceService
-from services.credential_service import CredentialService
-from services.did_service import DIDService
+from attestix.services.identity_service import IdentityService
+from attestix.services.compliance_service import ComplianceService
+from attestix.services.provenance_service import ProvenanceService
+from attestix.services.credential_service import CredentialService
+from attestix.services.did_service import DIDService
 
 
 # ---------------------------------------------------------------------------

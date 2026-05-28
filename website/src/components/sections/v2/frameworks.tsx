@@ -77,7 +77,7 @@ export function FrameworksSection() {
                   }
                 >
                   {f.status === "production"
-                    ? "Production ready"
+                    ? "Real integration"
                     : "Example integration"}
                 </span>
               </div>

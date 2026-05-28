@@ -26,12 +26,12 @@ from typing import Callable, List, Optional
 PROJECT_ROOT = str(Path(__file__).resolve().parent.parent.parent)
 sys.path.insert(0, PROJECT_ROOT)
 
-from services.identity_service import IdentityService
-from services.delegation_service import DelegationService
-from services.provenance_service import ProvenanceService
-from services.compliance_service import ComplianceService
-from services.reputation_service import ReputationService
-from services.did_service import DIDService
+from attestix.services.identity_service import IdentityService
+from attestix.services.delegation_service import DelegationService
+from attestix.services.provenance_service import ProvenanceService
+from attestix.services.compliance_service import ComplianceService
+from attestix.services.reputation_service import ReputationService
+from attestix.services.did_service import DIDService
 
 
 # ---------------------------------------------------------------------------

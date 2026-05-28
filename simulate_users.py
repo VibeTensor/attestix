@@ -18,7 +18,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 # Redirect storage to a temp directory for clean simulation
 import tempfile
-import config
+from attestix import config
 TEMP_DIR = tempfile.mkdtemp(prefix="attestix_sim_")
 for attr in ["IDENTITIES_FILE", "REPUTATION_FILE", "DELEGATIONS_FILE",
              "COMPLIANCE_FILE", "CREDENTIALS_FILE", "PROVENANCE_FILE",
@@ -29,7 +29,7 @@ config.PROJECT_DIR = config.Path(TEMP_DIR)
 config.DATA_DIR = config.Path(TEMP_DIR)
 
 # Now import MCP tools
-from main import mcp
+from attestix.main import mcp
 import asyncio
 
 # Get event loop
@@ -99,7 +99,7 @@ def run_simulation(name, func):
     global passed, failed
     try:
         # Clear storage between simulations
-        from services.cache import clear_cache
+        from attestix.services.cache import clear_cache
         clear_cache()
         for f in config.Path(TEMP_DIR).glob("*.json"):
             f.unlink()

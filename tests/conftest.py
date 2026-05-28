@@ -24,7 +24,7 @@ def tmp_attestix(tmp_path, monkeypatch):
     This patches every *_FILE path in config.py so that no test
     reads or writes production JSON files.
     """
-    import config
+    from attestix import config
 
     file_attrs = [
         "IDENTITIES_FILE",
@@ -50,7 +50,7 @@ def tmp_attestix(tmp_path, monkeypatch):
     monkeypatch.setattr(config, "DATA_DIR", tmp_path)
 
     # Clear the service cache so services re-initialize with patched paths
-    from services.cache import clear_cache
+    from attestix.services.cache import clear_cache
     clear_cache()
 
     yield tmp_path
@@ -62,63 +62,63 @@ def tmp_attestix(tmp_path, monkeypatch):
 @pytest.fixture
 def identity_service():
     """Fresh IdentityService instance using tmp storage."""
-    from services.identity_service import IdentityService
+    from attestix.services.identity_service import IdentityService
     return IdentityService()
 
 
 @pytest.fixture
 def credential_service():
     """Fresh CredentialService instance using tmp storage."""
-    from services.credential_service import CredentialService
+    from attestix.services.credential_service import CredentialService
     return CredentialService()
 
 
 @pytest.fixture
 def delegation_service():
     """Fresh DelegationService instance using tmp storage."""
-    from services.delegation_service import DelegationService
+    from attestix.services.delegation_service import DelegationService
     return DelegationService()
 
 
 @pytest.fixture
 def reputation_service():
     """Fresh ReputationService instance using tmp storage."""
-    from services.reputation_service import ReputationService
+    from attestix.services.reputation_service import ReputationService
     return ReputationService()
 
 
 @pytest.fixture
 def compliance_service():
     """Fresh ComplianceService instance using tmp storage."""
-    from services.compliance_service import ComplianceService
+    from attestix.services.compliance_service import ComplianceService
     return ComplianceService()
 
 
 @pytest.fixture
 def provenance_service():
     """Fresh ProvenanceService instance using tmp storage."""
-    from services.provenance_service import ProvenanceService
+    from attestix.services.provenance_service import ProvenanceService
     return ProvenanceService()
 
 
 @pytest.fixture
 def did_service():
     """Fresh DIDService instance using tmp storage."""
-    from services.did_service import DIDService
+    from attestix.services.did_service import DIDService
     return DIDService()
 
 
 @pytest.fixture
 def agent_card_service():
     """Fresh AgentCardService instance."""
-    from services.agent_card_service import AgentCardService
+    from attestix.services.agent_card_service import AgentCardService
     return AgentCardService()
 
 
 @pytest.fixture
 def report_service():
     """Fresh ReportService instance using tmp storage."""
-    from services.report_service import ReportService
+    from attestix.services.report_service import ReportService
     return ReportService()
 
 
@@ -128,10 +128,10 @@ def blockchain_service_mock():
 
     Returns a configured service that thinks it's connected to Base Sepolia.
     """
-    from services.blockchain_service import BlockchainService
+    from attestix.services.blockchain_service import BlockchainService
 
     with patch.dict("os.environ", {"EVM_PRIVATE_KEY": "0x" + "ab" * 32, "BASE_NETWORK": "sepolia"}):
-        with patch("services.blockchain_service.BlockchainService._try_init"):
+        with patch("attestix.services.blockchain_service.BlockchainService._try_init"):
             svc = BlockchainService()
             svc._configured = True
             svc._network = "sepolia"

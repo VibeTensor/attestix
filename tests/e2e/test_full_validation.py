@@ -295,7 +295,7 @@ class TestCryptoIntegrity:
     """Verify cryptographic operations are correct end-to-end."""
 
     def test_signature_roundtrip(self):
-        from auth.crypto import (
+        from attestix.auth.crypto import (
             generate_ed25519_keypair,
             sign_message,
             verify_signature,
@@ -320,7 +320,7 @@ class TestCryptoIntegrity:
         assert recovered_key.public_bytes_raw() == public_key.public_bytes_raw()
 
     def test_merkle_tree_integrity(self):
-        from blockchain.merkle import build_merkle_tree, hash_leaf
+        from attestix.blockchain.merkle import build_merkle_tree, hash_leaf
 
         # Build tree from known entries
         entries = [{"entry": f"audit_entry_{i}"} for i in range(10)]
@@ -344,7 +344,7 @@ class TestSecurityBoundaries:
     """Test security controls and edge cases."""
 
     def test_ssrf_protection(self):
-        from auth.ssrf import validate_url_host
+        from attestix.auth.ssrf import validate_url_host
 
         # Private IPs should be blocked (returns error string)
         assert validate_url_host("127.0.0.1") is not None
@@ -521,15 +521,15 @@ class TestToolLayerConsistency:
 
     def test_all_tool_modules_importable(self):
         """All 9 tool modules should import without errors."""
-        from tools import identity_tools
-        from tools import agent_card_tools
-        from tools import did_tools
-        from tools import delegation_tools
-        from tools import reputation_tools
-        from tools import compliance_tools
-        from tools import credential_tools
-        from tools import provenance_tools
-        from tools import blockchain_tools
+        from attestix.tools import identity_tools
+        from attestix.tools import agent_card_tools
+        from attestix.tools import did_tools
+        from attestix.tools import delegation_tools
+        from attestix.tools import reputation_tools
+        from attestix.tools import compliance_tools
+        from attestix.tools import credential_tools
+        from attestix.tools import provenance_tools
+        from attestix.tools import blockchain_tools
 
         # Each module should have a register function
         for module in [
@@ -545,15 +545,15 @@ class TestToolLayerConsistency:
 
         mcp = FastMCP("test-attestix")
 
-        from tools import identity_tools
-        from tools import agent_card_tools
-        from tools import did_tools
-        from tools import delegation_tools
-        from tools import reputation_tools
-        from tools import compliance_tools
-        from tools import credential_tools
-        from tools import provenance_tools
-        from tools import blockchain_tools
+        from attestix.tools import identity_tools
+        from attestix.tools import agent_card_tools
+        from attestix.tools import did_tools
+        from attestix.tools import delegation_tools
+        from attestix.tools import reputation_tools
+        from attestix.tools import compliance_tools
+        from attestix.tools import credential_tools
+        from attestix.tools import provenance_tools
+        from attestix.tools import blockchain_tools
 
         modules = [
             identity_tools, agent_card_tools, did_tools,

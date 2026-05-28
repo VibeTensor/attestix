@@ -11,13 +11,13 @@ private material — the signer boundary intentionally has no private-key export
 path.
 """
 
-from auth.crypto import (
+from attestix.auth.crypto import (
     generate_ed25519_keypair,
     public_key_to_did_key,
     sign_json_payload,
     verify_json_signature,
 )
-from signing import InProcessSigner
+from attestix.signing import InProcessSigner
 
 
 def _fixed_payloads():
@@ -56,7 +56,7 @@ def test_inprocess_signer_self_verifies():
 
 def test_inprocess_signer_did_matches_loaded_key():
     """The signer's DID must match the loaded key's did:key."""
-    from auth.crypto import did_key_to_public_key, public_key_to_bytes
+    from attestix.auth.crypto import did_key_to_public_key, public_key_to_bytes
 
     signer = InProcessSigner()
     derived = did_key_to_public_key(signer.did)

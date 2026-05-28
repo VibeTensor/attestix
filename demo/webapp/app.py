@@ -6,13 +6,13 @@ import sys, os, json, datetime, base64
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
 import streamlit as st
-from services.identity_service import IdentityService
-from services.compliance_service import ComplianceService
-from services.provenance_service import ProvenanceService
-from services.credential_service import CredentialService
-from services.delegation_service import DelegationService
-from services.reputation_service import ReputationService
-from services.did_service import DIDService
+from attestix.services.identity_service import IdentityService
+from attestix.services.compliance_service import ComplianceService
+from attestix.services.provenance_service import ProvenanceService
+from attestix.services.credential_service import CredentialService
+from attestix.services.delegation_service import DelegationService
+from attestix.services.reputation_service import ReputationService
+from attestix.services.did_service import DIDService
 
 st.set_page_config(page_title="Attestix Dashboard", page_icon="\U0001f6e1\ufe0f", layout="wide")
 st.markdown("""<style>

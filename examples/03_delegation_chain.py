@@ -14,8 +14,8 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from services.identity_service import IdentityService
-from services.delegation_service import DelegationService
+from attestix.services.identity_service import IdentityService
+from attestix.services.delegation_service import DelegationService
 
 
 def main():

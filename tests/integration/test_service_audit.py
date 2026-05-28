@@ -13,8 +13,8 @@ that service produced, independent of the on-disk default audit collection.
 
 import pytest
 
-from audit import AuditEvent, AuditEventEmitter, verify_chain
-from storage import MemoryRepository
+from attestix.audit import AuditEvent, AuditEventEmitter, verify_chain
+from attestix.storage import MemoryRepository
 
 
 # --- helpers --------------------------------------------------------------
@@ -40,7 +40,7 @@ def _chain(emitter, tenant_id="default"):
 
 
 def test_identity_create_emits_one_event(tmp_attestix):
-    from services.identity_service import IdentityService
+    from attestix.services.identity_service import IdentityService
 
     em = _emitter()
     svc = IdentityService(emitter=em)
@@ -56,7 +56,7 @@ def test_identity_create_emits_one_event(tmp_attestix):
 
 
 def test_identity_revoke_emits_one_more_event(tmp_attestix):
-    from services.identity_service import IdentityService
+    from attestix.services.identity_service import IdentityService
 
     em = _emitter()
     svc = IdentityService(emitter=em)
@@ -68,7 +68,7 @@ def test_identity_revoke_emits_one_more_event(tmp_attestix):
 
 
 def test_identity_failing_emitter_does_not_break_op(tmp_attestix):
-    from services.identity_service import IdentityService
+    from attestix.services.identity_service import IdentityService
 
     svc = IdentityService(emitter=_FailingEmitter(repository=MemoryRepository()))
     # The create must still succeed and return a real UAIT despite the sink error.
@@ -79,7 +79,7 @@ def test_identity_failing_emitter_does_not_break_op(tmp_attestix):
 
 
 def test_identity_no_emitter_when_none_is_silent(tmp_attestix):
-    from services.identity_service import IdentityService
+    from attestix.services.identity_service import IdentityService
 
     # An explicit None emitter (resolve_emitter constructs the default), so the op
     # must still work; assert via the injected-emitter path that the result is a
@@ -90,7 +90,7 @@ def test_identity_no_emitter_when_none_is_silent(tmp_attestix):
 
 
 def test_identity_tenant_scoping(tmp_attestix):
-    from services.identity_service import IdentityService
+    from attestix.services.identity_service import IdentityService
 
     em = _emitter()
     svc = IdentityService(emitter=em, tenant_id="acme")
@@ -104,7 +104,7 @@ def test_identity_tenant_scoping(tmp_attestix):
 
 
 def test_credential_issue_and_revoke_emit_events(tmp_attestix):
-    from services.credential_service import CredentialService
+    from attestix.services.credential_service import CredentialService
 
     em = _emitter()
     svc = CredentialService(emitter=em)
@@ -118,7 +118,7 @@ def test_credential_issue_and_revoke_emit_events(tmp_attestix):
 
 
 def test_credential_failing_emitter_does_not_break_op(tmp_attestix):
-    from services.credential_service import CredentialService
+    from attestix.services.credential_service import CredentialService
 
     svc = CredentialService(emitter=_FailingEmitter(repository=MemoryRepository()))
     cred = svc.issue_credential(agent_id="a:1", credential_type="AgentIdentityCredential")
@@ -130,7 +130,7 @@ def test_credential_failing_emitter_does_not_break_op(tmp_attestix):
 
 
 def test_delegation_create_and_revoke_emit_events(tmp_attestix):
-    from services.delegation_service import DelegationService
+    from attestix.services.delegation_service import DelegationService
 
     em = _emitter()
     svc = DelegationService(emitter=em)
@@ -144,7 +144,7 @@ def test_delegation_create_and_revoke_emit_events(tmp_attestix):
 
 
 def test_delegation_failing_emitter_does_not_break_op(tmp_attestix):
-    from services.delegation_service import DelegationService
+    from attestix.services.delegation_service import DelegationService
 
     svc = DelegationService(emitter=_FailingEmitter(repository=MemoryRepository()))
     result = svc.create_delegation("iss:1", "aud:1", capabilities=["read"])
@@ -156,7 +156,7 @@ def test_delegation_failing_emitter_does_not_break_op(tmp_attestix):
 
 
 def test_reputation_record_emits_one_event(tmp_attestix):
-    from services.reputation_service import ReputationService
+    from attestix.services.reputation_service import ReputationService
 
     em = _emitter()
     svc = ReputationService(emitter=em)
@@ -168,7 +168,7 @@ def test_reputation_record_emits_one_event(tmp_attestix):
 
 
 def test_reputation_failing_emitter_does_not_break_op(tmp_attestix):
-    from services.reputation_service import ReputationService
+    from attestix.services.reputation_service import ReputationService
 
     svc = ReputationService(emitter=_FailingEmitter(repository=MemoryRepository()))
     result = svc.record_interaction("a:1", "b:1", outcome="success")
@@ -179,7 +179,7 @@ def test_reputation_failing_emitter_does_not_break_op(tmp_attestix):
 
 
 def test_provenance_record_methods_emit_events(tmp_attestix):
-    from services.provenance_service import ProvenanceService
+    from attestix.services.provenance_service import ProvenanceService
 
     em = _emitter()
     svc = ProvenanceService(emitter=em)
@@ -196,7 +196,7 @@ def test_provenance_record_methods_emit_events(tmp_attestix):
 
 
 def test_provenance_failing_emitter_does_not_break_op(tmp_attestix):
-    from services.provenance_service import ProvenanceService
+    from attestix.services.provenance_service import ProvenanceService
 
     svc = ProvenanceService(emitter=_FailingEmitter(repository=MemoryRepository()))
     entry = svc.record_training_data("a:1", "ds")
@@ -208,12 +208,12 @@ def test_provenance_failing_emitter_does_not_break_op(tmp_attestix):
 
 
 def test_compliance_create_profile_emits_one_event(tmp_attestix):
-    from services.compliance_service import ComplianceService
-    from services.identity_service import IdentityService
+    from attestix.services.compliance_service import ComplianceService
+    from attestix.services.identity_service import IdentityService
 
     # Compliance verifies the agent exists via the shared service cache, so create
     # the agent through a cache-resident IdentityService first.
-    from services.cache import get_service
+    from attestix.services.cache import get_service
     id_svc = get_service(IdentityService)
     agent = id_svc.create_identity(display_name="A", source_protocol="mcp")
 
@@ -229,9 +229,9 @@ def test_compliance_create_profile_emits_one_event(tmp_attestix):
 
 
 def test_compliance_failing_emitter_does_not_break_op(tmp_attestix):
-    from services.compliance_service import ComplianceService
-    from services.identity_service import IdentityService
-    from services.cache import get_service
+    from attestix.services.compliance_service import ComplianceService
+    from attestix.services.identity_service import IdentityService
+    from attestix.services.cache import get_service
 
     id_svc = get_service(IdentityService)
     agent = id_svc.create_identity(display_name="A", source_protocol="mcp")
@@ -248,7 +248,7 @@ def test_compliance_failing_emitter_does_not_break_op(tmp_attestix):
 
 
 def test_did_create_key_emits_one_event(tmp_attestix):
-    from services.did_service import DIDService
+    from attestix.services.did_service import DIDService
 
     em = _emitter()
     svc = DIDService(emitter=em)
@@ -260,7 +260,7 @@ def test_did_create_key_emits_one_event(tmp_attestix):
 
 
 def test_did_failing_emitter_does_not_break_op(tmp_attestix):
-    from services.did_service import DIDService
+    from attestix.services.did_service import DIDService
 
     svc = DIDService(emitter=_FailingEmitter(repository=MemoryRepository()))
     result = svc.create_did_key()
@@ -272,7 +272,7 @@ def test_did_failing_emitter_does_not_break_op(tmp_attestix):
 
 
 def test_agent_card_generate_emits_one_event(tmp_attestix):
-    from services.agent_card_service import AgentCardService
+    from attestix.services.agent_card_service import AgentCardService
 
     em = _emitter()
     svc = AgentCardService(emitter=em)
@@ -284,7 +284,7 @@ def test_agent_card_generate_emits_one_event(tmp_attestix):
 
 
 def test_agent_card_failing_emitter_does_not_break_op(tmp_attestix):
-    from services.agent_card_service import AgentCardService
+    from attestix.services.agent_card_service import AgentCardService
 
     svc = AgentCardService(emitter=_FailingEmitter(repository=MemoryRepository()))
     result = svc.generate_agent_card(name="A", url="https://example.com")

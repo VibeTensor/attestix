@@ -200,7 +200,7 @@ class TestDelegationChainSecurity:
         # Issue a parent in the far past so it expires immediately.
         # expiry_hours must be positive, so we shift now backwards.
         past = int(time_mod.time()) - (48 * 3600)
-        with patch("services.delegation_service.time.time", return_value=past):
+        with patch("attestix.services.delegation_service.time.time", return_value=past):
             parent = delegation_service.create_delegation(
                 issuer_agent_id="attestix:root",
                 audience_agent_id="attestix:middle",

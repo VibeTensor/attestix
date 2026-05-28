@@ -4,7 +4,7 @@ import json
 
 import pytest
 
-from main import mcp
+from attestix.main import mcp
 
 
 def get_tool_func(name: str):

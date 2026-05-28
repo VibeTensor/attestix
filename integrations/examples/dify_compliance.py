@@ -24,11 +24,11 @@ from pathlib import Path
 # Add Attestix project root to path so we can import services directly
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
-from services.identity_service import IdentityService
-from services.compliance_service import ComplianceService
-from services.provenance_service import ProvenanceService
-from services.credential_service import CredentialService
-from services.agent_card_service import AgentCardService
+from attestix.services.identity_service import IdentityService
+from attestix.services.compliance_service import ComplianceService
+from attestix.services.provenance_service import ProvenanceService
+from attestix.services.credential_service import CredentialService
+from attestix.services.agent_card_service import AgentCardService
 
 
 # ---------------------------------------------------------------------------

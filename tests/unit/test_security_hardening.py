@@ -16,7 +16,7 @@ from pathlib import Path
 import httpx
 import pytest
 
-from auth.crypto import load_or_create_signing_key
+from attestix.auth.crypto import load_or_create_signing_key
 
 
 # ---------------------------------------------------------------------------
@@ -32,7 +32,7 @@ class TestAgentCardRedirectProtection:
     def test_client_has_follow_redirects_disabled(self, monkeypatch):
         """Ensure the httpx.Client used in discover_agent sets
         follow_redirects=False."""
-        from services.agent_card_service import AgentCardService
+        from attestix.services.agent_card_service import AgentCardService
 
         captured = {}
 
@@ -53,9 +53,9 @@ class TestAgentCardRedirectProtection:
         """A 30x response must short-circuit to an error, not be silently
         followed. After switching to fetch_json_pinned, the redirect refusal
         is enforced by the pinned fetcher, so we stub that layer instead."""
-        from services.agent_card_service import AgentCardService
-        import auth.ssrf as ssrf_mod
-        import services.agent_card_service as acs_mod
+        from attestix.services.agent_card_service import AgentCardService
+        import attestix.auth.ssrf as ssrf_mod
+        import attestix.services.agent_card_service as acs_mod
 
         def fake_fetch_json_pinned(url, max_bytes=None, timeout=10.0, headers=None):
             return "refused: redirect to 169.254.169.254 blocked", None
@@ -79,7 +79,7 @@ class TestAPIKeyMiddleware:
 
     def test_module_imports_hmac(self):
         """Static check that api/main.py imports hmac."""
-        src = Path("api/main.py").read_text(encoding="utf-8")
+        src = Path("attestix/api/main.py").read_text(encoding="utf-8")
         assert "import hmac" in src
         # Sanity: the compare_digest symbol is what we rely on.
         assert hmac.compare_digest("abc", "abc") is True
@@ -87,7 +87,7 @@ class TestAPIKeyMiddleware:
 
     def test_source_uses_compare_digest(self):
         """Static check: the middleware must not use plain == on the keys."""
-        src = Path("api/main.py").read_text(encoding="utf-8")
+        src = Path("attestix/api/main.py").read_text(encoding="utf-8")
         assert "hmac.compare_digest(provided_key, api_key)" in src
         assert "provided_key != api_key" not in src
 
@@ -102,13 +102,13 @@ class TestRoutersDoNotLeakInternalErrors:
     straight back to the HTTP caller. A greppable check keeps this honest."""
 
     ROUTER_FILES = [
-        "api/routers/agent_cards.py",
-        "api/routers/blockchain.py",
-        "api/routers/compliance.py",
-        "api/routers/credentials.py",
-        "api/routers/identity.py",
-        "api/routers/provenance.py",
-        "api/routers/reputation.py",
+        "attestix/api/routers/agent_cards.py",
+        "attestix/api/routers/blockchain.py",
+        "attestix/api/routers/compliance.py",
+        "attestix/api/routers/credentials.py",
+        "attestix/api/routers/identity.py",
+        "attestix/api/routers/provenance.py",
+        "attestix/api/routers/reputation.py",
     ]
 
     def test_no_raw_error_detail_in_routers(self):
@@ -204,7 +204,7 @@ class TestSigningKeyPermissionsWindowsSafe:
     def test_chmod_is_skipped_on_windows(self):
         """The code path must not crash on Windows even though chmod is a
         no-op for POSIX mode bits there."""
-        src = Path("auth/crypto.py").read_text(encoding="utf-8")
+        src = Path("attestix/auth/crypto.py").read_text(encoding="utf-8")
         assert 'sys.platform != "win32"' in src
         assert "os.chmod(key_path" in src
 

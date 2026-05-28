@@ -6,7 +6,7 @@ and roundtrip resolution per the W3C DID Core v1.0 specification.
 
 import pytest
 
-from auth.crypto import (
+from attestix.auth.crypto import (
     generate_ed25519_keypair,
     public_key_to_did_key,
     did_key_to_public_key,

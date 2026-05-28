@@ -1,78 +1,31 @@
-"""Centralized error handling and logging for Attestix."""
+"""Legacy flat-namespace shim for :mod:`attestix.errors`.
 
-import sys
-import logging
-from enum import Enum
-from typing import Optional, Union
-from pythonjsonlogger import json as jsonlogger
+Importing this module emits a single ``DeprecationWarning``. The shim is
+scheduled for removal in Attestix v0.5.0. Update to::
 
-logger = logging.getLogger("attestix")
+    from attestix.errors import ErrorCategory, log_and_format_error
+"""
 
+import warnings as _warnings
 
-class ErrorCategory(str, Enum):
-    IDENTITY = "IDENTITY"
-    DID = "DID"
-    AGENT_CARD = "AGENT_CARD"
-    DELEGATION = "DELEGATION"
-    REPUTATION = "REPUTATION"
-    CRYPTO = "CRYPTO"
-    CONFIG = "CONFIG"
-    STORAGE = "STORAGE"
-    NETWORK = "NETWORK"
-    COMPLIANCE = "COMPLIANCE"
-    CREDENTIAL = "CREDENTIAL"
-    PROVENANCE = "PROVENANCE"
-    BLOCKCHAIN = "BLOCKCHAIN"
-    # v0.4.0 extensibility layer: pluggable signer / tenant context / idempotency.
-    SIGNER = "SIGNER"
-    TENANCY = "TENANCY"
-    IDEMPOTENCY = "IDEMPOTENCY"
+_warnings.warn(
+    "Importing from the top-level `errors` module is deprecated and will be "
+    "removed in Attestix v0.5.0. Update your imports to "
+    "`from attestix.errors import ...` (canonical namespace).",
+    DeprecationWarning,
+    stacklevel=2,
+)
 
+from attestix.errors import *  # noqa: F401, F403
 
-def setup_logging(log_file: str = "attestix_errors.log"):
-    """Configure dual logging: stderr (human-readable) + file (JSON structured)."""
-    logger.setLevel(logging.DEBUG)
+from attestix import errors as _canonical  # noqa: F401
+import sys as _sys
 
-    # Console handler (stderr)
-    console = logging.StreamHandler(sys.stderr)
-    console.setLevel(logging.INFO)
-    console.setFormatter(logging.Formatter("%(asctime)s [%(levelname)s] %(message)s"))
-    logger.addHandler(console)
+_this = _sys.modules[__name__]
+for _name in dir(_canonical):
+    if _name.startswith("_"):
+        continue
+    if not hasattr(_this, _name):
+        setattr(_this, _name, getattr(_canonical, _name))
 
-    # File handler (JSON)
-    file_handler = logging.FileHandler(log_file)
-    file_handler.setLevel(logging.WARNING)
-    json_formatter = jsonlogger.JsonFormatter(
-        "%(asctime)s %(levelname)s %(name)s %(message)s"
-    )
-    file_handler.setFormatter(json_formatter)
-    logger.addHandler(file_handler)
-
-    # Suppress noisy third-party loggers
-    for name in ("httpx", "urllib3", "httpcore"):
-        logging.getLogger(name).setLevel(logging.WARNING)
-
-
-def log_and_format_error(
-    function_name: str,
-    error: Exception,
-    category: Optional[Union[ErrorCategory, str]] = None,
-    user_message: Optional[str] = None,
-    **context,
-) -> str:
-    """Log error with context and return user-friendly message."""
-    cat = category.value if isinstance(category, ErrorCategory) else (category or "UNKNOWN")
-    ctx_str = ", ".join(f"{k}={v}" for k, v in context.items()) if context else ""
-
-    logger.error(
-        f"[{cat}] {function_name}: {error}" + (f" | {ctx_str}" if ctx_str else ""),
-        exc_info=True,
-        extra={"category": cat, "function": function_name, **context},
-    )
-
-    if user_message:
-        return f"Error [{cat}]: {user_message}"
-    # Sanitize: only return the exception type, not the full message
-    # (which may contain file paths, private keys, or internal details)
-    err_type = type(error).__name__
-    return f"Error [{cat}] in {function_name}: {err_type}. Check server logs for details."
+del _sys, _name, _this, _canonical, _warnings

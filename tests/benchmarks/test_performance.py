@@ -9,7 +9,7 @@ import time
 
 import pytest
 
-from auth.crypto import (
+from attestix.auth.crypto import (
     canonicalize_json,
     generate_ed25519_keypair,
     public_key_to_did_key,

@@ -18,9 +18,9 @@ what ``api/main.py`` mounts, so these tests cover the wired REST boundary:
 
 import pytest
 
-from idempotency.middleware import IDEMPOTENCY_HEADER, IdempotencyMiddleware
-from idempotency.store import IDEMPOTENCY_COLLECTION, RepositoryIdempotencyStore
-from storage import MemoryRepository
+from attestix.idempotency.middleware import IDEMPOTENCY_HEADER, IdempotencyMiddleware
+from attestix.idempotency.store import IDEMPOTENCY_COLLECTION, RepositoryIdempotencyStore
+from attestix.storage import MemoryRepository
 
 # The middleware is only constructible when the Starlette stack is present.
 starlette = pytest.importorskip("starlette")

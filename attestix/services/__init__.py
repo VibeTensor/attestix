@@ -1,4 +1,7 @@
-"""Attestix services - re-exports from flat module for namespace compatibility.
+"""Attestix services.
+
+Identity, credentials, compliance, delegation, reputation, provenance,
+agent cards, blockchain anchoring, DID operations.
 
 Services:
     - IdentityService: Unified Agent Identity Tokens (UAITs)
@@ -9,27 +12,29 @@ Services:
     - ProvenanceService: Training data, lineage, audit trails
     - AgentCardService: A2A agent card operations
     - BlockchainService: EAS anchoring on Base L2
+    - DIDService: DID document operations
 """
 
-# Re-export all services from the flat module
-from services.identity_service import IdentityService
-from services.credential_service import CredentialService
-from services.compliance_service import ComplianceService
-from services.delegation_service import DelegationService
-from services.reputation_service import ReputationService
-from services.provenance_service import ProvenanceService
-from services.agent_card_service import AgentCardService
-from services.blockchain_service import BlockchainService
+from attestix.services.identity_service import IdentityService
+from attestix.services.credential_service import CredentialService
+from attestix.services.compliance_service import ComplianceService
+from attestix.services.delegation_service import DelegationService
+from attestix.services.reputation_service import ReputationService
+from attestix.services.provenance_service import ProvenanceService
+from attestix.services.agent_card_service import AgentCardService
+from attestix.services.blockchain_service import BlockchainService
+from attestix.services.did_service import DIDService
 
 # Re-export submodules for `from attestix.services.X import Y` pattern
-from services import identity_service
-from services import credential_service
-from services import compliance_service
-from services import delegation_service
-from services import reputation_service
-from services import provenance_service
-from services import agent_card_service
-from services import blockchain_service
+from attestix.services import identity_service
+from attestix.services import credential_service
+from attestix.services import compliance_service
+from attestix.services import delegation_service
+from attestix.services import reputation_service
+from attestix.services import provenance_service
+from attestix.services import agent_card_service
+from attestix.services import blockchain_service
+from attestix.services import did_service
 
 __all__ = [
     # Service classes
@@ -41,6 +46,7 @@ __all__ = [
     "ProvenanceService",
     "AgentCardService",
     "BlockchainService",
+    "DIDService",
     # Submodules
     "identity_service",
     "credential_service",
@@ -50,4 +56,5 @@ __all__ = [
     "provenance_service",
     "agent_card_service",
     "blockchain_service",
+    "did_service",
 ]
