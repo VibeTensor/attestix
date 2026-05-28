@@ -44,7 +44,8 @@ A GitHub Actions step that, on every model promotion, registers the model lineag
             capabilities=[os.environ["MODEL_TASK"]],
             issuer_name="VibeTensor",
         )["agent_id"]
-        print(f"::set-output name=agent_id::{agent_id}")
+        with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as f:
+            f.write(f"agent_id={agent_id}\n")
 
     ProvenanceService().record_model_lineage(
         agent_id=agent_id,
@@ -88,7 +89,8 @@ attestix audit "$AGENT_ID" --limit 5  # prints the latest hash-chained rows
 If you don't want to share the `.signing_key.json` between runners, run Attestix as a service and call it over HTTP. The REST surface honours `Idempotency-Key` so retried CI runs don't duplicate identities:
 
 ```bash
-attestix mcp --transport http --port 8501 &
+# Start the FastAPI REST surface (the MCP stdio server is `python -m attestix.main`).
+uvicorn attestix.api.main:app --host 127.0.0.1 --port 8501 &
 curl -sX POST http://localhost:8501/identities \
   -H "Idempotency-Key: gha-${GITHUB_RUN_ID}-promote" \
   -H "Content-Type: application/json" \
