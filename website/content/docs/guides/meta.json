@@ -10,6 +10,7 @@
     "openai-agents-sdk",
     "crewai",
     "offline-verify",
-    "base-l2-anchor"
+    "base-l2-anchor",
+    "migration-v0.4.0-namespace"
   ]
 }

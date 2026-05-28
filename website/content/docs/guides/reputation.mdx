@@ -30,8 +30,8 @@ The trust score ranges from 0.0 to 1.0:
 Every time an agent completes a task, record the outcome:
 
 ```python
-from services.identity_service import IdentityService
-from services.reputation_service import ReputationService
+from attestix.services.identity_service import IdentityService
+from attestix.services.reputation_service import ReputationService
 
 identity_svc = IdentityService()
 reputation_svc = ReputationService()
@@ -136,7 +136,7 @@ The scoring algorithm uses exponential moving average (EMA) with alpha = 0.08. T
 Reputation scores can inform delegation decisions. Before delegating capabilities to another agent, check their trust score:
 
 ```python
-from services.delegation_service import DelegationService
+from attestix.services.delegation_service import DelegationService
 
 delegation_svc = DelegationService()
 

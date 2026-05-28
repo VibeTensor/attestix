@@ -182,7 +182,7 @@ No hard limit, but JSON files are loaded entirely into memory on each operation.
 Yes. Import the service classes directly in Python:
 
 ```python
-from services.identity_service import IdentityService
+from attestix.services.identity_service import IdentityService
 svc = IdentityService()
 agent = svc.create_identity(display_name="MyAgent")
 ```
