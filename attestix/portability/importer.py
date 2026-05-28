@@ -460,13 +460,24 @@ class Importer:
                 audit_rows = projected
                 break
         if audit_rows:
-            chain_ok = verify_chain(audit_rows)
-            if not chain_ok:
+            chain_result = verify_chain(audit_rows)
+            if not chain_result.valid:
+                # Surface the structured tamper report from verify_chain so the
+                # operator knows *which* imported event broke the chain and why
+                # (P1 #4 from the v0.4.0-rc.3 e2e walkthrough). Pre-rc.3 this
+                # error said only "prev_hash/chain_hash mismatch" — now it
+                # points at the specific event_id, field, and (when relevant)
+                # the cross-tenant attribution.
                 raise ImportError(
                     "audit chain reconciliation failed — refusing to import "
                     "any rows. The bundle's audit_events rows do not form an "
-                    "unbroken hash chain (prev_hash/chain_hash mismatch). Re-export "
-                    "the bundle from the source cloud and retry."
+                    "unbroken hash chain. "
+                    f"broken_event_id={chain_result.broken_event_id!r} "
+                    f"broken_field={chain_result.broken_field!r} "
+                    f"reason={chain_result.failure_reason!r} "
+                    f"(events_checked={chain_result.events_checked} of "
+                    f"{len(audit_rows)}). "
+                    "Re-export the bundle from the source cloud and retry."
                 )
             result.chain_verified = True
 
