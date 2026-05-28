@@ -11,6 +11,7 @@
     "crewai",
     "offline-verify",
     "base-l2-anchor",
-    "migration-v0.4.0-namespace"
+    "migration-v0.4.0-namespace",
+    "migration-npm-rename"
   ]
 }

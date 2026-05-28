@@ -85,6 +85,23 @@ streamlit run demo/webapp/app.py         # Opens at http://localhost:8501
 python examples/quickstart.py            # Full 9-module workflow in 0.1 seconds
 ```
 
+### JS / TS verifier
+
+Verify Attestix-issued credentials offline from JavaScript or TypeScript:
+
+```bash
+npm install attestix
+```
+
+Source: <https://github.com/VibeTensor/attestix-js> · npm: <https://www.npmjs.com/package/attestix>
+
+Same canonical-JSON form (RFC 8785) and Ed25519 verification (RFC 8032) as
+the Python core. ~68 KB packaged, one runtime dependency
+(`@noble/curves`). The pre-rename scoped name `@vibetensor/attestix` is
+deprecated — see the
+[npm rename migration guide](https://attestix.io/docs/guides/migration-npm-rename)
+if you are upgrading.
+
 ## Why Attestix
 
 On **August 2, 2026**, the EU AI Act enforcement begins. Fines reach EUR 35M or 7% of global revenue.

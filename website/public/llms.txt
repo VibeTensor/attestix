@@ -41,6 +41,7 @@ Attestix provides verifiable identity, W3C credentials, delegation chains, compl
 - [Risk Classification](https://attestix.io/docs/guides/risk-classification): Decision tree for AI Act risk categories
 - [Integration Guide](https://attestix.io/docs/guides/integration-guide): LangChain, OpenAI Agents SDK, CrewAI, plain Python
 - [Reputation Scoring](https://attestix.io/docs/guides/reputation): Trust scoring, categories, recency decay
+- [npm rename migration](https://attestix.io/docs/guides/migration-npm-rename): @vibetensor/attestix → attestix (bare name on npm, matches pip install attestix)
 - [API Reference](https://attestix.io/docs/reference/api-reference): All 47 tools with parameters and return types
 - [Concepts](https://attestix.io/docs/reference/concepts): UAIT, DID, VC, VP, UCAN, Ed25519 explained
 - [Configuration](https://attestix.io/docs/reference/configuration): Environment variables and setup
@@ -96,6 +97,14 @@ Attestix provides verifiable identity, W3C credentials, delegation chains, compl
 ```
 pip install attestix
 ```
+
+JS/TS verifier (same canonical-JSON form + Ed25519 verification):
+
+```
+npm install attestix
+```
+
+The scoped npm name `@vibetensor/attestix` is deprecated as of 2026-05-28; use the bare `attestix` package. See https://attestix.io/docs/guides/migration-npm-rename for the migration guide.
 
 ## Links
 

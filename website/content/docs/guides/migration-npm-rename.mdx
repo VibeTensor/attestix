@@ -1,0 +1,122 @@
+---
+title: npm package rename — @vibetensor/attestix → attestix
+description: How to migrate to the bare 'attestix' name on npm (now matching pip install attestix on PyPI).
+---
+
+# npm package rename — `@vibetensor/attestix` → `attestix`
+
+**TL;DR** — the JS/TS verifier package is now published as bare `attestix`
+on npm, matching `pip install attestix` on PyPI. The old scoped name
+`@vibetensor/attestix` is **deprecated** and will receive no new versions.
+
+## What changed
+
+| | Before | After |
+|---|---|---|
+| **npm name** | `@vibetensor/attestix` | `attestix` |
+| **Install command** | `npm install @vibetensor/attestix` | `npm install attestix` |
+| **Import** | `from '@vibetensor/attestix'` | `from 'attestix'` |
+| **PyPI name** | `attestix` | `attestix` (unchanged) |
+
+The intent is symmetry — `pip install attestix` and `npm install attestix`
+install the language-respective verifier under one canonical name.
+
+## Migration in 60 seconds
+
+```bash
+# 1. Uninstall the scoped package:
+npm uninstall @vibetensor/attestix
+
+# 2. Install the bare package:
+npm install attestix
+
+# 3. Find and replace imports across your repo
+#    (POSIX / Git Bash / WSL — adjust for your shell):
+grep -rln "@vibetensor/attestix" . --include='*.{js,ts,jsx,tsx,mjs,cjs}' \
+  | xargs sed -i 's|@vibetensor/attestix|attestix|g'
+```
+
+The exports and API surface are **identical** — only the package name
+changed. No source code changes are required beyond the import string.
+
+### Before / after
+
+```ts
+// Before
+import { verifyCredential } from '@vibetensor/attestix'
+
+// After
+import { verifyCredential } from 'attestix'
+```
+
+```json
+// package.json — before
+{
+  "dependencies": {
+    "@vibetensor/attestix": "^0.2.0"
+  }
+}
+
+// package.json — after
+{
+  "dependencies": {
+    "attestix": "^0.2.0"
+  }
+}
+```
+
+## Why we renamed
+
+- **Symmetry with PyPI.** `pip install attestix` was always the canonical
+  Python install. The scoped npm name created asymmetric muscle memory.
+- **Cleaner install command** for blog posts, tutorials, and quickstarts.
+- **Cross-language ecosystem coherence** — future Rust crate (`attestix`),
+  Go module (`github.com/VibeTensor/attestix-go`), and other ports follow
+  the same bare-name pattern.
+
+## Deprecation timeline
+
+| Date | Event |
+|------|-------|
+| 2026-05-28 | `attestix@0.2.0` published to npm. `@vibetensor/attestix@0.2.0` deprecated with a redirect message in the `npm install` output. |
+| 2026-06-30 | Last scoped patch (`@vibetensor/attestix@0.2.1`) ships only if a P0 security fix is required. |
+| 2026-08-01 | Scoped name receives no further updates. Use `npm install attestix` for all new versions. |
+
+The scoped package will remain installable indefinitely (npm does not
+unpublish packages older than 72 hours after first publish) — but it
+freezes at the deprecation date.
+
+## Verify your migration
+
+After replacing the import string, confirm the bare package resolves:
+
+```bash
+node -e "console.log(require('attestix'))"
+```
+
+You should see the exported surface. If you still get
+`Cannot find module 'attestix'`, the install step did not run — re-run
+`npm install attestix` from the project root.
+
+For TypeScript projects, make sure `tsc --noEmit` still passes after the
+rename:
+
+```bash
+npx tsc --noEmit
+```
+
+The type declarations are identical between the two package names.
+
+## Where the source lives
+
+- **Python core + Annex IV / VC issuance:** https://github.com/VibeTensor/attestix
+- **JS/TS verifier (this package):** https://github.com/VibeTensor/attestix-js
+- **Cloud (private):** https://attestix.io
+
+## See also
+
+- [Offline Verification Walkthrough](/docs/guides/offline-verify) — the
+  same canonical-JSON form + Ed25519 verification, in Python.
+- [Migrating to the canonical `attestix.*` namespace
+  (v0.4.0-rc.2)](/docs/guides/migration-v0.4.0-namespace) — the
+  Python-side namespace migration for the same release.
