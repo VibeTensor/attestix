@@ -1,0 +1,112 @@
+---
+title: ISO/IEC 42001:2023 (AI Management System) — Attestix coverage
+description: How Attestix's signed audit chains, Verifiable Credentials, and provenance records map to the ISO/IEC 42001:2023 Annex A controls and AIMS process clauses. Honest per-control coverage — Attestix is evidence tooling, not an AI Management System.
+---
+
+[ISO/IEC 42001:2023](https://www.iso.org/standard/81230.html) — *Information technology — Artificial intelligence — Management system* — is the first international management-system standard specifically for AI. Published in December 2023, it defines how organisations establish, implement, maintain, and continually improve an AI management system (AIMS). This page shows how Attestix's signed audit chains, Verifiable Credentials, and provenance records map to ISO/IEC 42001's Annex A controls and process clauses.
+
+## Why this matters
+
+ISO/IEC 42001 is a *management-system* standard, not a product-conformance standard. Like ISO/IEC 27001 (information security), conformance is awarded to an organisation by an accredited certification body after a defined audit programme. **Attestix does not issue ISO 42001 certifications and is not a certification body.** What Attestix ships is the cryptographic evidence layer an AIMS owner can use during audit preparation — particularly for the Annex A controls that touch the AI lifecycle (data, model, deployment, monitoring) where signed audit trails reduce manual evidence-gathering by weeks.
+
+## The honest coverage table
+
+The table below covers 14 representative rows spanning **28 of the 38 Annex A controls** plus the AIMS process clauses (Clauses 4–10). The complete control inventory and ratings are in the [internal mapping doc](#see-also).
+
+| Control | Mitigation surface in Attestix | Coverage | Evidence shape |
+|---|---|---|---|
+| **Clauses 4-5** Context + Leadership — AIMS scope, AI policy, leadership commitment | None directly. Attestix records signed attestations that policy + scope exist; AIMS culture is organisational. | record-only | `ProviderAssertionCredential` |
+| **Clauses 6-8** Planning + Support + Operation — risk treatment, documented information, operational change | Profile-based intended-purpose declaration; hash-chained documented-information changes; cross-walks to v0.5 EU AI Act Art 9 risk-management checks | partial | Audit chain + `VerifiableCheckResult` |
+| **A.2** Policies for AI — AI policy, alignment with other policies, review | Operator-uploaded policy fingerprint + signed attestation; we do not author policy | record-only | `ProviderAssertionCredential` + bundle-asset hash |
+| **A.3** Internal organization — AI roles + responsibilities, concern reporting | DID-based per-role identity; concern reports auditable via `record_action(entry_type="concern_report")` | partial | `ProviderAssertionCredential` + audit chain |
+| **A.4** Resources for AI systems — data, tooling, compute, human | Training-data fingerprint, model-lineage records, compute envelope declarations, per-tool invocation log | strong-partial | Hash-chained provenance + `VerifiableCheckResult` |
+| **A.5.2-5.5** Impact assessment — process + documentation + individual + societal | FRIA template ([see FRIA page](/docs/security/fria-template)); deterministic completeness checks; never auto-promote `assertion_recorded` to `passed=true` | strong-partial | `ImpactAssessmentCredential` + `VerifiableCheckResult` |
+| **A.5.6** Environmental impact — energy + resource considerations | Operator-declared training energy (kWh) / inference energy (Wh) / water-cooling impact; we record, we do not measure | record-only | `ProviderAssertionCredential` |
+| **A.6.1.2-1.3** Responsible AI objectives + design process | Signed `intended_purpose` + `responsible_ai_objectives` field; we record, we do not judge | record-only | `ProviderAssertionCredential` + audit chain |
+| **A.6.1.4** Requirements + specifications | Structured `system_specifications` field; dual-tagged with EU AI Act Art 11 / Annex IV §1 | strong-partial | `ProviderAssertionCredential` + dual-tagged `VerifiableCheckResult` |
+| **A.6.2** Lifecycle — requirements + design + V&V + deployment + operation + technical docs + event logs | Per-stage provenance entries; audit chain IS the A.6.2.8 event log; cross-walk to EU AI Act Arts 12 + 15 | strong-partial | Audit chain + per-stage `VerifiableCheckResult` |
+| **A.7** Data — training + acquisition + quality + provenance + preparation | Training-data fingerprint with source + license + acquisition-date; operator-declared quality metrics; structured preparation log; cross-walk to EU AI Act Art 10 | strong-partial | Hash-chained provenance + `ProviderAssertionCredential` |
+| **A.8** Information for interested parties — system documentation + external reports + incidents + transparency | A2A-shaped signed agent cards; v0.5 incident-reporting collection (Art 73 cross-walk); existing `generate_declaration_of_conformity` | strong-partial | `AgentIdentityCredential` + `IncidentReportCredential` + `EUAIActComplianceCredential` |
+| **A.9** Use of AI systems — responsible-use process + objectives + intended use | `intended_purpose` profile + UCAN delegation chains binding deployer-side capability | strong-partial | `ProviderAssertionCredential` + UCAN tokens |
+| **A.10** Third-party + customer relationships — responsibility allocation + suppliers + customers | UCAN capability allocation across supplier/customer DIDs; third-party `AgentIdentityCredential` acceptance | partial | UCAN chain + supplier `AgentIdentityCredential` |
+
+### Tally
+
+- **full:** 0 (no control is fully satisfied by a tool — ISO 42001 is a management-system standard; no tool *is* an AIMS)
+- **strong-partial:** 6 (data, lifecycle, impact assessment, transparency, deployer use, resources — the technical lifecycle clusters)
+- **partial:** 3 (planning/support/operation, internal organization, third-party)
+- **record-only:** 5 (context/leadership, policies, environment, objectives + processes)
+- **out-of-scope:** 0 (every control family has at least record-only Attestix surface)
+
+> **Important caveat — `security_check_id` ships in v0.5.0.** As of Attestix v0.4.0 the underlying events listed above are emitted today, but they are NOT yet tagged with the `iso42001.*` discriminator. The v0.5.0 release registers the prefix in the `FRAMEWORK_REGISTRY` closed set; per-control emission tagging is incremental. Until then you can already query the underlying events by `action` and reconstruct the same coverage manually.
+
+## What we don't do
+
+- **We do not author your AI policy.** A.2 policy controls expect the AIMS owner's documented policy. We record a signed fingerprint that the policy exists; we never write it.
+- **We do not measure environmental impact.** A.5.6 expects the operator's energy + resource disclosure. Tools like [CodeCarbon](https://codecarbon.io/) and [ML CO2](https://mlco2.github.io/impact/) measure; we sign the measurements.
+- **We do not assess substantive content of impact assessments.** Per the v0.5 anti-compliance-theater design, when a deployer asserts a FRIA section is complete + appropriate, the result transitions to `assertion_recorded` (rendered blue), NOT to `passed=true` (rendered green). Attestix never claims to have verified the substance of a human assertion.
+- **We are not your Statement of Applicability (SoA) authoring tool.** The SoA is an AIMS-owner artefact. We offer a `bundle export --controls iso42001` flag (v0.5) so the AIMS owner can include Attestix evidence in their SoA; we do not author the SoA.
+- **We do not run third-party audits.** ISO 42001 certification is awarded by accredited certification bodies (ANAB-, UKAS-, JAS-ANZ-accredited). We provide audit-ready evidence; the audit + certification are separate organisational journeys.
+
+## How to verify our coverage yourself
+
+### Python / CLI
+
+```bash
+# List every audit event tagged with an ISO 42001 control (v0.5.0+)
+attestix audit list --security-check iso42001.A_7_4.data_quality_attestation_recorded
+
+# Export a bundle scoped to ISO 42001 evidence for your SoA (v0.5.0+)
+attestix bundle export --controls iso42001 --out my-aims-evidence.atxbundle
+
+# Verify chain integrity for an agent's audit log (today)
+attestix verify-chain <agent-did>
+```
+
+### JavaScript / browser
+
+```bash
+npm install attestix
+```
+
+```javascript
+import { verifyCredential } from "attestix";
+
+const result = await verifyCredential(impactAssessmentCredentialJson);
+// result.valid === true if the Ed25519 signature over the JCS-canonical body
+// matches the issuer DID's public key.
+```
+
+### On-chain anchor (Base L2 Sepolia testnet)
+
+```bash
+attestix anchor audit-batch --agent <did> --network base-sepolia
+```
+
+Mainnet schema registration is planned; testnet is the default target today.
+
+## Comparable disclosure
+
+How other tools position themselves on ISO 42001 alignment. We name approaches found through public documentation; we do not disparage.
+
+| Tool | Stated ISO 42001 position | Where to read more |
+|---|---|---|
+| **Microsoft Agent Governance Toolkit** | Publishes `docs/compliance/iso-42001-mapping.md` mapping toolkit features to Annex A controls; CloudEvents-to-Azure-Monitor evidence path; SPIFFE identity (different shape from W3C DID) | [github.com/microsoft/agent-governance-toolkit](https://github.com/microsoft/agent-governance-toolkit) |
+| **Vanta** | End-to-end ISO 42001 readiness platform — policy authoring + employee training + evidence collection + auditor coordination + continuous monitoring dashboards. Complementary to Attestix; we slot underneath as the cryptographic evidence layer | [vanta.com](https://www.vanta.com/) |
+| **Drata** | Same posture as Vanta — GRC platform with ISO 42001 module; we slot underneath | [drata.com](https://www.drata.com/) |
+| **Secureframe** | Same posture as Vanta + Drata | [secureframe.com](https://secureframe.com/) |
+| **ISO 42001 certification bodies** (BSI, TÜV Rheinland, DNV, LRQA, etc.) | The actual ISO 42001 certification awarders. Attestix is evidence input to their audit, not a competitor | [iaf.nu/iaf-mra/](https://iaf.nu/iaf-mra/) for accredited bodies |
+
+## See also
+
+- [OWASP Top 10 for Agentic Applications mapping](/docs/security/owasp-agentic-top10)
+- [NIST AI RMF 1.0 mapping](/docs/security/nist-ai-rmf-mapping)
+- [SOC 2 Trust Services Criteria mapping](/docs/security/soc2-mapping)
+- [FRIA template (EU AI Act Art 27)](/docs/security/fria-template)
+- [EU AI Act compliance guide](/docs/guides/eu-ai-act-compliance)
+- [Offline verification walkthrough](/docs/guides/offline-verify)
+- The internal mapping spec at `attestix-cloud-plan/23-ISO-42001-MAPPING.md` — engineering-grade detail.
+
+---
+
+**Attestix is evidence tooling for organisations operating an ISO/IEC 42001 AIMS. Attestix is not an AI Management System, is not an ISO 42001 certification body, and a passing tag against an Annex A control ID is one signal in the organisation's overall conformity posture — not a conformance verdict. The organisation's AIMS owner + the accredited certification body remain the authoritative voices.**

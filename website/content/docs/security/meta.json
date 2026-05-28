@@ -1,6 +1,10 @@
 {
   "title": "Security",
   "pages": [
-    "owasp-agentic-top10"
+    "owasp-agentic-top10",
+    "iso-42001-mapping",
+    "nist-ai-rmf-mapping",
+    "soc2-mapping",
+    "fria-template"
   ]
 }
