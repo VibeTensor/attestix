@@ -8,6 +8,7 @@ import hashlib
 import json
 import sys
 from importlib.metadata import version as pkg_version, PackageNotFoundError
+from pathlib import Path
 
 import click
 
@@ -597,6 +598,98 @@ def import_cmd(bundle_path, force, workspace, verify_only):
     click.echo("  attestix list                # see imported identities")
     click.echo("  attestix audit <agent_id>    # verify the imported audit chain")
     click.echo("  attestix status              # confirm aggregate counts")
+
+
+# ---------------------------------------------------------------------------
+# attestix export (OSS portability bundle export)
+# ---------------------------------------------------------------------------
+
+@cli.command(name="export")
+@click.argument("output_path", type=click.Path(dir_okay=False, writable=True))
+@click.option(
+    "--workspace",
+    default=None,
+    help="Only export rows tagged with this local workspace tenant (default: every row).",
+)
+@click.option(
+    "--include-anchors/--no-include-anchors",
+    default=True,
+    show_default=True,
+    help="Include the anchors collection in the bundle.",
+)
+@click.option(
+    "--include-audit/--no-include-audit",
+    default=True,
+    show_default=True,
+    help="Include the audit_events collection in the bundle.",
+)
+@click.option(
+    "--force",
+    is_flag=True,
+    help="Overwrite output_path if it already exists.",
+)
+@click.option(
+    "--no-pretty",
+    is_flag=True,
+    help="Suppress the per-table progress lines (JSON-only summary at the end).",
+)
+def export_cmd(output_path, workspace, include_anchors, include_audit, force, no_pretty):
+    """Export local OSS state as an Attestix portability bundle (M6-compatible).
+
+    Writes a USTAR + gzip tarball at OUTPUT_PATH containing one JCS-canonical
+    JSONL file per table, a ``manifest.json``, and a side-car
+    ``manifest.sha256`` — the exact format the cloud worker emits and the
+    importer (``attestix import``) accepts.
+
+    The output is byte-stable across re-runs against the same OSS state:
+    members are sorted alphabetically, tar mtimes are pinned to 0, and the
+    gzip header carries mtime=0. Two consecutive exports of the same data
+    produce identical bytes — useful for diffing audit-chain drift across
+    backups.
+    """
+    from attestix.portability import BundleWriteError, write_bundle
+
+    out = Path(output_path)
+    if out.exists() and not force:
+        _error(
+            f"refusing to overwrite existing file {out!s}. "
+            f"Re-run with --force to replace it."
+        )
+
+    if not no_pretty:
+        _header(f"Attestix export → {out}")
+        if workspace:
+            click.echo(f"  Workspace filter : {workspace}")
+        else:
+            click.echo(f"  Workspace filter : (every tenant)")
+        click.echo(f"  Include anchors  : {include_anchors}")
+        click.echo(f"  Include audit    : {include_audit}")
+        click.echo()
+
+    try:
+        result = write_bundle(
+            out,
+            workspace=workspace,
+            include_anchors=include_anchors,
+            include_audit=include_audit,
+        )
+    except BundleWriteError as e:
+        _error(str(e))
+
+    if not no_pretty:
+        _header("Tables")
+        for t in result.tables:
+            check = click.style("OK", fg="green")
+            label = f"{t.name:<24}"
+            sha_short = t.sha256[:12] + "…"
+            click.echo(
+                f"  [{check}] {label} {t.row_count} rows  sha256:{sha_short}"
+            )
+        click.echo()
+
+    _success(
+        f"wrote {result.path}  {result.bytes} bytes  manifest_sha256={result.manifest_sha256}"
+    )
 
 
 if __name__ == "__main__":

@@ -37,18 +37,32 @@ from attestix.portability.importer import (
     Importer,
     LocalDataExistsError,
 )
+from attestix.portability.bundle_writer import (
+    BundleResult,
+    BundleWriteError,
+    EXPORT_PLAN,
+    TableResult,
+    TableSpec,
+    write_bundle,
+)
 
 __all__ = [
     "BUNDLE_FORMAT_URL",
     "Bundle",
     "BundleError",
     "BundleImportError",
+    "BundleResult",
     "BundleSchemaTooNewError",
     "BundleVerifyError",
+    "BundleWriteError",
+    "EXPORT_PLAN",
     "Importer",
     "ImportResult",
     "LocalDataExistsError",
     "SUPPORTED_DB_MIGRATION_MAX",
     "SUPPORTED_MANIFEST_VERSION",
+    "TableResult",
+    "TableSpec",
     "read_bundle",
+    "write_bundle",
 ]
