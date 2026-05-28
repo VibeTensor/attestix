@@ -20,6 +20,10 @@ Attestix provides verifiable identity, W3C credentials, delegation chains, compl
 - [United Kingdom](https://attestix.io/uk): UK geo-landing — FCA, ICO, Bank of England framings for AI-Act-grade evidence
 - [India](https://attestix.io/india): India geo-landing — DPDP, RBI, MeitY, DPI framings; VibeTensor incorporation note
 
+## Specifications
+
+- [Bundle wire format v1](https://attestix.io/spec/bundle/v1): Frozen v1 specification of the portability bundle wire format — manifest schema, per-table layout, verifier algorithm, security model. Dereferenceable identifier the `attestix_bundle_format` field in every Attestix bundle points to.
+
 ## Docs
 
 - [Overview](https://attestix.io/docs): Project overview and quick start

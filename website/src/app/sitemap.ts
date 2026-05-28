@@ -101,6 +101,16 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: "weekly",
       priority: 0.9,
     },
+    {
+      // The bundle wire-format spec at /spec/bundle/v1 is the dereferenceable
+      // URI every Attestix portability bundle stamps into its manifest's
+      // `attestix_bundle_format` field. Tier-1 priority because external
+      // verifiers follow the URI straight from a bundle on disk.
+      url: `${siteConfig.url}/spec/bundle/v1`,
+      lastModified: new Date(),
+      changeFrequency: "yearly",
+      priority: 0.8,
+    },
     ...docsRoutes,
     ...blogRoutes,
   ];
