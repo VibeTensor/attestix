@@ -1,0 +1,125 @@
+---
+title: MLOps engineer — Quickstart
+description: Wire Attestix into a CI/CD pipeline so every model promotion produces a signed credential and a hash-chained audit row. Pinned versions, deterministic CLI, exit codes.
+---
+
+## You're here because…
+
+You're an MLOps engineer and the funnel evaluation flagged that your peers dropped at integration because the tool felt CLI-first / single-user — no idempotent declarative API, no Terraform / Ansible module, file-based state. This page accepts that gap and shows the realistic CI path today: a deterministic CLI plus the idempotency-aware REST surface for a CI runner. The pluggable storage backend and IaC modules are on the [roadmap](/docs/project/roadmap); what's below works against v0.4.0-rc.2 unchanged.
+
+## 60-second install
+
+Pin the version in `requirements-attestix.txt` so the CI run is reproducible:
+
+```text
+attestix==0.4.0rc2
+```
+
+Then in the CI step:
+
+```bash
+pip install --pre -r requirements-attestix.txt
+```
+
+## First 30 lines that actually do something
+
+A GitHub Actions step that, on every model promotion, registers the model lineage and issues a signed VC:
+
+```yaml
+- name: Record model lineage and issue VC
+  env:
+    ATTESTIX_KEY_PASSPHRASE: ${{ secrets.ATTESTIX_KEY_PASSPHRASE }}
+  run: |
+    python - <<'PY'
+    import json, os, sys
+    from attestix.services.identity_service import IdentityService
+    from attestix.services.provenance_service import ProvenanceService
+    from attestix.services.credential_service import CredentialService
+
+    agent_id = os.environ.get("MODEL_AGENT_ID")
+    if not agent_id:
+        agent_id = IdentityService().create_identity(
+            display_name=os.environ["MODEL_NAME"],
+            source_protocol="manual",
+            capabilities=[os.environ["MODEL_TASK"]],
+            issuer_name="VibeTensor",
+        )["agent_id"]
+        print(f"::set-output name=agent_id::{agent_id}")
+
+    ProvenanceService().record_model_lineage(
+        agent_id=agent_id,
+        base_model=os.environ["BASE_MODEL"],
+        base_model_provider=os.environ["BASE_MODEL_PROVIDER"],
+        fine_tuning_method=os.environ["FT_METHOD"],
+        evaluation_metrics=json.loads(os.environ["EVAL_METRICS"]),
+    )
+
+    vc = CredentialService().issue_credential(
+        agent_id=agent_id,
+        credential_type="ModelPromotionCredential",
+        issuer_name="VibeTensor",
+        claims={
+            "git_sha": os.environ["GITHUB_SHA"],
+            "run_id": os.environ["GITHUB_RUN_ID"],
+            "model_artifact_sha256": os.environ["MODEL_ARTIFACT_SHA"],
+            "eval_pass": True,
+        },
+    )
+    print(f"VC issued: {vc['id']}")
+    PY
+```
+
+The CLI equivalent for a tighter, side-effect-only step:
+
+```bash
+attestix init --name "$MODEL_NAME" --capabilities "$MODEL_TASK" --issuer "VibeTensor"
+attestix verify "$AGENT_ID"          # exit 0 on success, non-zero otherwise
+attestix audit "$AGENT_ID" --limit 5  # prints the latest hash-chained rows
+```
+
+## What you just got
+
+- A signed `ModelPromotionCredential` per CI run, pinning the git SHA, run id, and the model-artefact hash. The credential is verifiable offline (`attestix credential --verify <id>`).
+- A model-lineage row under the same agent DID — every promotion is a new row, not a destructive update.
+- Encrypted-at-rest signing key when `ATTESTIX_KEY_PASSPHRASE` is set (otherwise plaintext `.signing_key.json` — see the [security page](/security) for the disclosure / CVE process).
+
+## REST mode for a CI runner with idempotency
+
+If you don't want to share the `.signing_key.json` between runners, run Attestix as a service and call it over HTTP. The REST surface honours `Idempotency-Key` so retried CI runs don't duplicate identities:
+
+```bash
+attestix mcp --transport http --port 8501 &
+curl -sX POST http://localhost:8501/identities \
+  -H "Idempotency-Key: gha-${GITHUB_RUN_ID}-promote" \
+  -H "Content-Type: application/json" \
+  -d '{"display_name":"'"$MODEL_NAME"'","source_protocol":"manual","capabilities":["'$MODEL_TASK'"],"issuer_name":"VibeTensor"}'
+```
+
+## Open caveats for production MLOps
+
+The funnel evaluation specifically called these out for this persona; tracking them on the roadmap:
+
+| Concern | v0.4.0 reality |
+|---|---|
+| Declarative IaC | No Terraform / Ansible / Pulumi module today. Pinned `pip install` + a script step is the current path. |
+| Storage backend | Flat JSON files. Postgres / S3 backend is planned. |
+| Multi-runner state sharing | Run Attestix as a service (above) with persistent storage volume; sharing JSON files across runners is not supported. |
+| Secret management | `ATTESTIX_KEY_PASSPHRASE` envvar; KMS / Vault adapters planned. |
+| Anchoring | Base L2 **testnet** only. Mainnet schema registration planned. |
+
+## Next step (5 minutes)
+
+Anchor the model-promotion VC's hash to **Base Sepolia testnet** so a downstream auditor can prove the promotion existed at a block height:
+
+```python
+from attestix.services.blockchain_service import BlockchainService
+chain = BlockchainService()
+artifact_hash = chain.hash_artifact(vc)  # canonical-JSON SHA-256
+print(chain.anchor_artifact(
+    artifact_hash=artifact_hash,
+    artifact_type="credential",
+    artifact_id=vc["id"],
+))
+```
+
+See the [Base L2 anchor walkthrough](/docs/guides/base-l2-anchor) for RPC setup and gas estimates.

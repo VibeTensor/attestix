@@ -1,0 +1,81 @@
+---
+title: Indie AI-agent dev — Quickstart
+description: For the solo founder shipping a LangChain RAG agent fast. Skip the boilerplate, get a hash-chained audit trail and a signed VC on every chain completion.
+---
+
+## You're here because…
+
+You're a solo or small-team dev shipping a LangChain agent and you don't have time to hand-roll an audit trail before launch. The funnel evaluation flagged that the "5-minute promise" used to break at the import step — `from services.identity_service import …` only worked from a cloned repo, not from a clean `pip install`. v0.4.0-rc.2 ships the canonical `attestix.*` namespace, so the snippet below runs end-to-end from a fresh venv.
+
+## 60-second install
+
+```bash
+pip install --pre 'attestix[langchain]'
+```
+
+That installs v0.4.0-rc.2 plus the `langchain-core` extra. Drop the `--pre` once v0.4.0 GA ships.
+
+## First 30 lines that actually do something
+
+```python
+from langchain.agents import AgentExecutor, create_react_agent
+from langchain_core.prompts import PromptTemplate
+from langchain_openai import ChatOpenAI
+from attestix.integrations.langchain import AttestixCallback
+from attestix.services.identity_service import IdentityService
+
+# 1. One-time: create the agent identity (signed, persisted to identities.json).
+agent = IdentityService().create_identity(
+    display_name="rag-helper",
+    source_protocol="manual",
+    capabilities=["retrieval", "synthesis"],
+    issuer_name="VibeTensor",
+    expiry_days=365,
+)
+
+# 2. Wire the callback. Every tool call, LLM call, and chain step gets
+#    SHA-256 hash-chained, Ed25519-signed, and stored locally.
+callback = AttestixCallback(
+    agent_id=agent["agent_id"],
+    record_llm_tokens=True,
+    issue_vc_on_success=True,  # default True
+)
+
+llm = ChatOpenAI(model="gpt-4o-mini")
+prompt = PromptTemplate.from_template("{input}\n{agent_scratchpad}")
+executor = AgentExecutor(
+    agent=create_react_agent(llm, tools=[], prompt=prompt),
+    tools=[],
+    callbacks=[callback],
+)
+
+result = executor.invoke({"input": "Summarise our Q4 board pack."})
+print(result["output"])
+```
+
+## What you just got
+
+- A row in the local hash-chained audit trail for every callback event (`on_chain_start`, `on_tool_start`, `on_llm_end`, `on_chain_end`).
+- A signed `ChainExecutionCredential` (W3C VC, `Ed25519Signature2020`) auto-issued on chain completion — verify it offline with `attestix credential --verify <cred_id>`.
+- A persistent agent DID so the same identity is reused across runs (no per-run re-creation).
+
+Verify the chain hashes still line up:
+
+```bash
+attestix audit <agent_id>
+```
+
+The deeper [LangChain integration guide](/docs/guides/langchain) covers chain-of-thought events, sub-chain UCAN delegations, and the full callback event table.
+
+## Next step (5 minutes)
+
+Anchor today's audit batch to **Base L2 testnet** (Sepolia, free, requires a funded test wallet — no mainnet wallet needed):
+
+```python
+from attestix.services.blockchain_service import BlockchainService
+
+tx = BlockchainService().anchor_audit_batch(agent_id=agent["agent_id"])
+print(tx)  # 0x...; verify on https://sepolia.basescan.org
+```
+
+Mainnet schema registration is on the [roadmap](/docs/project/roadmap); until then anchoring is testnet only and is **not** legally non-repudiable. See the [Base L2 anchor walkthrough](/docs/guides/base-l2-anchor) for the full setup.
