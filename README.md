@@ -169,7 +169,7 @@ agent = identity_svc.create_identity(
     source_protocol="manual",
     capabilities=["data_analysis", "reporting"],
     description="Analyzes quarterly financial data",
-    issuer_name="Acme Corp",
+    issuer_name="VibeTensor",
     expiry_days=365,
 )
 agent_id = agent["agent_id"]      # attestix:f9bdb7a94ccb40f1
@@ -179,7 +179,7 @@ agent_did = agent["issuer"]["did"]  # did:key:z6Mk...
 profile = compliance_svc.create_compliance_profile(
     agent_id=agent_id,
     risk_category="limited",
-    provider_name="Acme Corp",
+    provider_name="VibeTensor",
     intended_purpose="Analyzes quarterly financial data",
 )
 
@@ -187,7 +187,7 @@ profile = compliance_svc.create_compliance_profile(
 credential = credential_svc.issue_credential(
     subject_id=agent_id,
     credential_type="AgentIdentityCredential",
-    issuer_name="Acme Corp",
+    issuer_name="VibeTensor",
     claims={"capabilities": ["data_analysis", "reporting"]},
     expiry_days=365,
 )
