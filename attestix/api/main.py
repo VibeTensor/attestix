@@ -127,7 +127,11 @@ def _parse_trusted_proxies(raw: str) -> list:
         try:
             networks.append(ipaddress.ip_network(entry, strict=False))
         except ValueError:
-            logger.warning("Ignoring invalid TRUSTED_PROXIES entry: %r", entry)
+            # Do not log the raw entry value: TRUSTED_PROXIES is by design a list
+            # of network CIDRs, but env vars in general can hold secrets and CodeQL
+            # (py/clear-text-logging-sensitive-data) flags raw env-derived values
+            # in logs. Log only the length for diagnostics.
+            logger.warning("Ignoring invalid TRUSTED_PROXIES entry (length %d)", len(entry))
     return networks
 
 
