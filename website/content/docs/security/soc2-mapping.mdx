@@ -1,0 +1,134 @@
+---
+title: SOC 2 Trust Services Criteria — Attestix coverage
+description: How Attestix's signed audit chains, Verifiable Credentials, and provenance records map to the AICPA SOC 2 Trust Services Criteria (2017 + 2022 additions). SOC 2 is an attestation, not a certification — Attestix is evidence plumbing your CPA's auditor can use, not a SOC 2 readiness platform.
+---
+
+The [AICPA SOC 2 Trust Services Criteria](https://www.aicpa-cima.com/topic/audit-assurance/audit-and-assurance-greater-than-soc-2) (TSC 2017 with 2022 Revised Points of Focus) are the framework an independent CPA firm uses to perform a SOC 2 examination of a service organisation. This page shows how Attestix's signed audit chains, Verifiable Credentials, and provenance records map to the TSC — focused on the technology-heavy criteria (Common Criteria CC1-CC9 and Processing Integrity PI1) where chain-hashed evidence is most useful.
+
+## Why this matters
+
+**SOC 2 is an attestation, not a certification.** This distinction is load-bearing:
+
+- A **certification** (ISO 27001, ISO 42001) is a binary YES/NO awarded by an accredited certification body. The organisation displays a cert mark.
+- An **attestation** (SOC 2) is a CPA firm's professional opinion on whether the service organisation's controls were suitably designed (Type I) or designed *and* operating effectively (Type II) to meet the relevant Trust Services Criteria over a stated audit period. The deliverable is a SOC 2 report (~80-200 pages) with a one-page CPA opinion letter on top.
+
+**Attestix does not ship SOC 2 attestations and is not a CPA firm.** We do not issue an opinion. What Attestix ships is **the evidence plumbing your CPA's auditor can use** during your own SOC 2 examination — particularly for the technology-heavy criteria where signed audit trails + chain-hashed event logs + cryptographic identity reduce auditor evidence-gathering by weeks.
+
+## The honest coverage table
+
+The TSC 2017 has **64 criteria** total. The table below covers 30 representative criteria focused on Common Criteria (CC1-CC9, the Security category required for every SOC 2 report) and Processing Integrity (PI1, the entire category — the strongest Attestix-aligned area).
+
+| Criterion | Mitigation surface in Attestix | Coverage | Evidence shape |
+|---|---|---|---|
+| **CC1.1** Integrity + ethical values commitment | None directly; ethics culture is organisational | record-only | `ProviderAssertionCredential` |
+| **CC1.2-CC1.5** Board oversight + structures + competency + accountability | None; organisational controls | out-of-scope | — |
+| **CC2.1-CC2.3** Information quality + internal + external communication | Every audit event high-quality by construction; agent cards + DoC as external-communication artefacts | evidence-substrate | `AgentIdentityCredential` + audit chain |
+| **CC3.1** Specifies objectives | `intended_purpose` + `system_objectives` (v0.5) | record-only | `ProviderAssertionCredential` |
+| **CC3.2** Identifies + analyses risk (includes 2022 AI/ML points of focus) | v0.5 risk register + cross-walk to OWASP ASI + FRIA template | evidence-substrate | `ProviderAssertionCredential` + `SecurityCheckCredential` |
+| **CC3.3** Considers fraud risk | Chain-hashed audit log makes *post-hoc fraud forensically detectable* (actors with valid DID credentials can still emit fraudulent-but-hash-consistent events — pair with CC7.2 anomaly detection); cross-walk to OWASP ASI03 (identity abuse) | evidence-substrate | `ProviderAssertionCredential` + audit-chain tamper-evidence |
+| **CC4.1-CC4.2** Ongoing + separate evaluations + deficiency communication | `compliance_service` checks re-run on cron with signed `VerifiableCheckResult`; v0.5 `control_deficiency` events | evidence-substrate | `VerifiableCheckResult` + audit chain |
+| **CC5.1-CC5.3** Control activity selection + general technology controls + deployment via policies | `compliance_service` profiles encode control selections; audit chain over every profile change | record-only | `ProviderAssertionCredential` + audit chain |
+| **CC6.1** Logical access security software + infrastructure | DID-based identity; UCAN capability + scope enforcement; every state change signed by actor DID | evidence-substrate | DID document + UCAN token + audit chain |
+| **CC6.2** Registers + authorises new users prior to credential issuance | `identity_service.create_agent_identity` — signed + dated + role-tagged; approver DID signs issuance event | evidence-substrate | `AgentIdentityCredential` + approver-signed audit event |
+| **CC6.3** Authorises + modifies + removes access (least privilege + segregation of duties) | UCAN delegation chain (least-privilege built in via attenuation — no chain can grant powers the parent did not have, PR #45); `revoke_credential` | evidence-substrate (strongest CC6 row) | UCAN chain + revocation VC + audit chain |
+| **CC6.4-CC6.5** Physical access + asset retrieval/disposal | None directly; data-centre operations (AWS, GCP, Azure, on-prem) | out-of-scope | — |
+| **CC6.6** Logical security measures against threats outside system boundary | Cross-walk to OWASP ASI03 + ASI07; offline `verify_credential` for external-actor authentication | evidence-substrate | Audit chain + `SecurityCheckCredential` |
+| **CC6.7** Transmission + movement + removal of information | `bundle export` signed + chain-hashed; v0.5 `data_egress` events | evidence-substrate | Audit chain + signed bundle manifest |
+| **CC6.8** Prevention + detection of unauthorised or malicious software | Cross-walk to OWASP ASI04 supply chain; model-lineage + training-data fingerprints | evidence-substrate | Provenance entries + `SecurityCheckCredential` (ASI04 tag) |
+| **CC7.1** Detection + monitoring procedures (config changes + vulnerabilities) | v0.5 `config_change` events with before/after; cross-walk to Art 15.5 cybersec check | evidence-substrate | Audit chain + `VerifiableCheckResult` |
+| **CC7.2** Monitors system components for anomalies | Cross-walk to NIST AI RMF MANAGE-4.1; reputation drift; v0.5 incident-reporting collection | evidence-substrate | Hash-chained audit + `ReputationScoreCredential` + `IncidentReportCredential` |
+| **CC7.3** Evaluates security events; initiates response | v0.5 incident-reporting collection (Art 73 cross-walk); revocation as kill-switch | evidence-substrate | `IncidentReportCredential` + revocation VC + audit chain |
+| **CC7.4** Executes defined incident-response programme | Same surface as CC7.3 + cross-walk to ISO 42001 A.8.4 | evidence-substrate | `IncidentReportCredential` + audit chain |
+| **CC7.5** Recovers from identified incidents | v0.5 `recovery_event`; re-issued credentials post-recovery signed + chain-hashed | evidence-substrate | Audit chain + re-issued credential VCs |
+| **CC8.1** Change management (authorise + design + develop + configure + document + test + approve + implement) | `record_action(entry_type="change_request", before, after, approver_did)`; model-lineage changes; profile audit chain | evidence-substrate (strong — change-management evidence is exactly what chain-hashed event logs are for) | Audit chain + provenance entries |
+| **CC9.1** Risk-mitigation activities for potential business disruptions | Same surface as CC3.2 + CC7.5 | evidence-substrate | `ProviderAssertionCredential` + audit chain |
+| **CC9.2** Vendor + business-partner risk (includes 2022 AI/ML points of focus) | Cross-walk to NIST AI RMF MAP-3.4 + OWASP ASI04; third-party `AgentIdentityCredential` acceptance | evidence-substrate | `AgentIdentityCredential` + UCAN delegation + audit chain |
+| **PI1.1** Processing objectives + data definitions + product/service specs | `intended_purpose` + `system_specifications` (v0.5); signed agent card with data-schema declarations | evidence-substrate | `AgentIdentityCredential` + `ProviderAssertionCredential` |
+| **PI1.2** Input completeness + accuracy controls | v0.5 Art 15 accuracy/robustness check evidence; `input_validation` events | evidence-substrate | Audit chain + `VerifiableCheckResult` |
+| **PI1.3** System-processing controls | Every state change signed + chain-hashed — processing integrity is forensic by construction; `verify_chain` tamper-evidence | evidence-substrate (strongest PI row) | Audit chain + `verify_chain` result |
+| **PI1.4** Output completeness + accuracy + timeliness | `output_delivered` events + bundle-export integrity | evidence-substrate | Audit chain + bundle manifest |
+| **PI1.5** Storage of inputs + items in processing + outputs | Storage chain-hashed by construction; bundle export = portable storage receipt | evidence-substrate | Audit chain + bundle |
+| **A1.1-A1.3** Capacity + system backup + environmental monitoring | None directly; platform-operations (AWS/GCP/Azure/on-prem) | record-only | `ProviderAssertionCredential` |
+| **C1.1-C1.2, P1.1** Confidentiality + privacy notice + retention | Cross-walk to GDPR Art 17 (already in v0.3.0); privacy notice as `ProviderAssertionCredential` | partial | `ProviderAssertionCredential` + audit chain |
+
+### Tally (across all 64 criteria)
+
+- **evidence-substrate** (Attestix produces signed evidence your auditor can examine): 27
+- **record-only** (Attestix signs your operator's assertions): 18
+- **out-of-scope** (organisational + cultural CC1 + physical CC6.4-CC6.5 + most of Privacy P1-P8 territory): 19
+
+**Concentrated where it matters most for SOC 2:** Security CC6 (logical access — UCAN + DID), CC7 (system operations — chain-hashed events), CC8 (change management — provenance) and Processing Integrity PI1 (the entire category).
+
+> **Important caveat — `security_check_id` ships in v0.5.0.** As of Attestix v0.4.0 the underlying events are emitted today, but they are NOT yet tagged with the `soc2.*` discriminator. The v0.5.0 release registers the prefix in `FRAMEWORK_REGISTRY`; per-criterion emission tagging is incremental.
+
+## What we don't do
+
+- **We do not issue SOC 2 reports.** The CPA firm performing your examination is the only entity that issues SOC 2 reports.
+- **We do not author your policies.** Policy authorship lives in your DMS, with Vanta / Drata / Secureframe templates, or with internal counsel.
+- **We do not shepherd your SOC 2 readiness end-to-end.** That is what compliance platforms (Vanta, Drata, Secureframe, Strike Graph, AuditBoard) do — auditor coordination, employee training, evidence collection workflows, continuous monitoring dashboards. They sit *above* the evidence layer; we sit *below*. The two stack.
+- **We do not do physical security (CC6.4-CC6.5).** Your data-centre operator's SOC 2 carve-out covers that.
+- **We are not your IAM enforcement layer.** We record who attempted what; your Okta / Auth0 / Entra IAM enforces access policies.
+- **We are not your SIEM.** We produce signed forensic evidence; your Splunk / Datadog / Honeycomb ingests + dashboards.
+
+## How to verify our coverage yourself
+
+### Python / CLI
+
+```bash
+# List every audit event tagged with a SOC 2 criterion (v0.5.0+)
+attestix audit list --security-check soc2.security.CC6_3.access_granted
+
+# Export a bundle scoped to SOC 2 evidence for your auditor (v0.5.0+)
+attestix bundle export --controls soc2 --out my-soc2-evidence.atxbundle
+
+# Verify chain integrity for an agent's audit log (today)
+attestix verify-chain <agent-did>
+```
+
+### JavaScript / browser
+
+```bash
+npm install attestix
+```
+
+```javascript
+import { verifyCredential } from "attestix";
+
+const result = await verifyCredential(securityCheckCredentialJson);
+// result.valid === true if the Ed25519 signature over the JCS-canonical body
+// matches the issuer DID's public key.
+```
+
+### On-chain anchor (Base L2 Sepolia testnet)
+
+```bash
+attestix anchor audit-batch --agent <did> --network base-sepolia
+```
+
+Mainnet schema registration is planned; testnet is the default target today.
+
+## Comparable disclosure
+
+How other tools position themselves on SOC 2.
+
+| Tool | Stated SOC 2 position | Where to read more |
+|---|---|---|
+| **Microsoft Agent Governance Toolkit** | Publishes `docs/compliance/soc2-mapping.md`; CloudEvents-to-Azure-Monitor as evidence path | [github.com/microsoft/agent-governance-toolkit](https://github.com/microsoft/agent-governance-toolkit) |
+| **Vanta** | End-to-end SOC 2 readiness platform — auditor coordination + policy templates + employee training + continuous monitoring + evidence collection. Slots above Attestix as the GRC layer | [vanta.com](https://www.vanta.com/) |
+| **Drata** | Same posture as Vanta | [drata.com](https://www.drata.com/) |
+| **Secureframe** | Same posture as Vanta + Drata | [secureframe.com](https://secureframe.com/) |
+| **Strike Graph** | Same posture; mid-market focused | [strikegraph.com](https://strikegraph.com/) |
+| **AuditBoard** | Enterprise GRC including SOC 2 module; same posture | [auditboard.com](https://www.auditboard.com/) |
+| **CPA firms** (Coalfire, Schellman, A-LIGN, Sensiba, etc.) | The actual SOC 2 examination performers. Attestix is evidence input to their audit | AICPA SOC 2 firm directory |
+
+## See also
+
+- [OWASP Top 10 for Agentic Applications mapping](/docs/security/owasp-agentic-top10)
+- [ISO/IEC 42001:2023 mapping](/docs/security/iso-42001-mapping)
+- [NIST AI RMF 1.0 mapping](/docs/security/nist-ai-rmf-mapping)
+- [FRIA template (EU AI Act Art 27)](/docs/security/fria-template)
+- The internal mapping spec at `attestix-cloud-plan/25-SOC2-MAPPING.md`.
+
+---
+
+**Attestix is evidence tooling a customer's auditor can use during the customer's own SOC 2 examination. Attestix does not issue SOC 2 attestations, is not a CPA firm, and a passing tag against a Trust Services Criterion is one signal among many in the audit — the auditor's professional opinion is the authoritative output. Compliance platforms like Vanta, Drata, Secureframe, and Strike Graph shepherd the end-to-end SOC 2 readiness journey; we slot underneath them as the cryptographic evidence layer.**
