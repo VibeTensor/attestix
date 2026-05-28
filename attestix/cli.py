@@ -495,5 +495,109 @@ def list_identities(protocol, include_revoked, limit):
     click.echo()
 
 
+# ---------------------------------------------------------------------------
+# attestix import (M6 portability bundle ingest)
+# ---------------------------------------------------------------------------
+
+@cli.command(name="import")
+@click.argument("bundle_path", type=click.Path(exists=True, dir_okay=False, readable=True))
+@click.option("--force", is_flag=True, help="Allow import even if local data is non-empty (rows are appended, not merged).")
+@click.option("--workspace", default=None, help="Target local workspace label (defaults to the bundle's workspace slug).")
+@click.option("--verify-only", is_flag=True, help="Verify bundle integrity (manifest + per-table sha + chain) and report; do not write.")
+def import_cmd(bundle_path, force, workspace, verify_only):
+    """Import an Attestix portability bundle (M6 cloud export) into local OSS storage.
+
+    Reads the gzipped USTAR bundle at BUNDLE_PATH, verifies the manifest +
+    per-table SHA-256 + audit-chain end-to-end, and writes every row into the
+    local Attestix storage (``~/.attestix/``) through the v0.4.0 Repository
+    boundary. By default the command refuses if any local identities,
+    credentials, or audit events already exist; pass --force to override.
+    """
+    # Local import: keep the CLI startup path snappy when this command is not used.
+    from attestix.portability import (
+        BundleError,
+        BundleSchemaTooNewError,
+        Importer,
+        LocalDataExistsError,
+        read_bundle,
+    )
+
+    # 1) Parse the bundle.
+    try:
+        bundle = read_bundle(bundle_path)
+    except BundleError as e:
+        _error(str(e))
+
+    target_tenant = workspace or bundle.workspace.get("slug") or "default"
+    importer = Importer(tenant_id=target_tenant)
+
+    # 2) Refuse on non-empty unless --force.
+    if not force and not verify_only and not importer.local_data_is_empty():
+        summary = importer.local_data_summary()
+        non_empty = [f"{k}={v}" for k, v in summary.items() if v]
+        _error(
+            "local Attestix storage is not empty ("
+            + ", ".join(non_empty)
+            + "). Re-run with --force to import alongside the existing rows, or "
+            + "with --verify-only to inspect the bundle without writing."
+        )
+
+    _header(f"Attestix bundle: {bundle.path.name}")
+    click.echo(f"  Format       : {bundle.bundle_format}")
+    click.echo(f"  Manifest ver : {bundle.manifest_version}")
+    click.echo(f"  Workspace    : {bundle.workspace.get('slug', '?')} ({bundle.workspace.get('id', '?')})")
+    click.echo(f"  Region       : {bundle.workspace.get('region', '?')} / residency={bundle.workspace.get('data_residency', '?')}")
+    click.echo(f"  Exported at  : {bundle.exported_at}")
+    click.echo(f"  Exported by  : {bundle.exported_by.get('email') or bundle.exported_by.get('user_id') or '?'}")
+    click.echo(f"  Core version : {bundle.core_version}")
+    click.echo(f"  DB migration : {bundle.db_migration_max}")
+    click.echo(f"  Target tenant: {target_tenant}")
+    if target_tenant != bundle.workspace.get("slug", target_tenant):
+        click.echo(
+            f"  (audit_events stay under their original tenant "
+            f"{bundle.workspace.get('slug')!r} so the chain hash remains valid)"
+        )
+    click.echo()
+
+    # 3) Run the import (which also re-verifies schema + sha + chain).
+    try:
+        result = importer.run(bundle, force=force, verify_only=verify_only)
+    except BundleSchemaTooNewError as e:
+        _error(str(e))
+    except LocalDataExistsError as e:
+        _error(str(e))
+    except BundleError as e:
+        _error(str(e))
+
+    _header("Tables")
+    for t in result.tables:
+        if t.oss_collection is None:
+            note = click.style("skipped", fg="yellow")
+            label = f"{t.name:<24}"
+            click.echo(f"  [-] {label} {t.rows_seen} rows  {note} (cloud-only)")
+            continue
+        check = click.style("OK", fg="green")
+        label = f"{t.name:<24}"
+        sha_short = t.sha256[:12] + "…" if t.sha256 else ""
+        click.echo(f"  [{check}] {label} {t.rows_written} rows  sha256:{sha_short}")
+    click.echo()
+
+    if result.chain_verified:
+        _success("Audit chain reconciliation: VERIFIED")
+    else:
+        click.echo("  (no audit_events in bundle — nothing to chain-verify)")
+
+    if verify_only:
+        _success("\nVerify-only mode: bundle is intact. No data written.")
+        return
+
+    _success(f"\nImport complete. {result.total_written} rows written under tenant {result.target_tenant!r}.")
+    click.echo()
+    _header("Next steps")
+    click.echo("  attestix list                # see imported identities")
+    click.echo("  attestix audit <agent_id>    # verify the imported audit chain")
+    click.echo("  attestix status              # confirm aggregate counts")
+
+
 if __name__ == "__main__":
     cli()
