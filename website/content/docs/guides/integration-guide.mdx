@@ -34,10 +34,10 @@ Any MCP client can consume Attestix. The following ship with reference configs a
 You can import Attestix services directly without running the MCP server.
 
 ```python
-from services.identity_service import IdentityService
-from services.credential_service import CredentialService
-from services.compliance_service import ComplianceService
-from services.provenance_service import ProvenanceService
+from attestix.services.identity_service import IdentityService
+from attestix.services.credential_service import CredentialService
+from attestix.services.compliance_service import ComplianceService
+from attestix.services.provenance_service import ProvenanceService
 
 identity_svc = IdentityService()
 credential_svc = CredentialService()
