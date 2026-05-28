@@ -1,0 +1,110 @@
+---
+title: OWASP Agentic AI Top 10 (2025-2026) — Attestix coverage
+description: How each of the OWASP Top 10 risks for Agentic Applications (ASI01-ASI10) maps to Attestix's audit, identity, and credential primitives. Honest per-risk coverage with concrete evidence shapes — not marketing-spec "10/10".
+---
+
+The [OWASP Top 10 for Agentic Applications 2026](https://genai.owasp.org/resource/owasp-top-10-for-agentic-applications-for-2026/) was published by the OWASP GenAI Security Project on 9 December 2025. It names the ten most critical security risks facing autonomous AI agents: ASI01 through ASI10. This page shows how Attestix maps each risk to a concrete, signed evidence shape that an auditor, regulator, or insurer can verify offline.
+
+## Why this matters
+
+Plenty of frameworks claim "10/10 coverage" of OWASP lists. Attestix's claim is narrower and (we think) more useful: **for every ASI risk, we point at a specific signed artefact** — a W3C Verifiable Credential, a hash-chained audit event, or an on-chain anchor — that constitutes evidence relevant to that risk. We do not replace runtime guardrails (NeMo Guardrails, llm-guard, Guardrails AI, promptfoo). We are the **forensic substrate** that records what those guardrails decided and produces evidence a third party can verify without trusting our infrastructure.
+
+## The honest coverage table
+
+| Risk | Mitigation surface in Attestix | Coverage | Evidence shape | Where to verify |
+|---|---|---|---|---|
+| **ASI01:2026 Agent Goal Hijack** — "Attackers manipulate agent goals, plans, or decision paths through direct or indirect instruction injection, causing agents to pursue unintended or malicious objectives." | UCAN delegation chains bound agent capability; `verify_delegation` flags actions outside scope; `compliance_profile.intended_purpose` provides a comparison baseline | strong-partial | Audit event + `SecurityCheckCredential` (v0.5) | `attestix verify-delegation <chain>` / `verifyCredential()` in [@vibetensor/attestix](https://www.npmjs.com/package/@vibetensor/attestix) |
+| **ASI02:2026 Tool Misuse & Exploitation** — "Agents misuse or abuse tools through unsafe composition, recursion, or excessive execution, causing harmful side effects despite having valid permissions." | Every MCP tool invocation emits a chain-hashed audit event with `actor` + `action` + `target_id`; provenance log records every external call | partial | Per-call `AuditEvent` (chain-hashed) | `attestix audit list --tag owasp.asi.ASI02` (v0.5 CLI flag) |
+| **ASI03:2026 Agent Identity & Privilege Abuse** — "Delegated authority, ambiguous agent identity, or trust assumptions lead to unauthorized actions through impersonation or privilege escalation." | DID-based agent identity (`did:key`, `did:web`); UCAN v0.9 with parent-token verification + capability attenuation; revocation as a signed VC | **full** | DID document, UCAN tokens, audit event, `SecurityCheckCredential` (v0.5) | [Offline verification walkthrough](/docs/guides/offline-verify) |
+| **ASI04:2026 Agentic Supply Chain Compromise** — "External agents, tools, schemas, or prompts that agents dynamically trust or import become compromised, introducing malicious components." | `record_model_lineage` + `record_training_data` produce signed provenance entries; agent cards carry signed identity + capability declarations; OMS-compatible signatures planned (v0.5) | strong-partial | Provenance entries (signed, hash-chained), `AgentIdentityCredential` | `attestix verify-provenance <agent-id>` |
+| **ASI05:2026 Unexpected Code Execution** — "Agent-generated or agent-triggered code executes without sufficient validation or isolation, enabling unauthorized system access." | Provenance log records every external-call entry the agent self-reports; v0.5 Article 15.4 check records the provider's sandbox-isolation declaration | record-only | Provenance entry + `SecurityCheckCredential` (v0.5, sandbox declaration only) | `attestix audit list --action external_call` |
+| **ASI06:2026 Memory & Context Poisoning** — "Injection or leakage of agent memory or contextual state influences future reasoning or actions across sessions." | Per-agent hash-chained memory log; `verify_chain` detects any post-hoc tampering; the chain itself IS the tamper-evidence | strong-partial | Hash-chained provenance entries; `verify_chain` returns `VerifyChainResult` with structured failure pointer | `attestix verify-chain <agent-id>` / [verify in the browser via the NPM package](/docs/guides/offline-verify) |
+| **ASI07:2026 Insecure Inter-Agent Communication** — "Messages exchanged between agents, planners, and executors become manipulated through interception, injection, or spoofing." | `InteractionCredential` (W3C VC) wraps inter-agent messages with sender DID signature; agent cards published for capability discovery; offline `verify_credential` confirms authenticity | strong-partial | `InteractionCredential` (W3C VC, Ed25519-signed); optional Base L2 Sepolia anchor | `attestix verify-credential <vc.json>` / `verifyCredential()` in JS |
+| **ASI08:2026 Cascading Agent Failures** — "Small agent failures propagate through connected systems, causing large-scale impact via tool chains or resource exhaustion." | Cross-agent causal links (v0.5 optional `causal_parent_event_id` field on `record_action`); per-agent audit chain enables post-mortem reconstruction; v0.5 incident-reporting collection | record-only | Per-agent audit chain + `IncidentReportCredential` (v0.5) | `attestix bundle export --include-incidents` for offline reconstruction |
+| **ASI09:2026 Human-Agent Trust Exploitation** — "Human over-reliance on agents is exploited through misleading explanations, authority misrepresentation, or false certainty." | EU AI Act Article 14 (human oversight) checks in v0.5; `ProviderAssertionCredential` separates "system-verified" (green) from "provider-asserted" (blue) terminal states — by design we never auto-promote an assertion to verification | strong-partial | `VerifiableCheckResult` for Art 14 checks + `ProviderAssertionCredential` for human assertions | `attestix verify-check <result-id>` |
+| **ASI10:2026 Rogue Agents** — "Agents act beyond intended objectives due to goal drift, collusion, reward hacking, or exceeding designed autonomy boundaries." | `revoke_identity` + `revoke_credential` as operator kill-switch (signed VC); UCAN expiry + attenuation bound blast radius; reputation-score downward drift detectable; v0.5 Art 14.4 stop-button declaration | strong-partial | Revocation VC, expired UCAN, `ReputationScoreCredential`, `VerifiableCheckResult` | `attestix revoke <id>` produces a signed revocation event verifiable via the public chain anchor |
+
+**OWASP source for every quoted description above:** [OWASP Top 10 for Agentic Applications 2026](https://genai.owasp.org/resource/owasp-top-10-for-agentic-applications-for-2026/).
+
+### Tally
+
+- **full:** 1 (ASI03)
+- **strong-partial:** 6 (ASI01, ASI04, ASI06, ASI07, ASI09, ASI10)
+- **partial:** 1 (ASI02)
+- **record-only:** 2 (ASI05, ASI08)
+- **out-of-scope:** 0
+
+We do not claim "10/10 mitigated". We claim **10/10 mapped to a concrete signed evidence shape**. The difference matters — see [What we don't do](#what-we-dont-do) below.
+
+> **Important caveat — `security_check_id` ships in v0.5.0.** As of Attestix v0.4.0 (May 2026) the underlying events listed above are emitted today, but they are NOT yet tagged with the namespaced `security_check_id` discriminator. The v0.5.0 release adds the field, the `SecurityCheckCredential` sidecar VC, and the `attestix audit --security-check owasp.asi.ASI<NN>` CLI filter. Until then you can already query the underlying events by `action` and reconstruct the same coverage manually.
+
+## What we don't do
+
+The following are intentional non-goals. The most honest section of any security framework is the gap statement.
+
+- **No runtime prompt-injection detection.** ASI01 (Goal Hijack) is mitigated *after the fact* by delegation-scope bounding and forensic replay; we do not analyse prompts in real time. Pair Attestix with [NeMo Guardrails](https://github.com/NVIDIA/NeMo-Guardrails), [Guardrails AI](https://www.guardrailsai.com/), [llm-guard](https://github.com/protectai/llm-guard), or [promptfoo](https://www.promptfoo.dev/) for the runtime layer and let Attestix sign the evidence those tools produce.
+- **No code sandbox.** ASI05 (Code Execution) is `record-only` because executing code safely is the host runtime's job (Docker, gVisor, Firecracker, language-level sandboxes). We record what was executed, by whom, and when — so post-incident forensics can attribute responsibility — but we do not block the call.
+- **No real-time cascade detection.** ASI08 (Cascading Failures) is observability (Datadog, Honeycomb, OpenTelemetry traces); cascade *evidence* is compliance (us). Operators detect cascades via their existing monitoring; Attestix produces the bundle export that reconstructs *which* agent touched *what* in *what order*.
+- **No hallucination detector.** We do not score the truthfulness of LLM output. We sign what the agent did; downstream forensics catches drift against the declared `intended_purpose`.
+- **No assertion-to-verification promotion.** Per the v0.5 anti-compliance-theater design: when a human asserts "yes, the residual risk is acceptable" or "yes, accuracy metrics are documented", the result transitions to the terminal state `assertion_recorded` (rendered as a *blue* chip), NOT to `passed=true` (rendered green). Attestix never claims to have verified the substance of a human assertion.
+
+## How to verify our coverage yourself
+
+### Python / CLI
+
+```bash
+# List every audit event tagged with an OWASP ASI risk (v0.5.0+)
+attestix audit list --security-check owasp.asi.ASI08
+
+# Verify the chain integrity for an agent's audit log
+attestix verify-chain <agent-did>
+
+# Export a bundle including SecurityCheckCredentials (v0.5.0+)
+attestix bundle export --include-security-credentials --out my-agent.atxbundle
+```
+
+### JavaScript / browser
+
+```bash
+npm install @vibetensor/attestix
+```
+
+```javascript
+import { verifyCredential } from "@vibetensor/attestix";
+
+const result = await verifyCredential(securityCheckCredentialJson);
+// result.valid === true if the Ed25519 signature over the JCS-canonical body
+// matches the issuer DID's public key. No network calls; the DID is self-resolving
+// (did:key) or fetched once and cached (did:web).
+```
+
+The NPM package is [Apache-2.0 licensed](https://www.npmjs.com/package/@vibetensor/attestix), runs in Node 18+ and modern browsers, depends only on `@noble/curves`, and ships with TypeScript types. A regulator with no Attestix install can verify any Attestix-issued credential by `npm install`-ing a 68.9 KB package.
+
+### On-chain anchor (Base L2 Sepolia testnet)
+
+Tamper-evidence for the chain-of-evidence itself. See the [Base L2 testnet anchor walkthrough](/docs/guides/base-l2-anchor).
+
+```bash
+attestix anchor audit-batch --agent <did> --network base-sepolia
+```
+
+Mainnet schema registration is planned; testnet is the default target today.
+
+## Comparable disclosure
+
+How other tools position themselves on agentic-AI security. We name approaches we found through public documentation; we do not disparage and we welcome corrections.
+
+| Tool | Stated agentic-security position | Where to read more |
+|---|---|---|
+| **Microsoft Agent Governance Toolkit** | Advertises 10/10 OWASP Agentic Top 10 coverage via policy-template attestation; emits CloudEvents to Azure Monitor; SPIFFE-style identity. Closest competitor by breadth. | [github.com/microsoft/agent-governance-toolkit](https://github.com/microsoft/agent-governance-toolkit) |
+| **airblackbox** | 51 EU AI Act Article 9-15 checks with ML-DSA-65 (FIPS 204 post-quantum) signing; library-only, offline `verify.py`. Strong on article-level depth; does not map to OWASP ASI explicitly. | [github.com/airblackbox/airblackbox](https://github.com/airblackbox/airblackbox) |
+| **NeMo Guardrails / Guardrails AI / llm-guard** | Runtime LLM-output safety rails. Complementary to Attestix — they decide; we sign the decision. | [github.com/NVIDIA/NeMo-Guardrails](https://github.com/NVIDIA/NeMo-Guardrails), [guardrailsai.com](https://www.guardrailsai.com/), [github.com/protectai/llm-guard](https://github.com/protectai/llm-guard) |
+| **promptfoo / garak** | LLM red-teaming + eval frameworks. Useful for ASI01/ASI06 pre-deployment hardening; do not produce signed compliance evidence. | [promptfoo.dev](https://www.promptfoo.dev/), [github.com/leondz/garak](https://github.com/leondz/garak) |
+| **sigstore / OpenSSF Model Signing** | The de-facto signing layer for AI model artefacts. Attestix wraps OMS-compatible signatures on `record_model_lineage` (planned v0.5) rather than competing. | [openssf.org/projects/model-signing](https://openssf.org/projects/model-signing/) |
+
+## See also
+
+- [EU AI Act compliance guide](/docs/guides/eu-ai-act-compliance) — how Attestix evidences high-risk system obligations.
+- [Offline verification walkthrough](/docs/guides/offline-verify) — verify any Attestix VC without network access.
+- [Base L2 testnet anchor walkthrough](/docs/guides/base-l2-anchor) — pin evidence to a public chain.
+- The internal mapping spec (proposal for v0.5.0) at `attestix-cloud-plan/22-OWASP-AGENTIC-TOP10-MAPPING.md` — engineering-grade detail on the `security_check_id` field, `SecurityCheckCredential` shape, and per-row PR plan.
