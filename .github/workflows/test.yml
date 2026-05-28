@@ -36,12 +36,31 @@ jobs:
           cache-dependency-path: |
             pyproject.toml
             requirements.txt
+            requirements-ci.txt
 
       - name: Upgrade pip
         run: python -m pip install --upgrade pip
 
-      - name: Install package with dev extras
-        run: pip install -e ".[dev,blockchain]"
+      # Hash-pin every dependency to satisfy OpenSSF Scorecard's Pinned-
+      # Dependencies check (PinnedDependenciesID: pipCommand not pinned by
+      # hash). `requirements-ci.txt` is generated from pyproject.toml's
+      # [dev,blockchain] extras + requirements-api.txt via:
+      #
+      #   python -m piptools compile --generate-hashes --strip-extras \
+      #     --extra dev --extra blockchain \
+      #     --output-file requirements-ci.txt pyproject.toml requirements-api.txt
+      #
+      # Dependabot's pip ecosystem (configured in .github/dependabot.yml)
+      # refreshes the lockfile weekly. Attestix itself is installed editable
+      # in a separate step with --no-deps, because `pip install -e .` is
+      # fundamentally incompatible with --require-hashes (editable installs
+      # cannot be hashed). See .github/scorecard-pinned-deps.md for the full
+      # workflow coverage matrix.
+      - name: Install hash-pinned dependencies
+        run: pip install --require-hashes -r requirements-ci.txt
+
+      - name: Install attestix in editable mode (no deps)
+        run: pip install -e . --no-deps
 
       - name: Run pytest with coverage
         env:
