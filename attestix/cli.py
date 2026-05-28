@@ -12,7 +12,22 @@ from pathlib import Path
 
 import click
 
-from attestix.config import DATA_DIR, load_identities, load_credentials, load_compliance, load_provenance
+# Windows: ensure UTF-8 stdout/stderr so progress glyphs (->, arrows, etc.)
+# and any unicode in CLI output don't crash under cp1252 (Git Bash inherits
+# the legacy console encoding).
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+if hasattr(sys.stderr, "reconfigure"):
+    sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+
+from attestix.config import (
+    AUDIT_FILE,
+    DATA_DIR,
+    load_compliance,
+    load_credentials,
+    load_identities,
+    load_provenance,
+)
 from attestix.services.cache import get_service
 from attestix.services.identity_service import IdentityService
 from attestix.services.compliance_service import ComplianceService
@@ -425,7 +440,18 @@ def status():
 
     provenance_data = load_provenance()
     prov_entries = provenance_data.get("entries", [])
-    audit_entries = provenance_data.get("audit_log", [])
+
+    # Audit chain (v0.4.0+) is persisted in audit.json with schema
+    # {"events": [...]}. Previously this read provenance.json["audit_log"],
+    # which silently reported 0 after every `attestix import` because the
+    # importer writes to audit.json.
+    audit_data: dict = {}
+    if AUDIT_FILE.exists():
+        try:
+            audit_data = json.loads(AUDIT_FILE.read_text(encoding="utf-8"))
+        except (json.JSONDecodeError, OSError):
+            audit_data = {}
+    audit_entries = audit_data.get("events", [])
 
     _header("Resource Counts")
     click.echo(f"  Agents (active)    : {len(active_agents)}")
