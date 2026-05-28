@@ -15,6 +15,27 @@ from attestix.signing import InProcessSigner, Signer
 from attestix.storage.repository import DEFAULT_TENANT
 
 
+class InvalidComplianceProfileError(ValueError):
+    """Raised when a compliance profile is missing fields required to
+    generate an Annex V declaration of conformity.
+
+    v0.4.0-rc.3 (P0 #4 of the rc.2 RC validation): previously the service
+    returned ``{"error": "...missing required fields..."}`` and the caller
+    was expected to introspect the dict. For an EU AI Act compliance
+    product, silent fall-through to ``declaration_id=None`` is the worst
+    possible failure mode. The service now raises this exception on the
+    Annex V missing-fields path so callers fail loudly.
+
+    The exception's ``missing_fields`` attribute lists exactly the fields
+    that need to be set on the compliance profile before the declaration
+    can be issued.
+    """
+
+    def __init__(self, message: str, missing_fields: Optional[list] = None) -> None:
+        super().__init__(message)
+        self.missing_fields = list(missing_fields or [])
+
+
 VALID_RISK_CATEGORIES = {"minimal", "limited", "high", "unacceptable"}
 VALID_ASSESSMENT_TYPES = {"self", "third_party"}
 VALID_ASSESSMENT_RESULTS = {"pass", "conditional", "fail"}
@@ -444,7 +465,17 @@ class ComplianceService:
             return {"error": msg}
 
     def generate_declaration_of_conformity(self, agent_id: str) -> dict:
-        """Generate an EU AI Act Annex V declaration of conformity."""
+        """Generate an EU AI Act Annex V declaration of conformity.
+
+        Raises:
+            InvalidComplianceProfileError: when the compliance profile is
+                missing one or more fields required by Annex V (e.g.
+                ``transparency_obligations``). The exception's
+                ``missing_fields`` attribute lists the specific fields the
+                caller must populate before retrying. This replaces the
+                pre-rc.3 silent ``{"error": "..."}`` return that let
+                callers move forward with ``declaration_id=None``.
+        """
         try:
             profile = self.get_compliance_profile(agent_id)
             if not profile:
@@ -489,10 +520,18 @@ class ComplianceService:
                                 )
                             }
             if missing_fields:
-                return {
-                    "error": f"Cannot generate declaration: missing required fields: {', '.join(missing_fields)}. "
-                    "Update the compliance profile first."
-                }
+                # v0.4.0-rc.3 (P0 #4): raise instead of returning an error dict
+                # so callers cannot silently move forward with declaration_id=None.
+                # For an EU AI Act compliance product, silent fall-through on a
+                # missing Annex V field is the worst possible failure mode.
+                msg = (
+                    f"Cannot generate declaration: missing required fields: "
+                    f"{', '.join(missing_fields)}. Update the compliance profile "
+                    f"first via update_compliance_profile(...)."
+                )
+                raise InvalidComplianceProfileError(
+                    msg, missing_fields=missing_fields
+                )
 
             declaration_id = f"decl:{uuid.uuid4().hex[:12]}"
             now = datetime.now(timezone.utc).isoformat()
@@ -605,6 +644,11 @@ class ComplianceService:
             )
 
             return declaration
+        except InvalidComplianceProfileError:
+            # v0.4.0-rc.3 (P0 #4): propagate the validation error rather than
+            # swallowing it into an {"error": "..."} dict. Callers MUST handle
+            # missing-field validation explicitly.
+            raise
         except Exception as e:
             msg = log_and_format_error(
                 "generate_declaration_of_conformity", e, ErrorCategory.COMPLIANCE,

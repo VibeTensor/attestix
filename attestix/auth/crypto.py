@@ -287,16 +287,25 @@ def load_or_create_signing_key(
         json.dump(key_data, f, indent=2)
 
     # Restrict file permissions so the private key material is only readable
-    # by the owning user. Skipped on Windows where POSIX mode bits do not
-    # map cleanly; rely on filesystem ACLs there instead.
-    if sys.platform != "win32":
-        try:
-            os.chmod(key_path, stat.S_IRUSR | stat.S_IWUSR)  # 0o600
-        except OSError as chmod_err:
-            log_and_format_error(
-                "load_or_create_signing_key", chmod_err, ErrorCategory.CRYPTO,
-                user_message="Could not restrict signing key permissions to 0600",
-            )
+    # by the owning user.
+    #
+    # On POSIX this maps cleanly to 0o600 (owner read/write only) and is the
+    # canonical defense against a shared-tenant CI runner lifting the key.
+    #
+    # On Windows os.chmod is largely a no-op — it can only toggle the
+    # read-only attribute and cannot mirror POSIX 0o600 semantics; real
+    # protection on Windows lives in NTFS ACLs (icacls). v0.4.0-rc.3
+    # (P1 #3 of the rc.2 RC validation) still calls it best-effort so the
+    # read-only bit is at least set; operators on Windows should harden the
+    # ACL on `.signing_key.json` separately. See docs/security for the full
+    # threat model.
+    try:
+        os.chmod(key_path, stat.S_IRUSR | stat.S_IWUSR)  # 0o600 on POSIX
+    except OSError as chmod_err:
+        log_and_format_error(
+            "load_or_create_signing_key", chmod_err, ErrorCategory.CRYPTO,
+            user_message="Could not restrict signing key permissions to 0600",
+        )
 
     return private_key, did
 

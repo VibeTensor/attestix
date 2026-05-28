@@ -1,5 +1,9 @@
 """Tests for EU AI Act compliance in services/compliance_service.py."""
 
+import pytest
+
+from attestix.services.compliance_service import InvalidComplianceProfileError
+
 
 class TestCreateComplianceProfile:
     """Tests for creating compliance profiles with risk categorization."""
@@ -334,6 +338,31 @@ class TestDeclarationOfConformity:
         result = compliance_service.generate_declaration_of_conformity(sample_agent_id)
         assert "error" in result
         assert "assessment" in result["error"].lower()
+
+    def test_missing_transparency_obligations_raises(self, compliance_service, sample_agent_id):
+        """v0.4.0-rc.3 (P0 #4 of the rc.2 RC validation): missing required
+        Annex V fields must RAISE InvalidComplianceProfileError, not return
+        {"error": "..."}. For an EU AI Act compliance product, silent
+        fall-through to declaration_id=None is the worst possible failure
+        mode — the rc.2 fintech persona hit this on the documented happy
+        path. Test asserts:
+
+        1. The exception is raised (not swallowed into an error dict).
+        2. The exception's `missing_fields` lists `transparency_obligations`.
+        3. The message names the missing field so the operator can act.
+        """
+        compliance_service.create_compliance_profile(
+            sample_agent_id, "limited", "Corp",
+            intended_purpose="Testing",
+            # transparency_obligations deliberately omitted.
+        )
+        compliance_service.record_conformity_assessment(
+            sample_agent_id, "self", "Assessor", "pass",
+        )
+        with pytest.raises(InvalidComplianceProfileError) as exc:
+            compliance_service.generate_declaration_of_conformity(sample_agent_id)
+        assert "transparency_obligations" in exc.value.missing_fields
+        assert "transparency_obligations" in str(exc.value)
 
 
 class TestComplianceStatus:

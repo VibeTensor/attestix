@@ -201,12 +201,22 @@ class TestSigningKeyPermissions:
 
 
 class TestSigningKeyPermissionsWindowsSafe:
-    def test_chmod_is_skipped_on_windows(self):
-        """The code path must not crash on Windows even though chmod is a
-        no-op for POSIX mode bits there."""
+    def test_chmod_is_called_best_effort_cross_platform(self):
+        """v0.4.0-rc.3 (P1 #3 of the rc.2 RC validation): chmod is now called
+        unconditionally and wrapped in try/except so that on Windows (where
+        os.chmod can at most flip the read-only bit) the call is best-effort
+        and never crashes, while on POSIX 0o600 is enforced."""
         src = Path("attestix/auth/crypto.py").read_text(encoding="utf-8")
-        assert 'sys.platform != "win32"' in src
         assert "os.chmod(key_path" in src
+        # The chmod call must be inside a try/except so a Windows failure
+        # never propagates.
+        idx = src.index("os.chmod(key_path")
+        # Walk back to confirm we are inside a try block.
+        prefix = src[:idx]
+        assert prefix.rfind("try:") > prefix.rfind("def "), (
+            "os.chmod must be wrapped in a try/except so Windows / non-POSIX "
+            "platforms degrade gracefully"
+        )
 
 
 # ---------------------------------------------------------------------------

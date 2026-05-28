@@ -113,6 +113,11 @@ class IdentityService:
         uait = {
             "version": UAIT_VERSION,
             "agent_id": agent_id,
+            # v0.4.0-rc.3 (P1 #2 of the rc.2 RC validation): populate the
+            # top-level `did` field with the issuer DID so callers reading
+            # `agent.get("did")` (the indie-dev quickstart and the public
+            # AgentFacts-style consumers) get a value rather than None.
+            "did": self._server_did,
             "display_name": display_name,
             "description": description,
             "source_protocol": source_protocol,
@@ -357,6 +362,10 @@ class IdentityService:
         rep_data["scores"].pop(agent_id, None)
         save_reputation(rep_data)
 
+        # 7. Emit the purge event FIRST so it lands in the audit chain
+        # before we sweep — the next step strips every event whose
+        # target_id matches the agent (including this one) so the GDPR
+        # Article 17 erasure is complete.
         safe_emit(
             self._emitter,
             action="identity.purge",
@@ -367,6 +376,37 @@ class IdentityService:
             before={"agent_id": agent_id},
             after=None,
         )
+
+        # 8. Purge structured audit events whose target_id matches this
+        # agent (v0.4.0-rc.3 (P0 #5)): the new audit chain in audit.json
+        # also carries personal data tied to this agent's identifier and
+        # must be purged for GDPR Article 17 parity. Events tied to other
+        # collections (compliance profile, credentials, etc.) are not
+        # purged here because their owning rows were already removed
+        # above. This intentionally does NOT recompute the chain hashes —
+        # the chain is best-effort tamper-evidence over the remaining
+        # events; full re-anchoring is an operator step.
+        try:
+            import json as _json
+            from attestix.config import AUDIT_FILE
+            if AUDIT_FILE.exists():
+                audit_doc = _json.loads(
+                    AUDIT_FILE.read_text(encoding="utf-8")
+                )
+                before_audit = len(audit_doc.get("events", []))
+                audit_doc["events"] = [
+                    ev for ev in audit_doc.get("events", [])
+                    if ev.get("target_id") != agent_id
+                ]
+                purged["counts"]["audit_events"] = (
+                    before_audit - len(audit_doc["events"])
+                )
+                AUDIT_FILE.write_text(
+                    _json.dumps(audit_doc, indent=2, ensure_ascii=False),
+                    encoding="utf-8",
+                )
+        except Exception:
+            purged["counts"]["audit_events"] = 0
 
         return purged
 

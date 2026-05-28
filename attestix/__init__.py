@@ -29,7 +29,7 @@ Modules:
     - attestix.errors: Centralized error categories and structured logging
 """
 
-__version__ = "0.4.0rc2"
+__version__ = "0.4.0rc3"
 
 # Re-export submodules for convenient access
 from attestix import services

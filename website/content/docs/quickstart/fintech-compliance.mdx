@@ -53,6 +53,14 @@ ComplianceService().create_compliance_profile(
     provider_name="VibeTensor",
     intended_purpose="Automated credit scoring for consumer loans",
     human_oversight_measures="Loan officer reviews every AI recommendation before approval.",
+    # Article 50 transparency: required to issue an Annex V declaration.
+    # Omitting this used to silently make generate_declaration_of_conformity
+    # return an error dict instead of raising; v0.4.0-rc.3 raises early.
+    transparency_obligations="Borrowers are informed in writing that an AI system contributed to the credit decision per Article 50.",
+    # Annex III Point 5: access to essential private services (credit) is
+    # high-risk via Point 5. Without this the service defaults to requiring
+    # third-party assessment, which is what we record below.
+    annex_iii_category=5,
 )
 
 # Article 43: high-risk systems CANNOT self-assess; record third-party result.

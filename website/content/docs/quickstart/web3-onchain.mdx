@@ -44,9 +44,9 @@ agent_id = IdentityService().create_identity(
 
 # 2. Verify the chain client is configured against Base Sepolia.
 chain = BlockchainService()
-assert chain.is_configured(), \
+assert chain.is_configured, \
     "Set BASE_RPC_URL and EVM_PRIVATE_KEY. Sepolia faucet: alchemy.com/faucets/base-sepolia"
-print("wallet:", chain.wallet_address())
+print("wallet:", chain.wallet_address)
 
 # 3. Estimate gas first.
 estimate = chain.estimate_anchor_cost(artifact_type="identity")

@@ -4,6 +4,134 @@ All notable changes to Attestix are documented here.
 
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.4.0-rc.3] - 2026-05-28
+
+Honest follow-up to rc.2. The isolated 10-persona RC validation (run with
+`python -I` + `PYTHONNOUSERSITE=1` so each persona quickstart resolved
+against the published wheel, not the dev tree) caught 5 P0 release
+blockers — three of which crashed the documented quickstart on a fresh
+`pip install --pre attestix==0.4.0rc2`, two of which silently produced
+broken output on a compliance-critical path. rc.3 lands fixes for all 5,
+plus the top 4 P1s from the same report. See the internal RC validation
+report for the full per-persona artefact set; below is the
+ship-with-fixes change set.
+
+### Fixed
+
+- **P0 #1 — `attestix.integrations.*` now in wheel.** The published rc.2
+  wheel shipped no `attestix/integrations/` directory at all, so the
+  indie-dev quickstart's `from attestix.integrations.langchain import
+  AttestixCallback` raised `ModuleNotFoundError` on every fresh install.
+  rc.3 adds `attestix.integrations`, `attestix.integrations.langchain`
+  (real `BaseCallbackHandler` named `AttestixCallback`),
+  `attestix.integrations.openai_agents` (`AttestixAuditHook`), and
+  `attestix.integrations.crewai` (`AttestixCrewAdapter`) to
+  `[tool.setuptools] packages`. Each module imports its framework lazily
+  so `import attestix.integrations` itself is always cheap and the
+  framework SDK is only required at first use of the wrapper class.
+  Verified by `tests/release/test_wheel_includes_integrations.py` which
+  builds the wheel + walks its namelist.
+- **P0 #2 — `[api]` extra declared (fastapi + uvicorn).** `attestix.api.main`
+  did `from fastapi import FastAPI, Request` at module load time, but
+  fastapi was neither a runtime dep nor an opt-in extra. Following the
+  enterprise-architect quickstart (`uvicorn attestix.api.main:app`)
+  raised a confusing `ModuleNotFoundError: No module named 'fastapi'`
+  on first invocation. rc.3:
+  - Adds `[project.optional-dependencies] api = ["fastapi>=0.115,<0.130",
+    "uvicorn[standard]>=0.32,<0.40"]`.
+  - Wraps the `attestix.api.main` import in a `try/except` that raises a
+    targeted `ImportError` pointing at `pip install --pre 'attestix[api]'`
+    when the extra is missing.
+  - Verified by `tests/release/test_api_extra_install.py` which asserts
+    both halves of the contract (clear error without fastapi; METADATA
+    declares the extra and requires fastapi+uvicorn).
+- **P0 #3 — web3-onchain doc uses property syntax.**
+  `BlockchainService.is_configured` and `wallet_address` are decorated
+  `@property` in the code, but the published web3-onchain quickstart at
+  `website/content/docs/quickstart/web3-onchain.mdx` called them as
+  methods (`chain.is_configured()` / `chain.wallet_address()`), raising
+  `TypeError: 'bool' object is not callable` / `'NoneType' object is not
+  callable` on the very next line. The properties are the more pythonic
+  design and stay; the docs are fixed.
+- **P0 #4 — `generate_declaration_of_conformity` raises on missing
+  Annex V fields.** Previously the method returned `{"error": "...missing
+  required fields: transparency_obligations..."}` and the doc snippet
+  read `print(declaration["declaration_id"])` which silently printed
+  `None`. For an EU AI Act compliance product, silent fall-through to a
+  `None` declaration on the documented fintech happy path is the worst
+  possible failure mode. rc.3 introduces a new exception
+  `attestix.services.compliance_service.InvalidComplianceProfileError`
+  (subclass of `ValueError`, carries a `missing_fields: list[str]`
+  attribute) and raises it from the Annex V validation branch. The REST
+  router translates it to HTTP `422` with `{"error":
+  "invalid_compliance_profile", "missing_fields": [...]}`; the MCP tool
+  surfaces it as a structured error JSON body.
+- **P0 #5 — `audit_log_count` reflects the new audit chain.** Running
+  the documented GRC quickstart end-to-end left
+  `ProvenanceService.get_provenance(agent_id)["audit_log_count"]` at
+  `0` and `attestix status` showing `Audit log entries: 0` because only
+  `log_action` wrote to the legacy `provenance.json::audit_log` chain.
+  rc.3:
+  - Every state-changing service method already emits to the new
+    `audit.json::events` chain via the per-service `safe_emit` hook
+    (T033/T034 wiring landed in #84) — no service-side change needed.
+  - `ProvenanceService.get_provenance` now ALSO counts rows in the new
+    audit collection that pertain to this agent, by resolving each
+    event's `target_id` through the owning collection (compliance
+    profile_id → agent_id, credential id → subject id, etc.). The
+    legacy per-`log_action` count is still exposed via
+    `audit_chain_count_legacy` so callers that want the old semantics
+    don't break.
+  - `IdentityService.purge_agent_data` now also strips audit events
+    whose `target_id` matches the agent so GDPR Article 17 erasure
+    parity is preserved. The chain integrity guarantee
+    (`verify_chain(chain).valid is True`) holds across the
+    record/create/issue emissions — covered by the new
+    `tests/integration/test_grc_quickstart_audit_chain.py` end-to-end
+    test that mirrors the live grc-consultant quickstart.
+
+### Changed
+
+- **`[langchain]`, `[crewai]`, `[openai-agents]` extras declared.** Memory
+  said three real framework integrations existed; none were reachable
+  via `pip install attestix[<framework>]` because the bracket extras
+  weren't in METADATA. rc.3 declares all three with the version
+  constraints the integration code actually uses
+  (`langchain-core>=0.3,<0.5`, `crewai>=0.95,<0.200`,
+  `openai-agents>=0.0.20`).
+- **`agent['did']` populated at create-time.** The published indie-dev
+  quickstart read `agent.get('did')` which returned `None` because the
+  identity record only populated `agent['issuer']['did']`. rc.3 sets
+  the top-level `did` field to the issuer DID so both shapes work.
+- **`.signing_key.json` chmod is now cross-platform best-effort.**
+  Previously the chmod was skipped on Windows; rc.3 calls
+  `os.chmod(key_path, 0o600)` on every platform inside a try/except so
+  POSIX gets the 0600 enforcement and Windows gets at least the
+  read-only bit flipped. Production-grade protection on Windows still
+  requires NTFS ACL hardening (`icacls`).
+
+### Verification
+
+- Test suite: 531 passing, 2 skipped (525 baseline → 531 = +6 net new
+  tests: 2 GRC end-to-end + 3 release-gate wheel/extra/install + 1
+  InvalidComplianceProfileError unit test). Zero regressions in the
+  rc.2 baseline once existing strict-equality `audit_log_count == N`
+  assertions were updated to use `audit_chain_count_legacy` for the
+  legacy-chain count (the new aggregate is documented and asserted via
+  `>=`).
+- `ruff check attestix/ tests/release/ tests/integration/...` clean.
+- `python -m build --wheel` produces `attestix-0.4.0rc3-py3-none-any.whl`;
+  `unzip -l` confirms every `attestix/integrations/{__init__,langchain,
+  openai_agents,crewai}/*.py` is shipped. METADATA declares
+  `Provides-Extra: api`, `langchain`, `crewai`, `openai-agents`.
+
+### Reference
+
+- Internal RC validation report (gitignored, paper/internal/) for the
+  full per-persona artefact set: install logs, quickstart-run logs,
+  Bedrock persona-review reports, source-blindness audit, and the
+  Linux re-validation note.
+
 ## [0.4.0-rc.2] - 2026-05-28
 
 Packaging-correctness and honesty pass. No functional changes vs. rc.1 — the

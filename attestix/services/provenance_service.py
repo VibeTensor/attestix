@@ -231,7 +231,29 @@ class ProvenanceService:
             return {"error": msg}
 
     def get_provenance(self, agent_id: str) -> dict:
-        """Get full provenance record for an agent (training data + model lineage + audit summary)."""
+        """Get full provenance record for an agent (training data + model lineage + audit summary).
+
+        v0.4.0-rc.3 (P0 #5 of the rc.2 RC validation): ``audit_log_count`` now
+        reflects BOTH the legacy ``provenance.json::audit_log`` chain (written
+        by :meth:`log_action`) AND the new ``audit.json::events`` chain
+        (written by every ``record_*`` / ``create_*`` / ``issue_*`` / ``revoke_*``
+        service method via the per-service audit emitter, plumbed through the
+        Identity / Compliance / Credential / Reputation / Provenance / DID /
+        AgentCard / Delegation / Blockchain services in #84).
+
+        Cross-referencing audit events to a specific ``agent_id`` walks the
+        owning collection (``identities`` / ``compliance`` / ``credentials`` /
+        ``provenance`` / ``delegations`` / ``reputation`` / ``anchors``) to
+        translate ``target_id`` into the underlying agent, because the audit
+        event itself stores only the SHA-256 ``change_digest`` of the
+        before/after diff — never the raw fields (cf.
+        ``attestix/audit/events.py`` for the rationale; the digest is the
+        tamper-evidence anchor and is NOT a queryable index).
+
+        Previously the documented GRC quickstart ran the full workflow but
+        reported ``audit_log_count: 0`` because nothing it called wrote to
+        the legacy chain.
+        """
         try:
             data = load_provenance()
 
@@ -248,12 +270,70 @@ class ProvenanceService:
                 if e["agent_id"] == agent_id
             ]
 
+            # v0.4.0-rc.3 (P0 #5): also count rows in the new audit collection
+            # that pertain to this agent. Resolve ``target_id`` through each
+            # owning collection so events like ``compliance.create_profile``
+            # (target_id = profile_id) and ``credential.issue`` (target_id =
+            # credential id) still attribute back to the correct agent.
+            #
+            # The whole block is wrapped in try/except so a missing /
+            # unreadable audit.json never makes get_provenance fail — the
+            # legacy chain remains the conservative fallback count.
+            audit_events_count = 0
+            audit_events_latest: list = []
+            try:
+                from attestix.config import (
+                    AUDIT_FILE,
+                    load_compliance,
+                    load_credentials,
+                )
+                import json as _json
+
+                # Build per-collection lookups (target_id -> agent_id) up-front
+                # so each event is O(1) to attribute.
+                related_target_ids: set = {agent_id}
+                comp_data = load_compliance()
+                for prof in comp_data.get("profiles", []):
+                    if prof.get("agent_id") == agent_id:
+                        related_target_ids.add(prof.get("profile_id", ""))
+                for assess in comp_data.get("assessments", []):
+                    if assess.get("agent_id") == agent_id:
+                        related_target_ids.add(assess.get("assessment_id", ""))
+                for decl in comp_data.get("declarations", []):
+                    if decl.get("agent_id") == agent_id:
+                        related_target_ids.add(decl.get("declaration_id", ""))
+                cred_data = load_credentials()
+                for cred in cred_data.get("credentials", []):
+                    subj = (cred.get("credentialSubject") or {}).get("id")
+                    if subj == agent_id:
+                        related_target_ids.add(cred.get("id", ""))
+                for entry in data.get("entries", []):
+                    if entry.get("agent_id") == agent_id:
+                        related_target_ids.add(entry.get("entry_id", ""))
+                for ent in data.get("audit_log", []):
+                    if ent.get("agent_id") == agent_id:
+                        related_target_ids.add(ent.get("log_id", ""))
+                related_target_ids.discard("")
+
+                if AUDIT_FILE.exists():
+                    audit_doc = _json.loads(AUDIT_FILE.read_text(encoding="utf-8"))
+                    for ev in audit_doc.get("events", []):
+                        if ev.get("target_id") in related_target_ids:
+                            audit_events_count += 1
+                            audit_events_latest.append(ev)
+            except Exception:
+                pass
+
+            total = len(audit_entries) + audit_events_count
+            latest = (audit_entries + audit_events_latest)[-5:]
             return {
                 "agent_id": agent_id,
                 "training_data": training_data,
                 "model_lineage": model_lineage,
-                "audit_log_count": len(audit_entries),
-                "latest_audit_entries": audit_entries[-5:] if audit_entries else [],
+                "audit_log_count": total,
+                "audit_chain_count_legacy": len(audit_entries),
+                "audit_events_count": audit_events_count,
+                "latest_audit_entries": latest,
             }
         except Exception as e:
             msg = log_and_format_error(
