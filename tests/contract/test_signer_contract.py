@@ -16,12 +16,12 @@ from cryptography.hazmat.primitives.asymmetric.ed25519 import (
     Ed25519PublicKey,
 )
 
-from auth.crypto import (
+from attestix.auth.crypto import (
     canonicalize_json,
     public_key_to_did_key,
     verify_json_signature,
 )
-from signing import InProcessSigner, Signer
+from attestix.signing import InProcessSigner, Signer
 
 
 class StubKmsSigner(Signer):
@@ -102,7 +102,7 @@ def test_did_is_stable(signer):
 
 def test_did_matches_public_key(signer):
     # The did:key must encode the same public key the signer discloses.
-    from auth.crypto import did_key_to_public_key, public_key_to_bytes
+    from attestix.auth.crypto import did_key_to_public_key, public_key_to_bytes
 
     derived = did_key_to_public_key(signer.did)
     assert public_key_to_bytes(derived) == public_key_to_bytes(signer.public_key())

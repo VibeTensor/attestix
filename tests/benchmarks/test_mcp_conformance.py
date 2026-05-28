@@ -6,7 +6,7 @@ and follow the Attestix naming convention.
 
 import asyncio
 
-from main import mcp
+from attestix.main import mcp
 
 
 EXPECTED_MODULES = {

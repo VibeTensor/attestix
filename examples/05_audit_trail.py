@@ -13,8 +13,8 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from services.identity_service import IdentityService
-from services.provenance_service import ProvenanceService
+from attestix.services.identity_service import IdentityService
+from attestix.services.provenance_service import ProvenanceService
 
 
 def main():

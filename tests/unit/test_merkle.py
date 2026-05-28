@@ -2,7 +2,7 @@
 
 import pytest
 
-from blockchain.merkle import (
+from attestix.blockchain.merkle import (
     hash_leaf,
     hash_pair,
     build_merkle_tree,

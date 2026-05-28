@@ -4,6 +4,75 @@ All notable changes to Attestix are documented here.
 
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.4.0-rc.2] - 2026-05-28
+
+Packaging-correctness and honesty pass. No functional changes vs. rc.1 — the
+service code, REST API, MCP tools, conformance benchmarks, and on-disk formats
+are byte-identical. This release exists to fix two release blockers that the
+ICP funnel evaluation flagged on rc.1.
+
+### Fixed
+
+- **Packaging — proper `attestix.*` namespace.** Pre-rc.2 wheels dropped flat
+  top-level packages (`services/`, `auth/`, `storage/`, `signing/`, `audit/`,
+  `tenancy/`, `idempotency/`, `blockchain/`, `api/`, `tools/`, plus
+  `config.py`, `errors.py`, `main.py`, `cli.py`) into site-packages on every
+  install. That polluted every consumer's namespace and forced the documented
+  import to be `from services.X import Y` instead of `from attestix.services.X
+  import Y`. The funnel evaluation found 9 of 12 ICP personas dropped at
+  Integrate because of this. The canonical source has been promoted into the
+  `attestix/` package; the wheel now ships the `attestix.*` namespace plus
+  thin deprecation shims at the legacy paths. The shims re-export from the
+  canonical namespace and emit a single `DeprecationWarning` on first import,
+  pointing at the new path. They are scheduled for removal in **v0.5.0**.
+
+  Update your imports:
+
+  ```python
+  # before (still works in v0.4.0-rc.2; emits DeprecationWarning)
+  from services.identity_service import IdentityService
+  from signing.inprocess_signer import InProcessSigner
+  from auth.crypto import sign_json_payload
+
+  # after (canonical, recommended)
+  from attestix.services.identity_service import IdentityService
+  from attestix.signing.inprocess_signer import InProcessSigner
+  from attestix.auth.crypto import sign_json_payload
+  ```
+
+  Deployment configs that spawn uvicorn with `api.main:app` should be updated
+  to `attestix.api.main:app`. The `attestix` console script entry-point now
+  resolves to `attestix.cli:cli`.
+
+### Changed
+
+- **Honesty pass on rc.1 marketing copy.** The funnel evaluation flagged
+  pairings of "production-ready" / "battle-tested" / "Production ready"
+  framework labels with our actual maturity (15 GitHub stars, single
+  maintainer, no third-party security audit). The numbers themselves
+  (481 tests, 91 conformance benchmarks, 47 MCP tools, 9 modules,
+  44 REST endpoints, real LangChain / OpenAI Agents SDK / CrewAI
+  integrations) are real and are kept — they're now framed honestly as
+  "v0.4.0-rc.2 release candidate, single-maintainer project, community
+  contributions welcome, no independent third-party security audit yet."
+  Updated locations: `README.md`, `website/src/lib/config.tsx`,
+  `website/src/lib/atx-data.ts`, `website/public/llms.txt`,
+  `website/content/docs/guides/{integration-guide,langchain,crewai,openai-agents-sdk}.mdx`,
+  `website/src/components/sections/v2/frameworks.tsx`,
+  `website/src/app/(marketing)/research/page.tsx`,
+  and the FastAPI app docstring.
+
+### Verification
+
+- Test suite: 481 passing, 1 skipped (POSIX chmod on Windows). **Zero
+  regressions** vs. rc.1 baseline (481 passing).
+- RFC / W3C conformance benchmarks: 91/91 passing.
+- `ruff check .` clean.
+- Wheel top-level set asserted via `tests/install/test_pip_install_smoke.py`
+  (opt-in; `ATTESTIX_RUN_INSTALL_SMOKE=1`). The smoke test rebuilds the wheel,
+  installs it into a throwaway venv, and verifies (a) canonical imports work,
+  (b) legacy flat imports emit the canonical-namespace `DeprecationWarning`.
+
 ## [0.4.0-rc.1] - 2026-05-28
 
 First v0.4.0 release candidate. Ships the extensibility layer that lets the

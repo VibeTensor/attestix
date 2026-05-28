@@ -1,29 +1,43 @@
-"""Structured audit events for Attestix (v0.4.0 extensibility layer, US2 / P2).
+"""Legacy flat-namespace shim for :mod:`attestix.audit`.
 
-This package emits one tamper-evident :class:`AuditEvent` per committed state
-change, chained with the same ``prev_hash`` / ``chain_hash`` / genesis pattern as
-``services/provenance_service.py``. The default sink persists events locally
-(through the configured :class:`~storage.Repository`); the hosted cloud injects an
-external sink to feed its own hash-chained log (FR-017), while self-host behavior
-is unchanged.
+This shim exists so that pre-v0.4.0-rc.2 user code that does::
+
+    from audit import ...
+    from audit.<submodule> import ...
+
+keeps working after the v0.4.0-rc.2 packaging fix that promoted the canonical
+location to :mod:`attestix.audit`. Importing this module (or any of its submodules)
+emits a single ``DeprecationWarning`` directing callers at the new path.
+
+The flat-namespace shim is scheduled for removal in Attestix v0.5.0. Update to::
+
+    from attestix.audit import ...
 """
 
-from audit.events import (
-    GENESIS_HASH,
+import warnings as _warnings
+
+_warnings.warn(
+    "Importing from the top-level `audit` package is deprecated and will be "
+    "removed in Attestix v0.5.0. Update your imports to "
+    "`from attestix.audit...` (canonical namespace).",
+    DeprecationWarning,
+    stacklevel=2,
+)
+
+# Re-export the public API of the canonical namespace so `from audit import X`
+# resolves to the canonical implementation.
+from attestix.audit import (  # noqa: F401
     AuditEvent,
+    AuditEventEmitter,
+    AUDIT_COLLECTION,
+    GENESIS_HASH,
     compute_change_digest,
     verify_chain,
+    resolve_emitter,
+    safe_emit,
+    events,
+    emitter,
+    service_hook,
 )
-from audit.emitter import AUDIT_COLLECTION, AuditEventEmitter
-from audit.service_hook import resolve_emitter, safe_emit
 
-__all__ = [
-    "AuditEvent",
-    "AuditEventEmitter",
-    "AUDIT_COLLECTION",
-    "GENESIS_HASH",
-    "compute_change_digest",
-    "verify_chain",
-    "resolve_emitter",
-    "safe_emit",
-]
+del _warnings

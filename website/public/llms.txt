@@ -2,7 +2,7 @@
 
 > Attestation Infrastructure for AI Agents. Cryptographic proof your AI agents are compliant with the EU AI Act.
 
-Attestix provides verifiable identity, W3C credentials, delegation chains, compliance declarations, provenance tracking, reputation scoring, and Base L2 testnet anchoring for autonomous AI agents. 47 MCP tools across 9 modules. 358 automated tests including 91 conformance benchmarks. Apache 2.0.
+Attestix provides verifiable identity, W3C credentials, delegation chains, compliance declarations, provenance tracking, reputation scoring, and Base L2 testnet anchoring for autonomous AI agents. 47 MCP tools across 9 modules. 481 automated tests (390 functional + 91 RFC / W3C conformance benchmarks). Apache 2.0. v0.4.0-rc.2 release candidate; single-maintainer project; no independent third-party security audit yet.
 
 ## Marketing
 

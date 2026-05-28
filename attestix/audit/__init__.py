@@ -1,27 +1,26 @@
-"""Attestix audit - re-exports from the flat module for namespace compatibility.
+"""Structured audit events for Attestix (v0.4.0 extensibility layer, US2 / P2).
 
-    # Namespaced (recommended)
-    from attestix.audit import AuditEvent, AuditEventEmitter, verify_chain
-
-    # Flat (also supported)
-    from audit import AuditEvent, AuditEventEmitter, verify_chain
+This package emits one tamper-evident :class:`AuditEvent` per committed state
+change, chained with the same ``prev_hash`` / ``chain_hash`` / genesis pattern as
+``services/provenance_service.py``. The default sink persists events locally
+(through the configured :class:`~storage.Repository`); the hosted cloud injects an
+external sink to feed its own hash-chained log (FR-017), while self-host behavior
+is unchanged.
 """
 
-from audit import (
-    AUDIT_COLLECTION,
+from attestix.audit.events import (
     GENESIS_HASH,
     AuditEvent,
-    AuditEventEmitter,
     compute_change_digest,
-    resolve_emitter,
-    safe_emit,
     verify_chain,
 )
+from attestix.audit.emitter import AUDIT_COLLECTION, AuditEventEmitter
+from attestix.audit.service_hook import resolve_emitter, safe_emit
 
-# Re-export submodules for `from attestix.audit.X import Y` parity.
-from audit import events
-from audit import emitter
-from audit import service_hook
+# Submodule re-exports for `from attestix.audit.X import Y` parity.
+from attestix.audit import events
+from attestix.audit import emitter
+from attestix.audit import service_hook
 
 __all__ = [
     "AuditEvent",

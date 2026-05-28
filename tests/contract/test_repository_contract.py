@@ -12,7 +12,7 @@ isolated storage.
 
 import pytest
 
-from storage import FileRepository, MemoryRepository, Repository
+from attestix.storage import FileRepository, MemoryRepository, Repository
 
 # A representative collection from the seven entity families. The contract is
 # uniform across collections, so one is sufficient to exercise the invariants.

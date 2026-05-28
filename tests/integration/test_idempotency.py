@@ -11,7 +11,7 @@ from datetime import datetime, timedelta, timezone
 
 import pytest
 
-from idempotency import (
+from attestix.idempotency import (
     IDEMPOTENCY_COLLECTION,
     IdempotencyConflictError,
     RepositoryIdempotencyStore,
@@ -19,8 +19,8 @@ from idempotency import (
     request_fingerprint,
     run_idempotent,
 )
-from idempotency.store import TTL
-from storage import FileRepository, MemoryRepository
+from attestix.idempotency.store import TTL
+from attestix.storage import FileRepository, MemoryRepository
 
 REPO_FACTORIES = {"file": FileRepository, "memory": MemoryRepository}
 

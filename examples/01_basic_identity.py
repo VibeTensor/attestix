@@ -12,9 +12,9 @@ from pathlib import Path
 # Add project root to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from services.identity_service import IdentityService
-from services.did_service import DIDService
-from services.reputation_service import ReputationService
+from attestix.services.identity_service import IdentityService
+from attestix.services.did_service import DIDService
+from attestix.services.reputation_service import ReputationService
 
 
 def main():

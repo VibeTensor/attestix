@@ -8,9 +8,9 @@ identically on file and in-memory storage.
 
 import pytest
 
-from audit import AuditEvent, AuditEventEmitter, GENESIS_HASH, verify_chain
-from audit.emitter import AUDIT_COLLECTION
-from storage import FileRepository, MemoryRepository
+from attestix.audit import AuditEvent, AuditEventEmitter, GENESIS_HASH, verify_chain
+from attestix.audit.emitter import AUDIT_COLLECTION
+from attestix.storage import FileRepository, MemoryRepository
 
 REPO_FACTORIES = {"file": FileRepository, "memory": MemoryRepository}
 

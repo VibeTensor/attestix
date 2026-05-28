@@ -34,8 +34,8 @@ export const siteConfig = {
     title: "Attestix",
     description:
       "The EU AI Act takes effect August 2, 2026. Non-compliant organizations face fines up to EUR 35 million or 7% of global revenue. Attestix is like TurboTax for AI compliance: it automates the documentation, identity verification, and audit trails your AI agents need to stay legal. Install once, drop into LangChain, OpenAI Agents SDK, or CrewAI, and generate cryptographic proof of compliance on every run.",
-    cta: "pip install attestix",
-    ctaDescription: "v0.3.0 - 358 tests passing. Real LangChain, OpenAI Agents SDK, and CrewAI integrations. Apache 2.0 license.",
+    cta: "pip install --pre attestix",
+    ctaDescription: "v0.4.0-rc.2 release candidate - 481 tests passing (390 functional + 91 RFC / W3C conformance benchmarks). Real LangChain, OpenAI Agents SDK, and CrewAI integrations. Apache 2.0. Single-maintainer project; no independent third-party security audit yet.",
   },
   pricing: [
     {
@@ -224,7 +224,7 @@ export const siteConfig = {
     {
       question: "What is the current maturity level?",
       answer:
-        `Attestix v${ATTESTIX_VERSION} is in active development (beta). It includes 358 tests across functional, end-to-end, and conformance benchmark suites covering all 9 modules, plus real integrations with LangChain, OpenAI Agents SDK, and CrewAI. GitHub Actions CI runs the full pytest matrix, lint, and security scans on every push. We still recommend thorough testing before production deployment.`,
+        `Attestix v${ATTESTIX_VERSION} is a release candidate (v0.4.0-rc.2) under active development. It includes 481 tests across functional, end-to-end, and conformance benchmark suites (390 functional + 91 RFC / W3C conformance) covering all 9 modules, plus real integrations with LangChain, OpenAI Agents SDK, and CrewAI. GitHub Actions CI runs the full pytest matrix, lint, and security scans on every push. Single-maintainer project; no independent third-party security audit has been performed yet. Treat it as you would any pre-1.0 open-source crypto stack — pin the version, review the diff, and test thoroughly before relying on it in production.`,
     },
     {
       question: "Does Attestix work with LangChain, OpenAI Agents SDK, or CrewAI?",

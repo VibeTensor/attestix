@@ -75,8 +75,8 @@ export default function ResearchPage() {
         </li>
         <li>
           <strong className="text-atx-ink">5.</strong> An MCP-native,
-          open-source reference implementation validated by 358 automated
-          tests.
+          open-source reference implementation validated by 481 automated
+          tests (390 functional + 91 RFC / W3C conformance benchmarks).
         </li>
       </ul>
 

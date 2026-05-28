@@ -1,4 +1,532 @@
-"""Re-export from flat module for namespace compatibility."""
-from services.identity_service import IdentityService
+"""Core identity service for Attestix.
 
-__all__ = ["IdentityService"]
+Manages Unified Agent Identity Tokens (UAITs): create, read, list,
+revoke, verify, and sign operations.
+"""
+
+import hashlib
+import uuid
+from datetime import datetime, timedelta, timezone
+from typing import List, Optional
+
+from attestix.auth.crypto import (
+    did_key_fragment,
+    verify_json_signature,
+    did_key_to_public_key,
+)
+from attestix.auth.token_parser import extract_identity_from_token
+from attestix.config import (
+    DEFAULT_EXPIRY_DAYS,
+    UAIT_VERSION,
+    load_identities,
+    save_identities,
+)
+from attestix.audit import AuditEventEmitter, resolve_emitter, safe_emit
+from attestix.errors import ErrorCategory, log_and_format_error
+from attestix.signing import InProcessSigner, Signer
+from attestix.storage.repository import DEFAULT_TENANT
+
+
+#: Maximum allowed display_name length. Mirrors the API layer constraint so
+#: programmatic callers that bypass FastAPI still get a validation error.
+MAX_DISPLAY_NAME_LENGTH = 500
+
+
+class IdentityService:
+    """Manages UAIT lifecycle."""
+
+    # Fields excluded from signature (mutable after creation)
+    MUTABLE_FIELDS = {"signature", "revoked", "revocation_reason", "revoked_at",
+                      "reputation_score", "eu_compliance"}
+
+    def __init__(
+        self,
+        signer: Optional[Signer] = None,
+        emitter: Optional[AuditEventEmitter] = None,
+        tenant_id: str = DEFAULT_TENANT,
+    ):
+        # v0.4.0: sign through the pluggable Signer seam. Defaults to the
+        # in-process Ed25519 signer, which wraps load_or_create_signing_key and
+        # reproduces v0.3.0 signatures byte-for-byte. Passing an alternate Signer
+        # (e.g. KMS) swaps the backend with no change to this method's signature.
+        self._signer = signer or InProcessSigner()
+        self._server_did = self._signer.did
+        # v0.4.0 (T033/T034): per-service audit emitter + tenant context. The
+        # emitter is a side channel (see audit.service_hook); tenant defaults to
+        # "default" so single-tenant self-host behavior is byte-identical.
+        self._emitter = resolve_emitter(emitter)
+        self._tenant_id = tenant_id
+
+    def _signable_payload(self, uait: dict) -> dict:
+        """Extract only immutable fields for signing/verification."""
+        return {k: v for k, v in uait.items() if k not in self.MUTABLE_FIELDS}
+
+    @staticmethod
+    def _mask_token(token: str) -> str:
+        """Mask sensitive tokens before storage. Keep first/last 4 chars for debugging."""
+        if not token or len(token) < 12:
+            return token
+        return token[:4] + "..." + token[-4:]
+
+    @property
+    def server_did(self) -> str:
+        return self._server_did
+
+    def create_identity(
+        self,
+        display_name: str,
+        source_protocol: str,
+        identity_token: str = "",
+        capabilities: Optional[List[str]] = None,
+        description: str = "",
+        issuer_name: str = "",
+        expiry_days: Optional[int] = None,
+    ) -> dict:
+        """Create a new UAIT from any identity source."""
+        # Defense in depth: validate even when callers skip the API layer.
+        # Issue #32 - reject empty/whitespace/overlong display_name.
+        if display_name is None:
+            raise ValueError("display_name is required")
+        if not isinstance(display_name, str):
+            raise ValueError("display_name must be a string")
+        stripped = display_name.strip()
+        if not stripped:
+            raise ValueError("display_name must not be empty or whitespace-only")
+        if len(stripped) > MAX_DISPLAY_NAME_LENGTH:
+            raise ValueError(
+                f"display_name must be at most {MAX_DISPLAY_NAME_LENGTH} characters"
+            )
+        if any(ord(ch) < 0x20 and ch != "\t" for ch in stripped):
+            raise ValueError("display_name contains disallowed control characters")
+        display_name = stripped
+
+        agent_id = f"attestix:{uuid.uuid4().hex[:16]}"
+        now = datetime.now(timezone.utc)
+        exp_days = expiry_days if expiry_days is not None else DEFAULT_EXPIRY_DAYS
+        expires_at = (now + timedelta(days=exp_days)).isoformat()
+
+        # Extract info from token if provided
+        token_info = {}
+        if identity_token:
+            token_info = extract_identity_from_token(identity_token)
+
+        uait = {
+            "version": UAIT_VERSION,
+            "agent_id": agent_id,
+            "display_name": display_name,
+            "description": description,
+            "source_protocol": source_protocol,
+            "identity_token": self._mask_token(identity_token),
+            "token_info": token_info,
+            "capabilities": capabilities or [],
+            "issuer": {
+                "name": issuer_name or "self",
+                "did": self._server_did,
+            },
+            "created_at": now.isoformat(),
+            "expires_at": expires_at,
+            "revoked": False,
+            "revocation_reason": None,
+            "reputation_score": None,
+            "eu_compliance": None,
+            "signature": None,
+        }
+
+        # Sign only immutable fields (through the pluggable Signer seam)
+        signable = self._signable_payload(uait)
+        uait["signature"] = self._signer.sign(signable)
+
+        # Persist
+        data = load_identities()
+        data["agents"].append(uait)
+        save_identities(data)
+
+        safe_emit(
+            self._emitter,
+            action="identity.create",
+            target_id=agent_id,
+            target_collection="identities",
+            actor=self._server_did,
+            tenant_id=self._tenant_id,
+            after={"agent_id": agent_id, "source_protocol": source_protocol},
+        )
+
+        return uait
+
+    def get_identity(self, agent_id: str) -> Optional[dict]:
+        """Get a single UAIT by agent_id."""
+        data = load_identities()
+        for agent in data["agents"]:
+            if agent["agent_id"] == agent_id:
+                return agent
+        return None
+
+    def list_identities(
+        self,
+        source_protocol: Optional[str] = None,
+        include_revoked: bool = False,
+        limit: int = 50,
+    ) -> List[dict]:
+        """List UAITs with optional filters."""
+        data = load_identities()
+        results = []
+        for agent in data["agents"]:
+            if not include_revoked and agent.get("revoked"):
+                continue
+            if source_protocol and agent.get("source_protocol") != source_protocol:
+                continue
+            results.append(agent)
+            if len(results) >= limit:
+                break
+        return results
+
+    def revoke_identity(self, agent_id: str, reason: str = "") -> Optional[dict]:
+        """Mark a UAIT as revoked."""
+        data = load_identities()
+        for agent in data["agents"]:
+            if agent["agent_id"] == agent_id:
+                agent["revoked"] = True
+                agent["revocation_reason"] = reason
+                agent["revoked_at"] = datetime.now(timezone.utc).isoformat()
+                save_identities(data)
+                safe_emit(
+                    self._emitter,
+                    action="identity.revoke",
+                    target_id=agent_id,
+                    target_collection="identities",
+                    actor=self._server_did,
+                    tenant_id=self._tenant_id,
+                    after={"agent_id": agent_id, "revoked": True},
+                )
+                return agent
+        return None
+
+    def verify_identity(self, agent_id: str) -> dict:
+        """Verify a UAIT: check existence, revocation, expiry, and signature."""
+        agent = self.get_identity(agent_id)
+        if not agent:
+            return {
+                "valid": False,
+                "agent_id": agent_id,
+                "checks": {"exists": False},
+            }
+
+        checks = {"exists": True}
+
+        # Check revocation
+        checks["not_revoked"] = not agent.get("revoked", False)
+
+        # Check expiry
+        expires_at = agent.get("expires_at")
+        if expires_at:
+            exp_dt = datetime.fromisoformat(expires_at)
+            checks["not_expired"] = datetime.now(timezone.utc) < exp_dt
+        else:
+            checks["not_expired"] = True
+
+        # Check signature (only immutable fields)
+        signature = agent.get("signature")
+        if signature:
+            signable = self._signable_payload(agent)
+            try:
+                server_pub = did_key_to_public_key(self._server_did)
+                checks["signature_valid"] = verify_json_signature(
+                    server_pub, signable, signature
+                )
+            except ValueError:
+                checks["signature_valid"] = False
+            except Exception as e:
+                checks["signature_valid"] = False
+                log_and_format_error("verify_identity", e, ErrorCategory.CRYPTO,
+                                     agent_id=agent_id)
+        else:
+            checks["signature_valid"] = False
+
+        valid = all(v for v in checks.values() if isinstance(v, bool))
+        return {
+            "valid": valid,
+            "agent_id": agent_id,
+            "display_name": agent.get("display_name"),
+            "checks": checks,
+        }
+
+    def translate_identity(self, agent_id: str, target_format: str) -> Optional[dict]:
+        """Convert a UAIT to another format.
+
+        Supported target_format values:
+        - a2a_agent_card: Google A2A Agent Card JSON
+        - did_document: W3C DID Document
+        - oauth_claims: OAuth 2.0 token claims
+        - summary: Human-readable summary
+        """
+        agent = self.get_identity(agent_id)
+        if not agent:
+            return None
+
+        if target_format == "a2a_agent_card":
+            return self._to_agent_card(agent)
+        elif target_format == "did_document":
+            return self._to_did_document(agent)
+        elif target_format == "oauth_claims":
+            return self._to_oauth_claims(agent)
+        elif target_format == "summary":
+            return self._to_summary(agent)
+        else:
+            return {"error": f"Unknown target format: {target_format}"}
+
+    def purge_agent_data(self, agent_id: str) -> dict:
+        """GDPR Article 17 - Right to erasure. Purges all data for an agent.
+
+        Removes or anonymizes the agent's identity, credentials, compliance
+        profiles, delegations, provenance entries, reputation data, and
+        audit logs. Blockchain anchors are retained (immutable) but the
+        local reference is noted as purged.
+        """
+        from attestix.config import (
+            load_identities, save_identities,
+            load_credentials, save_credentials,
+            load_compliance, save_compliance,
+            load_delegations, save_delegations,
+            load_provenance, save_provenance,
+            load_reputation, save_reputation,
+        )
+
+        purged = {
+            "agent_id": agent_id,
+            "purged_at": datetime.now(timezone.utc).isoformat(),
+            "counts": {},
+        }
+
+        # 1. Purge identity
+        id_data = load_identities()
+        before = len(id_data["agents"])
+        id_data["agents"] = [a for a in id_data["agents"] if a["agent_id"] != agent_id]
+        purged["counts"]["identities"] = before - len(id_data["agents"])
+        save_identities(id_data)
+
+        # 2. Purge credentials
+        cred_data = load_credentials()
+        before = len(cred_data["credentials"])
+        cred_data["credentials"] = [
+            c for c in cred_data["credentials"]
+            if c.get("credentialSubject", {}).get("id") != agent_id
+        ]
+        purged["counts"]["credentials"] = before - len(cred_data["credentials"])
+        save_credentials(cred_data)
+
+        # 3. Purge compliance profiles, assessments, declarations
+        comp_data = load_compliance()
+        before_p = len(comp_data["profiles"])
+        comp_data["profiles"] = [p for p in comp_data["profiles"] if p["agent_id"] != agent_id]
+        purged["counts"]["compliance_profiles"] = before_p - len(comp_data["profiles"])
+        before_a = len(comp_data["assessments"])
+        comp_data["assessments"] = [a for a in comp_data["assessments"] if a["agent_id"] != agent_id]
+        purged["counts"]["compliance_assessments"] = before_a - len(comp_data["assessments"])
+        before_d = len(comp_data["declarations"])
+        comp_data["declarations"] = [d for d in comp_data["declarations"] if d["agent_id"] != agent_id]
+        purged["counts"]["compliance_declarations"] = before_d - len(comp_data["declarations"])
+        save_compliance(comp_data)
+
+        # 4. Purge delegations (as issuer or audience)
+        del_data = load_delegations()
+        before = len(del_data["delegations"])
+        del_data["delegations"] = [
+            d for d in del_data["delegations"]
+            if d.get("issuer") != agent_id and d.get("audience") != agent_id
+        ]
+        purged["counts"]["delegations"] = before - len(del_data["delegations"])
+        save_delegations(del_data)
+
+        # 5. Purge provenance entries and audit logs
+        prov_data = load_provenance()
+        before_e = len(prov_data["entries"])
+        prov_data["entries"] = [e for e in prov_data["entries"] if e["agent_id"] != agent_id]
+        purged["counts"]["provenance_entries"] = before_e - len(prov_data["entries"])
+        before_l = len(prov_data["audit_log"])
+        prov_data["audit_log"] = [e for e in prov_data["audit_log"] if e["agent_id"] != agent_id]
+        purged["counts"]["audit_log_entries"] = before_l - len(prov_data["audit_log"])
+        save_provenance(prov_data)
+
+        # 6. Purge reputation data
+        rep_data = load_reputation()
+        before = len(rep_data["interactions"])
+        rep_data["interactions"] = [
+            i for i in rep_data["interactions"] if i["agent_id"] != agent_id
+        ]
+        purged["counts"]["reputation_interactions"] = before - len(rep_data["interactions"])
+        rep_data["scores"].pop(agent_id, None)
+        save_reputation(rep_data)
+
+        safe_emit(
+            self._emitter,
+            action="identity.purge",
+            target_id=agent_id,
+            target_collection="identities",
+            actor=self._server_did,
+            tenant_id=self._tenant_id,
+            before={"agent_id": agent_id},
+            after=None,
+        )
+
+        return purged
+
+    def update_compliance_ref(self, agent_id: str, profile_id: str):
+        """Link an EU AI Act compliance profile to a UAIT."""
+        data = load_identities()
+        for agent in data["agents"]:
+            if agent["agent_id"] == agent_id:
+                agent["eu_compliance"] = profile_id
+                save_identities(data)
+                safe_emit(
+                    self._emitter,
+                    action="identity.update",
+                    target_id=agent_id,
+                    target_collection="identities",
+                    actor=self._server_did,
+                    tenant_id=self._tenant_id,
+                    after={"agent_id": agent_id, "eu_compliance": profile_id},
+                )
+                return
+        return
+
+    def update_reputation(self, agent_id: str, score: float):
+        """Update the reputation score on a UAIT."""
+        data = load_identities()
+        for agent in data["agents"]:
+            if agent["agent_id"] == agent_id:
+                agent["reputation_score"] = round(score, 4)
+                save_identities(data)
+                safe_emit(
+                    self._emitter,
+                    action="identity.update",
+                    target_id=agent_id,
+                    target_collection="identities",
+                    actor=self._server_did,
+                    tenant_id=self._tenant_id,
+                    after={"agent_id": agent_id, "reputation_score": round(score, 4)},
+                )
+                return
+        return
+
+    # --- Translation helpers ---
+
+    def _to_agent_card(self, agent: dict) -> dict:
+        """Convert UAIT to A2A Agent Card format."""
+        skills = []
+        for cap in agent.get("capabilities", []):
+            skills.append({
+                "id": hashlib.sha256(cap.encode()).hexdigest()[:8],
+                "name": cap,
+                "description": f"Capability: {cap}",
+            })
+
+        agent_url = f"attestix://{agent['agent_id']}"
+        return {
+            "id": hashlib.sha256(agent["agent_id"].encode()).hexdigest()[:16],
+            "name": agent["display_name"],
+            "description": agent.get("description", ""),
+            "url": agent_url,
+            "version": agent.get("version", UAIT_VERSION),
+            "capabilities": {
+                "streaming": False,
+                "pushNotifications": False,
+            },
+            "skills": skills,
+            "endpoints": [
+                {
+                    "url": f"{agent_url}/tasks",
+                    "protocol": "attestix",
+                    "method": "POST",
+                }
+            ],
+            "provider": {
+                "organization": agent["issuer"].get("name", ""),
+            },
+            "authentication": {
+                "schemes": ["attestix-uait"],
+                "credentials": agent["agent_id"],
+            },
+            "_attestix_metadata": {
+                "agent_id": agent["agent_id"],
+                "source_protocol": agent.get("source_protocol"),
+                "reputation_score": agent.get("reputation_score"),
+            },
+        }
+
+    def _to_did_document(self, agent: dict) -> dict:
+        """Convert UAIT to W3C DID Document format."""
+        did = agent["issuer"].get("did", f"did:attestix:{agent['agent_id']}")
+        # Get public key multibase for the server DID
+        pub_multibase = None
+        if did.startswith("did:key:z"):
+            try:
+                from attestix.auth.crypto import did_key_to_public_key, public_key_to_bytes, ED25519_MULTICODEC_PREFIX
+                import base58
+                pub_key = did_key_to_public_key(did)
+                pub_bytes = public_key_to_bytes(pub_key)
+                pub_multibase = "z" + base58.b58encode(
+                    ED25519_MULTICODEC_PREFIX + pub_bytes
+                ).decode("ascii")
+            except (ValueError, ImportError):
+                pass  # Graceful degradation if crypto libs unavailable
+
+        fragment = did_key_fragment(did) if did.startswith("did:key:z") else "#key-1"
+        vm = {
+            "id": f"{did}{fragment}",
+            "type": "Ed25519VerificationKey2020",
+            "controller": did,
+        }
+        if pub_multibase:
+            vm["publicKeyMultibase"] = pub_multibase
+
+        return {
+            "@context": [
+                "https://www.w3.org/ns/did/v1",
+                "https://w3id.org/security/suites/ed25519-2020/v1",
+            ],
+            "id": did,
+            "controller": did,
+            "verificationMethod": [vm],
+            "authentication": [f"{did}{fragment}"],
+            "service": [
+                {
+                    "id": f"{did}#attestix",
+                    "type": "AttestixIdentity",
+                    "serviceEndpoint": {
+                        "agent_id": agent["agent_id"],
+                        "display_name": agent["display_name"],
+                        "capabilities": agent.get("capabilities", []),
+                    },
+                }
+            ],
+        }
+
+    def _to_oauth_claims(self, agent: dict) -> dict:
+        """Convert UAIT to OAuth 2.0 token claims."""
+        return {
+            "sub": agent["agent_id"],
+            "iss": agent["issuer"].get("did", "attestix"),
+            "name": agent["display_name"],
+            "scope": " ".join(agent.get("capabilities", [])),
+            "iat": agent.get("created_at"),
+            "exp": agent.get("expires_at"),
+            "attestix_version": agent.get("version"),
+            "source_protocol": agent.get("source_protocol"),
+        }
+
+    def _to_summary(self, agent: dict) -> dict:
+        """Human-readable summary of a UAIT."""
+        return {
+            "agent_id": agent["agent_id"],
+            "display_name": agent["display_name"],
+            "description": agent.get("description", ""),
+            "source_protocol": agent.get("source_protocol"),
+            "capabilities": agent.get("capabilities", []),
+            "issuer": agent["issuer"].get("name", ""),
+            "created_at": agent.get("created_at"),
+            "expires_at": agent.get("expires_at"),
+            "revoked": agent.get("revoked", False),
+            "reputation_score": agent.get("reputation_score"),
+            "eu_compliance": agent.get("eu_compliance"),
+            "signature_present": bool(agent.get("signature")),
+        }

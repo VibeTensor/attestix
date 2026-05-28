@@ -20,13 +20,13 @@ import time
 # Ensure imports resolve from the Attestix root directory
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))))
 
-from services.identity_service import IdentityService
-from services.compliance_service import ComplianceService
-from services.provenance_service import ProvenanceService
-from services.credential_service import CredentialService
-from services.delegation_service import DelegationService
-from services.reputation_service import ReputationService
-from services.did_service import DIDService
+from attestix.services.identity_service import IdentityService
+from attestix.services.compliance_service import ComplianceService
+from attestix.services.provenance_service import ProvenanceService
+from attestix.services.credential_service import CredentialService
+from attestix.services.delegation_service import DelegationService
+from attestix.services.reputation_service import ReputationService
+from attestix.services.did_service import DIDService
 
 
 def header(step_num, title, subtitle=""):

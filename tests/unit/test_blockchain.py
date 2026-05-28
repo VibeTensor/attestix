@@ -2,7 +2,7 @@
 
 from unittest.mock import patch
 
-from services.blockchain_service import BlockchainService
+from attestix.services.blockchain_service import BlockchainService
 
 
 class TestSchemaUIDDerivation:
@@ -130,7 +130,7 @@ class TestAttestedEventDecoding:
         """Build a BlockchainService with a real EAS contract for ABI decoding."""
         from unittest.mock import MagicMock
         from web3 import Web3
-        from blockchain.abi import EAS_ABI
+        from attestix.blockchain.abi import EAS_ABI
 
         svc = BlockchainService.__new__(BlockchainService)
         w3 = Web3()
@@ -223,7 +223,7 @@ class TestGracefulDegradation:
         with patch.dict("os.environ", {}, clear=False):
             import os
             os.environ.pop("EVM_PRIVATE_KEY", None)
-            from services.blockchain_service import BlockchainService
+            from attestix.services.blockchain_service import BlockchainService
             svc = BlockchainService()
             assert svc.is_configured is False
             assert svc.wallet_address is None
@@ -232,7 +232,7 @@ class TestGracefulDegradation:
         with patch.dict("os.environ", {}, clear=False):
             import os
             os.environ.pop("EVM_PRIVATE_KEY", None)
-            from services.blockchain_service import BlockchainService
+            from attestix.services.blockchain_service import BlockchainService
             svc = BlockchainService()
             result = svc.anchor_artifact("aa" * 32, "identity", "test:1")
             assert "error" in result
@@ -241,7 +241,7 @@ class TestGracefulDegradation:
         with patch.dict("os.environ", {}, clear=False):
             import os
             os.environ.pop("EVM_PRIVATE_KEY", None)
-            from services.blockchain_service import BlockchainService
+            from attestix.services.blockchain_service import BlockchainService
             svc = BlockchainService()
             result = svc.estimate_anchor_cost()
             assert "error" in result

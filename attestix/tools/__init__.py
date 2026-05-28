@@ -13,15 +13,15 @@ MCP tool registration modules (47 tools across 9 modules):
 """
 
 # Re-export submodules
-from tools import identity_tools
-from tools import agent_card_tools
-from tools import did_tools
-from tools import delegation_tools
-from tools import reputation_tools
-from tools import compliance_tools
-from tools import credential_tools
-from tools import provenance_tools
-from tools import blockchain_tools
+from attestix.tools import identity_tools
+from attestix.tools import agent_card_tools
+from attestix.tools import did_tools
+from attestix.tools import delegation_tools
+from attestix.tools import reputation_tools
+from attestix.tools import compliance_tools
+from attestix.tools import credential_tools
+from attestix.tools import provenance_tools
+from attestix.tools import blockchain_tools
 
 __all__ = [
     "identity_tools",

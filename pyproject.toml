@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "attestix"
-version = "0.4.0rc1"
+version = "0.4.0rc2"
 description = "Attestix - Attestation Infrastructure for AI Agents. DID-based agent identity, W3C Verifiable Credentials, EU AI Act compliance, delegation chains, and reputation scoring. 47 MCP tools across 9 modules."
 readme = "README.md"
 license = {file = "LICENSE"}
@@ -108,39 +108,52 @@ Repository = "https://github.com/VibeTensor/attestix"
 Issues = "https://github.com/VibeTensor/attestix/issues"
 
 [project.scripts]
-attestix = "cli:cli"
+attestix = "attestix.cli:cli"
 
 [tool.setuptools]
-# Include both flat modules (backward compatibility) and attestix namespace (new)
+# v0.4.0-rc.2 packaging fix: the wheel ships ONLY the canonical `attestix.*`
+# namespace + thin deprecation shims for the pre-rc.2 flat layout. The shims
+# emit a DeprecationWarning on first import and are scheduled for removal in
+# v0.5.0. Inspect the wheel with::
+#
+#   python -c "import zipfile, sys; z=zipfile.ZipFile(sys.argv[1]); \
+#       print(sorted({n.split('/')[0] for n in z.namelist()}))" dist/attestix-*.whl
+#
+# Expected top-level set: {attestix, api, auth, audit, blockchain, idempotency,
+# services, signing, storage, tenancy, tools, attestix-<ver>.dist-info}. The
+# non-`attestix` entries are deprecation shims, NOT duplicate source code.
 packages = [
-    # Flat modules (legacy imports: from services.X import Y)
-    "auth",
-    "blockchain",
-    "services",
-    "tools",
-    # v0.4.0 extensibility seams (flat layout)
-    "storage",
-    "signing",
-    "tenancy",
-    "audit",
-    "idempotency",
-    # REST API
-    "api",
-    "api.routers",
-    # Namespace package (new imports: from attestix.services.X import Y)
+    # Canonical namespace (recommended: `from attestix.services... import ...`).
     "attestix",
+    "attestix.api",
+    "attestix.api.routers",
+    "attestix.audit",
     "attestix.auth",
     "attestix.blockchain",
-    "attestix.services",
-    "attestix.tools",
-    # v0.4.0 extensibility seams (namespace mirror)
-    "attestix.storage",
-    "attestix.signing",
-    "attestix.tenancy",
-    "attestix.audit",
     "attestix.idempotency",
+    "attestix.services",
+    "attestix.signing",
+    "attestix.storage",
+    "attestix.tenancy",
+    "attestix.tools",
+    # Deprecation shims for the pre-rc.2 flat layout (emit DeprecationWarning,
+    # scheduled for removal in v0.5.0). Each subpackage is a tiny re-export of
+    # the canonical `attestix.<sub>` namespace.
+    "api",
+    "api.routers",
+    "audit",
+    "auth",
+    "blockchain",
+    "idempotency",
+    "services",
+    "signing",
+    "storage",
+    "tenancy",
+    "tools",
 ]
-py-modules = ["main", "cli", "config", "errors"]
+# Top-level deprecation shims for the pre-rc.2 flat layout. These delegate to
+# `attestix.<module>` and emit a DeprecationWarning on import.
+py-modules = ["cli", "config", "errors", "main"]
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
@@ -230,7 +243,7 @@ exclude_dirs = [
 skips = ["B101", "B311", "B404", "B603", "B607"]
 
 [tool.coverage.run]
-source = ["services", "tools", "auth", "blockchain", "api"]
+source = ["attestix"]
 branch = true
 omit = [
     "tests/*",
@@ -253,7 +266,7 @@ exclude_lines = [
 
 [tool.setuptools.package-data]
 # Only ship Python source files, never JSON data
-blockchain = ["*.py"]
+"attestix.blockchain" = ["*.py"]
 
 [tool.setuptools.exclude-package-data]
 # Runtime data files are generated on first use - never ship them

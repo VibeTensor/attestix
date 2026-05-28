@@ -3,13 +3,24 @@ include LICENSE
 include README.md
 include pyproject.toml
 
-# Include all Python source
+# Include all Python source. Canonical sources live under `attestix/`;
+# the flat top-level packages are pre-rc.2 deprecation shims and are also
+# included so legacy imports keep working until v0.5.0.
 recursive-include attestix *.py
+recursive-include api *.py
+recursive-include audit *.py
 recursive-include auth *.py
 recursive-include blockchain *.py
+recursive-include idempotency *.py
 recursive-include services *.py
+recursive-include signing *.py
+recursive-include storage *.py
+recursive-include tenancy *.py
 recursive-include tools *.py
-recursive-include api *.py
+include cli.py
+include config.py
+include errors.py
+include main.py
 
 # Exclude runtime data files (generated on first use)
 exclude identities.json

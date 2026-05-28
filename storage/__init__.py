@@ -1,85 +1,41 @@
-"""Pluggable persistence for Attestix (v0.4.0 extensibility layer).
+"""Legacy flat-namespace shim for :mod:`attestix.storage`.
 
-This package introduces the :class:`Repository` seam so the service layer can
-read/write through an abstraction instead of calling ``config.load_*`` /
-``config.save_*`` directly. The default install resolves to the file-backed
-:class:`FileRepository`, which reproduces v0.3.0 on-disk behavior exactly.
+This shim exists so that pre-v0.4.0-rc.2 user code that does::
 
-Selecting a non-default backend is opt-in via the ``ATTESTIX_STORAGE`` environment
-variable (or the ``config`` argument to :func:`select_repository`); the optional
-Postgres adapter lives behind the ``[pg]`` extra and is imported lazily so a
-default ``pip install`` pulls no extra runtime dependency (FR-005, FR-026,
-SC-010).
+    from storage import ...
+    from storage.<submodule> import ...
+
+keeps working after the v0.4.0-rc.2 packaging fix that promoted the canonical
+location to :mod:`attestix.storage`. Importing this module (or any of its submodules)
+emits a single ``DeprecationWarning`` directing callers at the new path.
+
+The flat-namespace shim is scheduled for removal in Attestix v0.5.0. Update to::
+
+    from attestix.storage import ...
 """
 
-import os
-from typing import Optional
+import warnings as _warnings
 
-from storage.repository import DEFAULT_TENANT, Repository
-from storage.file_repository import FileRepository
-from storage.memory_repository import MemoryRepository
+_warnings.warn(
+    "Importing from the top-level `storage` package is deprecated and will be "
+    "removed in Attestix v0.5.0. Update your imports to "
+    "`from attestix.storage...` (canonical namespace).",
+    DeprecationWarning,
+    stacklevel=2,
+)
 
-__all__ = [
-    "Repository",
-    "FileRepository",
-    "MemoryRepository",
-    "DEFAULT_TENANT",
-    "select_repository",
-    "default_repository",
-]
+# Re-export the public API of the canonical namespace so `from storage import X`
+# resolves to the canonical implementation.
+from attestix.storage import (  # noqa: F401
+    Repository,
+    FileRepository,
+    MemoryRepository,
+    DEFAULT_TENANT,
+    select_repository,
+    default_repository,
+    repository,
+    file_repository,
+    memory_repository,
+)
 
-# Process-wide default instance. The FileRepository is stateless (it resolves
-# config paths lazily on each call) so a single shared instance is safe and keeps
-# the default path allocation-free.
-_DEFAULT = FileRepository()
-
-
-def default_repository() -> Repository:
-    """Return the shared default (file-backed) Repository."""
-    return _DEFAULT
-
-
-def select_repository(config: Optional[dict] = None) -> Repository:
-    """Return the configured Repository, defaulting to :class:`FileRepository`.
-
-    Selection precedence:
-
-    1. ``config["storage"]`` if a ``config`` mapping is supplied.
-    2. The ``ATTESTIX_STORAGE`` environment variable.
-    3. Default: ``"file"`` -> :class:`FileRepository` (v0.3.0 behavior).
-
-    Recognized values:
-
-    - ``"file"`` (default) -> :class:`FileRepository`.
-    - ``"memory"`` -> :class:`MemoryRepository` (volatile; tests / smoke).
-    - ``"postgres"`` / ``"pg"`` -> the optional Postgres adapter (``[pg]`` extra),
-      imported lazily; a clear, actionable error is raised if the extra is not
-      installed.
-    """
-    choice = None
-    if config:
-        choice = config.get("storage")
-    if choice is None:
-        choice = os.environ.get("ATTESTIX_STORAGE")
-    if choice is None:
-        choice = "file"
-    choice = str(choice).strip().lower()
-
-    if choice == "file":
-        return default_repository()
-    if choice == "memory":
-        return MemoryRepository()
-    if choice in ("postgres", "pg"):
-        try:
-            from storage.pg_repository import PgRepository  # noqa: F401
-        except ImportError as exc:  # pragma: no cover - exercised only with extra
-            raise ImportError(
-                "ATTESTIX_STORAGE=postgres requires the optional 'pg' extra. "
-                "Install it with: pip install 'attestix[pg]'"
-            ) from exc
-        return PgRepository(config or {})
-
-    raise ValueError(
-        f"Unknown ATTESTIX_STORAGE value {choice!r}. "
-        "Expected one of: file, memory, postgres."
-    )
+del _warnings

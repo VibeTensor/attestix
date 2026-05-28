@@ -26,8 +26,16 @@
 <p align="center">
   Make your AI agents EU AI Act compliant with cryptographically verifiable proof.<br/>
   Open-source identity, credentials, compliance automation, and trust scoring.<br/>
-  47 MCP tools across 9 modules, 44 REST API endpoints, 358 automated tests.<br/>
+  47 MCP tools across 9 modules, 44 REST API endpoints,
+  481-test suite (390 functional + 91 RFC / W3C conformance benchmarks).<br/>
   Real integrations with LangChain, OpenAI Agents SDK, and CrewAI.
+</p>
+
+<p align="center">
+  <em>Status: v0.4.0-rc.2 release candidate. Single-maintainer project, community
+  contributions welcome. No independent third-party security audit has been
+  performed yet; deploy with the same diligence you would apply to any
+  pre-1.0 open-source crypto stack.</em>
 </p>
 
 ---
@@ -35,8 +43,16 @@
 ## Install
 
 ```bash
-pip install attestix
+# v0.4.0-rc.2 is a release candidate (pre-release). Use --pre to install it:
+pip install --pre attestix
 ```
+
+> v0.4.0-rc.2 packaging fix: the wheel now ships only the canonical
+> `attestix.*` namespace. The pre-rc.2 flat layout (`from services... import`,
+> `from auth... import`, ...) keeps working via thin deprecation shims that
+> emit a `DeprecationWarning` on first import and are scheduled for removal in
+> v0.5.0. Update imports to `from attestix.services... import` at your earliest
+> convenience.
 
 ### CLI
 
@@ -53,7 +69,7 @@ attestix credential --list               # List W3C Verifiable Credentials
 
 ```bash
 pip install fastapi uvicorn
-uvicorn api.main:app --reload            # Swagger docs at http://localhost:8000/docs
+uvicorn attestix.api.main:app --reload   # Swagger docs at http://localhost:8000/docs
 ```
 
 ### Web Dashboard
@@ -109,7 +125,7 @@ Add to your Claude Code config (`~/.claude.json`):
     "attestix": {
       "type": "stdio",
       "command": "python",
-      "args": ["/path/to/attestix/main.py"]
+      "args": ["-m", "attestix.main"]
     }
   }
 }
@@ -122,9 +138,9 @@ Then ask Claude:
 ### As a Python Library
 
 ```python
-from services.identity_service import IdentityService
-from services.compliance_service import ComplianceService
-from services.credential_service import CredentialService
+from attestix.services.identity_service import IdentityService
+from attestix.services.compliance_service import ComplianceService
+from attestix.services.credential_service import CredentialService
 
 identity_svc = IdentityService()
 compliance_svc = ComplianceService()
@@ -173,7 +189,7 @@ python examples/quickstart.py
 git clone https://github.com/VibeTensor/attestix.git
 cd attestix
 pip install -r requirements.txt
-python main.py
+python -m attestix.main
 ```
 
 ---
@@ -224,12 +240,16 @@ Every artifact Attestix produces is cryptographically signed with Ed25519:
 ## Architecture
 
 ```
-attestix/
+attestix/                  # Canonical Python package (v0.4.0-rc.2)
   main.py                  # MCP server entry point (47 tools)
+  cli.py                   # `attestix` console script
   config.py                # Environment-based configuration
   errors.py                # Error handling with JSON logging
+  api/                     # FastAPI REST surface
+    main.py                # uvicorn entry: `attestix.api.main:app`
+    routers/               # one router per service (44 endpoints)
   auth/
-    signing.py             # Ed25519 key management
+    crypto.py              # Ed25519 key management
     ssrf.py                # SSRF protection for outbound HTTP
   services/
     identity_service.py    # UAIT lifecycle, GDPR erasure
@@ -241,10 +261,20 @@ attestix/
     credential_service.py  # W3C VCs and VPs
     provenance_service.py  # Training data, lineage, audit trail
     blockchain_service.py  # Base L2 anchoring via EAS
+  storage/                 # Repository seam (file / memory / pg)
+  signing/                 # Signer seam (in-process / kms)
+  audit/                   # Tamper-evident event chain
+  tenancy/                 # Tenant context
+  idempotency/             # Stripe-style idempotency keys + middleware
   blockchain/
     merkle.py              # Merkle tree for batch anchoring
   tools/                   # MCP tool definitions (one file per module)
 ```
+
+The pre-v0.4.0-rc.2 flat layout (`services/`, `auth/`, `storage/`, ...) is
+preserved as deprecation shims at the same paths. They re-export from the
+canonical `attestix.*` namespace and emit a `DeprecationWarning` on first
+import. The shims are scheduled for removal in v0.5.0.
 
 ---
 
@@ -373,7 +403,11 @@ attestix/
 
 ## Standards Conformance
 
-Every standards claim is validated by 79 automated conformance benchmarks that run alongside the rest of the suite for a total of 358 tests passing (1 skipped on Windows). Run them yourself:
+Every standards claim is validated by 91 automated conformance benchmarks that
+run alongside the rest of the suite for a total of 481 tests passing (1 skipped
+on Windows). These benchmarks demonstrate cryptographic conformance with the
+listed standards; they are not a substitute for a legal compliance audit.
+Run them yourself:
 
 ```bash
 docker build -f Dockerfile.test -t attestix-bench . && docker run --rm attestix-bench
@@ -415,7 +449,7 @@ docker build -f Dockerfile.test -t attestix-bench . && docker run --rm attestix-
 
 ## Research Paper
 
-Attestix is described in a research paper covering system architecture, cryptographic pipeline, EU AI Act compliance automation, and evaluation with 358 automated tests.
+Attestix is described in a research paper covering system architecture, cryptographic pipeline, EU AI Act compliance automation, and evaluation with 481 automated tests (390 functional + 91 RFC / W3C conformance benchmarks).
 
 **[Attestix: A Unified Attestation Infrastructure for Autonomous AI Agents](https://github.com/VibeTensor/attestix/blob/main/paper/attestix-paper.pdf)**
 Pavan Kumar Dubasi, VibeTensor Private Limited, 2026.

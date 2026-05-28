@@ -20,7 +20,7 @@ import pytest
 # ---------------------------------------------------------------------------
 def call_tool(tool_name: str, **kwargs) -> dict | list:
     """Invoke an MCP tool by name and return parsed JSON."""
-    from main import mcp
+    from attestix.main import mcp
     import asyncio
 
     tools = mcp._tool_manager._tools
@@ -938,7 +938,7 @@ class TestPersona13_SetupValidator:
     """Validates fresh install works correctly from zero state."""
 
     def test_fresh_install_validation(self):
-        from main import mcp
+        from attestix.main import mcp
 
         # 1. Verify all tools are registered
         tools = mcp._tool_manager._tools
@@ -1359,7 +1359,7 @@ class TestPersona16_DevOpsPlatformEngineer:
 
     def test_operational_readiness(self):
         # 1. Verify all storage files are lazily created
-        from config import (
+        from attestix.config import (
             IDENTITIES_FILE, REPUTATION_FILE, DELEGATIONS_FILE,
             COMPLIANCE_FILE, CREDENTIALS_FILE, PROVENANCE_FILE,
             ANCHORS_FILE,
@@ -1425,7 +1425,7 @@ class TestPersona16_DevOpsPlatformEngineer:
         print(f"  [Persona 16] Anchor status: query works (even without anchors)")
 
         # 7. Verify signing key subsystem works (key is auto-generated on first use)
-        from auth.crypto import load_or_create_signing_key
+        from attestix.auth.crypto import load_or_create_signing_key
         priv_key, server_did = load_or_create_signing_key()
         assert server_did.startswith("did:key:z"), "Server DID should be a valid did:key"
         print(f"  [Persona 16] Signing key subsystem works: {server_did[:40]}...")

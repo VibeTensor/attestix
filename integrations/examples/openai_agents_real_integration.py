@@ -43,8 +43,8 @@ from agents import Agent, Runner
 from agents.mcp import MCPServerStdio
 
 # Real Attestix services (used by the compliance_gate guardrail)
-from services.compliance_service import ComplianceService
-from services.identity_service import IdentityService
+from attestix.services.compliance_service import ComplianceService
+from attestix.services.identity_service import IdentityService
 
 
 # ---------------------------------------------------------------------------

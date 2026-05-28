@@ -17,10 +17,10 @@ from langchain_core.outputs import LLMResult
 from typing import Any, Dict, List, Optional
 from uuid import UUID
 
-from services.identity_service import IdentityService
-from services.compliance_service import ComplianceService
-from services.provenance_service import ProvenanceService
-from services.credential_service import CredentialService
+from attestix.services.identity_service import IdentityService
+from attestix.services.compliance_service import ComplianceService
+from attestix.services.provenance_service import ProvenanceService
+from attestix.services.credential_service import CredentialService
 
 
 class AttestixComplianceHandler(BaseCallbackHandler):
