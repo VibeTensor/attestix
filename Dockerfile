@@ -1,4 +1,11 @@
-FROM python:3.12-slim
+# Pinned by SHA digest to satisfy OpenSSF Scorecard's Pinned-Dependencies check
+# (PinnedDependenciesID: containerImage not pinned by hash).
+# Digest source: Scorecard's recommended SHA for python:3.12-slim, verified
+# pullable via `docker manifest inspect python@sha256:090ba77e...` on
+# 2026-05-28. Dependabot's docker ecosystem (configured in .github/
+# dependabot.yml) refreshes the digest when a newer python:3.12-slim is
+# published. See .github/scorecard-pinned-deps.md for the coverage matrix.
+FROM python:3.12-slim@sha256:090ba77e2958f6af52a5341f788b50b032dd4ca28377d2893dcf1ecbdfdfe203
 
 WORKDIR /app
 

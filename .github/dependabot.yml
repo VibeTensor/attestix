@@ -39,3 +39,15 @@ updates:
     labels:
       - "dependencies"
       - "javascript"
+
+  # Docker base images: keep the SHA-pinned `python:3.12-slim` digest current.
+  # Dependabot rewrites the digest in Dockerfile and Dockerfile.test when a
+  # newer python:3.12-slim is published, preserving the hash-pin required by
+  # OpenSSF Scorecard's Pinned-Dependencies check.
+  - package-ecosystem: "docker"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    labels:
+      - "dependencies"
+      - "docker"
