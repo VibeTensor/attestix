@@ -23,10 +23,17 @@ try:
 except Exception:
     __version__ = "0.3.0"
 
-from fastapi import FastAPI, Request
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
-from starlette.middleware.base import BaseHTTPMiddleware
+try:
+    from fastapi import FastAPI, Request
+    from fastapi.middleware.cors import CORSMiddleware
+    from fastapi.responses import JSONResponse
+    from starlette.middleware.base import BaseHTTPMiddleware
+except ImportError as _api_extra_missing:  # pragma: no cover - exercised in fresh venvs
+    raise ImportError(
+        "attestix.api requires the FastAPI stack. Install the [api] extra:\n"
+        "    pip install --pre 'attestix[api]'\n"
+        "or install fastapi + uvicorn directly alongside attestix."
+    ) from _api_extra_missing
 
 from attestix.api.routers import (
     identity,

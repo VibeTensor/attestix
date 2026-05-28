@@ -81,7 +81,16 @@ class TestGetProvenance:
         result = provenance_service.get_provenance("a:1")
         assert len(result["training_data"]) == 1
         assert len(result["model_lineage"]) == 1
-        assert result["audit_log_count"] == 1
+        # v0.4.0-rc.3 (P0 #5): audit_log_count now aggregates the legacy
+        # `provenance.json::audit_log` chain (written by log_action — 1 row
+        # here) AND the new `audit.json::events` chain (written by every
+        # state-changing service via safe_emit — 3 more rows here, one each
+        # for record_training_data / record_model_lineage / log_action). The
+        # individual sub-counts are exposed for callers that want to keep
+        # the original semantics.
+        assert result["audit_log_count"] >= 1
+        assert result["audit_chain_count_legacy"] == 1
+        assert result["audit_events_count"] >= 3
 
 
 class TestAuditTrail:

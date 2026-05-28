@@ -419,7 +419,11 @@ class TestPersona9_LegalCounsel:
         provenance = call_tool("get_provenance", agent_id=agent_id)
         assert len(provenance["training_data"]) == 3
         assert len(provenance["model_lineage"]) == 1
-        assert provenance["audit_log_count"] == len(actions)
+        # v0.4.0-rc.3 (P0 #5): audit_log_count now aggregates the legacy
+        # log_action chain AND every state-changing service emission. Use
+        # audit_chain_count_legacy for the strict log_action count.
+        assert provenance["audit_chain_count_legacy"] == len(actions)
+        assert provenance["audit_log_count"] >= len(actions)
 
         # Verify fairness metrics are in the record
         metrics = provenance["model_lineage"][0].get("evaluation_metrics", {})
@@ -628,10 +632,14 @@ class TestPersona10_HealthcareAIProvider:
         assert "model_lineage_recorded" in status["completed"]
         print(f"  [Persona 10] Final compliance: {status['completion_pct']}%")
 
-        # 10. Check provenance completeness for clinical audit
+        # 10. Check provenance completeness for clinical audit.
+        # v0.4.0-rc.3 (P0 #5): the legacy hash chain (audit_chain_count_legacy)
+        # carries the explicit log_action rows; audit_log_count now also
+        # includes the new audit.json side channel.
         provenance = call_tool("get_provenance", agent_id=agent_id)
         assert len(provenance["training_data"]) == 4
-        assert provenance["audit_log_count"] == 5
+        assert provenance["audit_chain_count_legacy"] == 5
+        assert provenance["audit_log_count"] >= 5
         personal_data_sets = [d for d in provenance["training_data"] if d.get("contains_personal_data")]
         assert len(personal_data_sets) == 2, "Should have 2 datasets with personal data flagged"
         print(f"  [Persona 10] Provenance: {len(provenance['training_data'])} datasets, "

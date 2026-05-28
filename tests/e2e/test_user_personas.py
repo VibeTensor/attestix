@@ -689,8 +689,13 @@ class TestPersona6_AuditInvestigator:
         print(f"  [Persona 6] Found {len(human_overrides)} human override actions")
 
         # 6. Get full provenance summary
+        # v0.4.0-rc.3 (P0 #5): audit_log_count aggregates the legacy
+        # log_action chain (7 entries here) and the new audit.json side
+        # channel. The strict per-log_action count is now exposed via
+        # audit_chain_count_legacy.
         provenance = call_tool("get_provenance", agent_id=agent_id)
-        assert provenance["audit_log_count"] == 7
+        assert provenance["audit_chain_count_legacy"] == 7
+        assert provenance["audit_log_count"] >= 7
         print(f"  [Persona 6] Full provenance: {provenance['audit_log_count']} audit entries")
 
         print("  [Persona 6] PASS: Audit investigation workflow complete")

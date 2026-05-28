@@ -186,10 +186,23 @@ def register(mcp):
             agent_id: The Attestix agent ID.
         """
         from attestix.services.cache import get_service
-        from attestix.services.compliance_service import ComplianceService
+        from attestix.services.compliance_service import (
+            ComplianceService,
+            InvalidComplianceProfileError,
+        )
 
         svc = get_service(ComplianceService)
-        result = svc.generate_declaration_of_conformity(agent_id)
+        try:
+            result = svc.generate_declaration_of_conformity(agent_id)
+        except InvalidComplianceProfileError as exc:
+            # v0.4.0-rc.3 (P0 #4): surface missing-fields as a structured
+            # error in the MCP tool response (LLMs cannot raise exceptions
+            # but they can read an explicit error.missing_fields list).
+            result = {
+                "error": str(exc),
+                "missing_fields": exc.missing_fields,
+                "error_type": "invalid_compliance_profile",
+            }
         return json.dumps(result, indent=2, default=str)
 
     @mcp.tool()

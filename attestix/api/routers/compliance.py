@@ -11,7 +11,10 @@ from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
 
 from attestix.api.deps import get_compliance_service
-from attestix.services.compliance_service import ComplianceService
+from attestix.services.compliance_service import (
+    ComplianceService,
+    InvalidComplianceProfileError,
+)
 
 logger = logging.getLogger("attestix.api.compliance")
 
@@ -176,7 +179,24 @@ def generate_declaration_of_conformity(
     svc: ComplianceService = Depends(get_compliance_service),
 ):
     """Generate an EU AI Act Annex V declaration of conformity."""
-    result = svc.generate_declaration_of_conformity(body.agent_id)
+    try:
+        result = svc.generate_declaration_of_conformity(body.agent_id)
+    except InvalidComplianceProfileError as exc:
+        # v0.4.0-rc.3 (P0 #4): missing Annex V fields surface as HTTP 422
+        # rather than a misleading 400. The body includes the specific
+        # missing fields so callers can re-submit deterministically.
+        logger.warning(
+            "Declaration generation rejected for %s: %s",
+            body.agent_id, exc,
+        )
+        raise HTTPException(
+            status_code=422,
+            detail={
+                "error": "invalid_compliance_profile",
+                "message": str(exc),
+                "missing_fields": exc.missing_fields,
+            },
+        )
     if isinstance(result, dict) and "error" in result:
         error_msg = result["error"]
         logger.warning(
