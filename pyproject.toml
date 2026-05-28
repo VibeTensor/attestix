@@ -50,7 +50,7 @@ dependencies = [
     "mcp[cli]>=1.8.0,<2.0.0",
     # cryptography >=46.0.7 closes CVE-2026-34073 (name constraints bypass)
     # and CVE-2026-39892 (Hash.update buffer overflow).
-    "cryptography>=46.0.7,<47.0.0",
+    "cryptography>=46.0.7,<49.0.0",
     # PyJWT >=2.12.0 closes CVE-2026-32597 (crit header validation bypass).
     # This directly impacts Attestix's JWT / Verifiable Credential / UCAN
     # verification paths and is the hard blocker for the v0.3.0 release.
@@ -87,7 +87,7 @@ security = ["pip-audit>=2.7", "bandit>=1.7", "safety>=3.2"]
 # CycloneDX SBOM generation. Produces a CycloneDX 1.5 (or later) JSON BOM
 # with runtime and transitive dependencies. Used in the release workflow to
 # attach an authoritative SBOM to every GitHub release.
-sbom = ["cyclonedx-bom>=5.0.0,<6.0.0"]
+sbom = ["cyclonedx-bom>=5.0.0,<8.0.0"]
 dev = [
     "pytest>=8.0",
     "pytest-asyncio>=0.24",
@@ -97,7 +97,7 @@ dev = [
     "mypy>=1.11",
     "pip-audit>=2.7",
     "bandit>=1.7",
-    "cyclonedx-bom>=5.0.0,<6.0.0",
+    "cyclonedx-bom>=5.0.0,<8.0.0",
     "build>=1.2",
 ]
 
