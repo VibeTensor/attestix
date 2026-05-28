@@ -8,7 +8,16 @@ identically on file and in-memory storage.
 
 import pytest
 
-from attestix.audit import AuditEvent, AuditEventEmitter, GENESIS_HASH, verify_chain
+from attestix.audit import (
+    AuditEvent,
+    AuditEventEmitter,
+    BROKEN_FIELD_CHAIN_HASH,
+    BROKEN_FIELD_PREV_HASH,
+    BROKEN_FIELD_TENANT_ID,
+    GENESIS_HASH,
+    VerifyChainResult,
+    verify_chain,
+)
 from attestix.audit.emitter import AUDIT_COLLECTION
 from attestix.storage import FileRepository, MemoryRepository
 
@@ -96,7 +105,7 @@ def test_emitted_sequence_verifies_as_chain(emitter):
                      target_collection="identities", actor="srv",
                      after={"agent_id": f"a:{i}"})
     chain = emitter.read_chain()
-    assert verify_chain(chain) is True
+    assert verify_chain(chain).valid is True
     # Each event links to the prior event's chain_hash.
     for prev, cur in zip(chain, chain[1:]):
         assert cur.prev_hash == prev.chain_hash
@@ -110,11 +119,11 @@ def test_tampering_breaks_chain():
                            actor="srv", after={"n": 1}, prev_hash=e0.chain_hash)
     e2 = AuditEvent.create(action="a", target_id="t2", target_collection="c",
                            actor="srv", after={"n": 2}, prev_hash=e1.chain_hash)
-    assert verify_chain([e0, e1, e2]) is True
+    assert verify_chain([e0, e1, e2]).valid is True
 
     tampered = [e0.to_dict(), e1.to_dict(), e2.to_dict()]
     tampered[1]["target_id"] = "HACKED"  # mutate without recomputing chain_hash
-    assert verify_chain(tampered) is False
+    assert verify_chain(tampered).valid is False
 
 
 # --- Per-tenant chaining --------------------------------------------------
@@ -145,3 +154,116 @@ def test_external_sink_receives_event():
                       target_collection="identities", actor="srv")
     # FR-017: the injected external sink receives the same chained event.
     assert received == [ev]
+
+
+# --- Structured VerifyChainResult (P1 #4 from e2e walkthrough 2026-05-28) ---
+
+
+def _build_clean_chain(n: int = 4, tenant_id: str = "default") -> list[AuditEvent]:
+    """Build a clean n-event chain rooted at GENESIS_HASH for tamper tests."""
+    events: list[AuditEvent] = []
+    prev = GENESIS_HASH
+    for i in range(n):
+        ev = AuditEvent.create(
+            action="a",
+            target_id=f"t:{i}",
+            target_collection="c",
+            actor="srv",
+            tenant_id=tenant_id,
+            after={"n": i},
+            prev_hash=prev,
+        )
+        events.append(ev)
+        prev = ev.chain_hash
+    return events
+
+
+def test_verify_chain_returns_structured_result_when_clean():
+    chain = _build_clean_chain(5)
+    result = verify_chain(chain)
+    assert isinstance(result, VerifyChainResult)
+    assert result.valid is True
+    assert result.broken_event_id is None
+    assert result.broken_field is None
+    assert result.failure_reason is None
+    assert result.events_checked == len(chain)
+
+
+def test_verify_chain_detects_prev_hash_tamper():
+    # Build 4 events, then break the chain link at event #3 by pointing its
+    # prev_hash at the wrong upstream chain_hash (not the prior event's).
+    chain = _build_clean_chain(4)
+    tampered = [e.to_dict() for e in chain]
+    tampered[3]["prev_hash"] = "f" * 64  # not chain[2].chain_hash
+
+    result = verify_chain(tampered)
+    assert result.valid is False
+    assert result.broken_event_id == chain[3].event_id
+    assert result.broken_field == BROKEN_FIELD_PREV_HASH
+    assert "prev_hash" in result.failure_reason
+    # events_checked is the 1-based count of events processed before abort.
+    assert result.events_checked == 4
+
+
+def test_verify_chain_detects_chain_hash_tamper():
+    # Mutate chain_hash on event #2 directly; prev_hash chain stays consistent
+    # at index 2 (it still matches event #1's chain_hash, which we did NOT
+    # mutate), so the failure has to surface as a chain_hash recompute miss.
+    chain = _build_clean_chain(4)
+    tampered = [e.to_dict() for e in chain]
+    # Flip a non-tenant body field so the recompute changes; mutate the
+    # stored chain_hash to a wrong value (so it does not equal the recompute).
+    tampered[2]["chain_hash"] = "0" * 64
+
+    result = verify_chain(tampered)
+    assert result.valid is False
+    assert result.broken_event_id == chain[2].event_id
+    assert result.broken_field == BROKEN_FIELD_CHAIN_HASH
+    assert "chain_hash" in result.failure_reason
+    assert result.events_checked == 3
+
+
+def test_verify_chain_detects_genesis_violation():
+    # First event has a non-zero prev_hash → genesis link is broken.
+    chain = _build_clean_chain(3)
+    tampered = [e.to_dict() for e in chain]
+    tampered[0]["prev_hash"] = "a" * 64
+
+    result = verify_chain(tampered)
+    assert result.valid is False
+    assert result.broken_event_id == chain[0].event_id
+    assert result.broken_field == BROKEN_FIELD_PREV_HASH
+    assert "genesis" in result.failure_reason
+    assert result.events_checked == 1
+
+
+def test_verify_chain_detects_tenant_shift():
+    # A cross-tenant import error: every row has been relabeled to a different
+    # tenant_id, but the stored chain_hash was minted under the original
+    # tenant string. The recompute fails with the new tenant_id but succeeds
+    # under the prior event's tenant_id (well, for index 0 we scan siblings).
+    chain = _build_clean_chain(3, tenant_id="acme")
+    tampered = [e.to_dict() for e in chain]
+    # Relabel event #1's tenant_id only (event #0 stays "acme"), so the prior
+    # event's tenant_id is the original mint-time tenant ("acme") — exactly
+    # the signal verify_chain uses to attribute the failure to tenant_id.
+    tampered[1]["tenant_id"] = "globex"
+
+    result = verify_chain(tampered)
+    assert result.valid is False
+    assert result.broken_event_id == chain[1].event_id
+    assert result.broken_field == BROKEN_FIELD_TENANT_ID
+    assert "tenant_id" in result.failure_reason
+    assert result.events_checked == 2
+
+
+def test_verify_chain_back_compat_bool_protocol():
+    # The __bool__ shim keeps `if verify_chain(events): ...` and
+    # `assert verify_chain(events)` working unchanged after the dataclass
+    # refactor (this is the single most important back-compat guarantee).
+    good = _build_clean_chain(3)
+    assert verify_chain(good)  # truthy via __bool__
+
+    bad = [e.to_dict() for e in good]
+    bad[1]["target_id"] = "HACKED"
+    assert not verify_chain(bad)  # falsy via __bool__

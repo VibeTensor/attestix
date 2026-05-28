@@ -9,8 +9,12 @@ is unchanged.
 """
 
 from attestix.audit.events import (
+    BROKEN_FIELD_CHAIN_HASH,
+    BROKEN_FIELD_PREV_HASH,
+    BROKEN_FIELD_TENANT_ID,
     GENESIS_HASH,
     AuditEvent,
+    VerifyChainResult,
     compute_change_digest,
     verify_chain,
 )
@@ -26,7 +30,11 @@ __all__ = [
     "AuditEvent",
     "AuditEventEmitter",
     "AUDIT_COLLECTION",
+    "BROKEN_FIELD_CHAIN_HASH",
+    "BROKEN_FIELD_PREV_HASH",
+    "BROKEN_FIELD_TENANT_ID",
     "GENESIS_HASH",
+    "VerifyChainResult",
     "compute_change_digest",
     "verify_chain",
     "resolve_emitter",

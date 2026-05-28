@@ -265,7 +265,16 @@ def audit(agent_id, action_type, limit):
             click.echo(f"    {click.style('Human override applied', fg='yellow')}")
         click.echo()
 
-    # Verify hash chain integrity
+    # Verify hash chain integrity.
+    # TODO(v0.5.0): this CLI re-verifies a ProvenanceService action-log chain
+    # (different row shape than `attestix.audit.AuditEvent`): keys are
+    # `log_id`/`action_type`/`timestamp` rather than `event_id`/`action`/
+    # `occurred_at`. Routing it through `attestix.audit.verify_chain` would
+    # require projecting these rows into the AuditEvent shape, which is more
+    # work than just emitting the existing inline diagnostics here. Tracked
+    # in the e2e walkthrough (P1 #4) — for now this stays inline; the
+    # structured forensic upgrade lives on `attestix.audit.verify_chain` and
+    # is surfaced via the portability importer.
     genesis_hash = "0" * 64
     chain_ok = True
     for i, entry in enumerate(entries):
