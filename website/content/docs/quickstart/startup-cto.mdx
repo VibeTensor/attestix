@@ -1,0 +1,105 @@
+---
+title: Startup CTO — Quickstart
+description: 5-minute build-vs-buy proof — what Attestix gives you that you would otherwise build yourself for agent identity, audit, and EU AI Act paperwork.
+---
+
+## You're here because…
+
+You're a startup CTO doing a build-vs-buy on agent governance. The funnel evaluation flagged that this persona moved past install but dropped at integration — there was no path that quantified "what would I build in-house" vs "what is already here." This page is that comparison, as runnable code. Skim it as a buy-side proof-of-concept, then make the call.
+
+## 60-second install
+
+```bash
+pip install --pre attestix
+```
+
+## First 30 lines that actually do something
+
+```python
+# A single end-to-end run that exercises identity, provenance, compliance,
+# credentials, and delegation — i.e. what would otherwise be 5 separate
+# microservices in your roadmap.
+from attestix.services.identity_service import IdentityService
+from attestix.services.provenance_service import ProvenanceService
+from attestix.services.compliance_service import ComplianceService
+from attestix.services.credential_service import CredentialService
+from attestix.services.delegation_service import DelegationService
+
+orchestrator = IdentityService().create_identity(
+    display_name="ops-orchestrator",
+    source_protocol="manual",
+    capabilities=["task_routing", "delegation"],
+    issuer_name="VibeTensor",
+)["agent_id"]
+
+worker = IdentityService().create_identity(
+    display_name="ops-worker-01",
+    source_protocol="manual",
+    capabilities=["data_analysis"],
+    issuer_name="VibeTensor",
+)["agent_id"]
+
+# Capability-attenuated UCAN: orchestrator delegates a subset to worker.
+deleg = DelegationService().create_delegation(
+    issuer_agent_id=orchestrator,
+    audience_agent_id=worker,
+    capabilities=["data_analysis"],
+    expiry_hours=8,
+)
+print("delegation jti:", deleg["delegation"]["jti"])
+
+# Compliance profile + signed VC (= "show me what the regulator gets")
+ComplianceService().create_compliance_profile(
+    agent_id=orchestrator,
+    risk_category="limited",
+    provider_name="VibeTensor",
+    intended_purpose="Internal task orchestration with human approval gate",
+)
+vc = CredentialService().issue_credential(
+    agent_id=orchestrator,
+    credential_type="AgentIdentityCredential",
+    issuer_name="VibeTensor",
+    claims={"displayName": "ops-orchestrator", "complianceStatus": "limited-risk-declared"},
+)
+print("credential:", vc["id"], vc["proof"]["type"])
+
+# Hash-chained log of one operation (= "show me the audit row")
+ProvenanceService().log_action(
+    agent_id=worker,
+    action_type="inference",
+    input_summary="task_id=T-001",
+    output_summary="status=ok",
+    decision_rationale="parent_delegation=" + deleg["delegation"]["jti"],
+)
+```
+
+## What you just got (vs. what you'd otherwise build)
+
+| Capability you'd otherwise build | What Attestix shipped above |
+|---|---|
+| Ed25519 keypair gen + signing layer | `IdentityService` + `.signing_key.json` (plaintext default; passphrase-encrypted via `ATTESTIX_KEY_PASSPHRASE`) |
+| Append-only, hash-chained audit log | `ProvenanceService.log_action` |
+| W3C VC issuance + offline verification | `CredentialService.issue_credential` / `verify_credential` |
+| UCAN-style capability delegation w/ attenuation | `DelegationService.create_delegation` (parent token check is enforced) |
+| EU AI Act risk profile + Annex V declaration | `ComplianceService.create_compliance_profile` + `generate_declaration_of_conformity` |
+| MCP server exposing all of the above as tools | `attestix mcp` (47 tools, stdio or HTTP) |
+| REST surface for an internal service | `uvicorn attestix.api.main:app` (44 endpoints) |
+
+That's roughly 5 services and 3-5 engineer-months of work to get to the same surface area.
+
+## Honest things to weigh before you decide to buy
+
+- **Maturity:** beta, single maintainer, ~15 GitHub stars, no third-party security audit. The trade-off is "buy a primitive, audit it yourself" vs. "build it yourself and own the audit anyway."
+- **Storage:** flat JSON files. Production multi-tenant deployment needs the pluggable Postgres/S3 backend (planned, not in v0.4.0).
+- **Key management:** `.signing_key.json` plaintext by default. KMS / HSM / Vault integration is on the [roadmap](/docs/project/roadmap).
+- **Anchoring:** Base L2 **testnet** only in v0.4.0. Mainnet schema registration planned.
+- **License:** Apache 2.0. Source is on GitHub; fork-and-harden is a supported path.
+
+## Next step (5 minutes)
+
+If you want to see Attestix wired into a framework your team already uses, jump to the matching quickstart:
+
+- [LangChain](/docs/guides/langchain) (real callback handler)
+- [OpenAI Agents SDK](/docs/guides/openai-agents-sdk) (real MCPServerStdio)
+- [CrewAI](/docs/guides/crewai) (real MCPServerAdapter)
+- [Architecture deep-dive](/docs/guides/architecture) (service decomposition, on-disk layout)

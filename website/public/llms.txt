@@ -22,6 +22,17 @@ Attestix provides verifiable identity, W3C credentials, delegation chains, compl
 
 - [Overview](https://attestix.io/docs): Project overview and quick start
 - [Getting Started](https://attestix.io/docs/getting-started): Installation and first agent identity in 5 minutes
+- [Quickstart index](https://attestix.io/docs/quickstart): 10 per-ICP-persona quickstart pages, copy-paste path in 90 seconds
+- [Quickstart / Indie dev](https://attestix.io/docs/quickstart/indie-dev): LangChain RAG agent with hash-chained audit + auto-issued VC
+- [Quickstart / Fintech compliance](https://attestix.io/docs/quickstart/fintech-compliance): Trading / credit-scoring agent with Article 10/11/43 records
+- [Quickstart / Healthcare ML](https://attestix.io/docs/quickstart/healthcare-ml): Clinical decision-support agent with Annex III high-risk profile (GDPR Art. 17 only; DPDP planned for v0.5)
+- [Quickstart / Enterprise architect](https://attestix.io/docs/quickstart/enterprise-architect): Self-hosted REST + MCP service with tenant context and idempotency
+- [Quickstart / GRC consultant](https://attestix.io/docs/quickstart/grc-consultant): Annex IV / Annex V evidence bundle for a client; de-conflates integrity vs. conformity
+- [Quickstart / DevTools skeptic](https://attestix.io/docs/quickstart/devtools-skeptic): 60-second smoke test that the package imports cleanly from a fresh venv
+- [Quickstart / Web3 on-chain](https://attestix.io/docs/quickstart/web3-onchain): EAS anchor on Base Sepolia testnet with schema UID + gas estimate
+- [Quickstart / AI safety research](https://attestix.io/docs/quickstart/ai-safety-research): Signed, hash-chained agent telemetry from an eval run
+- [Quickstart / Startup CTO](https://attestix.io/docs/quickstart/startup-cto): 5-minute build-vs-buy proof across identity + audit + delegation + compliance
+- [Quickstart / MLOps engineer](https://attestix.io/docs/quickstart/mlops-engineer): Pinned-version CI step that records model lineage and issues a promotion VC
 - [Examples](https://attestix.io/docs/examples): Runnable code examples for all modules
 - [EU AI Act Compliance](https://attestix.io/docs/guides/eu-ai-act-compliance): Full compliance workflow with checklists
 - [EU Compliance Walkthrough](https://attestix.io/docs/guides/eu-compliance-walkthrough): Step-by-step pipeline

@@ -1,0 +1,36 @@
+---
+title: Quickstart — pick your role
+description: Copy-paste to verifiable agents in 90 seconds. One page per ICP persona from the v0.4.0 funnel evaluation, written against the actual pain point that persona hit.
+---
+
+# Quickstart
+
+Pick the page that matches your role. Every page is **90-second-readable** with a copy-paste path that runs against a clean `pip install --pre attestix` (v0.4.0-rc.2, canonical `attestix.*` namespace).
+
+The 10 pages below correspond to the 10 ICP personas surfaced in the [v0.4.0 funnel evaluation](https://github.com/VibeTensor/attestix/blob/main/CHANGELOG.md#040-rc2---2026-05-28). Each one targets the exact step at which that persona dropped off.
+
+| You are… | Start here |
+|---|---|
+| Indie AI-agent dev building a LangChain RAG agent | [Indie dev →](/docs/quickstart/indie-dev) |
+| Fintech compliance engineer wiring auditability into a trading or scoring agent | [Fintech compliance →](/docs/quickstart/fintech-compliance) |
+| Healthcare ML lead building a clinical decision-support agent | [Healthcare ML →](/docs/quickstart/healthcare-ml) |
+| Enterprise platform architect evaluating a self-hosted attestation layer | [Enterprise architect →](/docs/quickstart/enterprise-architect) |
+| EU AI Act / GRC consultant collecting Annex IV / Annex V evidence | [GRC consultant →](/docs/quickstart/grc-consultant) |
+| Senior DevTools / DX skeptic checking whether the package actually imports | [DevTools skeptic →](/docs/quickstart/devtools-skeptic) |
+| Web3 / blockchain dev anchoring artefacts to Base L2 testnet | [Web3 / on-chain →](/docs/quickstart/web3-onchain) |
+| Academic AI-safety researcher wanting verifiable agent telemetry | [AI safety research →](/docs/quickstart/ai-safety-research) |
+| Startup CTO running a build-vs-buy evaluation for agent governance | [Startup CTO →](/docs/quickstart/startup-cto) |
+| MLOps engineer wiring attestation into CI/CD and a model pipeline | [MLOps engineer →](/docs/quickstart/mlops-engineer) |
+
+## Honesty rules these pages follow
+
+The v0.4.0 ICP funnel evaluation surfaced three universal failures: a broken package import, an over-claim of maturity, and conflating cryptographic integrity with regulatory conformity. These pages do not repeat them.
+
+- Base L2 anchoring is **Base Sepolia testnet only** in v0.4.0. Mainnet schema registration is on the roadmap. Every code sample that mentions anchoring says so.
+- DPDP (India) is **referenced but not implemented**. GDPR Article 17 (erasure) is implemented. Anything DPDP-shaped is called out as planned for v0.5.
+- LangChain, OpenAI Agents SDK, and CrewAI are **real** integrations (shipped v0.3.0). Dify, Google ADK, Semantic Kernel, and Strands are **example-only** (MCP-config templates, not first-party adapters).
+- Maturity is **beta with one maintainer**. There is no third-party security audit. The signing key is stored locally by default. Treat artefacts produced today as evidence, not as a substitute for legal counsel or a notified body.
+
+## If none of these fit you
+
+Start with the [Getting Started page](/docs/getting-started) (5-minute end-to-end) and then jump into the [Integration Guide](/docs/guides/integration-guide) or the [API reference](/docs/reference/api-reference) (47 MCP tools, 44 REST endpoints).

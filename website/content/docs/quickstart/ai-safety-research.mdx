@@ -1,0 +1,97 @@
+---
+title: AI safety researcher — Quickstart
+description: Produce signed, hash-chained telemetry from an LLM-agent eval run that other labs can re-verify offline. No backend, no cloud.
+---
+
+## You're here because…
+
+You work on agent evaluation / interpretability / monitor evals and you want a citable evidence layer for what an agent did during a run. The funnel evaluation flagged that the safety persona was one of two TRIAL verdicts, but still dropped at integration because the path from "run my eval" to "produce a verifiable, replayable artefact bundle" wasn't laid out. This page is that path: a single Python session that captures structured agent telemetry into a hash-chained audit log, then issues a signed credential bundle another lab can verify offline.
+
+## 60-second install
+
+```bash
+pip install --pre attestix
+```
+
+No network calls are made for any of the steps below; everything serialises to local JSON.
+
+## First 30 lines that actually do something
+
+```python
+from attestix.services.identity_service import IdentityService
+from attestix.services.provenance_service import ProvenanceService
+from attestix.services.credential_service import CredentialService
+
+# 1. Register the eval subject (the agent being studied).
+subject = IdentityService().create_identity(
+    display_name="probe-target-2026-05-28",
+    source_protocol="manual",
+    capabilities=["text_generation"],
+    description="Subject of safety eval run #042",
+    issuer_name="VibeTensor",  # change to your lab's DID issuer name
+)
+subject_id = subject["agent_id"]
+
+# 2. Pin the model lineage (so the run is reproducible).
+ProvenanceService().record_model_lineage(
+    agent_id=subject_id,
+    base_model="gpt-4o-2024-08-06",
+    base_model_provider="OpenAI",
+    fine_tuning_method="none (zero-shot eval)",
+    evaluation_metrics={"helpful_only_judge_pass": 0.84, "monitor_recall": 0.71},
+)
+
+# 3. Log every probe -> response as a hash-chained audit entry.
+prov = ProvenanceService()
+for probe_id, prompt, completion, monitor_score in your_eval_iter():
+    prov.log_action(
+        agent_id=subject_id,
+        action_type="inference",
+        input_summary=f"probe={probe_id}; prompt_sha256={prompt_hash(prompt)}",
+        output_summary=f"completion_sha256={prompt_hash(completion)}; monitor={monitor_score}",
+        decision_rationale="eval-run-042; monitor=white_box_v3",
+    )
+
+# 4. Bundle the run as a signed credential another lab can verify offline.
+run_cred = CredentialService().issue_credential(
+    agent_id=subject_id,
+    credential_type="EvaluationRunCredential",
+    issuer_name="VibeTensor",
+    claims={
+        "run_id": "eval-run-042",
+        "subject": subject_id,
+        "monitor": "white_box_v3",
+        "audit_entries": prov.get_provenance(subject_id)["audit_log_count"],
+    },
+)
+print(run_cred["id"], run_cred["proof"]["type"])  # Ed25519Signature2020
+```
+
+## What you just got
+
+- A signed `EvaluationRunCredential` (W3C VC 1.1 + `Ed25519Signature2020`) pinning the run id, subject DID, monitor name, and entry count.
+- A hash-chained Article 12-style audit trail (`prev_hash` -> `entry_hash`) that any third lab can re-derive from the JSON without contacting you.
+- Reproducibility metadata (model name, provider, eval metrics) recorded under the same agent DID.
+
+## Verifying offline (what a reviewer would run)
+
+```python
+from attestix.services.credential_service import CredentialService
+result = CredentialService().verify_credential(run_cred["id"])
+print(result["valid"], result["checks"])  # signature_valid, not_revoked, ...
+```
+
+Or pass the credential JSON directly to `verify_credential_external(credential_dict)` so the reviewer never has to import your local store.
+
+## Next step (5 minutes)
+
+To make the bundle citable, anchor the audit batch's Merkle root to **Base Sepolia testnet** (mainnet anchoring is on the roadmap; testnet anchors are timestamped evidence, not legal non-repudiation):
+
+```python
+from attestix.services.blockchain_service import BlockchainService
+print(BlockchainService().anchor_audit_batch(agent_id=subject_id))
+```
+
+You can then cite the attestation UID alongside the credential in your paper; any reviewer can query EAS on Base Sepolia to confirm the bundle existed at the cited block height.
+
+If you want the wider context — UCAN delegations for multi-agent eval setups, the full audit-row schema, the canonical-JSON spec — see the [offline verify guide](/docs/guides/offline-verify) and the [API reference](/docs/reference/api-reference).

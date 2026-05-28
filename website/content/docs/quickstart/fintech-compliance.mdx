@@ -1,0 +1,93 @@
+---
+title: Fintech compliance engineer — Quickstart
+description: Wire a trading or credit-scoring agent with hash-chained audit, signed inference logs, and a third-party conformity assessment record — without a database.
+---
+
+## You're here because…
+
+You're a compliance engineer on a fintech / trading-agent stack. The funnel evaluation flagged that fintech evaluators dropped at install because the legacy package needed a `sys.path` hack and because Base L2 anchoring is **testnet only** — not legally binding for trading audit yet. v0.4.0-rc.2 fixes the import problem (`pip install --pre attestix` gives you the canonical `attestix.*` namespace). The testnet caveat still applies and is called out below.
+
+## 60-second install
+
+```bash
+pip install --pre attestix
+```
+
+If you want the FastAPI surface for an internal service:
+
+```bash
+pip install --pre 'attestix[api]'
+attestix mcp --transport http --port 8501
+```
+
+## First 30 lines that actually do something
+
+```python
+from attestix.services.identity_service import IdentityService
+from attestix.services.compliance_service import ComplianceService
+from attestix.services.provenance_service import ProvenanceService
+
+identity = IdentityService().create_identity(
+    display_name="credit-scorer-v1",
+    source_protocol="manual",
+    capabilities=["credit_scoring", "risk_assessment"],
+    issuer_name="VibeTensor",
+)
+agent_id = identity["agent_id"]
+
+# Article 10 / training-data provenance
+ProvenanceService().record_training_data(
+    agent_id=agent_id,
+    dataset_name="Internal Loan Book 2020-2025",
+    source_url="https://data.internal/loans",
+    license="Proprietary",
+    data_categories=["financial", "credit_history"],
+    contains_personal_data=True,
+    data_governance_measures="De-identified per GDPR Art. 5. Quarterly bias audit.",
+)
+
+# Compliance profile + risk classification
+ComplianceService().create_compliance_profile(
+    agent_id=agent_id,
+    risk_category="high",  # credit scoring -> Annex III high-risk
+    provider_name="VibeTensor",
+    intended_purpose="Automated credit scoring for consumer loans",
+    human_oversight_measures="Loan officer reviews every AI recommendation before approval.",
+)
+
+# Article 43: high-risk systems CANNOT self-assess; record third-party result.
+ComplianceService().record_conformity_assessment(
+    agent_id=agent_id,
+    assessment_type="third_party",
+    assessor_name="Bureau Veritas",
+    result="pass",
+    ce_marking_eligible=True,
+)
+
+declaration = ComplianceService().generate_declaration_of_conformity(agent_id)
+print(declaration["declaration_id"])
+```
+
+## What you just got
+
+- Article 10 training-data record + Article 11 model-lineage record (call `record_model_lineage` for the latter) — both Ed25519-signed.
+- An Article 43 third-party assessment row. The service **refuses** to record a `self`-assessment for high-risk; that gate is in the code.
+- An Annex V Declaration of Conformity. Bundle it with the compliance VCs into a Verifiable Presentation for a regulator (see [EU AI Act compliance guide](/docs/guides/eu-ai-act-compliance)).
+
+Every inference your trading agent makes should be logged through `ProvenanceService().log_action(...)` — that's the hash-chained Article 12 trail you'll show an auditor.
+
+## Next step (5 minutes)
+
+For inference-time logging in your prediction loop:
+
+```python
+ProvenanceService().log_action(
+    agent_id=agent_id,
+    action_type="inference",
+    input_summary="Loan application LA-2026-4821, income=65K",
+    output_summary="Risk score 0.23, recommend APPROVE",
+    decision_rationale="Score below 0.3 threshold.",
+)
+```
+
+**Open caveats for fintech production:** there is no SOC 2 / ISO 27001 today, no DPA template, the signing key is plaintext-by-default (`.signing_key.json`), and Base L2 anchoring is testnet — so the cryptographic chain proves integrity locally, but is not yet a legally non-repudiable anchor. Track these on the [roadmap](/docs/project/roadmap).

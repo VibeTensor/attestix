@@ -3,6 +3,8 @@
   "pages": [
     "index",
     "getting-started",
+    "---Quickstart by role---",
+    "quickstart",
     "examples",
     "---Guides---",
     "guides",

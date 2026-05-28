@@ -1,0 +1,117 @@
+---
+title: EU AI Act / GRC consultant — Quickstart
+description: Generate Annex IV technical documentation and an Annex V Declaration of Conformity for a client's high-risk AI system. Honest about where cryptographic integrity ends and human / notified-body sign-off begins.
+---
+
+## You're here because…
+
+You're consulting on EU AI Act readiness and you need a tool that produces *machine-readable* evidence for Annex IV / Annex V — not another GRC dashboard. The funnel evaluation flagged that the GRC persona was one of only two TRIAL verdicts, but still dropped at integration because the docs conflated cryptographic integrity with regulatory conformity. This page de-conflates them: a signed VC proves an artefact existed and wasn't tampered with; it does **not** replace notified-body sign-off for high-risk systems.
+
+## 60-second install
+
+```bash
+pip install --pre attestix
+```
+
+## First 30 lines that actually do something
+
+```python
+from attestix.services.identity_service import IdentityService
+from attestix.services.provenance_service import ProvenanceService
+from attestix.services.compliance_service import ComplianceService
+from attestix.services.credential_service import CredentialService
+
+agent_id = IdentityService().create_identity(
+    display_name="client-hr-screener",
+    source_protocol="manual",
+    capabilities=["cv_screening", "candidate_ranking"],
+    issuer_name="Client Co. (assessed by VibeTensor)",
+)["agent_id"]
+
+ProvenanceService().record_training_data(
+    agent_id=agent_id,
+    dataset_name="Client historical hiring records 2020-2024",
+    source_url="internal://client/hr",
+    license="Proprietary",
+    data_categories=["employment", "demographics"],
+    contains_personal_data=True,
+    data_governance_measures="Removed protected attributes per Art. 10(2)(f). Bias audit Q4-2025.",
+)
+
+# Annex III §4(a) — employment / HR screening = high-risk
+ComplianceService().create_compliance_profile(
+    agent_id=agent_id,
+    risk_category="high",
+    provider_name="Client Co.",
+    intended_purpose="Initial CV screening with human reviewer in the loop.",
+    human_oversight_measures="Recruiter reviews shortlist; no automated rejection.",
+    transparency_obligations="Candidates informed of AI assistance per Article 50.",
+)
+
+# Article 43 — record the third-party assessment your client procured.
+ComplianceService().record_conformity_assessment(
+    agent_id=agent_id,
+    assessment_type="third_party",
+    assessor_name="Notified Body NB-0482",
+    result="pass",
+    findings="System meets Annex III §4(a) requirements with documented oversight.",
+    ce_marking_eligible=True,
+)
+
+declaration = ComplianceService().generate_declaration_of_conformity(agent_id)
+print(declaration["declaration_id"])  # signed Annex V document id
+```
+
+## What you just got
+
+- An Annex IV-shaped technical documentation bundle (identity + training data + model lineage + compliance profile + audit trail), every entry Ed25519-signed.
+- A signed Annex V Declaration of Conformity — issued only after a third-party assessment row exists, because the service refuses to declare conformity on a self-assessment for high-risk systems.
+- A path to bundle the evidence into a W3C Verifiable Presentation for the regulator:
+
+```python
+vp = CredentialService().create_verifiable_presentation(
+    holder_id=agent_id,
+    credentials=[declaration["credential_id"]],
+    verifier="did:web:eu.regulator",
+    challenge="ch_audit_2026",
+)
+```
+
+## What this does NOT prove
+
+Read this section before billing a client. It is the single most important distinction in the product.
+
+| Attestix proves… | Attestix does NOT prove |
+|---|---|
+| The declaration existed at this hash | A notified body has approved CE marking |
+| The third-party assessment row was recorded by this issuer DID | The assessor's findings are factually sound |
+| The audit trail is internally consistent (hash chain unbroken) | The agent's actual behaviour matched the declared purpose |
+| The signing key controlled by this issuer signed the artefact | Legal liability has shifted from provider to anyone else |
+
+Provider liability under Articles 16–22 stays with the provider regardless of what Attestix outputs. See the [EU compliance walkthrough](/docs/guides/eu-compliance-walkthrough) for the full mapping.
+
+## Next step (5 minutes)
+
+Pull the full hash-chained Article 12 trail for the client's audit binder:
+
+```bash
+attestix audit <agent_id> --limit 500 > client-audit-2026.jsonl
+```
+
+Inspect the chained provenance bundle (training data + model lineage + audit log) for the binder:
+
+```python
+from attestix.services.provenance_service import ProvenanceService
+bundle = ProvenanceService().get_provenance(agent_id)
+print(bundle["audit_log_count"], "audit rows;",
+      len(bundle.get("training_data", [])), "datasets")
+```
+
+Each row in `get_audit_trail(agent_id)` carries the `prev_hash` and `entry_hash` fields — a third party can re-derive the chain offline without contacting Attestix.
+
+If you want an on-ledger commitment so the client can prove the bundle existed at a block height, add a Base **Sepolia testnet** anchor (mainnet schema is on the roadmap — testnet anchors are **not** legally non-repudiable):
+
+```python
+from attestix.services.blockchain_service import BlockchainService
+print(BlockchainService().anchor_audit_batch(agent_id=agent_id))
+```

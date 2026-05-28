@@ -1,0 +1,104 @@
+---
+title: Web3 / on-chain dev — Quickstart
+description: Anchor an Attestix artefact to Base L2 Sepolia testnet via the Ethereum Attestation Service. Schema UID, gas estimate, faucet, on-chain verification — testnet only in v0.4.0.
+---
+
+## You're here because…
+
+You're a web3 dev evaluating the on-chain side of Attestix. The funnel evaluation flagged that the on-chain story was the loudest concrete failure for this persona: no published EAS schema UID in the docs, no on-chain verification guide, no gas estimates, no revocation flow. Anchoring was called "vaporware for production." This page is the smallest path from a clean install to a verifiable on-chain anchor — **on Base Sepolia testnet only**. Mainnet schema registration is still on the [roadmap](/docs/project/roadmap).
+
+## 60-second install
+
+```bash
+pip install --pre attestix
+```
+
+You also need:
+
+- A Base Sepolia RPC endpoint (`https://sepolia.base.org` is fine for testing).
+- A funded test wallet on Base Sepolia (~0.001 ETH from any public faucet).
+- The EAS contract address on Base Sepolia, which ships with the package.
+
+Configure once:
+
+```bash
+export BASE_RPC_URL=https://sepolia.base.org
+export EVM_PRIVATE_KEY=0x<your_testnet_key>
+```
+
+Funded the wallet at https://www.alchemy.com/faucets/base-sepolia (or any Base Sepolia faucet).
+
+## First 30 lines that actually do something
+
+```python
+from attestix.services.identity_service import IdentityService
+from attestix.services.blockchain_service import BlockchainService
+
+# 1. Make an artefact worth anchoring (a signed identity row).
+agent_id = IdentityService().create_identity(
+    display_name="onchain-test",
+    source_protocol="manual",
+    capabilities=["test"],
+    issuer_name="VibeTensor",
+)["agent_id"]
+
+# 2. Verify the chain client is configured against Base Sepolia.
+chain = BlockchainService()
+assert chain.is_configured(), \
+    "Set BASE_RPC_URL and EVM_PRIVATE_KEY. Sepolia faucet: alchemy.com/faucets/base-sepolia"
+print("wallet:", chain.wallet_address())
+
+# 3. Estimate gas first.
+estimate = chain.estimate_anchor_cost(artifact_type="identity")
+print("estimate:", estimate)  # { gas: ~48000, gas_price_wei: ..., cost_eth: ... }
+
+# 4. Build the canonical hash and anchor it on-chain via EAS.
+artifact = {"agent_id": agent_id, "kind": "identity"}
+artifact_hash = chain.hash_artifact(artifact)
+result = chain.anchor_artifact(
+    artifact_hash=artifact_hash,
+    artifact_type="identity",
+    artifact_id=agent_id,
+)
+print(result)  # { tx_hash, attestation_uid, block_number, schema_uid, ... }
+
+# 5. Verify the anchor from-scratch (anyone can run this, no Attestix server needed).
+status = chain.verify_anchor(artifact_hash=artifact_hash)
+print(status)  # { confirmed: True, attestation_uid: ..., block_number: ... }
+```
+
+## What you just got
+
+- A real EAS attestation on Base Sepolia. The transaction is on-chain at the printed `tx_hash` — view it at https://sepolia.basescan.org.
+- The Attestix EAS schema UID is computed deterministically from the schema string and persisted to `.attestix_schema_uid` on first use; the call to `_ensure_schema_registered` is idempotent and self-registers on a fresh chain.
+- A Merkle-batch path for high-volume anchoring:
+
+```python
+batch = chain.anchor_audit_batch(agent_id=agent_id)
+print(batch["batch_metadata"])  # merkle_root, entry_count, start/end_date
+```
+
+Gas cost stays roughly flat (~48k) regardless of batch size — the proof size grows as O(log n) per artefact.
+
+## What's honestly missing
+
+The funnel evaluation specifically called these out for this persona; they are still gaps in v0.4.0:
+
+| Concern | v0.4.0 reality |
+|---|---|
+| Mainnet schema UID | Not registered. Testnet only. |
+| Revocation flow | EAS supports revoke; Attestix does not yet expose a `revoke_anchor` helper. |
+| Gas data published in docs | Only the testnet `estimate_anchor_cost` output today. Mainnet numbers will land with the mainnet schema. |
+| Indexer / subgraph | None published. You query EAS directly via the contract. |
+
+## Next step (5 minutes)
+
+Verify the attestation directly on EAS (no Attestix client needed):
+
+```bash
+curl -s "https://base-sepolia.easscan.org/graphql" \
+  -H "Content-Type: application/json" \
+  -d '{"query":"{ attestation(where:{id:\"<attestation_uid>\"}){ schemaId attester data }}"}'
+```
+
+Read the full walkthrough — RPC selection, key handling, schema deep-dive — in the [Base L2 anchor guide](/docs/guides/base-l2-anchor).
