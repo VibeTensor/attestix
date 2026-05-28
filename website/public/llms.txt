@@ -17,6 +17,8 @@ Attestix provides verifiable identity, W3C credentials, delegation chains, compl
 - [Changelog](https://attestix.io/changelog): v0.1.0 through v0.3.0 release history
 - [Security](https://attestix.io/security): Responsible disclosure, CVE process
 - [SBOM](https://attestix.io/sbom): Software bill of materials with licenses
+- [United Kingdom](https://attestix.io/uk): UK geo-landing — FCA, ICO, Bank of England framings for AI-Act-grade evidence
+- [India](https://attestix.io/india): India geo-landing — DPDP, RBI, MeitY, DPI framings; VibeTensor incorporation note
 
 ## Docs
 
