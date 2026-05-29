@@ -61,13 +61,22 @@ class AuditEventEmitter:
         Repository scopes ``list`` by tenant, so cross-tenant events never enter
         this chain (each tenant has its own chain, data-model §4).
         """
-        events = self._repo.list(
-            AUDIT_COLLECTION, tenant_id=tenant_id, id_field="event_id"
-        )
-        if not events:
+        # Performance (issue #108): use the backend's ``last_record`` fast-path
+        # when available (the default FileRepository exposes it) so finding the
+        # chain head is O(1)-from-tail instead of copying the entire, ever-growing
+        # event list on every emit. Fall back to a full ``list`` otherwise.
+        last_record = getattr(self._repo, "last_record", None)
+        if callable(last_record):
+            last = last_record(AUDIT_COLLECTION, tenant_id=tenant_id)
+        else:
+            events = self._repo.list(
+                AUDIT_COLLECTION, tenant_id=tenant_id, id_field="event_id"
+            )
+            last = events[-1] if events else None
+        if not last:
             return GENESIS_HASH
         # Events are appended in order; the last persisted is the chain head.
-        return events[-1].get("chain_hash", GENESIS_HASH)
+        return last.get("chain_hash", GENESIS_HASH)
 
     def emit(
         self,

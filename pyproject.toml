@@ -187,6 +187,7 @@ testpaths = ["tests"]
 addopts = "-p no:logfire"
 markers = [
     "live_blockchain: requires funded Base Sepolia wallet (deselect with -m 'not live_blockchain')",
+    "perf: performance guard tests (issuance scaling); generous CI thresholds (deselect with -m 'not perf')",
 ]
 
 [tool.ruff]

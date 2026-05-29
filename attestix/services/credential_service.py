@@ -18,7 +18,7 @@ from attestix.auth.crypto import (
     did_key_to_public_key,
 )
 from attestix.audit import AuditEventEmitter, resolve_emitter, safe_emit
-from attestix.config import load_credentials, save_credentials
+from attestix.config import append_credential, load_credentials, save_credentials
 from attestix.errors import ErrorCategory, log_and_format_error
 from attestix.signing import InProcessSigner, Signer
 from attestix.storage.repository import DEFAULT_TENANT
@@ -143,9 +143,11 @@ class CredentialService:
                 "proofValue": signature,
             }
 
-            data = load_credentials()
-            data["credentials"].append(credential)
-            save_credentials(data)
+            # Append-only write (issue #108): avoid the O(N) load+copy+rewrite of
+            # the whole credential store on every issuance. The on-disk shape is
+            # unchanged. revoke_credential still uses load/save (it mutates an
+            # existing record), so the read-modify-write path is untouched.
+            append_credential(credential)
 
             safe_emit(
                 self._emitter,
