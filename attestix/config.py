@@ -175,6 +175,17 @@ def save_credentials(data: dict):
     _repo().save_document("credentials", data)
 
 
+def append_credential(credential: dict) -> dict:
+    """Append one credential to the store without a full load+rewrite.
+
+    Performance shim for the issuance hot path (issue #108): a pure append avoids
+    the O(N) deep copy that ``load_credentials() -> append -> save_credentials()``
+    incurs on every call. The on-disk ``{"credentials": [...]}`` shape is
+    unchanged (the record is written verbatim, no tenant tagging).
+    """
+    return _repo().append_to_document("credentials", credential)
+
+
 # --- Provenance storage ---
 
 def load_provenance() -> dict:
