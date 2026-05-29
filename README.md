@@ -27,12 +27,12 @@
   Make your AI agents EU AI Act compliant with cryptographically verifiable proof.<br/>
   Open-source identity, credentials, compliance automation, and trust scoring.<br/>
   47 MCP tools across 9 modules, 44 REST API endpoints,
-  481-test suite (390 functional + 91 RFC / W3C conformance benchmarks).<br/>
+  531-test suite (440 functional + 91 RFC / W3C conformance benchmarks).<br/>
   Real integrations with LangChain, OpenAI Agents SDK, and CrewAI.
 </p>
 
 <p align="center">
-  <em>Status: v0.4.0-rc.2 release candidate. Single-maintainer project, community
+  <em>Status: v0.4.0-rc.3 release candidate. Single-maintainer project, community
   contributions welcome. No independent third-party security audit has been
   performed yet; deploy with the same diligence you would apply to any
   pre-1.0 open-source crypto stack.</em>
@@ -43,11 +43,11 @@
 ## Install
 
 ```bash
-# v0.4.0-rc.2 is a release candidate (pre-release). Use --pre to install it:
+# v0.4.0-rc.3 is a release candidate (pre-release). Use --pre to install it:
 pip install --pre attestix
 ```
 
-> v0.4.0-rc.2 packaging fix: the wheel now ships only the canonical
+> v0.4.0-rc.3 packaging fix: the wheel now ships only the canonical
 > `attestix.*` namespace. The pre-rc.2 flat layout (`from services... import`,
 > `from auth... import`, ...) keeps working via thin deprecation shims that
 > emit a `DeprecationWarning` on first import and are scheduled for removal in
@@ -257,7 +257,7 @@ Every artifact Attestix produces is cryptographically signed with Ed25519:
 ## Architecture
 
 ```
-attestix/                  # Canonical Python package (v0.4.0-rc.2)
+attestix/                  # Canonical Python package (v0.4.0-rc.3)
   main.py                  # MCP server entry point (47 tools)
   cli.py                   # `attestix` console script
   config.py                # Environment-based configuration
@@ -288,7 +288,7 @@ attestix/                  # Canonical Python package (v0.4.0-rc.2)
   tools/                   # MCP tool definitions (one file per module)
 ```
 
-The pre-v0.4.0-rc.2 flat layout (`services/`, `auth/`, `storage/`, ...) is
+The pre-v0.4.0-rc.3 flat layout (`services/`, `auth/`, `storage/`, ...) is
 preserved as deprecation shims at the same paths. They re-export from the
 canonical `attestix.*` namespace and emit a `DeprecationWarning` on first
 import. The shims are scheduled for removal in v0.5.0.
@@ -421,7 +421,7 @@ import. The shims are scheduled for removal in v0.5.0.
 ## Standards Conformance
 
 Every standards claim is validated by 91 automated conformance benchmarks that
-run alongside the rest of the suite for a total of 481 tests passing (1 skipped
+run alongside the rest of the suite for a total of 531 tests passing (1 skipped
 on Windows). These benchmarks demonstrate cryptographic conformance with the
 listed standards; they are not a substitute for a legal compliance audit.
 Run them yourself:
@@ -466,7 +466,7 @@ docker build -f Dockerfile.test -t attestix-bench . && docker run --rm attestix-
 
 ## Research Paper
 
-Attestix is described in a research paper covering system architecture, cryptographic pipeline, EU AI Act compliance automation, and evaluation with 481 automated tests (390 functional + 91 RFC / W3C conformance benchmarks).
+Attestix is described in a research paper covering system architecture, cryptographic pipeline, EU AI Act compliance automation, and evaluation with 531 automated tests (440 functional + 91 RFC / W3C conformance benchmarks).
 
 **[Attestix: A Unified Attestation Infrastructure for Autonomous AI Agents](https://github.com/VibeTensor/attestix/blob/main/paper/attestix-paper.pdf)**
 Pavan Kumar Dubasi, VibeTensor Private Limited, 2026.
