@@ -806,7 +806,7 @@ class TestPersona12_EnterpriseArchitect:
             "create_agent_identity",
             display_name="External-API-Agent",
             source_protocol="api_key",
-            identity_token="sk-enterprise-abc123-partner",
+            identity_token="sk-FAKE-fixture-enterprise-partner",  # synthetic test fixture, not a real key
             capabilities="partner_api,data_exchange",
             description="Partner integration agent",
             issuer_name="PartnerCo",

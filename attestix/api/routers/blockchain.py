@@ -93,6 +93,7 @@ def anchor_credential(
         artifact_id=body.credential_id,
     )
     if isinstance(result, dict) and "error" in result:
+        # nosemgrep: python.lang.security.audit.logging.logger-credential-leak.python-logger-credential-disclosure -- logs credential_id + service error string only; no credential body/signature/key
         logger.warning(
             "Credential anchor failed for %s: %s",
             body.credential_id, result["error"],

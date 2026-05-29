@@ -31,14 +31,15 @@ class TestCreateIdentity:
         assert result["issuer"]["name"] == "TestIssuer"
 
     def test_masks_identity_token(self, identity_service):
+        # Obviously-synthetic fixture: avoids gitleaks generic-api-key false positive.
         result = identity_service.create_identity(
             display_name="TokenBot",
             source_protocol="api_key",
-            identity_token="sk-very-secret-api-key-1234567890",
+            identity_token="sk-FAKE-fixture-do-not-use-7890",
         )
         token = result["identity_token"]
-        assert "very-secret" not in token
-        assert token.startswith("sk-v")
+        assert "fixture-do-not-use" not in token
+        assert token.startswith("sk-F")
         assert token.endswith("7890")
 
 

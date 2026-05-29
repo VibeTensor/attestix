@@ -39,7 +39,10 @@ def detect_token_type(token: str) -> TokenType:
     if JWT_PATTERN.match(token):
         # Verify it's actually parseable as JWT
         try:
-            jwt.decode(token, options={"verify_signature": False})
+            # Token-shape detection only; no auth decision is made on this decode.
+            # Real signature verification happens in attestix/services/delegation_service.py
+            # (jwt.decode with EdDSA + server public key) and attestix/auth/crypto.py.
+            jwt.decode(token, options={"verify_signature": False})  # nosemgrep: python.jwt.security.unverified-jwt-decode.unverified-jwt-decode
             return TokenType.JWT
         except jwt.DecodeError:
             pass
@@ -59,10 +62,13 @@ def parse_jwt_claims(token: str) -> Optional[dict]:
     Returns None if the token is not a valid JWT.
     """
     try:
+        # Claim extraction for identity bridging only; no auth decision is made here.
+        # Real signature verification happens in attestix/services/delegation_service.py
+        # (jwt.decode with EdDSA + server public key) and attestix/auth/crypto.py.
         claims = jwt.decode(
             token,
             options={
-                "verify_signature": False,
+                "verify_signature": False,  # nosemgrep: python.jwt.security.unverified-jwt-decode.unverified-jwt-decode
                 "verify_exp": False,
                 "verify_aud": False,
             },

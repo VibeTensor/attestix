@@ -27,5 +27,15 @@ COPY . .
 ENV PORT=8080
 EXPOSE 8080
 
+# Drop root: run as a dedicated unprivileged user (UID 10001, primary group root
+# so the image stays compatible with arbitrary-UID platforms like OpenShift).
+# Fixes trivy DS002 + semgrep dockerfile.security.missing-user.missing-user (#71).
+RUN useradd -r -u 10001 -g root attestix && chown -R attestix:root /app
+USER attestix
+
+# Liveness probe via stdlib urllib (no curl in the slim base image, no new deps).
+HEALTHCHECK --interval=30s --timeout=3s --retries=3 \
+  CMD python -c "import urllib.request,sys; sys.exit(0) if urllib.request.urlopen('http://localhost:8080/health').status == 200 else sys.exit(1)" || exit 1
+
 # Run the API server
 CMD ["uvicorn", "api.main:app", "--host", "0.0.0.0", "--port", "8080"]
