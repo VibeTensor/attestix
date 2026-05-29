@@ -25,6 +25,46 @@ class TestRecordTrainingData:
         )
         assert result["contains_personal_data"] is True
 
+    def test_dataset_version_stored(self, provenance_service):
+        # Issue #39: dataset_version is a first-class param now.
+        result = provenance_service.record_training_data(
+            agent_id="attestix:bot1",
+            dataset_name="SafetyBench",
+            dataset_version="2.0.1",
+        )
+        assert result["dataset_version"] == "2.0.1"
+
+    def test_source_alias_resolves_to_source_url(self, provenance_service):
+        # Issue #39 repro: source= must work without TypeError and land in
+        # the canonical source_url field.
+        result = provenance_service.record_training_data(
+            agent_id="attestix:bot1",
+            dataset_name="SafetyBench",
+            dataset_version="2.0.1",
+            source="https://huggingface.co/datasets/safetybench",
+            license="CC-BY-4.0",
+        )
+        assert "error" not in result
+        assert result["source_url"] == "https://huggingface.co/datasets/safetybench"
+
+    def test_source_url_wins_over_source_alias(self, provenance_service):
+        result = provenance_service.record_training_data(
+            agent_id="attestix:bot1",
+            dataset_name="SafetyBench",
+            source_url="https://canonical.example/ds",
+            source="https://alias.example/ds",
+        )
+        assert result["source_url"] == "https://canonical.example/ds"
+
+    def test_issue_39_repro_does_not_raise(self, provenance_service):
+        # Exact form from issue #39.
+        result = provenance_service.record_training_data(
+            agent_id="attestix:bot1", dataset_name="SafetyBench",
+            dataset_version="2.0.1",
+            source="https://huggingface.co/...", license="CC-BY-4.0",
+        )
+        assert result["entry_type"] == "training_data"
+
 
 class TestRecordModelLineage:
     """Tests for recording model lineage and fine-tuning metadata."""
@@ -40,6 +80,26 @@ class TestRecordModelLineage:
         assert result["entry_type"] == "model_lineage"
         assert result["base_model"] == "gpt-4"
         assert result["evaluation_metrics"]["accuracy"] == 0.95
+
+    def test_training_config_stored(self, provenance_service):
+        # Issue #39 repro: training_config= must work without TypeError and
+        # land in the entry alongside evaluation_metrics.
+        result = provenance_service.record_model_lineage(
+            agent_id="attestix:bot1", base_model="gpt-4",
+            fine_tuning_method="LoRA",
+            training_config={"epochs": 3, "lr": 1e-5},
+        )
+        assert "error" not in result
+        assert result["training_config"] == {"epochs": 3, "lr": 1e-5}
+
+    def test_training_config_and_metrics_coexist(self, provenance_service):
+        result = provenance_service.record_model_lineage(
+            agent_id="attestix:bot1", base_model="gpt-4",
+            evaluation_metrics={"accuracy": 0.9},
+            training_config={"epochs": 5},
+        )
+        assert result["evaluation_metrics"]["accuracy"] == 0.9
+        assert result["training_config"]["epochs"] == 5
 
 
 class TestLogAction:

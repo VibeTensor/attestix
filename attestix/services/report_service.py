@@ -278,6 +278,106 @@ class ReportService:
             "errors": errors,
         }
 
+    def generate_org_report(self, agent_ids: Optional[List[str]] = None) -> dict:
+        """Generate an aggregate organisation-wide compliance report (issue #37).
+
+        Reuses the single-agent compliance status shape (the dict returned by
+        :meth:`ComplianceService.get_compliance_status`) and aggregates it
+        across many agents so a CISO can prove org-wide posture in one call.
+
+        Parameters
+        ----------
+        agent_ids : list of str, optional
+            The agents to include. When ``None`` (the default) every agent in
+            local storage is included.
+
+        Returns
+        -------
+        dict
+            ``{"generated_at", "agent_count", "summary", "agents", "errors"}``
+            where ``summary`` aggregates compliant/non-compliant counts, a
+            risk-category breakdown, and the mean completion percentage, and
+            ``agents`` is a list of per-agent records reusing the single-agent
+            report shape (identity + compliance status). ``errors`` maps
+            agent_id to a message for any agent that could not be summarised.
+        """
+        try:
+            if agent_ids is None:
+                agents = self.identity_svc.list_identities(
+                    include_revoked=True, limit=10_000
+                )
+                agent_ids = [a.get("agent_id") for a in agents if a.get("agent_id")]
+
+            generated_at = datetime.now(timezone.utc).isoformat()
+            agent_records: List[dict] = []
+            errors: dict = {}
+
+            compliant_count = 0
+            non_compliant_count = 0
+            no_profile_count = 0
+            risk_breakdown: dict = {}
+            completion_total = 0.0
+            completion_n = 0
+
+            for agent_id in agent_ids:
+                agent = self.identity_svc.get_identity(agent_id)
+                if not agent:
+                    errors[agent_id] = f"Agent {agent_id} not found"
+                    continue
+
+                profile = self.compliance_svc.get_compliance_profile(agent_id)
+                status = (
+                    self.compliance_svc.get_compliance_status(agent_id)
+                    if profile
+                    else None
+                )
+
+                if status and "error" not in status:
+                    if status.get("compliant"):
+                        compliant_count += 1
+                    else:
+                        non_compliant_count += 1
+                    risk = status.get("risk_category", "unknown")
+                    risk_breakdown[risk] = risk_breakdown.get(risk, 0) + 1
+                    completion_total += float(status.get("completion_pct", 0.0))
+                    completion_n += 1
+                else:
+                    no_profile_count += 1
+
+                agent_records.append(
+                    {
+                        "agent_id": agent_id,
+                        "display_name": agent.get("display_name", ""),
+                        "source_protocol": agent.get("source_protocol", ""),
+                        "revoked": bool(agent.get("revoked")),
+                        "has_compliance_profile": profile is not None,
+                        "compliance_status": status,
+                    }
+                )
+
+            avg_completion = (
+                round(completion_total / completion_n, 1) if completion_n else 0.0
+            )
+
+            return {
+                "generated_at": generated_at,
+                "agent_count": len(agent_ids),
+                "summary": {
+                    "compliant": compliant_count,
+                    "non_compliant": non_compliant_count,
+                    "no_compliance_profile": no_profile_count,
+                    "risk_breakdown": risk_breakdown,
+                    "avg_completion_pct": avg_completion,
+                },
+                "agents": agent_records,
+                "errors": errors,
+            }
+        except Exception as e:
+            msg = log_and_format_error(
+                "generate_org_report", e, ErrorCategory.COMPLIANCE,
+            )
+            return {"error": msg}
+
     # -- bulk rendering helpers --------------------------------------------
 
     @staticmethod

@@ -70,9 +70,27 @@ class ProvenanceService:
         data_categories: Optional[List[str]] = None,
         contains_personal_data: bool = False,
         data_governance_measures: str = "",
+        dataset_version: str = "",
+        source: str = "",
     ) -> dict:
-        """Record a training data source for an agent (Article 10 compliance)."""
+        """Record a training data source for an agent (Article 10 compliance).
+
+        Args:
+            source_url: Canonical URL of the dataset source. ``source`` is
+                accepted as an alias (issue #39); if both are supplied,
+                ``source_url`` wins.
+            dataset_version: Optional dataset version string (issue #39),
+                stored verbatim in the provenance entry.
+            source: Alias for ``source_url`` (issue #39). Many callers pass
+                ``source=`` intuitively; it is folded into ``source_url``.
+        """
         try:
+            # Issue #39: alias resolution. ``source_url`` is canonical; ``source``
+            # is the common-sense alias researchers reach for. If only ``source``
+            # is given, use it; if both are given, ``source_url`` wins.
+            if not source_url and source:
+                source_url = source
+
             entry_id = f"prov:{uuid.uuid4().hex[:12]}"
             now = datetime.now(timezone.utc).isoformat()
 
@@ -81,6 +99,7 @@ class ProvenanceService:
                 "entry_type": "training_data",
                 "agent_id": agent_id,
                 "dataset_name": dataset_name,
+                "dataset_version": dataset_version,
                 "source_url": source_url,
                 "license": license,
                 "data_categories": data_categories or [],
@@ -123,8 +142,18 @@ class ProvenanceService:
         base_model_provider: str = "",
         fine_tuning_method: str = "",
         evaluation_metrics: Optional[Dict] = None,
+        training_config: Optional[Dict] = None,
     ) -> dict:
-        """Record model lineage chain for an agent (Article 11 compliance)."""
+        """Record model lineage chain for an agent (Article 11 compliance).
+
+        Args:
+            evaluation_metrics: Post-training evaluation metrics (accuracy,
+                F1, etc.), stored verbatim.
+            training_config: Optional training hyper-parameters (epochs, lr,
+                etc.) (issue #39), stored verbatim alongside the metrics.
+                Researchers frequently pass ``training_config=``; it is now
+                an accepted first-class param rather than a TypeError.
+        """
         try:
             entry_id = f"prov:{uuid.uuid4().hex[:12]}"
             now = datetime.now(timezone.utc).isoformat()
@@ -137,6 +166,7 @@ class ProvenanceService:
                 "base_model_provider": base_model_provider,
                 "fine_tuning_method": fine_tuning_method,
                 "evaluation_metrics": evaluation_metrics or {},
+                "training_config": training_config or {},
                 "recorded_at": now,
                 "recorded_by": self._server_did,
             }

@@ -171,15 +171,89 @@ class IdentityService:
         source_protocol: Optional[str] = None,
         include_revoked: bool = False,
         limit: int = 50,
+        risk_category: Optional[str] = None,
+        name_contains: Optional[str] = None,
+        status: Optional[str] = None,
     ) -> List[dict]:
-        """List UAITs with optional filters."""
+        """List UAITs with optional filters.
+
+        All filters compose with logical AND and preserve every existing
+        parameter and default (issue #37).
+
+        Args:
+            source_protocol: Exact-match filter on the identity source protocol.
+            include_revoked: Include revoked identities (default excludes them).
+            limit: Maximum number of identities to return.
+            risk_category: Filter to agents whose EU AI Act compliance profile
+                carries this risk category ("minimal"|"limited"|"high"|
+                "unacceptable"). Joined in the service layer against the
+                compliance profiles keyed by ``agent_id``. Agents without a
+                profile are excluded when this filter is set.
+            name_contains: Case-insensitive substring match on ``display_name``.
+            status: Lifecycle status filter — "active" (not revoked, not
+                expired), "revoked", or "expired". When ``status`` is set it is
+                authoritative; "revoked"/"expired" implicitly include the
+                relevant agents regardless of ``include_revoked``.
+        """
         data = load_identities()
+
+        # Build the agent_id -> risk_category join up-front so each agent is
+        # O(1) to classify (issue #37). Compliance profiles are keyed by
+        # agent_id in ComplianceService storage.
+        risk_by_agent: dict = {}
+        if risk_category is not None:
+            from attestix.config import load_compliance
+            comp_data = load_compliance()
+            for profile in comp_data.get("profiles", []):
+                aid = profile.get("agent_id")
+                if aid:
+                    risk_by_agent[aid] = profile.get("risk_category")
+
+        wanted_risk = risk_category.lower() if risk_category else None
+        wanted_name = name_contains.lower() if name_contains else None
+        wanted_status = status.lower() if status else None
+        now = datetime.now(timezone.utc)
+
         results = []
         for agent in data["agents"]:
-            if not include_revoked and agent.get("revoked"):
-                continue
+            revoked = bool(agent.get("revoked"))
+
+            # Compute lifecycle status (active|revoked|expired) for the agent.
+            expired = False
+            expires_at = agent.get("expires_at")
+            if expires_at and not revoked:
+                try:
+                    expired = now >= datetime.fromisoformat(expires_at)
+                except ValueError:
+                    expired = False
+            if revoked:
+                agent_status = "revoked"
+            elif expired:
+                agent_status = "expired"
+            else:
+                agent_status = "active"
+
+            if wanted_status is not None:
+                # An explicit status filter is authoritative over include_revoked.
+                if agent_status != wanted_status:
+                    continue
+            else:
+                # Legacy behaviour: hide revoked unless include_revoked is set.
+                if not include_revoked and revoked:
+                    continue
+
             if source_protocol and agent.get("source_protocol") != source_protocol:
                 continue
+
+            if wanted_name is not None:
+                if wanted_name not in (agent.get("display_name") or "").lower():
+                    continue
+
+            if wanted_risk is not None:
+                agent_risk = risk_by_agent.get(agent.get("agent_id"))
+                if agent_risk is None or agent_risk.lower() != wanted_risk:
+                    continue
+
             results.append(agent)
             if len(results) >= limit:
                 break

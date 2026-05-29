@@ -129,7 +129,8 @@ def init(name, protocol, description, capabilities, identity_token, issuer, expi
 
 @cli.command()
 @click.argument("agent_id")
-def verify(agent_id):
+@click.option("--json", "as_json", is_flag=True, help="Emit machine-readable JSON (CI/CD). Exits 1 if invalid.")
+def verify(agent_id, as_json):
     """Verify an agent identity by its ID.
 
     Checks existence, revocation status, expiry, and cryptographic signature.
@@ -138,6 +139,12 @@ def verify(agent_id):
     result = svc.verify_identity(agent_id)
 
     valid = result.get("valid", False)
+
+    if as_json:
+        _print_json(result)
+        if not valid:
+            sys.exit(1)
+        return
 
     if valid:
         _success(f"Identity {agent_id} is VALID")
@@ -166,7 +173,8 @@ def verify(agent_id):
 @click.option("--risk-category", type=click.Choice(["minimal", "limited", "high"], case_sensitive=False), help="EU AI Act risk category (for --create).")
 @click.option("--provider-name", default="", help="Provider name (for --create).")
 @click.option("--intended-purpose", default="", help="Intended purpose (for --create).")
-def compliance(agent_id, create_profile, risk_category, provider_name, intended_purpose):
+@click.option("--json", "as_json", is_flag=True, help="Emit machine-readable JSON (CI/CD). Exits non-zero if not compliant.")
+def compliance(agent_id, create_profile, risk_category, provider_name, intended_purpose, as_json):
     """Show compliance status for an agent, or create a new compliance profile.
 
     Without --create, displays a gap analysis of EU AI Act obligations.
@@ -192,14 +200,27 @@ def compliance(agent_id, create_profile, risk_category, provider_name, intended_
             intended_purpose=intended_purpose,
         )
         if "error" in result:
+            if as_json:
+                _print_json(result)
+                sys.exit(1)
             _error(result["error"])
 
+        if as_json:
+            _print_json(result)
+            return
         _success(f"Compliance profile created: {result['profile_id']}")
         _print_json(result)
         return
 
     # Default: show compliance status (gap analysis)
     result = svc.get_compliance_status(agent_id)
+
+    if as_json:
+        _print_json(result)
+        # CI/CD gate: non-zero exit on error OR when the agent is not compliant.
+        if "error" in result or not result.get("compliant"):
+            sys.exit(1)
+        return
 
     if "error" in result:
         _error(result["error"])
@@ -318,7 +339,8 @@ def audit(agent_id, action_type, limit):
 @click.option("--type", "credential_type", default="AgentIdentityCredential", show_default=True, help="Credential type (for --issue).")
 @click.option("--issuer", default="", help="Issuer name (for --issue).")
 @click.option("--claims", default="{}", help="JSON string of claims (for --issue).")
-def credential(do_issue, cred_id_to_verify, do_list, cred_id_to_revoke, agent_id, credential_type, issuer, claims):
+@click.option("--json", "as_json", is_flag=True, help="Emit machine-readable JSON (CI/CD). --verify-cred exits 1 if invalid.")
+def credential(do_issue, cred_id_to_verify, do_list, cred_id_to_revoke, agent_id, credential_type, issuer, claims, as_json):
     """Issue, verify, list, or revoke W3C Verifiable Credentials.
 
     Examples:
@@ -350,6 +372,11 @@ def credential(do_issue, cred_id_to_verify, do_list, cred_id_to_revoke, agent_id
             issuer_name=issuer,
             claims=parsed_claims,
         )
+        if as_json:
+            _print_json(result)
+            if "error" in result:
+                sys.exit(1)
+            return
         if "error" in result:
             _error(result["error"])
 
@@ -358,8 +385,16 @@ def credential(do_issue, cred_id_to_verify, do_list, cred_id_to_revoke, agent_id
 
     elif cred_id_to_verify:
         result = svc.verify_credential(cred_id_to_verify)
+        valid = result.get("valid", False)
 
-        if result.get("valid"):
+        if as_json:
+            _print_json(result)
+            # Preserve verify-style CI semantics: exit 1 when invalid.
+            if not valid:
+                sys.exit(1)
+            return
+
+        if valid:
             _success(f"Credential {cred_id_to_verify} is VALID")
         else:
             _warn(f"Credential {cred_id_to_verify} is INVALID")
@@ -373,6 +408,10 @@ def credential(do_issue, cred_id_to_verify, do_list, cred_id_to_revoke, agent_id
         click.echo()
         _print_json(result)
 
+        # CI/CD gate: exit 1 on invalid credential (parity with `verify`).
+        if not valid:
+            sys.exit(1)
+
     elif do_list:
         if not agent_id:
             agent_id = click.prompt("Agent ID (optional, leave blank to list all)", default="")
@@ -380,7 +419,14 @@ def credential(do_issue, cred_id_to_verify, do_list, cred_id_to_revoke, agent_id
                 agent_id = None
         results = svc.list_credentials(agent_id=agent_id)
         if results and "error" in results[0]:
+            if as_json:
+                _print_json(results[0])
+                sys.exit(1)
             _error(results[0]["error"])
+
+        if as_json:
+            _print_json({"agent_id": agent_id, "count": len(results), "credentials": results})
+            return
 
         if not results:
             _warn(f"No credentials found{' for ' + agent_id if agent_id else ''}.")
@@ -400,8 +446,13 @@ def credential(do_issue, cred_id_to_verify, do_list, cred_id_to_revoke, agent_id
             click.echo()
 
     elif cred_id_to_revoke:
-        reason = click.prompt("Revocation reason (optional)", default="")
+        reason = "" if as_json else click.prompt("Revocation reason (optional)", default="")
         result = svc.revoke_credential(cred_id_to_revoke, reason=reason)
+        if as_json:
+            _print_json(result)
+            if "error" in result:
+                sys.exit(1)
+            return
         if "error" in result:
             _error(result["error"])
         _success(f"Credential revoked: {cred_id_to_revoke}")
@@ -416,7 +467,8 @@ def credential(do_issue, cred_id_to_verify, do_list, cred_id_to_revoke, agent_id
 # ---------------------------------------------------------------------------
 
 @cli.command()
-def status():
+@click.option("--json", "as_json", is_flag=True, help="Emit machine-readable JSON (CI/CD).")
+def status(as_json):
     """Show system status: data directory, version, and resource counts."""
     # Version
     try:
@@ -428,10 +480,11 @@ def status():
         except ImportError:
             ver = "unknown"
 
-    _header("Attestix System Status")
-    click.echo(f"  Version    : {ver}")
-    click.echo(f"  Data dir   : {DATA_DIR}")
-    click.echo()
+    if not as_json:
+        _header("Attestix System Status")
+        click.echo(f"  Version    : {ver}")
+        click.echo(f"  Data dir   : {DATA_DIR}")
+        click.echo()
 
     # Count resources
     identities = load_identities()
@@ -462,6 +515,21 @@ def status():
             audit_data = {}
     audit_entries = audit_data.get("events", [])
 
+    if as_json:
+        _print_json({
+            "version": ver,
+            "data_dir": str(DATA_DIR),
+            "agents_active": len(active_agents),
+            "agents_revoked": len(revoked_agents),
+            "credentials": len(creds),
+            "credentials_active": len(active_creds),
+            "compliance_profiles": len(profiles),
+            "declarations": len(declarations),
+            "provenance_entries": len(prov_entries),
+            "audit_log_entries": len(audit_entries),
+        })
+        return
+
     _header("Resource Counts")
     click.echo(f"  Agents (active)    : {len(active_agents)}")
     click.echo(f"  Agents (revoked)   : {len(revoked_agents)}")
@@ -480,14 +548,25 @@ def status():
 @click.option("--protocol", default=None, help="Filter by source protocol.")
 @click.option("--include-revoked", is_flag=True, help="Include revoked identities.")
 @click.option("--limit", default=50, type=int, show_default=True, help="Maximum entries to return.")
-def list_identities(protocol, include_revoked, limit):
+@click.option("--risk-category", default=None, type=click.Choice(["minimal", "limited", "high", "unacceptable"], case_sensitive=False), help="Filter by EU AI Act risk category (joins compliance profiles).")
+@click.option("--name-contains", default=None, help="Case-insensitive substring filter on display name.")
+@click.option("--status", "status_filter", default=None, type=click.Choice(["active", "revoked", "expired"], case_sensitive=False), help="Filter by lifecycle status.")
+@click.option("--json", "as_json", is_flag=True, help="Emit machine-readable JSON (CI/CD).")
+def list_identities(protocol, include_revoked, limit, risk_category, name_contains, status_filter, as_json):
     """List all agent identities."""
     svc = get_service(IdentityService)
     agents = svc.list_identities(
         source_protocol=protocol,
         include_revoked=include_revoked,
         limit=limit,
+        risk_category=risk_category,
+        name_contains=name_contains,
+        status=status_filter,
     )
+
+    if as_json:
+        _print_json({"count": len(agents), "agents": agents})
+        return
 
     if not agents:
         _warn("No agent identities found.")
