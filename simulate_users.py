@@ -1002,7 +1002,7 @@ def sim_enterprise_architect():
     api_agent = call("create_agent_identity",
                      display_name="Partner-API-Agent",
                      source_protocol="api_key",
-                     identity_token="sk-partner-integration-key-abc123",
+                     identity_token="sk-FAKE-fixture-partner-integration",  # synthetic fixture, not a real key
                      capabilities="data_exchange",
                      issuer_name="PartnerCo")
     did_agent = call("create_agent_identity",

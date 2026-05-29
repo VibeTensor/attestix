@@ -63,6 +63,7 @@ def issue_credential(
         expiry_days=body.expiry_days,
     )
     if isinstance(result, dict) and "error" in result:
+        # nosemgrep: python.lang.security.audit.logging.logger-credential-leak.python-logger-credential-disclosure -- logs the service error string only; no credential body/signature/key
         logger.warning("Credential issuance failed: %s", result["error"])
         raise HTTPException(status_code=400, detail="Credential issuance failed")
     return result
@@ -85,6 +86,7 @@ def list_credentials(
     )
     # Service returns list with error dict on failure
     if results and isinstance(results[0], dict) and "error" in results[0]:
+        # nosemgrep: python.lang.security.audit.logging.logger-credential-leak.python-logger-credential-disclosure -- logs the service error string only; no credential body/signature/key
         logger.error("Credential listing failed: %s", results[0]["error"])
         raise HTTPException(status_code=500, detail="Credential listing failed")
     return results
@@ -101,6 +103,7 @@ def verify_credential_external(
     """
     result = svc.verify_credential_external(body.credential)
     if isinstance(result, dict) and "error" in result:
+        # nosemgrep: python.lang.security.audit.logging.logger-credential-leak.python-logger-credential-disclosure -- logs the service error string only; no credential body/signature/key
         logger.warning("External credential verification failed: %s", result["error"])
         raise HTTPException(status_code=400, detail="Credential verification failed")
     return result
@@ -126,6 +129,7 @@ def verify_credential(
     """Verify a credential by ID: check signature, expiry, and revocation."""
     result = svc.verify_credential(credential_id)
     if isinstance(result, dict) and "error" in result:
+        # nosemgrep: python.lang.security.audit.logging.logger-credential-leak.python-logger-credential-disclosure -- logs credential_id + service error string only; no credential body/signature/key
         logger.warning("Credential verification failed for %s: %s", credential_id, result["error"])
         raise HTTPException(status_code=400, detail="Credential verification failed")
     return result
@@ -142,6 +146,7 @@ def revoke_credential(
     result = svc.revoke_credential(credential_id, reason=reason)
     if isinstance(result, dict) and "error" in result:
         error_msg = result["error"]
+        # nosemgrep: python.lang.security.audit.logging.logger-credential-leak.python-logger-credential-disclosure -- logs credential_id + service error string only; no credential body/signature/key
         logger.warning("Credential revocation failed for %s: %s", credential_id, error_msg)
         if "not found" in error_msg.lower():
             raise HTTPException(status_code=404, detail="Credential not found")
