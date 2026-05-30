@@ -36,6 +36,29 @@ updates:
       npm-dependencies:
         patterns:
           - "*"
+        # Keep major bumps OUT of the grouped PR — a single grouped major bump
+        # broke the site once (PR #90: next 15->16 + fumadocs 15->16 together,
+        # reverted in #116). Majors must be deliberate, individually-tested PRs.
+        update-types:
+          - "minor"
+          - "patch"
+    ignore:
+      # Next.js + Fumadocs majors require a coordinated migration (Fumadocs v16
+      # needs Next 16 + React 19 export-path changes). NOT a Dependabot
+      # auto-merge — do these as a dedicated migration PR. See the 2026-05-30
+      # #90 break for the rationale.
+      - dependency-name: "next"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "fumadocs-core"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "fumadocs-ui"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "fumadocs-mdx"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "react"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "react-dom"
+        update-types: ["version-update:semver-major"]
     labels:
       - "dependencies"
       - "javascript"
