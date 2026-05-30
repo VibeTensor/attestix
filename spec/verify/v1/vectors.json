@@ -1,0 +1,303 @@
+{
+  "attestix_version": "0.4.0",
+  "description": "Authoritative cross-language verifier conformance vectors, generated from the real attestix crypto. Every port (Go, Rust, Java, R, JS) MUST reproduce the 'expected' values. See README.md for the exact canonical-form rules and CONFORMANCE.md for the verifier surface.",
+  "generator": "spec/verify/v1/generate_vectors.py",
+  "issuer_did": "did:key:z6Mko5TBPGKHkCxSgmf3aC6p6SGj2auwCfRmBydXJFEwL4ev",
+  "issuer_pubkey_raw_hex": "8022fe847be6106443a4030d74d390c8d9a91319b9f51526bc7c3d88a27c9b7b",
+  "issuer_seed_hex": "9d61b19deffdeaf3ee2cd05c0fc7d1bbf2b6c5e4e6b3d2c1a0f9e8d7c6b5a4f3",
+  "spec": "attestix-verify-conformance",
+  "vector_count": 7,
+  "vectors": [
+    {
+      "canonical_bytes_hex": "7b22615f6669727374223a6e756c6c2c22617272223a5b312c2274776f222c66616c73652c6e756c6c2c7b226b223a2276227d5d2c226269675f696e74223a393030373139393235343734303939332c22656d7074795f617272223a5b5d2c22656d7074795f6f626a223a7b7d2c226e65675f696e74223a2d34322c226e6573746564223a7b2261223a312c2262223a322c2264656570223a7b2278223a227a222c2279223a5b332c322c315d7d7d2c226e66635f74657374223a22636166c3a9222c227265616c5f666c6f6174223a312e352c22756e69636f6465223a2268c3a96c6c6f20c3a920e2988320f09f9880222c2277686f6c655f666c6f6174223a312c227a5f6c617374223a747275657d",
+      "description": "JCS-style canonicalization. A port's canonicaliser MUST produce byte-identical output to canonical_bytes_hex. Note NFC composition of 'cafe'+U+0301 -> 'café', whole_float 1.0 -> 1, keys sorted by Unicode codepoint, raw UTF-8 (no \\uXXXX escapes).",
+      "expected": {
+        "canonical_utf8": "{\"a_first\":null,\"arr\":[1,\"two\",false,null,{\"k\":\"v\"}],\"big_int\":9007199254740993,\"empty_arr\":[],\"empty_obj\":{},\"neg_int\":-42,\"nested\":{\"a\":1,\"b\":2,\"deep\":{\"x\":\"z\",\"y\":[3,2,1]}},\"nfc_test\":\"café\",\"real_float\":1.5,\"unicode\":\"héllo é ☃ 😀\",\"whole_float\":1,\"z_last\":true}"
+      },
+      "id": "canon-001",
+      "input": {
+        "a_first": null,
+        "arr": [
+          1,
+          "two",
+          false,
+          null,
+          {
+            "k": "v"
+          }
+        ],
+        "big_int": 9007199254740993,
+        "empty_arr": [],
+        "empty_obj": {},
+        "neg_int": -42,
+        "nested": {
+          "a": 1,
+          "b": 2,
+          "deep": {
+            "x": "z",
+            "y": [
+              3,
+              2,
+              1
+            ]
+          }
+        },
+        "nfc_test": "café",
+        "real_float": 1.5,
+        "unicode": "héllo é ☃ 😀",
+        "whole_float": 1.0,
+        "z_last": true
+      },
+      "kind": "canonicalize"
+    },
+    {
+      "description": "did:key for Ed25519. multibase = 'z' + base58btc(0xed01 || raw32). A port MUST decode pubkey_multibase to the raw 32-byte key. The multicodec prefix is 0xed 0x01 (varint for ed25519-pub).",
+      "expected": {
+        "fragment": "#z6Mko5TBPGKHkCxSgmf3aC6p6SGj2auwCfRmBydXJFEwL4ev",
+        "multibase_prefix": "z",
+        "multicodec_prefix_hex": "ed01",
+        "pubkey_raw_hex": "8022fe847be6106443a4030d74d390c8d9a91319b9f51526bc7c3d88a27c9b7b",
+        "verification_method": "did:key:z6Mko5TBPGKHkCxSgmf3aC6p6SGj2auwCfRmBydXJFEwL4ev#z6Mko5TBPGKHkCxSgmf3aC6p6SGj2auwCfRmBydXJFEwL4ev"
+      },
+      "id": "didkey-001",
+      "input": {
+        "did": "did:key:z6Mko5TBPGKHkCxSgmf3aC6p6SGj2auwCfRmBydXJFEwL4ev"
+      },
+      "kind": "did_key_decode",
+      "multicodec_full_hex": "ed018022fe847be6106443a4030d74d390c8d9a91319b9f51526bc7c3d88a27c9b7b",
+      "pubkey_multibase": "z6Mko5TBPGKHkCxSgmf3aC6p6SGj2auwCfRmBydXJFEwL4ev",
+      "pubkey_raw_hex": "8022fe847be6106443a4030d74d390c8d9a91319b9f51526bc7c3d88a27c9b7b"
+    },
+    {
+      "canonical_bytes_hex": "7b2240636f6e74657874223a5b2268747470733a2f2f7777772e77332e6f72672f323031382f63726564656e7469616c732f7631222c2268747470733a2f2f773369642e6f72672f73656375726974792f7375697465732f656432353531392d323032302f7631225d2c2263726564656e7469616c5375626a656374223a7b22636f6e666f726d6974794173736573736564223a747275652c226964223a226469643a6b65793a7a5375626a6563744167656e74506c616365686f6c646572222c227269736b54696572223a2268696768227d2c2265787069726174696f6e44617465223a22323032372d30312d30315430303a30303a30302b30303a3030222c226964223a2275726e3a757569643a31313131313131312d323232322d333333332d343434342d353535353535353535353535222c2269737375616e636544617465223a22323032362d30312d30315430303a30303a30302b30303a3030222c22697373756572223a7b226964223a226469643a6b65793a7a364d6b6f35544250474b486b437853676d6633614336703653476a326175774366526d427964584a4645774c346576222c226e616d65223a225669626554656e736f72227d2c2274797065223a5b2256657269666961626c6543726564656e7469616c222c2245554149416374436f6d706c69616e636543726564656e7469616c225d7d",
+      "description": "Valid W3C VC with Ed25519 proof. Signed payload = the VC with 'proof' and 'credentialStatus' REMOVED, then JCS-canonicalized. Expected: signature valid, not expired, not revoked -> verify true.",
+      "expected": {
+        "not_expired": true,
+        "not_revoked": true,
+        "signature_valid": true,
+        "verify": true
+      },
+      "id": "vc-valid-001",
+      "input": {
+        "@context": [
+          "https://www.w3.org/2018/credentials/v1",
+          "https://w3id.org/security/suites/ed25519-2020/v1"
+        ],
+        "credentialStatus": {
+          "id": "urn:uuid:11111111-2222-3333-4444-555555555555#status",
+          "revocation_reason": null,
+          "revoked": false,
+          "revoked_at": null,
+          "type": "RevocationList2021Status"
+        },
+        "credentialSubject": {
+          "conformityAssessed": true,
+          "id": "did:key:zSubjectAgentPlaceholder",
+          "riskTier": "high"
+        },
+        "expirationDate": "2027-01-01T00:00:00+00:00",
+        "id": "urn:uuid:11111111-2222-3333-4444-555555555555",
+        "issuanceDate": "2026-01-01T00:00:00+00:00",
+        "issuer": {
+          "id": "did:key:z6Mko5TBPGKHkCxSgmf3aC6p6SGj2auwCfRmBydXJFEwL4ev",
+          "name": "VibeTensor"
+        },
+        "proof": {
+          "created": "2026-01-01T00:00:00+00:00",
+          "proofPurpose": "assertionMethod",
+          "proofValue": "ksvGxJxaJqz7Vg1aRfOoHCbKiyEGcWtpcY-vcD2iGmIjsRDNJn3fsplhicGdIBYC7l8rvwnyn3VT7w3jk9SAAw==",
+          "type": "Ed25519Signature2020",
+          "verificationMethod": "did:key:z6Mko5TBPGKHkCxSgmf3aC6p6SGj2auwCfRmBydXJFEwL4ev#z6Mko5TBPGKHkCxSgmf3aC6p6SGj2auwCfRmBydXJFEwL4ev"
+        },
+        "type": [
+          "VerifiableCredential",
+          "EUAIActComplianceCredential"
+        ]
+      },
+      "kind": "verify_credential",
+      "pubkey_multibase": "z6Mko5TBPGKHkCxSgmf3aC6p6SGj2auwCfRmBydXJFEwL4ev",
+      "pubkey_raw_hex": "8022fe847be6106443a4030d74d390c8d9a91319b9f51526bc7c3d88a27c9b7b",
+      "signature_b64url": "ksvGxJxaJqz7Vg1aRfOoHCbKiyEGcWtpcY-vcD2iGmIjsRDNJn3fsplhicGdIBYC7l8rvwnyn3VT7w3jk9SAAw==",
+      "signing_payload": {
+        "@context": [
+          "https://www.w3.org/2018/credentials/v1",
+          "https://w3id.org/security/suites/ed25519-2020/v1"
+        ],
+        "credentialSubject": {
+          "conformityAssessed": true,
+          "id": "did:key:zSubjectAgentPlaceholder",
+          "riskTier": "high"
+        },
+        "expirationDate": "2027-01-01T00:00:00+00:00",
+        "id": "urn:uuid:11111111-2222-3333-4444-555555555555",
+        "issuanceDate": "2026-01-01T00:00:00+00:00",
+        "issuer": {
+          "id": "did:key:z6Mko5TBPGKHkCxSgmf3aC6p6SGj2auwCfRmBydXJFEwL4ev",
+          "name": "VibeTensor"
+        },
+        "type": [
+          "VerifiableCredential",
+          "EUAIActComplianceCredential"
+        ]
+      }
+    },
+    {
+      "canonical_bytes_hex": "7b2240636f6e74657874223a5b2268747470733a2f2f7777772e77332e6f72672f323031382f63726564656e7469616c732f7631222c2268747470733a2f2f773369642e6f72672f73656375726974792f7375697465732f656432353531392d323032302f7631225d2c2263726564656e7469616c5375626a656374223a7b22636f6e666f726d6974794173736573736564223a747275652c226964223a226469643a6b65793a7a5375626a6563744167656e74506c616365686f6c646572222c227269736b54696572223a2268697668227d2c2265787069726174696f6e44617465223a22323032372d30312d30315430303a30303a30302b30303a3030222c226964223a2275726e3a757569643a31313131313131312d323232322d333333332d343434342d353535353535353535353535222c2269737375616e636544617465223a22323032362d30312d30315430303a30303a30302b30303a3030222c22697373756572223a7b226964223a226469643a6b65793a7a364d6b6f35544250474b486b437853676d6633614336703653476a326175774366526d427964584a4645774c346576222c226e616d65223a225669626554656e736f72227d2c2274797065223a5b2256657269666961626c6543726564656e7469616c222c2245554149416374436f6d706c69616e636543726564656e7469616c225d7d",
+      "description": "Tampered VC: one claim byte flipped (riskTier 'high' -> 'hivh') AFTER signing. The original proofValue no longer matches the canonical bytes of the tampered payload -> signature invalid -> verify false.",
+      "expected": {
+        "not_expired": true,
+        "not_revoked": true,
+        "signature_valid": false,
+        "verify": false
+      },
+      "id": "vc-tampered-001",
+      "input": {
+        "@context": [
+          "https://www.w3.org/2018/credentials/v1",
+          "https://w3id.org/security/suites/ed25519-2020/v1"
+        ],
+        "credentialStatus": {
+          "id": "urn:uuid:11111111-2222-3333-4444-555555555555#status",
+          "revocation_reason": null,
+          "revoked": false,
+          "revoked_at": null,
+          "type": "RevocationList2021Status"
+        },
+        "credentialSubject": {
+          "conformityAssessed": true,
+          "id": "did:key:zSubjectAgentPlaceholder",
+          "riskTier": "hivh"
+        },
+        "expirationDate": "2027-01-01T00:00:00+00:00",
+        "id": "urn:uuid:11111111-2222-3333-4444-555555555555",
+        "issuanceDate": "2026-01-01T00:00:00+00:00",
+        "issuer": {
+          "id": "did:key:z6Mko5TBPGKHkCxSgmf3aC6p6SGj2auwCfRmBydXJFEwL4ev",
+          "name": "VibeTensor"
+        },
+        "proof": {
+          "created": "2026-01-01T00:00:00+00:00",
+          "proofPurpose": "assertionMethod",
+          "proofValue": "ksvGxJxaJqz7Vg1aRfOoHCbKiyEGcWtpcY-vcD2iGmIjsRDNJn3fsplhicGdIBYC7l8rvwnyn3VT7w3jk9SAAw==",
+          "type": "Ed25519Signature2020",
+          "verificationMethod": "did:key:z6Mko5TBPGKHkCxSgmf3aC6p6SGj2auwCfRmBydXJFEwL4ev#z6Mko5TBPGKHkCxSgmf3aC6p6SGj2auwCfRmBydXJFEwL4ev"
+        },
+        "type": [
+          "VerifiableCredential",
+          "EUAIActComplianceCredential"
+        ]
+      },
+      "kind": "verify_credential",
+      "pubkey_multibase": "z6Mko5TBPGKHkCxSgmf3aC6p6SGj2auwCfRmBydXJFEwL4ev",
+      "pubkey_raw_hex": "8022fe847be6106443a4030d74d390c8d9a91319b9f51526bc7c3d88a27c9b7b",
+      "signature_b64url": "ksvGxJxaJqz7Vg1aRfOoHCbKiyEGcWtpcY-vcD2iGmIjsRDNJn3fsplhicGdIBYC7l8rvwnyn3VT7w3jk9SAAw=="
+    },
+    {
+      "canonical_bytes_hex": "7b2240636f6e74657874223a5b2268747470733a2f2f7777772e77332e6f72672f323031382f63726564656e7469616c732f7631222c2268747470733a2f2f773369642e6f72672f73656375726974792f7375697465732f656432353531392d323032302f7631225d2c2263726564656e7469616c5375626a656374223a7b22636f6e666f726d6974794173736573736564223a747275652c226964223a226469643a6b65793a7a5375626a6563744167656e74506c616365686f6c646572222c227269736b54696572223a2268696768227d2c2265787069726174696f6e44617465223a22323032312d30312d30315430303a30303a30302b30303a3030222c226964223a2275726e3a757569643a39393939393939392d383838382d373737372d363636362d353535353535353535353535222c2269737375616e636544617465223a22323032302d30312d30315430303a30303a30302b30303a3030222c22697373756572223a7b226964223a226469643a6b65793a7a364d6b6f35544250474b486b437853676d6633614336703653476a326175774366526d427964584a4645774c346576222c226e616d65223a225669626554656e736f72227d2c2274797065223a5b2256657269666961626c6543726564656e7469616c222c2245554149416374436f6d706c69616e636543726564656e7469616c225d7d",
+      "description": "Expired VC. expirationDate is 2021-01-01 (past). The signature is cryptographically valid; only the expiry check fails. Expected: not_expired false -> verify false. Compare expirationDate against the verifier's current time (here, any time after 2021-01-01).",
+      "expected": {
+        "not_expired": false,
+        "not_revoked": true,
+        "signature_valid": true,
+        "verify": false
+      },
+      "id": "vc-expired-001",
+      "input": {
+        "@context": [
+          "https://www.w3.org/2018/credentials/v1",
+          "https://w3id.org/security/suites/ed25519-2020/v1"
+        ],
+        "credentialStatus": {
+          "id": "urn:uuid:99999999-8888-7777-6666-555555555555#status",
+          "revocation_reason": null,
+          "revoked": false,
+          "revoked_at": null,
+          "type": "RevocationList2021Status"
+        },
+        "credentialSubject": {
+          "conformityAssessed": true,
+          "id": "did:key:zSubjectAgentPlaceholder",
+          "riskTier": "high"
+        },
+        "expirationDate": "2021-01-01T00:00:00+00:00",
+        "id": "urn:uuid:99999999-8888-7777-6666-555555555555",
+        "issuanceDate": "2020-01-01T00:00:00+00:00",
+        "issuer": {
+          "id": "did:key:z6Mko5TBPGKHkCxSgmf3aC6p6SGj2auwCfRmBydXJFEwL4ev",
+          "name": "VibeTensor"
+        },
+        "proof": {
+          "created": "2026-01-01T00:00:00+00:00",
+          "proofPurpose": "assertionMethod",
+          "proofValue": "obQqzTu_PGt1Rs7aDqQVK2nq8PJpbgMuuycHVOuO4TQDES5k99nc5VNPaP8JGKMfPEFJzqjpKIiAxwBZhMwfBA==",
+          "type": "Ed25519Signature2020",
+          "verificationMethod": "did:key:z6Mko5TBPGKHkCxSgmf3aC6p6SGj2auwCfRmBydXJFEwL4ev#z6Mko5TBPGKHkCxSgmf3aC6p6SGj2auwCfRmBydXJFEwL4ev"
+        },
+        "type": [
+          "VerifiableCredential",
+          "EUAIActComplianceCredential"
+        ]
+      },
+      "kind": "verify_credential",
+      "now_reference": "2026-01-01T00:00:00+00:00",
+      "pubkey_multibase": "z6Mko5TBPGKHkCxSgmf3aC6p6SGj2auwCfRmBydXJFEwL4ev",
+      "pubkey_raw_hex": "8022fe847be6106443a4030d74d390c8d9a91319b9f51526bc7c3d88a27c9b7b",
+      "signature_b64url": "obQqzTu_PGt1Rs7aDqQVK2nq8PJpbgMuuycHVOuO4TQDES5k99nc5VNPaP8JGKMfPEFJzqjpKIiAxwBZhMwfBA=="
+    },
+    {
+      "description": "UCAN delegation chain root->child with valid attenuation. Tokens are EdDSA JWTs signed by the SERVER key (compact JWT form is the signed message, NOT JCS). Child att ['read','write'] is a SUBSET of parent att ['read','write','delete']. Expected: each token signature verifies AND child att subset-of parent att -> verify true. Verify the whole prf chain recursively.",
+      "expected": {
+        "attenuation_is_subset": true,
+        "child_signature_valid": true,
+        "parent_signature_valid": true,
+        "verify": true
+      },
+      "id": "ucan-chain-valid-001",
+      "input": {
+        "child_att": [
+          "read",
+          "write"
+        ],
+        "parent_att": [
+          "read",
+          "write",
+          "delete"
+        ],
+        "parent_token": "eyJhbGciOiJFZERTQSIsInR5cCI6IkpXVCIsInVjdiI6IjAuOS4wIn0.eyJpc3MiOiJkaWQ6a2V5Ono2TWtvNVRCUEdLSGtDeFNnbWYzYUM2cDZTR2oyYXV3Q2ZSbUJ5ZFhKRkV3TDRldiIsImF1ZCI6ImRpZDprZXk6ejZNa3ZqUmZYRWJYOW1RZmJySjdicVNtMURMUHJnNkU3SDF6dFhtSGJIQlM0WjZWIiwic3ViIjoiZGlkOmtleTp6Nk1rdmpSZlhFYlg5bVFmYnJKN2JxU20xRExQcmc2RTdIMXp0WG1IYkhCUzRaNlYiLCJpYXQiOjE3NjcyMjU2MDAsImV4cCI6NDEwMjQ0NDgwMCwibmJmIjoxNzY3MjI1NjAwLCJqdGkiOiJyb290LWp0aS1maXhlZC0wMDAxIiwiYXR0IjpbInJlYWQiLCJ3cml0ZSIsImRlbGV0ZSJdLCJkZWxlZ2F0b3IiOiJkaWQ6a2V5Ono2TWtvNVRCUEdLSGtDeFNnbWYzYUM2cDZTR2oyYXV3Q2ZSbUJ5ZFhKRkV3TDRldiIsInByZiI6W10sImF0dGVzdGl4X3ZlcnNpb24iOiIwLjEuMCIsInR5cCI6InVjYW4vZGVsZWdhdGlvbiJ9.Q2W1qShHGMs4x-__HAepcZHqNPQ2CPtbIc_YmaSaYtP6HNSsqfA5FlTvXobK9-QukSohkLlVdPPpENaqotEECg",
+        "token": "eyJhbGciOiJFZERTQSIsInR5cCI6IkpXVCIsInVjdiI6IjAuOS4wIn0.eyJpc3MiOiJkaWQ6a2V5Ono2TWtvNVRCUEdLSGtDeFNnbWYzYUM2cDZTR2oyYXV3Q2ZSbUJ5ZFhKRkV3TDRldiIsImF1ZCI6ImRpZDprZXk6ekdyYW5kY2hpbGRBZ2VudFBsYWNlaG9sZGVyIiwic3ViIjoiZGlkOmtleTp6R3JhbmRjaGlsZEFnZW50UGxhY2Vob2xkZXIiLCJpYXQiOjE3NjcyMjU2MDAsImV4cCI6NDEwMjQ0NDgwMCwibmJmIjoxNzY3MjI1NjAwLCJqdGkiOiJjaGlsZC1qdGktZml4ZWQtMDAwMiIsImF0dCI6WyJyZWFkIiwid3JpdGUiXSwiZGVsZWdhdG9yIjoiZGlkOmtleTp6Nk1rdmpSZlhFYlg5bVFmYnJKN2JxU20xRExQcmc2RTdIMXp0WG1IYkhCUzRaNlYiLCJwcmYiOlsiZXlKaGJHY2lPaUpGWkVSVFFTSXNJblI1Y0NJNklrcFhWQ0lzSW5WamRpSTZJakF1T1M0d0luMC5leUpwYzNNaU9pSmthV1E2YTJWNU9ubzJUV3R2TlZSQ1VFZExTR3REZUZObmJXWXpZVU0yY0RaVFIyb3lZWFYzUTJaU2JVSjVaRmhLUmtWM1REUmxkaUlzSW1GMVpDSTZJbVJwWkRwclpYazZlalpOYTNacVVtWllSV0pZT1cxUlptSnlTamRpY1ZOdE1VUk1VSEpuTmtVM1NERjZkRmh0U0dKSVFsTTBXalpXSWl3aWMzVmlJam9pWkdsa09tdGxlVHA2TmsxcmRtcFNabGhGWWxnNWJWRm1ZbkpLTjJKeFUyMHhSRXhRY21jMlJUZElNWHAwV0cxSVlraENVelJhTmxZaUxDSnBZWFFpT2pFM05qY3lNalUyTURBc0ltVjRjQ0k2TkRFd01qUTBORGd3TUN3aWJtSm1Jam94TnpZM01qSTFOakF3TENKcWRHa2lPaUp5YjI5MExXcDBhUzFtYVhobFpDMHdNREF4SWl3aVlYUjBJanBiSW5KbFlXUWlMQ0ozY21sMFpTSXNJbVJsYkdWMFpTSmRMQ0prWld4bFoyRjBiM0lpT2lKa2FXUTZhMlY1T25vMlRXdHZOVlJDVUVkTFNHdERlRk5uYldZellVTTJjRFpUUjJveVlYVjNRMlpTYlVKNVpGaEtSa1YzVERSbGRpSXNJbkJ5WmlJNlcxMHNJbUYwZEdWemRHbDRYM1psY25OcGIyNGlPaUl3TGpFdU1DSXNJblI1Y0NJNkluVmpZVzR2WkdWc1pXZGhkR2x2YmlKOS5RMlcxcVNoSEdNczR4LV9fSEFlcGNaSHFOUFEyQ1B0YkljX1ltYVNhWXRQNkhOU3NxZkE1RmxUdlhvYks5LVF1a1NvaGtMbFZkUFBwRU5hcW90RUVDZyJdLCJhdHRlc3RpeF92ZXJzaW9uIjoiMC4xLjAiLCJ0eXAiOiJ1Y2FuL2RlbGVnYXRpb24ifQ.ZmZJdNg8zSl5SZaiOgWbyzPgTkcUCSTeKm0lJPp3t93TuNKYDbr3GeJpSSRd9oMpqYQaJ9RZosIlqH8t9eS0DQ"
+      },
+      "kind": "verify_delegation_chain",
+      "pubkey_multibase": "z6Mko5TBPGKHkCxSgmf3aC6p6SGj2auwCfRmBydXJFEwL4ev",
+      "pubkey_raw_hex": "8022fe847be6106443a4030d74d390c8d9a91319b9f51526bc7c3d88a27c9b7b",
+      "signing_alg": "EdDSA"
+    },
+    {
+      "description": "UCAN delegation chain where the child att ['read','admin'] is NOT a subset of parent att ['read','write','delete'] ('admin' is escalated). Both JWT signatures verify, but capability attenuation fails. Expected: verify false on the subset check.",
+      "expected": {
+        "attenuation_is_subset": false,
+        "child_signature_valid": true,
+        "parent_signature_valid": true,
+        "verify": false
+      },
+      "id": "ucan-chain-escalation-002",
+      "input": {
+        "child_att": [
+          "read",
+          "admin"
+        ],
+        "parent_att": [
+          "read",
+          "write",
+          "delete"
+        ],
+        "parent_token": "eyJhbGciOiJFZERTQSIsInR5cCI6IkpXVCIsInVjdiI6IjAuOS4wIn0.eyJpc3MiOiJkaWQ6a2V5Ono2TWtvNVRCUEdLSGtDeFNnbWYzYUM2cDZTR2oyYXV3Q2ZSbUJ5ZFhKRkV3TDRldiIsImF1ZCI6ImRpZDprZXk6ejZNa3ZqUmZYRWJYOW1RZmJySjdicVNtMURMUHJnNkU3SDF6dFhtSGJIQlM0WjZWIiwic3ViIjoiZGlkOmtleTp6Nk1rdmpSZlhFYlg5bVFmYnJKN2JxU20xRExQcmc2RTdIMXp0WG1IYkhCUzRaNlYiLCJpYXQiOjE3NjcyMjU2MDAsImV4cCI6NDEwMjQ0NDgwMCwibmJmIjoxNzY3MjI1NjAwLCJqdGkiOiJyb290LWp0aS1maXhlZC0wMDAxIiwiYXR0IjpbInJlYWQiLCJ3cml0ZSIsImRlbGV0ZSJdLCJkZWxlZ2F0b3IiOiJkaWQ6a2V5Ono2TWtvNVRCUEdLSGtDeFNnbWYzYUM2cDZTR2oyYXV3Q2ZSbUJ5ZFhKRkV3TDRldiIsInByZiI6W10sImF0dGVzdGl4X3ZlcnNpb24iOiIwLjEuMCIsInR5cCI6InVjYW4vZGVsZWdhdGlvbiJ9.Q2W1qShHGMs4x-__HAepcZHqNPQ2CPtbIc_YmaSaYtP6HNSsqfA5FlTvXobK9-QukSohkLlVdPPpENaqotEECg",
+        "token": "eyJhbGciOiJFZERTQSIsInR5cCI6IkpXVCIsInVjdiI6IjAuOS4wIn0.eyJpc3MiOiJkaWQ6a2V5Ono2TWtvNVRCUEdLSGtDeFNnbWYzYUM2cDZTR2oyYXV3Q2ZSbUJ5ZFhKRkV3TDRldiIsImF1ZCI6ImRpZDprZXk6ekdyYW5kY2hpbGRBZ2VudFBsYWNlaG9sZGVyIiwic3ViIjoiZGlkOmtleTp6R3JhbmRjaGlsZEFnZW50UGxhY2Vob2xkZXIiLCJpYXQiOjE3NjcyMjU2MDAsImV4cCI6NDEwMjQ0NDgwMCwibmJmIjoxNzY3MjI1NjAwLCJqdGkiOiJjaGlsZC1iYWQtanRpLTAwMDMiLCJhdHQiOlsicmVhZCIsImFkbWluIl0sImRlbGVnYXRvciI6ImRpZDprZXk6ejZNa3ZqUmZYRWJYOW1RZmJySjdicVNtMURMUHJnNkU3SDF6dFhtSGJIQlM0WjZWIiwicHJmIjpbImV5SmhiR2NpT2lKRlpFUlRRU0lzSW5SNWNDSTZJa3BYVkNJc0luVmpkaUk2SWpBdU9TNHdJbjAuZXlKcGMzTWlPaUprYVdRNmEyVjVPbm8yVFd0dk5WUkNVRWRMU0d0RGVGTm5iV1l6WVVNMmNEWlRSMm95WVhWM1EyWlNiVUo1WkZoS1JrVjNURFJsZGlJc0ltRjFaQ0k2SW1ScFpEcHJaWGs2ZWpaTmEzWnFVbVpZUldKWU9XMVJabUp5U2pkaWNWTnRNVVJNVUhKbk5rVTNTREY2ZEZodFNHSklRbE0wV2paV0lpd2ljM1ZpSWpvaVpHbGtPbXRsZVRwNk5rMXJkbXBTWmxoRllsZzViVkZtWW5KS04ySnhVMjB4UkV4UWNtYzJSVGRJTVhwMFdHMUlZa2hDVXpSYU5sWWlMQ0pwWVhRaU9qRTNOamN5TWpVMk1EQXNJbVY0Y0NJNk5ERXdNalEwTkRnd01Dd2libUptSWpveE56WTNNakkxTmpBd0xDSnFkR2tpT2lKeWIyOTBMV3AwYVMxbWFYaGxaQzB3TURBeElpd2lZWFIwSWpwYkluSmxZV1FpTENKM2NtbDBaU0lzSW1SbGJHVjBaU0pkTENKa1pXeGxaMkYwYjNJaU9pSmthV1E2YTJWNU9ubzJUV3R2TlZSQ1VFZExTR3REZUZObmJXWXpZVU0yY0RaVFIyb3lZWFYzUTJaU2JVSjVaRmhLUmtWM1REUmxkaUlzSW5CeVppSTZXMTBzSW1GMGRHVnpkR2w0WDNabGNuTnBiMjRpT2lJd0xqRXVNQ0lzSW5SNWNDSTZJblZqWVc0dlpHVnNaV2RoZEdsdmJpSjkuUTJXMXFTaEhHTXM0eC1fX0hBZXBjWkhxTlBRMkNQdGJJY19ZbWFTYVl0UDZITlNzcWZBNUZsVHZYb2JLOS1RdWtTb2hrTGxWZFBQcEVOYXFvdEVFQ2ciXSwiYXR0ZXN0aXhfdmVyc2lvbiI6IjAuMS4wIiwidHlwIjoidWNhbi9kZWxlZ2F0aW9uIn0.iwkRKdY_xVhFXYzTzHfY8pQ-va9t0X3IrAZMTY3rnzB6Z_LbfCwwsDgEJdb-J0mronc90msGFP9DosQLbSpmDA"
+      },
+      "kind": "verify_delegation_chain",
+      "pubkey_multibase": "z6Mko5TBPGKHkCxSgmf3aC6p6SGj2auwCfRmBydXJFEwL4ev",
+      "pubkey_raw_hex": "8022fe847be6106443a4030d74d390c8d9a91319b9f51526bc7c3d88a27c9b7b",
+      "signing_alg": "EdDSA"
+    }
+  ],
+  "version": "v1"
+}
