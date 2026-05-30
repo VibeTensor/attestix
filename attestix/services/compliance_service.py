@@ -36,6 +36,27 @@ class InvalidComplianceProfileError(ValueError):
         self.missing_fields = list(missing_fields or [])
 
 
+class MissingCompliancePrerequisiteError(InvalidComplianceProfileError):
+    """Raised when a prerequisite for generating an Annex V declaration of
+    conformity is not satisfied (no compliance profile exists for the agent,
+    or no completed conformity assessment has been recorded).
+
+    v0.4.0-rc.4 (P0 #4 finish of the Linux RC validation): the rc.3 fix made
+    ``generate_declaration_of_conformity`` raise on the missing Annex V
+    *content* fields path, but the **prerequisite** branches (no profile / no
+    completed assessment) still returned ``{"error": "..."}`` (no
+    ``declaration_id``), reproducing the exact "move forward with
+    declaration_id=None" footgun the rc.3 docs claimed to have eliminated.
+    Those branches now raise this exception so callers fail loudly on every
+    path.
+
+    Subclasses :class:`InvalidComplianceProfileError` so the existing MCP tool
+    and REST router handlers (which already catch
+    ``InvalidComplianceProfileError``) surface it as a structured 422 / error
+    JSON without further changes.
+    """
+
+
 VALID_RISK_CATEGORIES = {"minimal", "limited", "high", "unacceptable"}
 VALID_ASSESSMENT_TYPES = {"self", "third_party"}
 VALID_ASSESSMENT_RESULTS = {"pass", "conditional", "fail"}
@@ -479,14 +500,26 @@ class ComplianceService:
         try:
             profile = self.get_compliance_profile(agent_id)
             if not profile:
-                return {"error": f"No compliance profile found for {agent_id}"}
+                # v0.4.0-rc.4 (P0 #4 finish): raise on the no-profile
+                # prerequisite branch instead of returning an error dict, so
+                # callers cannot move forward with declaration_id=None.
+                raise MissingCompliancePrerequisiteError(
+                    f"Cannot generate declaration: no compliance profile exists "
+                    f"for agent {agent_id}; create one with "
+                    f"create_compliance_profile() before generating a "
+                    f"declaration."
+                )
 
             # Check prerequisites
             if not profile["conformity"]["assessment_completed"]:
-                return {
-                    "error": "Cannot generate declaration: conformity assessment not completed or not passed. "
-                    "Use record_conformity_assessment first."
-                }
+                # v0.4.0-rc.4 (P0 #4 finish): raise on the assessment-missing
+                # prerequisite branch instead of returning an error dict.
+                raise MissingCompliancePrerequisiteError(
+                    f"Cannot generate declaration: no completed conformity "
+                    f"assessment for agent {agent_id}; record one with "
+                    f"record_conformity_assessment() (result 'pass' or "
+                    f"'conditional') before generating a declaration."
+                )
 
             # Validate required Annex V fields
             missing_fields = []
@@ -513,12 +546,17 @@ class ComplianceService:
                             profile.get("annex_iii_exception"),
                         )
                         if required:
-                            return {
-                                "error": (
-                                    f"Cannot issue declaration: {reason} "
-                                    f"Current assessment is self-assessment."
-                                )
-                            }
+                            # v0.4.0-rc.4 (P0 #4 finish): raise on the
+                            # wrong-assessment-type prerequisite branch too so
+                            # no early-return error dict survives in this method.
+                            raise MissingCompliancePrerequisiteError(
+                                f"Cannot issue declaration: {reason} Current "
+                                f"assessment for agent {agent_id} is a "
+                                f"self-assessment; record a third_party "
+                                f"conformity assessment with a notified body "
+                                f"via record_conformity_assessment() before "
+                                f"generating a declaration."
+                            )
             if missing_fields:
                 # v0.4.0-rc.3 (P0 #4): raise instead of returning an error dict
                 # so callers cannot silently move forward with declaration_id=None.
@@ -618,8 +656,14 @@ class ComplianceService:
 
             save_compliance(data)
 
-            # Issue a Verifiable Credential for this declaration
-            self.credential_svc.issue_credential(
+            # Issue a Verifiable Credential for this declaration.
+            # v0.4.0-rc.4: surface the issued VC's id on the declaration return
+            # as ``credential_id`` so callers can bundle it into a Verifiable
+            # Presentation directly (the grc-consultant quickstart's VP step
+            # needs exactly this id). Previously the VC was issued but its id
+            # was discarded, so the declaration dict had no credential id to
+            # reference.
+            issued_credential = self.credential_svc.issue_credential(
                 subject_id=agent_id,
                 credential_type="EUAIActComplianceCredential",
                 issuer_name=profile["provider"]["name"],
@@ -632,6 +676,8 @@ class ComplianceService:
                 },
                 expiry_days=365,
             )
+            if isinstance(issued_credential, dict) and issued_credential.get("id"):
+                declaration["credential_id"] = issued_credential["id"]
 
             safe_emit(
                 self._emitter,

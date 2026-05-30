@@ -35,7 +35,7 @@ import os, requests, uuid
 BASE = os.environ.get("ATTESTIX_URL", "http://localhost:8000")
 
 resp = requests.post(
-    f"{BASE}/identities",
+    f"{BASE}/v1/identities",
     json={
         "display_name": "platform-issued-agent",
         "source_protocol": "manual",
@@ -56,7 +56,7 @@ print(agent["agent_id"], agent["issuer"]["did"])
 
 # Subsequent reads scope to the same tenant.
 trail = requests.get(
-    f"{BASE}/audit/{agent['agent_id']}",
+    f"{BASE}/v1/provenance/audit-trail/{agent['agent_id']}",
     headers={"X-Tenant-Id": "tenant_a"},
 ).json()
 print(len(trail), "audit rows so far")
@@ -64,7 +64,7 @@ print(len(trail), "audit rows so far")
 
 ## What you just got
 
-- An HTTP service exposing the 44 REST endpoints (`/identities`, `/credentials`, `/compliance`, `/audit`, `/delegations`, …) — same surface as the 47 MCP tools.
+- An HTTP service exposing the 44 REST endpoints, all under a `/v1/` prefix (`/v1/identities`, `/v1/credentials`, `/v1/compliance`, `/v1/provenance/audit-trail/{id}`, `/v1/delegations`, …) — same surface as the 47 MCP tools.
 - An idempotency middleware: repeating the same `Idempotency-Key` returns the cached response, not a duplicate write.
 - A tenant context header (`X-Tenant-Id`) that is plumbed through every service and stamped onto audit events. Pair it with your existing OIDC / mTLS edge.
 

@@ -4,6 +4,65 @@ All notable changes to Attestix are documented here.
 
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.4.0-rc.4] - 2026-05-30
+
+Honest follow-up to rc.3. The internal Linux RC validation report
+(source-blind 10-persona harness run inside WSL Ubuntu 24.04 / CPython
+3.12 against the published `attestix==0.4.0rc3` wheel — the cross-OS gate
+the rc.2 report owed) confirmed that 4 of the 5 rc.2 P0s held on Linux and
+the 0600 signing-key fix is enforced, but it surfaced **4 release blockers**
+that only became reachable once rc.3 fixed the install-time crashes that
+had masked them. rc.4 lands all 4. A clean Linux re-run of the same harness
+(target: 10/10 quickstarts exit 0, 0 BLOCK verdicts, DoC raises on every
+path) is the gate before promoting to stable 0.4.0.
+
+### Fixed
+
+- **P0 — `generate_declaration_of_conformity` now raises on ALL
+  prerequisite-failure branches (finishes the rc.3 P0 #4 fix).** rc.3 made
+  the method raise `InvalidComplianceProfileError` when the Annex V
+  *content* fields were missing, but it still returned `{"error": ...}`
+  (no `declaration_id`) on the **prerequisite** branches — no compliance
+  profile, and conformity assessment not completed — reproducing the exact
+  "move forward with `declaration_id=None`" footgun rc.3 claimed to have
+  eliminated. rc.4 adds `MissingCompliancePrerequisiteError` (a subclass of
+  `InvalidComplianceProfileError`, so the existing MCP-tool and REST-router
+  handlers surface it as a structured error / HTTP 422 unchanged) and
+  raises it on every early-return path: no profile, no completed
+  assessment, and the high-risk self-assessment-where-third-party-required
+  case. Each message names exactly which prerequisite is missing and the
+  method to call to satisfy it. No silent `{"error": ...}` survives at the
+  service layer for this method. Covered by new unit tests asserting it
+  *raises* (not returns an error dict) for the no-profile and
+  no-assessment paths.
+- **P0 — grc-consultant quickstart no longer crashes with
+  `KeyError: 'credential_id'`.** The published quickstart bundled the
+  declaration into a Verifiable Presentation via
+  `declaration["credential_id"]`, but the DoC return had no such key (it
+  issued the backing `EUAIActComplianceCredential` VC internally and then
+  discarded its id). rc.4 surfaces the issued VC's id on the declaration
+  return as `credential_id` (the honest shape — that VC is exactly what the
+  VP step needs), and fixes the quickstart's
+  `create_verifiable_presentation(...)` call to use the real keyword
+  arguments (`agent_id`, `credential_ids`, `audience_did`). The signed,
+  persisted Annex V declaration is unchanged — `credential_id` is added to
+  the in-memory return only, after signing, so declaration signatures stay
+  valid.
+- **P0 — enterprise-architect / mlops-engineer REST paths corrected to the
+  `/v1/` prefix.** The quickstarts POSTed to `/identities` and GET
+  `/audit/{id}`, but every FastAPI router mounts under `/v1` — the real
+  routes are `POST /v1/identities` and
+  `GET /v1/provenance/audit-trail/{agent_id}`. Both documented paths
+  returned HTTP 404 live. All REST paths in the quickstart docs (including
+  the mlops `curl` and the enterprise-architect endpoint-surface list) now
+  carry the `/v1/` prefix, verified against the router prefixes in
+  `attestix/api/routers/`.
+- **P1 — mlops-engineer requirements pin bumped off `0.4.0rc2`.** The
+  published `requirements-attestix.txt` snippet pinned `attestix==0.4.0rc2`;
+  bumped to `0.4.0rc4`. Stale `v0.4.0-rc.2` / `v0.4.0-rc.3` version
+  references across the quickstart docs (devtools-skeptic, index, indie-dev,
+  fintech-compliance) were bumped to `v0.4.0-rc.4` for consistency.
+
 ## [0.4.0-rc.3] - 2026-05-28
 
 Honest follow-up to rc.2. The isolated 10-persona RC validation (run with

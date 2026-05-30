@@ -70,9 +70,9 @@ print(declaration["declaration_id"])  # signed Annex V document id
 
 ```python
 vp = CredentialService().create_verifiable_presentation(
-    holder_id=agent_id,
-    credentials=[declaration["credential_id"]],
-    verifier="did:web:eu.regulator",
+    agent_id=agent_id,
+    credential_ids=[declaration["credential_id"]],
+    audience_did="did:web:eu.regulator",
     challenge="ch_audit_2026",
 )
 ```

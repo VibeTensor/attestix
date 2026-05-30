@@ -5,14 +5,14 @@ description: Wire Attestix into a CI/CD pipeline so every model promotion produc
 
 ## You're here because…
 
-You're an MLOps engineer and the funnel evaluation flagged that your peers dropped at integration because the tool felt CLI-first / single-user — no idempotent declarative API, no Terraform / Ansible module, file-based state. This page accepts that gap and shows the realistic CI path today: a deterministic CLI plus the idempotency-aware REST surface for a CI runner. The pluggable storage backend and IaC modules are on the [roadmap](/docs/project/roadmap); what's below works against v0.4.0-rc.2 unchanged.
+You're an MLOps engineer and the funnel evaluation flagged that your peers dropped at integration because the tool felt CLI-first / single-user — no idempotent declarative API, no Terraform / Ansible module, file-based state. This page accepts that gap and shows the realistic CI path today: a deterministic CLI plus the idempotency-aware REST surface for a CI runner. The pluggable storage backend and IaC modules are on the [roadmap](/docs/project/roadmap); what's below works against v0.4.0-rc.4 unchanged.
 
 ## 60-second install
 
 Pin the version in `requirements-attestix.txt` so the CI run is reproducible:
 
 ```text
-attestix==0.4.0rc2
+attestix==0.4.0rc4
 ```
 
 Then in the CI step:
@@ -91,7 +91,7 @@ If you don't want to share the `.signing_key.json` between runners, run Attestix
 ```bash
 # Start the FastAPI REST surface (the MCP stdio server is `python -m attestix.main`).
 uvicorn attestix.api.main:app --host 127.0.0.1 --port 8501 &
-curl -sX POST http://localhost:8501/identities \
+curl -sX POST http://localhost:8501/v1/identities \
   -H "Idempotency-Key: gha-${GITHUB_RUN_ID}-promote" \
   -H "Content-Type: application/json" \
   -d '{"display_name":"'"$MODEL_NAME"'","source_protocol":"manual","capabilities":["'$MODEL_TASK'"],"issuer_name":"VibeTensor"}'
