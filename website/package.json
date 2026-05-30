@@ -16,6 +16,7 @@
     "@radix-ui/react-label": "^2.1.0",
     "@radix-ui/react-slot": "^1.2.4",
     "@tailwindcss/postcss": "^4.1.11",
+    "@vibetensor/attestix": "^0.2.0",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
     "cobe": "^0.6.5",

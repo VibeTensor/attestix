@@ -1,0 +1,39 @@
+{
+  "@context": [
+    "https://www.w3.org/2018/credentials/v1",
+    "https://w3id.org/security/suites/ed25519-2020/v1"
+  ],
+  "id": "urn:uuid:fd2ab479-da9f-4cec-959e-c9a6c0e1f116",
+  "type": [
+    "VerifiableCredential",
+    "EUAIActComplianceCredential"
+  ],
+  "issuer": {
+    "id": "did:key:z6Mkija7eQS9kNrvh1kAp7PJFgPEznFpBdDm825vugSQxdW7",
+    "name": "VibeTensor"
+  },
+  "issuanceDate": "2026-05-30T02:58:42.816449+00:00",
+  "expirationDate": "2027-05-30T02:58:42.816449+00:00",
+  "credentialSubject": {
+    "id": "attestix:9648678826a049b4",
+    "compliant": true,
+    "risk_level": "low",
+    "article_43_assessment": "passed",
+    "annex_iii_category": "8 - Administration of justice",
+    "notified_body": "NB-0482 Notified Body",
+    "anchor_network": "Base Sepolia testnet"
+  },
+  "credentialStatus": {
+    "type": "AttestixRevocationStatus",
+    "revoked": false,
+    "revocation_reason": null,
+    "revoked_at": null
+  },
+  "proof": {
+    "type": "Ed25519Signature2020",
+    "created": "2026-05-30T02:58:42.816449+00:00",
+    "verificationMethod": "did:key:z6Mkija7eQS9kNrvh1kAp7PJFgPEznFpBdDm825vugSQxdW7#key-1",
+    "proofPurpose": "assertionMethod",
+    "proofValue": "AD7KznyeJv8xr9G9R4mKAyL0MZCkvM7wrghxP6yFxpyzvEUyRhh96jtDNFTzXjy8L1v4alN3GBk-5HJvytpuCw=="
+  }
+}

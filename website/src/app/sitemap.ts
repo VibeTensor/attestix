@@ -111,6 +111,15 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: "yearly",
       priority: 0.8,
     },
+    {
+      // Client-side W3C VC verification portal. Anyone can verify an
+      // Attestix-issued credential in-browser with nothing uploaded; the
+      // shareable by-id form is /verify?id=<credential-id>.
+      url: `${siteConfig.url}/verify`,
+      lastModified: new Date(),
+      changeFrequency: "monthly",
+      priority: 0.8,
+    },
     ...docsRoutes,
     ...blogRoutes,
   ];
