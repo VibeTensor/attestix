@@ -2,7 +2,10 @@
 
 import pytest
 
-from attestix.services.compliance_service import InvalidComplianceProfileError
+from attestix.services.compliance_service import (
+    InvalidComplianceProfileError,
+    MissingCompliancePrerequisiteError,
+)
 
 
 class TestCreateComplianceProfile:
@@ -329,15 +332,40 @@ class TestDeclarationOfConformity:
         assert result["declaration_id"].startswith("decl:")
         assert "annex_v_fields" in result
 
-    def test_requires_assessment(self, compliance_service, sample_agent_id):
+    def test_requires_assessment_raises(self, compliance_service, sample_agent_id):
+        """v0.4.0-rc.4 (P0 #4 finish, Linux RC validation): the
+        assessment-missing prerequisite branch must RAISE
+        MissingCompliancePrerequisiteError, not return {"error": "..."}.
+        The rc.3 fix only covered the missing-content-fields path; this
+        prerequisite path still silently returned an error dict with no
+        declaration_id (the exact "move forward with declaration_id=None"
+        footgun). The message must name the missing prerequisite and the
+        method to call.
+        """
         compliance_service.create_compliance_profile(
             sample_agent_id, "limited", "Corp",
             intended_purpose="Testing",
             transparency_obligations="Disclose",
         )
-        result = compliance_service.generate_declaration_of_conformity(sample_agent_id)
-        assert "error" in result
-        assert "assessment" in result["error"].lower()
+        with pytest.raises(MissingCompliancePrerequisiteError) as exc:
+            compliance_service.generate_declaration_of_conformity(sample_agent_id)
+        msg = str(exc.value).lower()
+        assert "conformity assessment" in msg
+        assert "record_conformity_assessment" in msg
+        # Subclasses InvalidComplianceProfileError so existing handlers catch it.
+        assert isinstance(exc.value, InvalidComplianceProfileError)
+
+    def test_no_profile_raises(self, compliance_service, sample_agent_id):
+        """v0.4.0-rc.4 (P0 #4 finish): the no-profile prerequisite branch
+        must RAISE MissingCompliancePrerequisiteError naming the missing
+        prerequisite (no profile) and the method to call.
+        """
+        with pytest.raises(MissingCompliancePrerequisiteError) as exc:
+            compliance_service.generate_declaration_of_conformity("uait:does-not-exist")
+        msg = str(exc.value).lower()
+        assert "no compliance profile" in msg
+        assert "create_compliance_profile" in msg
+        assert isinstance(exc.value, InvalidComplianceProfileError)
 
     def test_missing_transparency_obligations_raises(self, compliance_service, sample_agent_id):
         """v0.4.0-rc.3 (P0 #4 of the rc.2 RC validation): missing required

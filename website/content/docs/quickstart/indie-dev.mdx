@@ -5,7 +5,7 @@ description: For the solo founder shipping a LangChain RAG agent fast. Skip the 
 
 ## You're here because…
 
-You're a solo or small-team dev shipping a LangChain agent and you don't have time to hand-roll an audit trail before launch. The funnel evaluation flagged that the "5-minute promise" used to break at the import step — `from services.identity_service import …` only worked from a cloned repo, not from a clean `pip install`. v0.4.0-rc.2 ships the canonical `attestix.*` namespace, so the snippet below runs end-to-end from a fresh venv.
+You're a solo or small-team dev shipping a LangChain agent and you don't have time to hand-roll an audit trail before launch. The funnel evaluation flagged that the "5-minute promise" used to break at the import step — `from services.identity_service import …` only worked from a cloned repo, not from a clean `pip install`. v0.4.0-rc.4 ships the canonical `attestix.*` namespace, so the snippet below runs end-to-end from a fresh venv.
 
 ## 60-second install
 
@@ -13,7 +13,7 @@ You're a solo or small-team dev shipping a LangChain agent and you don't have ti
 pip install --pre 'attestix[langchain]'
 ```
 
-That installs v0.4.0-rc.2 plus the `langchain-core` extra. Drop the `--pre` once v0.4.0 GA ships.
+That installs v0.4.0-rc.4 plus the `langchain-core` extra. Drop the `--pre` once v0.4.0 GA ships.
 
 ## First 30 lines that actually do something
 

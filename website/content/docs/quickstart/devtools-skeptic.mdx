@@ -1,11 +1,11 @@
 ---
 title: DevTools / DX skeptic — Quickstart
-description: Does the package actually import? Yes, in v0.4.0-rc.2. Here's the smallest possible test you can run in 60 seconds to verify the DX claim before reading anything else.
+description: Does the package actually import? Yes, in v0.4.0-rc.4. Here's the smallest possible test you can run in 60 seconds to verify the DX claim before reading anything else.
 ---
 
 ## You're here because…
 
-You're a senior DX-minded developer and the funnel evaluation said the previous Attestix install required `sys.path.insert` to a cloned repo because `pip install attestix` dropped flat top-level packages (`services/`, `auth/`, `storage/`, …) into `site-packages`. That was the cheapest, loudest failure across the whole ICP review. v0.4.0-rc.2 fixes it. This page exists so you can prove that, end-to-end, in under a minute, without reading any other doc.
+You're a senior DX-minded developer and the funnel evaluation said the previous Attestix install required `sys.path.insert` to a cloned repo because `pip install attestix` dropped flat top-level packages (`services/`, `auth/`, `storage/`, …) into `site-packages`. That was the cheapest, loudest failure across the whole ICP review. v0.4.0-rc.4 fixes it. This page exists so you can prove that, end-to-end, in under a minute, without reading any other doc.
 
 ## 60-second install
 
@@ -65,7 +65,7 @@ If you see `canonical ok` and zero stderr, the import surface is clean. If you s
 
 ## Honest things you should know before sending this to your team
 
-- v0.4.0-rc.2 is a release candidate. The legacy flat top-level packages (`services/`, `auth/`, `storage/`, …) are still installed as deprecation shims and **will be removed in v0.5.0**.
+- v0.4.0-rc.4 is a release candidate. The legacy flat top-level packages (`services/`, `auth/`, `storage/`, …) are still installed as deprecation shims and **will be removed in v0.5.0**.
 - Single maintainer, ~15 GitHub stars, no third-party security audit. The package is functional but not yet enterprise-hardened — see the [enterprise architect quickstart](/docs/quickstart/enterprise-architect) for the explicit gap list.
 - The signing key lives in `.signing_key.json` in the working directory and is plaintext by default. Set `ATTESTIX_KEY_PASSPHRASE` to enable AES-256-GCM encryption at rest.
 
