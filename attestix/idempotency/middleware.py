@@ -49,13 +49,20 @@ def _build_middleware_class():
     except Exception:  # pragma: no cover - REST stack absent
         return None
 
+    #: Header set on a replayed response so a client CAN detect a retry was served
+    #: from the idempotency store WITHOUT the body shape changing (replay metadata
+    #: belongs in a header, not the body — v0.4.0-rc.5 P1 fix).
+    REPLAYED_HEADER = "Idempotency-Replayed"
+
     class IdempotencyMiddleware(BaseHTTPMiddleware):
         """Honor ``Idempotency-Key`` on write requests (opt-in; see module docs).
 
         On a write request carrying the header:
 
-        - same key + same request fingerprint within TTL → returns the stored
-          minimal response without re-dispatching (FR-019);
+        - same key + same request fingerprint within TTL → replays the original
+          cached response (status + body) verbatim without re-dispatching, with an
+          ``Idempotency-Replayed: true`` header (FR-019; v0.4.0-rc.5 — previously a
+          ``{"idempotent_replay": …}`` receipt envelope that dropped the body);
         - same key + different fingerprint → ``409`` conflict (FR-020);
         - no header → request proceeds untouched (FR-022, v0.3.0 parity).
 
@@ -98,10 +105,21 @@ def _build_middleware_class():
                         },
                     )
                 if existing.get("status") == "completed":
-                    return JSONResponse(
-                        status_code=200,
-                        content={"idempotent_replay": True,
-                                 "stored_response": existing.get("stored_response")},
+                    # v0.4.0-rc.5 P1: replay the ORIGINAL cached response body
+                    # verbatim (same status, same JSON the first call returned —
+                    # including agent_id), so a retry is indistinguishable from the
+                    # first success. Replay metadata goes in a header, never the
+                    # body (previously this returned a receipt envelope that lost
+                    # the agent_id, breaking `resp.json()["agent_id"]` on retry).
+                    stored = existing.get("stored_response") or {}
+                    replay_status = stored.get("status", 200)
+                    replay_body = stored.get("body", "")
+                    replay_media = stored.get("media_type") or "application/json"
+                    return Response(
+                        content=replay_body,
+                        status_code=replay_status,
+                        media_type=replay_media,
+                        headers={REPLAYED_HEADER: "true"},
                     )
                 return JSONResponse(
                     status_code=409,
@@ -109,7 +127,7 @@ def _build_middleware_class():
                              "already in progress."},
                 )
 
-            # First writer: reserve, dispatch, record minimal representation.
+            # First writer: reserve, dispatch, record the replayable response.
             self._store.put(
                 {
                     "key": key,
@@ -130,7 +148,18 @@ def _build_middleware_class():
 
             response = await call_next(request)
 
-            from attestix.idempotency.store import minimal_stored_response
+            # Buffer the response body so it can be both persisted (for verbatim
+            # replay) and returned to this first caller. call_next yields a
+            # streaming response; we drain its body iterator once, then rebuild a
+            # concrete Response with the same status/headers/media-type.
+            from attestix.idempotency.store import replayable_stored_response
+
+            body_chunks = [chunk async for chunk in response.body_iterator]
+            response_body = b"".join(
+                chunk if isinstance(chunk, bytes) else chunk.encode("utf-8")
+                for chunk in body_chunks
+            )
+            media_type = response.media_type or response.headers.get("content-type")
 
             reserved = self._store.get(key, tenant_id=tenant_id)
             created_at = reserved["created_at"] if reserved else _now_iso()
@@ -140,16 +169,32 @@ def _build_middleware_class():
                     "key": key,
                     "tenant_id": tenant_id,
                     "request_fingerprint": fingerprint,
-                    "stored_response": minimal_stored_response(
-                        {"status_code": response.status_code},
-                        status=response.status_code,
+                    "stored_response": replayable_stored_response(
+                        status_code=response.status_code,
+                        body=response_body,
+                        media_type=media_type,
                     ),
                     "status": "completed",
                     "created_at": created_at,
                 },
                 tenant_id=tenant_id,
             )
-            return response
+
+            # Rebuild a concrete response carrying the buffered body. Copy the
+            # original headers but drop content-length (Starlette recomputes it for
+            # the new body) so the first call's response is byte-identical to what
+            # the handler produced.
+            rebuilt_headers = {
+                k: v
+                for k, v in response.headers.items()
+                if k.lower() != "content-length"
+            }
+            return Response(
+                content=response_body,
+                status_code=response.status_code,
+                headers=rebuilt_headers,
+                media_type=response.media_type,
+            )
 
     return IdempotencyMiddleware
 

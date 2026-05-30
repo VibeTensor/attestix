@@ -16,6 +16,8 @@ what ``api/main.py`` mounts, so these tests cover the wired REST boundary:
 - keys are scoped per tenant via ``X-Attestix-Tenant`` (FR-023).
 """
 
+import json
+
 import pytest
 
 from attestix.idempotency.middleware import IDEMPOTENCY_HEADER, IdempotencyMiddleware
@@ -93,11 +95,20 @@ def test_same_key_same_payload_dedupes():
     assert r1.json() == {"created": 1}
     assert calls["create"] == 1
 
-    # Same key + same body within TTL: the handler must NOT run again.
+    # Same key + same body within TTL: the handler must NOT run again, and the
+    # replay must echo the ORIGINAL response body verbatim (same status, same JSON
+    # — v0.4.0-rc.5 P1: NOT a {"idempotent_replay": …} receipt envelope).
     r2 = client.post("/create", headers=headers, content=b'{"x":1}')
     assert calls["create"] == 1  # deduped (no duplicate side effect)
-    assert r2.status_code == 200
-    assert r2.json().get("idempotent_replay") is True
+    assert r2.status_code == r1.status_code
+    assert r2.json() == r1.json() == {"created": 1}
+    # No receipt envelope leaks into the body.
+    assert "idempotent_replay" not in r2.json()
+    assert "stored_response" not in r2.json()
+    # Replay metadata is in a header, not the body.
+    assert r2.headers.get("Idempotency-Replayed") == "true"
+    # The first response is NOT marked as a replay.
+    assert r1.headers.get("Idempotency-Replayed") is None
 
 
 # --- Same key + different payload → 409 (FR-020) --------------------------
@@ -115,10 +126,10 @@ def test_same_key_different_payload_conflicts():
     assert calls["create"] == 1
 
 
-# --- FR-029 minimal stored representation ---------------------------------
+# --- REST replay stores the verbatim body (v0.4.0-rc.5 P1) ----------------
 
 
-def test_stored_record_is_minimal():
+def test_stored_record_holds_replayable_body():
     app, _, store = _build_app()
     client = TestClient(app)
     client.post("/create", headers={IDEMPOTENCY_HEADER: "k1"}, content=b'{"x":1}')
@@ -127,8 +138,36 @@ def test_stored_record_is_minimal():
     assert rec is not None
     assert rec["status"] == "completed"
     stored = rec["stored_response"]
-    # Only the minimal triplet is persisted — never the raw response body.
-    assert set(stored) == {"status", "resource_id", "response_hash"}
+    # The REST boundary persists the original status + body + media-type so a
+    # retry can echo the response verbatim, plus the integrity hash (FR-029 hash
+    # retained; the body is the same JSON the client already received).
+    assert set(stored) == {"status", "media_type", "body", "response_hash"}
+    assert stored["status"] == 200
+    assert json.loads(stored["body"]) == {"created": 1}
+    assert stored["response_hash"]
+
+
+def test_replay_echoes_original_status_code():
+    """A non-2xx status (e.g. 201) is replayed verbatim, not coerced to 200."""
+    calls = {"n": 0}
+
+    async def create_201(request):
+        calls["n"] += 1
+        return JSONResponse({"id": f"res-{calls['n']}"}, status_code=201)
+
+    app = Starlette(routes=[Route("/create201", create_201, methods=["POST"])])
+    store = RepositoryIdempotencyStore(repository=MemoryRepository())
+    app.add_middleware(IdempotencyMiddleware, store=store)
+    client = TestClient(app)
+
+    headers = {IDEMPOTENCY_HEADER: "k201"}
+    r1 = client.post("/create201", headers=headers, content=b'{"x":1}')
+    r2 = client.post("/create201", headers=headers, content=b'{"x":1}')
+    assert r1.status_code == 201
+    assert r2.status_code == 201  # replayed verbatim, not 200
+    assert r2.json() == r1.json() == {"id": "res-1"}  # same resource id on retry
+    assert calls["n"] == 1  # handler ran exactly once
+    assert r2.headers.get("Idempotency-Replayed") == "true"
 
 
 # --- Per-tenant scoping (FR-023) ------------------------------------------
