@@ -43,7 +43,7 @@ Attestix core is free and open source. Revenue from a managed cloud service with
 - **GitHub:** [github.com/VibeTensor/attestix](https://github.com/VibeTensor/attestix)
 - **PyPI:** `pip install attestix`
 - **Company:** [vibetensor.com](https://vibetensor.com)
-- **Contact:** hello@vibetensor.com
+- **Contact:** info@vibetensor.com
 
 ---
 
