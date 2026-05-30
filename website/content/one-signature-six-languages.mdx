@@ -1,0 +1,78 @@
+---
+title: "One Signature, Six Languages: Verifiable AI Agent Credentials Everywhere"
+publishedAt: "2026-05-30"
+summary: Attestix 0.4.0 ships with offline credential verifiers in Python, JavaScript, Go, Rust, Java, and R — six independent implementations that agree on one signature, validated against a single public conformance suite. Issue once, verify anywhere, trust no vendor.
+author: "Pavan Kumar Dubasi"
+---
+
+An AI agent just made a decision on someone's loan application. A credential says which agent did it, under whose authority, against which compliance profile, signed with a key only that agent controls. Now a regulator wants to check that credential is real and unaltered.
+
+The regulator runs Java. The fintech that issued it runs Python. The auditor lives in R. The agent platform is written in Go.
+
+If verification only works in the language the credential was *issued* in, that credential isn't verifiable — it's a vendor lock-in dressed up as trust.
+
+Today, with **Attestix 0.4.0**, that's solved. An Attestix credential is verifiable offline in **six independent language implementations** — Python, JavaScript/TypeScript, Go, Rust, Java, and R — and all six are proven to agree against **one public conformance suite**.
+
+## Issue once. Verify anywhere.
+
+The design decision underneath this matters more than the package count.
+
+We did **not** reimplement the entire Attestix framework — the compliance engine, the 47 MCP tools, the storage layer, the issuance pipeline — six times. That would be six chances to get the cryptography subtly wrong and a maintenance burden that guarantees drift.
+
+Instead, the architecture splits cleanly:
+
+- **Issuance** — the heavy, stateful work of minting a credential, running the EU AI Act conformity checks, anchoring to Base L2, persisting the audit chain — stays single-source in the Python core (and the hosted Cloud).
+- **Verification** — confirming a credential is authentic, untampered, unexpired, and that its delegation chain holds — is the part that has to run *everywhere*. So that's what we port.
+
+> **Issue once. Verify anywhere — offline, no Python runtime, nothing uploaded.**
+
+A verifier is small: Ed25519 signature checking, the canonical serialization, a `did:key` decoder, and delegation-chain attenuation logic. Small enough to ship in every language. Trust-critical enough that it *must* be.
+
+## The hard part: one canonical form, six times, byte-for-byte
+
+Verifying an Ed25519 signature is easy. Reproducing the **exact bytes** that were signed, in six languages, is where projects quietly fail.
+
+Attestix signs over a JCS-*style* canonical form — and the emphasis on *style* is the whole game. It is **not** strict RFC 8785. The rules are specific: keys sorted by Unicode code point, `(",", ":")` separators with no whitespace, NFC normalization, raw UTF-8 with no `\u` escapes, whole-number floats serialized as integers, base64url signatures **with** padding, and a credential signs every field *except* its own `proof` and `credentialStatus`.
+
+Get any one of those wrong and your verifier produces different bytes, computes a different hash, and rejects a perfectly valid credential — or worse, accepts a tampered one.
+
+So before writing a single port, we published the contract: **`spec/verify/v1`** — a set of machine-readable test vectors generated from the real Attestix 0.4.0 crypto, plus the canonical-form specification documented down to the byte. Each vector carries the input, the expected verdict, and where relevant the canonical bytes as hex, the signature, and the decoded public key.
+
+Every language implementation asserts against those vectors. A failing vector doesn't mean the vector is wrong — it means the port is wrong, usually in the canonicalizer. They all pass now. That's not a claim; it's a CI gate in six repositories.
+
+## What "six independent engines" actually buys you
+
+This is the part that's hard for a competitor to match.
+
+Most agent-governance and AI-compliance tools — including the well-funded ones — are a **single implementation**. Their credential is only as trustworthy as their one codebase, and verifying it means running their tool and trusting it got the crypto right.
+
+Six independent engines agreeing on one vector suite is a different category of claim:
+
+- **No single-implementation risk.** A bug in one verifier is caught by the other five disagreeing.
+- **No vendor in the loop.** A regulator verifies in their own Java stack. The credential never touches our servers. There's nothing to phone home to.
+- **Genuine interoperability.** This is the same standard the cross-engine identity community has been building toward — independent engines verifying each other's signatures. Attestix now brings several engines to that table at once.
+
+In plain terms: an Attestix credential is meant to be as universally checkable as a passport — not locked to one company's app.
+
+## Available today
+
+The verifiers are real, public, and CI-green:
+
+| Language | Verify a credential with |
+|---|---|
+| **Python** | `pip install attestix` (the full library) |
+| **Go** | `go get github.com/VibeTensor/attestix-go` |
+| **JavaScript / TypeScript** | `npm install @vibetensor/attestix` (bare `attestix` rolling out) |
+| **Rust** | `attestix-rs` (crates.io publish imminent) |
+| **Java** | `attestix-java` (Maven Central publish in progress) |
+| **R** | `attestix-r` (CRAN submission in progress) |
+
+And if you never want to install anything at all, paste a credential into [attestix.io/verify](https://attestix.io/verify) — it verifies in your browser, locally, with nothing uploaded.
+
+The full conformance matrix, the canonical-form spec, and the test vectors are open. The point of attestation infrastructure is that you don't have to take our word for any of it.
+
+Issue once. Verify anywhere. Trust the math, not the vendor.
+
+---
+
+*Attestix is built by VibeTensor Private Limited, India-incorporated, as open-source attestation infrastructure for AI agents. It is evidence tooling, not a guarantor of compliance — providers and deployers remain liable under EU AI Act Articles 16–22. Base L2 anchoring is on Sepolia testnet.*
