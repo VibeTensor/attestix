@@ -4,6 +4,32 @@ All notable changes to Attestix are documented here.
 
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.4.0] - 2026-05-30
+
+First stable 0.4.0 — the embeddable, multi-tenant, portable foundation. Promotes
+`0.4.0rc5` unchanged after a clean 10/10 Linux source-blind RC validation (the
+convergence of a 5-RC cycle that caught and fixed 5 P0 install crashes, 4
+doc/contract breaks, and 1 idempotency-replay defect across Windows + Linux).
+
+### Headline since 0.3.0
+- **Pluggable storage + signer** — swap the in-memory defaults for Postgres + HSM/KMS without forking (`Storage` / `Signer` protocols).
+- **Multi-tenancy** — every resource carries `tenant_id`; structured, hash-chained, idempotency-aware audit events that don't leak across tenants.
+- **Portability** — bundle EXPORT + IMPORT (`attestix export` / `attestix import`), byte-stable JCS wire-format published at https://attestix.io/spec/bundle/v1. Cloud-workspace ⇆ self-host round-trip.
+- **Cross-engine offline verifier** — `npm install @vibetensor/attestix` (unscoped `attestix` migration in progress) verifies Python-issued credentials in any JS runtime.
+- **Structured `verify_chain`** — `VerifyChainResult` with `broken_event_id` + `failure_reason`.
+- **Canonical `attestix.*` namespace** with back-compat shims; `[api]` / `[langchain]` / `[crewai]` / `[openai-agents]` install extras; LangChain / OpenAI Agents / CrewAI integrations shipped in the wheel.
+- **REST idempotency** replays the original cached body verbatim (`Idempotency-Replayed` header), exactly-1-resource dedup, 24h TTL.
+- **Compliance** — `generate_declaration_of_conformity` raises on all missing prerequisites; declarations surface `credential_id`.
+- **Docs** — 10 per-ICP quickstarts, `/uk` + `/india` geo-pages, OWASP Agentic Top 10 (2026) + ISO 42001 + NIST AI RMF + SOC 2 + FRIA mappings, `/verify` browser portal, `/pricing`, the bundle spec page.
+- **Supply chain** — Docker base images SHA-pinned, CI deps hash-pinned (`--require-hashes`).
+
+### Validated
+585 tests (Ubuntu + Windows × py3.11-3.13). Clean 10/10 cross-family persona validation on Linux (source-blind against the PyPI wheel). signing-key 0600.
+
+### Known, deferred to v0.4.1
+- `get_audit_trail` surfaces only the legacy Article-12 chain (the `identity.create` event IS emitted + counted by `get_provenance`); contract change deferred.
+- `create_delegation` refuses capability-escalation via error-dict not a raise (secure; escalation IS blocked).
+
 ## [0.4.0-rc.5] - 2026-05-30
 
 Narrow convergence on rc.4. The internal Linux RC validation
