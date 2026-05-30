@@ -50,7 +50,7 @@
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",
-    "eslint": "^8",
+    "eslint": "^10",
     "eslint-config-next": "15.0.3",
     "postcss": "^8",
     "satori": "^0.19.2",
