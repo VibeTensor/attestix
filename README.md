@@ -85,22 +85,27 @@ streamlit run demo/webapp/app.py         # Opens at http://localhost:8501
 python examples/quickstart.py            # Full 9-module workflow in 0.1 seconds
 ```
 
-### JS / TS verifier
+## Verify in any language
 
-Verify Attestix-issued credentials offline from JavaScript or TypeScript:
+Attestix credentials are issued once (Python core or cloud) and verify
+**anywhere**. Six independent verifier implementations share one conformance
+suite (`spec/verify/v1`) — verify offline, no Python runtime, zero trust in the
+issuer. The verifiers are verifier-only: issuance stays in the Python core.
 
-```bash
-npm install attestix
-```
+| Language | Install | Status |
+|----------|---------|--------|
+| **Python** | `pip install attestix` | live (full lib: issue + verify) |
+| **JS / TS** | `npm install attestix` | live ([attestix-js](https://github.com/VibeTensor/attestix-js)) |
+| **Go** | `go get github.com/VibeTensor/attestix-go` | live ([attestix-go](https://github.com/VibeTensor/attestix-go)) |
+| **Rust** | `cargo add attestix` | live ([attestix-rs](https://github.com/VibeTensor/attestix-rs)) |
+| **Java** | `com.vibetensor:attestix:0.4.0` | publishing soon ([attestix-java](https://github.com/VibeTensor/attestix-java)) |
+| **R** | `install.packages("attestix")` | coming to CRAN ([attestix-r](https://github.com/VibeTensor/attestix-r)) |
 
-Source: <https://github.com/VibeTensor/attestix-js> · npm: <https://www.npmjs.com/package/attestix>
-
-Same canonical-JSON form (RFC 8785) and Ed25519 verification (RFC 8032) as
-the Python core. ~68 KB packaged, one runtime dependency
-(`@noble/curves`). The pre-rename scoped name `@vibetensor/attestix` is
-deprecated — see the
-[npm rename migration guide](https://attestix.io/docs/guides/migration-npm-rename)
-if you are upgrading.
+Every verifier checks the same canonical-JSON form ([RFC 8785](https://www.rfc-editor.org/rfc/rfc8785))
+and Ed25519 signatures ([RFC 8032](https://www.rfc-editor.org/rfc/rfc8032)) against
+the shared [`spec/verify/v1`](https://github.com/VibeTensor/attestix/tree/main/spec/verify/v1)
+vectors. Verify in the browser at <https://attestix.io/verify>, or read the
+bundle wire-format at <https://attestix.io/spec/bundle/v1>.
 
 ## Why Attestix
 

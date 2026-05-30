@@ -3,6 +3,7 @@
   "pages": [
     "index",
     "getting-started",
+    "verifiers",
     "---Quickstart by role---",
     "quickstart",
     "examples",
