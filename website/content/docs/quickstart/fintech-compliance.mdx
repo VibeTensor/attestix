@@ -5,7 +5,7 @@ description: Wire a trading or credit-scoring agent with hash-chained audit, sig
 
 ## You're here because…
 
-You're a compliance engineer on a fintech / trading-agent stack. The funnel evaluation flagged that fintech evaluators dropped at install because the legacy package needed a `sys.path` hack and because Base L2 anchoring is **testnet only** — not legally binding for trading audit yet. v0.4.0-rc.4 fixes the import problem (`pip install --pre attestix` gives you the canonical `attestix.*` namespace). The testnet caveat still applies and is called out below.
+You're a compliance engineer on a fintech / trading-agent stack. The funnel evaluation flagged that fintech evaluators dropped at install because the legacy package needed a `sys.path` hack and because Base L2 anchoring is **testnet only** — not legally binding for trading audit yet. v0.4.0-rc.5 fixes the import problem (`pip install --pre attestix` gives you the canonical `attestix.*` namespace). The testnet caveat still applies and is called out below.
 
 ## 60-second install
 
@@ -55,7 +55,7 @@ ComplianceService().create_compliance_profile(
     human_oversight_measures="Loan officer reviews every AI recommendation before approval.",
     # Article 50 transparency: required to issue an Annex V declaration.
     # Omitting this used to silently make generate_declaration_of_conformity
-    # return an error dict instead of raising; v0.4.0-rc.4 raises early on
+    # return an error dict instead of raising; v0.4.0-rc.5 raises early on
     # every prerequisite and missing-field path.
     transparency_obligations="Borrowers are informed in writing that an AI system contributed to the credit decision per Article 50.",
     # Annex III Point 5: access to essential private services (credit) is

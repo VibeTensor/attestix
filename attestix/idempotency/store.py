@@ -100,11 +100,49 @@ def minimal_stored_response(
     response body (which may carry a signed VC / identity data). The hash lets a
     replay confirm it is returning the same logical result without keeping a second
     unencrypted copy of sensitive material for 24h.
+
+    Use this for *direct/MCP* callers (:func:`run_idempotent`), which return the
+    live result object on the first call and only need the minimal receipt to prove
+    a replay is the same logical result. The REST boundary, by contrast, must echo
+    the original HTTP body verbatim on a retry (a client that retries cannot re-read
+    the first call's in-memory result), so it uses
+    :func:`replayable_stored_response`.
     """
     return {
         "status": status,
         "resource_id": resource_id,
         "response_hash": response_hash(response),
+    }
+
+
+def replayable_stored_response(
+    *,
+    status_code: int,
+    body: bytes,
+    media_type: Optional[str] = None,
+) -> dict:
+    """Build the REST replay representation: the original HTTP response, verbatim.
+
+    Unlike :func:`minimal_stored_response` (a receipt), this persists the original
+    status code, body bytes, and content type so a retry with the same
+    ``Idempotency-Key`` is *indistinguishable* from the first success — the client's
+    ``resp.json()["agent_id"]`` works on the retry (v0.4.0-rc.5 P1 fix; previously
+    the replay returned a ``{"idempotent_replay": …}`` receipt envelope and the
+    ``agent_id`` was lost).
+
+    Sensitive-data note (FR-029): the body is the *exact same JSON the client just
+    received over the wire on the first call* — no new secret is exposed by storing
+    it that the client did not already hold. ``response_hash`` is retained so the
+    integrity check still holds. Persisting the raw private signing key is still
+    avoided because the REST response itself never contains it (signatures are
+    public).
+    """
+    text = body.decode("utf-8", "replace")
+    return {
+        "status": status_code,
+        "media_type": media_type,
+        "body": text,
+        "response_hash": response_hash({"status": status_code, "body": text}),
     }
 
 

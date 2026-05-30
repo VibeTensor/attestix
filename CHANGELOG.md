@@ -4,6 +4,83 @@ All notable changes to Attestix are documented here.
 
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.4.0-rc.5] - 2026-05-30
+
+Narrow convergence on rc.4. The internal Linux RC validation
+(source-blind 10-persona harness inside WSL Ubuntu 24.04 / CPython 3.12
+against the published `attestix==0.4.0rc4` wheel) confirmed all 4 rc.3
+blockers stayed CLOSED and all 5 rc.2 P0s held on Linux, and surfaced one
+new **P1 DX/contract defect** (plus two P2s) reachable only once rc.4 fixed
+the `/v1/` REST paths. rc.5 lands the P1; both P2s are documented and
+deferred to v0.4.1 (neither is a security or data-integrity issue, and
+forcing either into the RC carries more regression risk than the defect it
+removes). A clean Linux re-run of the same harness
+(target: an idempotent retry returns the cached identity body — `agent_id`
+present — and 0 BLOCK verdicts) is the gate before promoting to stable 0.4.0.
+
+### Fixed
+
+- **P1 — REST idempotency replay now echoes the original cached response
+  body, not a receipt envelope.** A retried `POST /v1/identities` with the
+  same `Idempotency-Key` correctly created **no duplicate** (the dedup
+  guarantee was always intact — 3× same-key POST persisted exactly 1
+  identity), but the *replay body* was a middleware envelope —
+  `{"idempotent_replay": true, "stored_response": {"resource_id": null,
+  "response_hash": …}}` — instead of the original response. A CI client
+  retrying and reading `resp.json()["agent_id"]` got `None`, defeating the
+  purpose of idempotency on the retry path. rc.5 makes the middleware
+  persist the original HTTP response (status + body + content-type) and
+  replay it **verbatim** on a key hit, Stripe-style, so a retry is
+  indistinguishable from the first success (`agent_id` survives, status code
+  is preserved — e.g. `201` is replayed as `201`, not coerced to `200`).
+  Replay metadata moved to an `Idempotency-Replayed: true` **response
+  header** so clients can still detect a replay without the body shape
+  changing. The same-key/**different**-payload conflict (HTTP 409) and the
+  24h TTL are unchanged. The direct/MCP `run_idempotent` helper keeps the
+  FR-029 minimal receipt (it returns the live result on the first call and
+  never needs to re-serialize a body); only the REST boundary stores the
+  replayable body, which is the exact JSON the client already received.
+  Covered by new end-to-end tests against the live FastAPI app (retry
+  returns the same `agent_id`/status, N replays → exactly 1 identity,
+  different payload → 409).
+
+### Known issues (deferred to v0.4.1)
+
+- **P2 — a bare REST identity-create shows 0 rows on
+  `GET /v1/provenance/audit-trail/{id}`.** The service layer DOES emit an
+  `identity.create` event into the structured audit collection on every
+  create path (verified), but `get_audit_trail` reads only the legacy
+  Article-12 provenance chain (written by `log_action`), so a brand-new
+  identity with no logged actions returns `[]`. This is *arguably correct* —
+  a freshly created identity has no Article-12 provenance yet — but reads as
+  "provenance broken" to a first-time evaluator. Surfacing the
+  `audit.json::events` rows through `get_audit_trail` is the right fix, but
+  it changes that read API's contract for **every** consumer: it breaks the
+  contiguous hash-chain ordering the trail guarantees today and the
+  exact-row-count expectations several existing tests and consumers rely on.
+  That is a semantic change to a core read surface, not a one-line wiring
+  fix, so it is deferred to v0.4.1 (where the trail can be reshaped to merge
+  both chains in a single, ordering-stable, documented response). The
+  `identity.create` event is already recorded and counted by
+  `get_provenance` (rc.3 P0 #5); only the audit-trail *read* lags. Not a
+  data-integrity issue — the event exists.
+- **P2 — capability-escalation in `create_delegation` is refused via an
+  error-dict, not a raised exception.** The delegation control correctly and
+  securely blocks an over-broad sub-delegation (fails closed; an attenuated
+  subset succeeds), but returns `{"error": "Capability escalation denied: …"}`
+  rather than raising — inconsistent with the rc.4 direction of having
+  `generate_declaration_of_conformity` raise. This is intentionally **not**
+  changed in rc.5: the entire `create_delegation` method returns error-dicts
+  on every failure branch, and both the REST router and the MCP tool layer
+  depend on that dict shape (`isinstance(result, dict) and "error" in
+  result`). Converting one branch would be internally inconsistent; converting
+  the whole method touches every caller and risks destabilizing delegation
+  this late in the RC cycle. Tracked as a consistency item for v0.4.1. Not a
+  security issue — the escalation IS blocked.
+
+Credit: internal Linux RC validation
+(`paper/internal/v0.4.0rc4-linux-validation-2026-05-30.md`).
+
 ## [0.4.0-rc.4] - 2026-05-30
 
 Honest follow-up to rc.3. The internal Linux RC validation report
