@@ -22,7 +22,7 @@
     "cobe": "^0.6.5",
     "framer-motion": "^12.34.5",
     "fumadocs-core": "^15.8.5",
-    "fumadocs-mdx": "^13.0.8",
+    "fumadocs-mdx": "^15.0.12",
     "fumadocs-ui": "^15.8.5",
     "geist": "^1.3.1",
     "lucide-react": "^0.417.0",
