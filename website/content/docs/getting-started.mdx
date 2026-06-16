@@ -19,14 +19,14 @@ The [quickstart pages](/docs/quickstart) cover 10 ICP personas (indie dev, finte
 ## Installation
 
 ```bash
-# v0.4.0-rc.2 release candidate (canonical attestix.* namespace, recommended):
-pip install --pre attestix
-
-# Stable 0.3.0 (flat top-level packages, no namespace):
+# Stable 0.4.0 (canonical attestix.* namespace, recommended):
 pip install attestix
+
+# Pre-release 0.4.1rc1 (opt in with --pre):
+pip install --pre attestix
 ```
 
-v0.4.0-rc.2 ships the proper `attestix.*` namespace. The pre-rc.2 flat layout
+Stable 0.4.0 ships the proper `attestix.*` namespace. The older flat layout
 (`from services... import ...`) keeps working via deprecation shims and is
 scheduled for removal in v0.5.0. See the
 [namespace migration guide](/docs/guides/migration-v0.4.0-namespace) before

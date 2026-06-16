@@ -302,7 +302,7 @@ Issue a W3C Verifiable Credential with Ed25519Signature2020 proof.
 
 | Parameter | Type | Required | Default | Description |
 |-----------|------|----------|---------|-------------|
-| `subject_agent_id` | string | Yes | - | Agent this credential is about |
+| `agent_id` | string | Yes | - | Agent this credential is about |
 | `credential_type` | string | Yes | - | Type (e.g., `EUAIActComplianceCredential`) |
 | `issuer_name` | string | Yes | - | Issuing authority name |
 | `claims_json` | string | Yes | - | JSON string of claims |
