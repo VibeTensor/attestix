@@ -4,6 +4,38 @@ All notable changes to Attestix are documented here.
 
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.4.1rc1] - 2026-06-16
+
+Pre-release. Security hardening from a multi-persona audit. Available on the
+`--pre` channel only; `pip install attestix` still resolves `0.4.0` stable.
+
+### Security
+- **Credential verification key-binding (High).** `verify_credential`,
+  `verify_credential_external` and `verify_presentation` decoded the Ed25519
+  key from `proof.verificationMethod`, which sits outside the signed payload
+  and is attacker-controlled — enabling an issuer key-substitution masquerade.
+  Verification now decodes the key from the trust anchor (`issuer.id` for
+  credentials, the server DID for presentations) and rejects a
+  `verificationMethod` that names a different DID. Aligns with W3C VC Data
+  Integrity controller-authorization.
+- **Fail-closed API auth (High).** The REST `APIKeyMiddleware` served every
+  endpoint when `ATTESTIX_API_KEY` was unset. It now refuses non-public
+  requests (503) unless `ATTESTIX_ALLOW_NO_AUTH` is explicitly set
+  (development/tests only).
+- **Dependency CVE floors (High).** `requirements.txt` now pins
+  `cryptography>=46.0.7` and `PyJWT[crypto]>=2.12.0` to match `pyproject.toml`,
+  so installs from that file cannot resolve pre-CVE-patch versions.
+
+### Fixed
+- Bundle import now reads the cloud `vc_jsonld` credential key, so credentials
+  in real cloud bundles import correctly.
+
+### Known issues
+- Cloud→OSS audit-chain re-verification can fail because the cloud mints the
+  chain under the workspace UUID while the importer re-tags rows with the
+  storage tenant. A fix decoupling the chain tenant from the storage tenant is
+  tracked for a later 0.4.1 pre-release.
+
 ## [0.4.0] - 2026-05-30
 
 First stable 0.4.0 — the embeddable, multi-tenant, portable foundation. Promotes
