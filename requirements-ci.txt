@@ -2226,9 +2226,9 @@ python-json-logger==4.1.0 \
     --hash=sha256:132994765cf75bf44554be9aa49b06ef2345d23661a96720262716438141b6b2 \
     --hash=sha256:b396b9e3ed782b09ff9d6e4f1683d46c83ad0d35d2e407c09a9ebbf038f88195
     # via attestix (pyproject.toml)
-python-multipart==0.0.29 \
-    --hash=sha256:2ddcc971cef266225f54f552d8fa10bcfbb1f14446caec199060daac59ff2d69 \
-    --hash=sha256:643e93849196645e2dbdd81a0f8829a23123ad7f797a84a364c6fb3563f18904
+python-multipart==0.0.31 \
+    --hash=sha256:8408153d68a9773291fc1da39a8b85a50044bddbabd2dd72e9229776b7b15e28 \
+    --hash=sha256:fc631183bb13e56db3158a4909908dfb2e23565286744e798241e63750e5d680
     # via
     #   attestix (pyproject.toml)
     #   mcp
