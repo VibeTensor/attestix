@@ -1,16 +1,16 @@
 ---
-title: FRIA template — EU AI Act Article 27
-description: A structured, fillable, cryptographically-signable Fundamental Rights Impact Assessment template aligned to EU AI Act Article 27(2). 12 sections, deterministic completeness checks, ImpactAssessmentCredential VC wrapper, optional Base L2 Sepolia anchor.
+title: FRIA template for EU AI Act Article 27
+description: A structured, fillable, cryptographically-signable Fundamental Rights Impact Assessment template aligned to EU AI Act Article 27(2). 12 sections, deterministic completeness checks, ImpactAssessmentCredential VC wrapper, and an optional Base L2 Sepolia anchor.
 ---
 
-The EU AI Act ([Regulation (EU) 2024/1689](https://eur-lex.europa.eu/eli/reg/2024/1689/oj)) Article 27 requires certain deployers of high-risk AI systems to perform a **Fundamental Rights Impact Assessment (FRIA)** before deployment. This page provides Attestix's structured FRIA template — 12 sections aligned to Article 27(2), with deterministic completeness checks, an `ImpactAssessmentCredential` Verifiable Credential wrapper, and an optional Base L2 Sepolia anchor for tamper-evident retention.
+The EU AI Act ([Regulation (EU) 2024/1689](https://eur-lex.europa.eu/eli/reg/2024/1689/oj)) Article 27 requires certain deployers of high-risk AI systems to perform a **Fundamental Rights Impact Assessment (FRIA)** before deployment. This page provides Attestix's structured FRIA template: 12 sections aligned to Article 27(2), with deterministic completeness checks, an `ImpactAssessmentCredential` Verifiable Credential wrapper, and an optional Base L2 Sepolia anchor for tamper-evident retention.
 
 ## Why this matters
 
 **Who must perform a FRIA (per Art 27(1)):**
 1. Deployers that are bodies governed by public law.
 2. Private operators providing public services.
-3. Deployers of high-risk AI systems in Annex III points 5(b) and (c) — credit scoring and life/health insurance pricing.
+3. Deployers of high-risk AI systems in Annex III points 5(b) and (c), namely credit scoring and life/health insurance pricing.
 
 The deployer is solely liable for the substance of the FRIA. The provider remains solely liable under Articles 16-22 for the AI system itself. The FRIA notification is submitted to the deployer's market surveillance authority per Art 27(3); it is *complementary to* (not a replacement for) the GDPR Art 35 DPIA, per Art 27(4).
 
@@ -25,19 +25,19 @@ The table below shows each FRIA section, its mapped Art 27(2) sub-clause, the st
 | **§1 Purpose + intended use** | (a) | `purpose` · `intended_use_categories[]` · `deployer_processes[]` | Required fields populated | "Credit risk scoring for SME loan applications via Attestix-deployed AI agent" · `["Annex III Point 5(b) — creditworthiness assessment"]` · `["new loan origination", "loan top-up reassessment"]` |
 | **§2 Time period + frequency** | (b) | `deployment_start_date` · `deployment_end_date` · `usage_frequency` · `expected_volume` | Date format + enum + non-negative volume | `2026-08-15` · `null` (ongoing) · `on_demand` · `500/month` |
 | **§3 Affected natural persons + groups** | (c) | `affected_categories[]` · `protected_characteristics_affected[]` · `vulnerable_groups_affected[]` | Non-empty + controlled vocabulary from Charter Art 21 + EU non-discrimination directives | `["SME loan applicants in EU 27", "Loan officers reviewing AI-scored applications"]` · `["sex", "race", "age", "disability"]` · `[]` |
-| **§4 Specific risks of harm** | (d) | `identified_risks[]` with `risk_id` · `description` · `fundamental_right_affected` · `likelihood` · `magnitude` · `affected_groups` (FK to §3) | Each risk record complete; auto-flag high-likelihood-high-magnitude | One risk: `R-001` "Indirect discrimination against age 65+ cohort due to historical data skew" — Charter Art 21 — `possible` × `moderate` — `["age 65+"]` |
+| **§4 Specific risks of harm** | (d) | `identified_risks[]` with `risk_id` · `description` · `fundamental_right_affected` · `likelihood` · `magnitude` · `affected_groups` (FK to §3) | Each risk record complete; auto-flag high-likelihood-high-magnitude | One risk: `R-001` "Indirect discrimination against age 65+ cohort due to historical data skew", Charter Art 21, `possible` × `moderate`, `["age 65+"]` |
 | **§5 Human oversight measures** | (e) | `oversight_model` · `oversight_role` · `oversight_role_did` · `oversight_training_documented` · `two_person_verification_required` · `override_mechanism_documented` | Oversight DID resolves; enums populated; dual-tagged with Art 14 | `in_the_loop` · "Senior Credit Officer" · `did:web:vibetensor.com:roles:senior-credit-officer` · `true` · `true` (declines > EUR 100k) · `true` |
 | **§6 Mitigations + governance + complaints** | (f) | `mitigations[]` (linked to §4 risks) · `governance_arrangements` · `complaint_mechanism_url` · `complaint_mechanism_recipient_role_did` | Every §4 risk has at least one §6 mitigation linked; complaint URL resolves; auto-flag unmitigated-high-risk | Mitigation for R-001: "Adversarial-fairness retraining quarterly + human-in-the-loop review for age 65+ declines" → `did:web:vibetensor.com:roles:ml-fairness-lead` · `planned` · target `2026-11-30` · Committee chair `did:web:vibetensor.com:roles:dpo` |
 | **§7 Internal governance** | (transversal) | `internal_governance_committee` · `review_cadence` · `next_review_date` | Date format + enum; dual-tagged with NIST AI RMF GOVERN-1.5 + ISO 42001 A.3.2 | "Fundamental Rights Review Committee" · `quarterly` · `2026-11-15` |
 | **§8 DPIA linkage** | (4) | `dpia_required` · `dpia_url` · `dpia_completed_date` · `dpia_supervisory_authority_consulted` | If `dpia_required=true`, URL + date populated | `true` · `https://vibetensor.com/legal/dpia-credit-2026.pdf` · `2026-07-12` · `false` |
-| **§9 Notification to market surveillance authority** | (3) | `notification_required` · `market_surveillance_authority` · `notification_submitted_date` · `notification_reference` | Date format | `true` · "BaFin (Germany — primary deployment market)" · `2026-08-10` · `BaFin-FRIA-VTN-2026-0042` |
+| **§9 Notification to market surveillance authority** | (3) | `notification_required` · `market_surveillance_authority` · `notification_submitted_date` · `notification_reference` | Date format | `true` · "BaFin (Germany, primary deployment market)" · `2026-08-10` · `BaFin-FRIA-VTN-2026-0042` |
 | **§10 Pre-existing instruments relied upon** | (4 second part) | `relied_upon_instruments[]` · `gap_analysis_against_art_27_2` | Assertion-recorded (never auto-promoted) | `["DPIA 2026-07", "Internal risk register v2.3"]` · narrative explaining what gaps this FRIA fills |
 | **§11 Deployer-provider responsibility split** | (Arts 16-22 + 26) | `provider_id` · `provider_did` · `provider_doc_url` · `deployer_specific_obligations[]` · `provider_specific_obligations_referenced[]` | Provider DID resolves; DoC URL retrievable | "VibeTensor Private Limited" · `did:web:vibetensor.com` · DoC URL · `["Art 26(1) instructions-for-use", "Art 26(5) monitoring", "Art 26(7) oversight per Art 14"]` |
 | **§12 Sign-off + signature + anchor** | (integrity) | `signed_by_did` · `signed_at` · `signature` (Ed25519 over JCS) · `chain_anchor` · `revision_history[]` | Signature verifies; anchor tx exists on chain | `did:web:vibetensor.com:roles:dpo` · `2026-08-10T14:23:00Z` · `<ed25519 sig>` · `0x4f3a...8c12` (Base Sepolia tx) |
 
 ### What the deterministic checks produce
 
-Each FRIA section emits a `security_check_id` discriminator tag of the form `eu_ai_act.art.27.fria_section_<N>_*`. Failing a check produces a signed *negative* `VerifiableCheckResult` — signed evidence that the check did not pass, not silence. The deployer can still sign + submit a FRIA with checks failing (the checks are advisory, not blocking) — the failures appear prominently in the analyst-facing output so the deployer's compliance officer knows what is unresolved.
+Each FRIA section emits a `security_check_id` discriminator tag of the form `eu_ai_act.art.27.fria_section_<N>_*`. Failing a check produces a signed *negative* `VerifiableCheckResult`: signed evidence that the check did not pass, not silence. The deployer can still sign + submit a FRIA with checks failing (the checks are advisory, not blocking), and the failures appear prominently in the analyst-facing output so the deployer's compliance officer knows what is unresolved.
 
 ### Auto-flag rules
 
@@ -48,11 +48,11 @@ Two deterministic auto-flags fire when an emerging risk profile demands complian
 
 Neither flag blocks sign-off. Both surface visibly in the public bundle export so a reviewing auditor or regulator can see the deployer's risk-acceptance posture.
 
-> **Important caveat — `generate-fria` CLI ships in v0.5.0.** As of Attestix v0.4.0 the template structure is documented (this page); the structured CLI + MCP tool (`attestix generate-fria --profile <id> --output fria.{pdf,json}` and `mcp__attestix__generate_fria`) ship in v0.5.0. Until then you can use this page's structure as a checklist and apply your own signing.
+> **Important caveat: `generate-fria` CLI ships in v0.5.0.** As of Attestix v0.4.0 the template structure is documented (this page); the structured CLI + MCP tool (`attestix generate-fria --profile <id> --output fria.{pdf,json}` and `mcp__attestix__generate_fria`) ship in v0.5.0. Until then you can use this page's structure as a checklist and apply your own signing.
 
 ## What we don't do
 
-- **We do not author your FRIA content.** The substance — risk identification, mitigation selection, governance arrangements — is the deployer's compliance team + general counsel. We provide the structure.
+- **We do not author your FRIA content.** The substance (risk identification, mitigation selection, governance arrangements) is the deployer's compliance team + general counsel. We provide the structure.
 - **We do not judge whether your mitigations are adequate.** The §4 / §6 completeness check confirms the *link*; we never assert the *substance* of a mitigation is sufficient.
 - **We are not a substitute for the official EU AI Office template.** When the EU AI Office publishes its template, this template will be updated to align field-for-field.
 - **We do not file the Art 27(3) notification on your behalf.** Submission to your market surveillance authority is the deployer's act. We record the date + reference (§9).
@@ -115,9 +115,9 @@ How other tools handle FRIA / impact assessments.
 ## See also
 
 - [OWASP Top 10 for Agentic Applications mapping](/docs/security/owasp-agentic-top10)
-- [ISO/IEC 42001:2023 mapping](/docs/security/iso-42001-mapping) — Annex A.5 impact-assessment controls cross-walk to FRIA
-- [NIST AI RMF 1.0 mapping](/docs/security/nist-ai-rmf-mapping) — MAP-5.1 likelihood/magnitude cross-walks to FRIA §4
-- [SOC 2 Trust Services Criteria mapping](/docs/security/soc2-mapping) — CC3.2 risk-assessment (2022 AI/ML POF) cross-walks to FRIA §4/§6
+- [ISO/IEC 42001:2023 mapping](/docs/security/iso-42001-mapping): Annex A.5 impact-assessment controls cross-walk to FRIA
+- [NIST AI RMF 1.0 mapping](/docs/security/nist-ai-rmf-mapping): MAP-5.1 likelihood/magnitude cross-walks to FRIA §4
+- [SOC 2 Trust Services Criteria mapping](/docs/security/soc2-mapping): CC3.2 risk-assessment (2022 AI/ML POF) cross-walks to FRIA §4/§6
 - [EU AI Act compliance guide](/docs/guides/eu-ai-act-compliance)
 - The internal template spec at `attestix-cloud-plan/26-FRIA-TEMPLATE.md`.
 

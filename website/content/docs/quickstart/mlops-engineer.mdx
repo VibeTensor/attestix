@@ -1,11 +1,11 @@
 ---
-title: MLOps engineer — Quickstart
+title: MLOps engineer Quickstart
 description: Wire Attestix into a CI/CD pipeline so every model promotion produces a signed credential and a hash-chained audit row. Pinned versions, deterministic CLI, exit codes.
 ---
 
 ## You're here because…
 
-You're an MLOps engineer and the funnel evaluation flagged that your peers dropped at integration because the tool felt CLI-first / single-user — no idempotent declarative API, no Terraform / Ansible module, file-based state. This page accepts that gap and shows the realistic CI path today: a deterministic CLI plus the idempotency-aware REST surface for a CI runner. The pluggable storage backend and IaC modules are on the [roadmap](/docs/project/roadmap); what's below works against v0.4.0-rc.5 unchanged.
+You're an MLOps engineer and the funnel evaluation flagged that your peers dropped at integration because the tool felt CLI-first / single-user, with no idempotent declarative API, no Terraform / Ansible module, and file-based state. This page accepts that gap and shows the realistic CI path today: a deterministic CLI plus the idempotency-aware REST surface for a CI runner. The pluggable storage backend and IaC modules are on the [roadmap](/docs/project/roadmap); what's below works against v0.4.0-rc.5 unchanged.
 
 ## 60-second install
 
@@ -81,8 +81,8 @@ attestix audit "$AGENT_ID" --limit 5  # prints the latest hash-chained rows
 ## What you just got
 
 - A signed `ModelPromotionCredential` per CI run, pinning the git SHA, run id, and the model-artefact hash. The credential is verifiable offline (`attestix credential --verify <id>`).
-- A model-lineage row under the same agent DID — every promotion is a new row, not a destructive update.
-- Encrypted-at-rest signing key when `ATTESTIX_KEY_PASSPHRASE` is set (otherwise plaintext `.signing_key.json` — see the [security page](/security) for the disclosure / CVE process).
+- A model-lineage row under the same agent DID; every promotion is a new row, not a destructive update.
+- Encrypted-at-rest signing key when `ATTESTIX_KEY_PASSPHRASE` is set (otherwise plaintext `.signing_key.json`; see the [security page](/security) for the disclosure / CVE process).
 
 ## REST mode for a CI runner with idempotency
 

@@ -89,7 +89,7 @@ python examples/quickstart.py            # Full 9-module workflow in 0.1 seconds
 
 Attestix credentials are issued once (Python core or cloud) and verify
 **anywhere**. Six independent verifier implementations share one conformance
-suite (`spec/verify/v1`) — verify offline, no Python runtime, zero trust in the
+suite (`spec/verify/v1`): verify offline, no Python runtime, zero trust in the
 issuer. The verifiers are verifier-only: issuance stays in the Python core.
 
 | Language | Install | Status |

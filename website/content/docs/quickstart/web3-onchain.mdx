@@ -1,11 +1,11 @@
 ---
-title: Web3 / on-chain dev — Quickstart
-description: Anchor an Attestix artefact to Base L2 Sepolia testnet via the Ethereum Attestation Service. Schema UID, gas estimate, faucet, on-chain verification — testnet only in v0.4.0.
+title: Web3 / on-chain dev Quickstart
+description: Anchor an Attestix artefact to Base L2 Sepolia testnet via the Ethereum Attestation Service. Schema UID, gas estimate, faucet, on-chain verification (testnet only in v0.4.0).
 ---
 
 ## You're here because…
 
-You're a web3 dev evaluating the on-chain side of Attestix. The funnel evaluation flagged that the on-chain story was the loudest concrete failure for this persona: no published EAS schema UID in the docs, no on-chain verification guide, no gas estimates, no revocation flow. Anchoring was called "vaporware for production." This page is the smallest path from a clean install to a verifiable on-chain anchor — **on Base Sepolia testnet only**. Mainnet schema registration is still on the [roadmap](/docs/project/roadmap).
+You're a web3 dev evaluating the on-chain side of Attestix. The funnel evaluation flagged that the on-chain story was the loudest concrete failure for this persona: no published EAS schema UID in the docs, no on-chain verification guide, no gas estimates, no revocation flow. Anchoring was called "vaporware for production." This page is the smallest path from a clean install to a verifiable on-chain anchor, **on Base Sepolia testnet only**. Mainnet schema registration is still on the [roadmap](/docs/project/roadmap).
 
 ## 60-second install
 
@@ -69,7 +69,7 @@ print(status)  # { confirmed: True, attestation_uid: ..., block_number: ... }
 
 ## What you just got
 
-- A real EAS attestation on Base Sepolia. The transaction is on-chain at the printed `tx_hash` — view it at https://sepolia.basescan.org.
+- A real EAS attestation on Base Sepolia. The transaction is on-chain at the printed `tx_hash`; view it at https://sepolia.basescan.org.
 - The Attestix EAS schema UID is computed deterministically from the schema string and persisted to `.attestix_schema_uid` on first use; the call to `_ensure_schema_registered` is idempotent and self-registers on a fresh chain.
 - A Merkle-batch path for high-volume anchoring:
 
@@ -78,7 +78,7 @@ batch = chain.anchor_audit_batch(agent_id=agent_id)
 print(batch["batch_metadata"])  # merkle_root, entry_count, start/end_date
 ```
 
-Gas cost stays roughly flat (~48k) regardless of batch size — the proof size grows as O(log n) per artefact.
+Gas cost stays roughly flat (~48k) regardless of batch size; the proof size grows as O(log n) per artefact.
 
 ## What's honestly missing
 
@@ -101,4 +101,4 @@ curl -s "https://base-sepolia.easscan.org/graphql" \
   -d '{"query":"{ attestation(where:{id:\"<attestation_uid>\"}){ schemaId attester data }}"}'
 ```
 
-Read the full walkthrough — RPC selection, key handling, schema deep-dive — in the [Base L2 anchor guide](/docs/guides/base-l2-anchor).
+Read the full walkthrough (RPC selection, key handling, schema deep-dive) in the [Base L2 anchor guide](/docs/guides/base-l2-anchor).

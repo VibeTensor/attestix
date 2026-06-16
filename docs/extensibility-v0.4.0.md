@@ -2,7 +2,7 @@
 
 v0.4.0 adds five **additive, opt-in** extension seams so the same engine can be operated
 multi-tenant, on an external database, with KMS-held keys, an external audit log, and
-idempotent writes — without forking. Every default reproduces v0.3.0 behavior exactly: a
+idempotent writes, without forking. Every default reproduces v0.3.0 behavior exactly: a
 self-host install that changes no configuration sees no difference (file storage, in-process
 Ed25519 signer, single implicit `default` tenant, no idempotency bookkeeping).
 
@@ -18,7 +18,7 @@ Ed25519 signer, single implicit `default` tenant, no idempotency bookkeeping).
 
 Every persisted record carries an optional `tenant_id` (default `"default"`). Tenant scoping is
 enforced at the `Repository` boundary: a record created under tenant A is never returned under
-tenant B. **Legacy v0.3.0 records that have no `tenant_id` field read as tenant `"default"`** —
+tenant B. **Legacy v0.3.0 records that have no `tenant_id` field read as tenant `"default"`**:
 the upgrade path requires no migration. The default resolver
 (`tenancy.context.resolve_tenant`) reads an optional `X-Attestix-Tenant` header and otherwise
 resolves to `"default"`.
@@ -53,13 +53,13 @@ store (Postgres).
 
 The store and the `run_idempotent` helper are surface-agnostic (usable from REST, MCP, or direct
 service calls). The REST `IdempotencyMiddleware` ships but is **not auto-mounted** in v0.4.0
-P3 — the default app keeps exact v0.3.0 request handling (no key → no bookkeeping). Operators
+P3: the default app keeps exact v0.3.0 request handling (no key → no bookkeeping). Operators
 opt in with `app.add_middleware(IdempotencyMiddleware)`.
 
 ### Minimal stored representation (FR-029)
 
 The idempotency record **never persists raw private-key material** and stores only a **minimal
-representation** of the original response — `status` + `resource_id` + `response_hash` (a
+representation** of the original response: `status` + `resource_id` + `response_hash` (a
 SHA-256 over the canonical response). This avoids keeping a second unencrypted copy of a signed
 credential or identity data for the 24-hour window while still letting a replay confirm and
 return a stable result.

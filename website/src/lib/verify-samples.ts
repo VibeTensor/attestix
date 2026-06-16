@@ -8,7 +8,7 @@
 // SAMPLE_TAMPERED_VC is the identical credential with one signed field mutated
 // (credentialSubject.risk_level "high" -> "low") while the original proofValue
 // is left in place. Because the signature no longer covers the body, the
-// verifier reports INVALID — demonstrating tamper detection.
+// verifier reports INVALID, demonstrating tamper detection.
 //
 // Both fixtures are validated in CI-style by scripts/verify-samples.mjs, which
 // imports the exact same JSON and runs verifyCredential against it.

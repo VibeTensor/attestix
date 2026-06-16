@@ -1,11 +1,11 @@
 ---
-title: Indie AI-agent dev — Quickstart
+title: Indie AI-agent dev Quickstart
 description: For the solo founder shipping a LangChain RAG agent fast. Skip the boilerplate, get a hash-chained audit trail and a signed VC on every chain completion.
 ---
 
 ## You're here because…
 
-You're a solo or small-team dev shipping a LangChain agent and you don't have time to hand-roll an audit trail before launch. The funnel evaluation flagged that the "5-minute promise" used to break at the import step — `from services.identity_service import …` only worked from a cloned repo, not from a clean `pip install`. v0.4.0-rc.5 ships the canonical `attestix.*` namespace, so the snippet below runs end-to-end from a fresh venv.
+You're a solo or small-team dev shipping a LangChain agent and you don't have time to hand-roll an audit trail before launch. The funnel evaluation flagged that the "5-minute promise" used to break at the import step: `from services.identity_service import …` only worked from a cloned repo, not from a clean `pip install`. v0.4.0-rc.5 ships the canonical `attestix.*` namespace, so the snippet below runs end-to-end from a fresh venv.
 
 ## 60-second install
 
@@ -56,7 +56,7 @@ print(result["output"])
 ## What you just got
 
 - A row in the local hash-chained audit trail for every callback event (`on_chain_start`, `on_tool_start`, `on_llm_end`, `on_chain_end`).
-- A signed `ChainExecutionCredential` (W3C VC, `Ed25519Signature2020`) auto-issued on chain completion — verify it offline with `attestix credential --verify <cred_id>`.
+- A signed `ChainExecutionCredential` (W3C VC, `Ed25519Signature2020`) auto-issued on chain completion. Verify it offline with `attestix credential --verify <cred_id>`.
 - A persistent agent DID so the same identity is reused across runs (no per-run re-creation).
 
 Verify the chain hashes still line up:
@@ -69,7 +69,7 @@ The deeper [LangChain integration guide](/docs/guides/langchain) covers chain-of
 
 ## Next step (5 minutes)
 
-Anchor today's audit batch to **Base L2 testnet** (Sepolia, free, requires a funded test wallet — no mainnet wallet needed):
+Anchor today's audit batch to **Base L2 testnet** (Sepolia, free, requires a funded test wallet, no mainnet wallet needed):
 
 ```python
 from attestix.services.blockchain_service import BlockchainService

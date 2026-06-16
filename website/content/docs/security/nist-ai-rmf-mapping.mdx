@@ -1,13 +1,13 @@
 ---
-title: NIST AI RMF 1.0 — Attestix coverage
-description: How Attestix's signed audit chains, Verifiable Credentials, and provenance records map to the NIST AI Risk Management Framework 1.0 GOVERN-MAP-MEASURE-MANAGE functions. Honest per-subcategory coverage — Attestix is evidence tooling for AI RMF operationalisation, not an AI RMF conformance attestation.
+title: NIST AI RMF 1.0 Attestix coverage
+description: How Attestix's signed audit chains, Verifiable Credentials, and provenance records map to the NIST AI Risk Management Framework 1.0 GOVERN-MAP-MEASURE-MANAGE functions. Honest per-subcategory coverage. Attestix is evidence tooling for AI RMF operationalisation, not an AI RMF conformance attestation.
 ---
 
-The [NIST AI Risk Management Framework 1.0 (NIST AI 100-1)](https://www.nist.gov/itl/ai-risk-management-framework), released January 2023, is the most widely-referenced non-EU AI governance framework. Its four core functions — **GOVERN, MAP, MEASURE, MANAGE** — give organisations a vocabulary for AI risk management that US Federal agencies are required to align with under [OMB Memo M-24-10](https://www.whitehouse.gov/wp-content/uploads/2024/03/M-24-10-Advancing-Governance-Innovation-and-Risk-Management-for-Agency-Use-of-Artificial-Intelligence.pdf). This page shows how Attestix's signed audit chains, Verifiable Credentials, and provenance records map to the AI RMF subcategories.
+The [NIST AI Risk Management Framework 1.0 (NIST AI 100-1)](https://www.nist.gov/itl/ai-risk-management-framework), released January 2023, is the most widely-referenced non-EU AI governance framework. Its four core functions (**GOVERN, MAP, MEASURE, MANAGE**) give organisations a vocabulary for AI risk management that US Federal agencies are required to align with under [OMB Memo M-24-10](https://www.whitehouse.gov/wp-content/uploads/2024/03/M-24-10-Advancing-Governance-Innovation-and-Risk-Management-for-Agency-Use-of-Artificial-Intelligence.pdf). This page shows how Attestix's signed audit chains, Verifiable Credentials, and provenance records map to the AI RMF subcategories.
 
 ## Why this matters
 
-The AI RMF is **voluntary guidance**, not a regulation. There is no "AI RMF certified" mark. NIST itself uses the language "operationalising the AI RMF" — using it as a structuring framework for an organisation's own AI risk-management programme. **Attestix is evidence tooling** an organisation operationalising the AI RMF can use to gather signed evidence for specific subcategories — particularly those that touch the AI lifecycle where signed audit trails + provenance + impact-assessment records reduce manual evidence-gathering. The AI RMF Playbook + AI 600-1 Generative AI Profile are NIST's complementary operational guides; Attestix slots underneath both as the cryptographic evidence layer.
+The AI RMF is **voluntary guidance**, not a regulation. There is no "AI RMF certified" mark. NIST itself uses the language "operationalising the AI RMF", using it as a structuring framework for an organisation's own AI risk-management programme. **Attestix is evidence tooling** an organisation operationalising the AI RMF can use to gather signed evidence for specific subcategories, particularly those that touch the AI lifecycle where signed audit trails + provenance + impact-assessment records reduce manual evidence-gathering. The AI RMF Playbook + AI 600-1 Generative AI Profile are NIST's complementary operational guides; Attestix slots underneath both as the cryptographic evidence layer.
 
 ## The honest coverage table
 
@@ -16,9 +16,9 @@ The table below covers 20 representative subcategories spanning the four functio
 | Subcategory | Mitigation surface in Attestix | Coverage | Evidence shape |
 |---|---|---|---|
 | **GOVERN-1.1** Legal + regulatory requirements understood | Profile-level `regulatory_jurisdiction` declaration; cross-walk to v0.5 EU AI Act Art 6 risk-classification | record-only | `ProviderAssertionCredential` |
-| **GOVERN-1.4** Risk-management accountability assigned | Per-role DID; every state change signed by actor DID — accountability is forensic by construction | record-only | `ProviderAssertionCredential` + actor-signed audit chain |
+| **GOVERN-1.4** Risk-management accountability assigned | Per-role DID; every state change signed by actor DID, so accountability is forensic by construction | record-only | `ProviderAssertionCredential` + actor-signed audit chain |
 | **GOVERN-1.5** Continuous monitoring + periodic review | `compliance_service` checks re-run on cron; each run produces a signed `VerifiableCheckResult` | partial | Audit chain + per-re-run `VerifiableCheckResult` |
-| **GOVERN-4.1** Safety-first culture | None. A tool does not author organisational culture | out-of-scope | — |
+| **GOVERN-4.1** Safety-first culture | None. A tool does not author organisational culture | out-of-scope | n/a |
 | **MAP-1.1** Intended purposes + contexts + capabilities + expectations | `intended_purpose` + `deployment_context` (v0.5) + signed agent card with capability declaration | strong-partial | `AgentIdentityCredential` + `ProviderAssertionCredential` |
 | **MAP-2.3** Scientific integrity + TEVV considerations | Training-data lineage + representativeness assertions; v0.5 Art 15 accuracy/robustness checks; TEVV pointer in model lineage | strong-partial | Hash-chained provenance + `ModelEvalCredential` (v0.5) |
 | **MAP-3.4** Third-party risk identified | Third-party signed `AgentIdentityCredential` acceptance; v0.5 `record_third_party_dependency` | strong-partial | UCAN chain + supplier `AgentIdentityCredential` |
@@ -28,7 +28,7 @@ The table below covers 20 representative subcategories spanning the four functio
 | **MEASURE-2.1** Test sets + metrics + tool documentation | Test-set fingerprint + `ModelEvalCredential` (v0.5) wrapping the operator's eval outputs | strong-partial | Hash-chained provenance + `ModelEvalCredential` |
 | **MEASURE-2.3** Performance + assurance criteria measured | v0.5 Art 15 accuracy/robustness check produces structured `VerifiableCheckResult`; v0.5 `record_performance_measurement` | strong-partial | `VerifiableCheckResult` + audit chain |
 | **MEASURE-2.7** Security + resilience evaluated + documented | v0.5 Art 15.5 cybersec check; cross-walk to [OWASP ASI mapping](/docs/security/owasp-agentic-top10); operator's pen-test / red-team / garak results signed | strong-partial | `VerifiableCheckResult` + `SecurityCheckCredential` (OWASP ASI tags) |
-| **MEASURE-2.8** Transparency + accountability evaluated | Every audit event signed + chain-hashed — accountability is forensic by construction; agent cards + DoC are transparency artefacts | **full** | `AgentIdentityCredential` + `EUAIActComplianceCredential` (DoC) |
+| **MEASURE-2.8** Transparency + accountability evaluated | Every audit event signed + chain-hashed, so accountability is forensic by construction; agent cards + DoC are transparency artefacts | **full** | `AgentIdentityCredential` + `EUAIActComplianceCredential` (DoC) |
 | **MEASURE-2.10** Privacy risk evaluated + documented | GDPR Art 17 right-to-erasure (already in v0.3.0); `privacy_assessment` wrapper field (v0.5) | partial | `ProviderAssertionCredential` + audit chain |
 | **MEASURE-3.2** Risk tracking for emergent risks | Operator-recorded emergent-behaviour observations; reputation-score drift signal | partial | Audit chain + `ReputationScoreCredential` |
 | **MANAGE-1.1** Go/no-go determination of contextual + societal impacts | Explicit `record_go_no_go_decision` signed by approver DID (v0.5) | record-only | `ProviderAssertionCredential` signed by approver |
@@ -40,12 +40,12 @@ The table below covers 20 representative subcategories spanning the four functio
 
 The 20 rows above are representative; for the complete count we estimate (per [§4 of the internal mapping doc](#see-also)):
 
-- **strong-partial+:** 18 (1 of which is `full` — MEASURE-2.8 transparency + accountability)
+- **strong-partial+:** 18 (1 of which is `full`, MEASURE-2.8 transparency + accountability)
 - **partial:** 18
 - **record-only:** 22
 - **out-of-scope:** 14 (cluster in GOVERN organisational + cultural subcategories)
 
-> **Important caveat — `security_check_id` ships in v0.5.0.** As of Attestix v0.4.0 the underlying events are emitted today, but they are NOT yet tagged with the `nist.airmf.*` discriminator. The v0.5.0 release registers the prefix in `FRAMEWORK_REGISTRY`; per-subcategory emission tagging is incremental.
+> **Important caveat: `security_check_id` ships in v0.5.0.** As of Attestix v0.4.0 the underlying events are emitted today, but they are NOT yet tagged with the `nist.airmf.*` discriminator. The v0.5.0 release registers the prefix in `FRAMEWORK_REGISTRY`; per-subcategory emission tagging is incremental.
 
 ## What we don't do
 
@@ -102,7 +102,7 @@ How other tools position themselves on AI RMF alignment.
 | **Microsoft Agent Governance Toolkit** | Publishes `docs/compliance/nist-ai-rmf-alignment.md`; toolkit-feature-to-subcategory mapping; CloudEvents-to-Azure-Monitor evidence | [github.com/microsoft/agent-governance-toolkit](https://github.com/microsoft/agent-governance-toolkit) |
 | **NIST AI RMF Playbook** | Authoritative subcategory-by-subcategory implementation guide. Complementary to Attestix; we provide evidence shapes the Playbook recommends | [airc.nist.gov/AI_RMF_Knowledge_Base/Playbook](https://airc.nist.gov/AI_RMF_Knowledge_Base/Playbook) |
 | **NIST AI 600-1 Generative AI Profile** | NIST's domain-specific overlay for generative AI risk. Informs MEASURE-1 / MEASURE-2 / MANAGE-4 for agentic systems | [nvlpubs.nist.gov/nistpubs/ai/NIST.AI.600-1.pdf](https://nvlpubs.nist.gov/nistpubs/ai/NIST.AI.600-1.pdf) |
-| **Weights & Biases / MLflow / Inspect AI** | Eval + experiment tracking; complementary — they measure, we sign | [wandb.ai](https://wandb.ai/), [mlflow.org](https://mlflow.org/), [github.com/UKGovernmentBEIS/inspect_ai](https://github.com/UKGovernmentBEIS/inspect_ai) |
+| **Weights & Biases / MLflow / Inspect AI** | Eval + experiment tracking; complementary, they measure, we sign | [wandb.ai](https://wandb.ai/), [mlflow.org](https://mlflow.org/), [github.com/UKGovernmentBEIS/inspect_ai](https://github.com/UKGovernmentBEIS/inspect_ai) |
 | **Vanta + Drata + Secureframe** | GRC platforms with AI RMF profiles; auditor coordination + continuous monitoring. We slot underneath as the cryptographic evidence layer | [vanta.com](https://www.vanta.com/), [drata.com](https://www.drata.com/), [secureframe.com](https://secureframe.com/) |
 
 ## See also

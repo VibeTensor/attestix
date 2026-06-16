@@ -1,11 +1,11 @@
 ---
-title: EU AI Act / GRC consultant — Quickstart
+title: EU AI Act / GRC consultant Quickstart
 description: Generate Annex IV technical documentation and an Annex V Declaration of Conformity for a client's high-risk AI system. Honest about where cryptographic integrity ends and human / notified-body sign-off begins.
 ---
 
 ## You're here because…
 
-You're consulting on EU AI Act readiness and you need a tool that produces *machine-readable* evidence for Annex IV / Annex V — not another GRC dashboard. The funnel evaluation flagged that the GRC persona was one of only two TRIAL verdicts, but still dropped at integration because the docs conflated cryptographic integrity with regulatory conformity. This page de-conflates them: a signed VC proves an artefact existed and wasn't tampered with; it does **not** replace notified-body sign-off for high-risk systems.
+You're consulting on EU AI Act readiness and you need a tool that produces *machine-readable* evidence for Annex IV / Annex V, not another GRC dashboard. The funnel evaluation flagged that the GRC persona was one of only two TRIAL verdicts, but still dropped at integration because the docs conflated cryptographic integrity with regulatory conformity. This page de-conflates them: a signed VC proves an artefact existed and wasn't tampered with; it does **not** replace notified-body sign-off for high-risk systems.
 
 ## 60-second install
 
@@ -65,7 +65,7 @@ print(declaration["declaration_id"])  # signed Annex V document id
 ## What you just got
 
 - An Annex IV-shaped technical documentation bundle (identity + training data + model lineage + compliance profile + audit trail), every entry Ed25519-signed.
-- A signed Annex V Declaration of Conformity — issued only after a third-party assessment row exists, because the service refuses to declare conformity on a self-assessment for high-risk systems.
+- A signed Annex V Declaration of Conformity, issued only after a third-party assessment row exists, because the service refuses to declare conformity on a self-assessment for high-risk systems.
 - A path to bundle the evidence into a W3C Verifiable Presentation for the regulator:
 
 ```python
@@ -88,7 +88,7 @@ Read this section before billing a client. It is the single most important disti
 | The audit trail is internally consistent (hash chain unbroken) | The agent's actual behaviour matched the declared purpose |
 | The signing key controlled by this issuer signed the artefact | Legal liability has shifted from provider to anyone else |
 
-Provider liability under Articles 16–22 stays with the provider regardless of what Attestix outputs. See the [EU compliance walkthrough](/docs/guides/eu-compliance-walkthrough) for the full mapping.
+Provider liability under Articles 16 to 22 stays with the provider regardless of what Attestix outputs. See the [EU compliance walkthrough](/docs/guides/eu-compliance-walkthrough) for the full mapping.
 
 ## Next step (5 minutes)
 
@@ -107,9 +107,9 @@ print(bundle["audit_log_count"], "audit rows;",
       len(bundle.get("training_data", [])), "datasets")
 ```
 
-Each row in `get_audit_trail(agent_id)` carries the `prev_hash` and `entry_hash` fields — a third party can re-derive the chain offline without contacting Attestix.
+Each row in `get_audit_trail(agent_id)` carries the `prev_hash` and `entry_hash` fields, so a third party can re-derive the chain offline without contacting Attestix.
 
-If you want an on-ledger commitment so the client can prove the bundle existed at a block height, add a Base **Sepolia testnet** anchor (mainnet schema is on the roadmap — testnet anchors are **not** legally non-repudiable):
+If you want an on-ledger commitment so the client can prove the bundle existed at a block height, add a Base **Sepolia testnet** anchor (mainnet schema is on the roadmap; testnet anchors are **not** legally non-repudiable):
 
 ```python
 from attestix.services.blockchain_service import BlockchainService
