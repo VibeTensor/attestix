@@ -48,9 +48,10 @@ dependencies = [
     # cryptography 47.x, etc.) on fresh `pip install attestix`. See
     # paper/internal/dependency-audit-v0.3.0-2026-04-17.md for the rationale.
     "mcp[cli]>=1.8.0,<2.0.0",
-    # cryptography >=46.0.7 closes CVE-2026-34073 (name constraints bypass)
-    # and CVE-2026-39892 (Hash.update buffer overflow).
-    "cryptography>=46.0.7,<47.0.0",
+    # cryptography >=48.0.1 closes GHSA-537c-gmf6-5ccf (in addition to the
+    # earlier CVE-2026-34073 name-constraints bypass and CVE-2026-39892
+    # Hash.update buffer overflow closed in 46.0.7).
+    "cryptography>=48.0.1,<50.0.0",
     # PyJWT >=2.12.0 closes CVE-2026-32597 (crit header validation bypass).
     # This directly impacts Attestix's JWT / Verifiable Credential / UCAN
     # verification paths and is the hard blocker for the v0.3.0 release.
