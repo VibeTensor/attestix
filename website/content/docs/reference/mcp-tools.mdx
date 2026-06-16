@@ -25,7 +25,7 @@ Unified Agent Identity Tokens bridging MCP OAuth, A2A, DIDs, and API keys.
 | `revoke_identity` | Revoke an identity (soft delete with audit entry) |
 | `translate_identity` | Translate between UAIT formats (MCP, A2A, DID, OAuth) |
 | `resolve_identity` | Resolve an agent by DID or agent card URL |
-| `erase_identity` | GDPR Article 17 hard delete with tombstone |
+| `purge_agent_data` | GDPR Article 17 right to erasure: permanently delete all data for an agent |
 
 ## 02 / Agent Cards (3 tools)
 
@@ -80,7 +80,7 @@ EU AI Act risk profiles, Article 43 conformity, Annex V declarations.
 | `record_conformity_assessment` | Record Article 43 assessment (blocks self on high-risk) |
 | `get_compliance_status` | Get the current completeness status |
 | `generate_declaration_of_conformity` | Generate Annex V declaration as a W3C VC |
-| `export_compliance_pack` | Bundle profile + evidence + declaration for regulators |
+| `update_compliance_profile` | Iteratively update an existing profile (only non-empty fields change) |
 
 ## 07 / Credentials (8 tools)
 
@@ -95,7 +95,7 @@ W3C Verifiable Credentials 1.1 with Ed25519Signature2020.
 | `revoke_credential` | Revoke a credential with reason code |
 | `create_verifiable_presentation` | Bundle VCs into a VP with audience binding |
 | `verify_presentation` | Verify a VP including replay protection |
-| `export_credential` | Export a VC as JSON or JWT |
+| `verify_credential_external` | Verify a VC supplied as raw JSON, without local storage |
 
 ## 08 / Provenance (5 tools)
 

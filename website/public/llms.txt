@@ -2,7 +2,7 @@
 
 > Attestation Infrastructure for AI Agents. Cryptographic proof your AI agents are compliant with the EU AI Act.
 
-Attestix provides verifiable identity, W3C credentials, delegation chains, compliance declarations, provenance tracking, reputation scoring, and Base L2 testnet anchoring for autonomous AI agents. 47 MCP tools across 9 modules. 481 automated tests (390 functional + 91 RFC / W3C conformance benchmarks). Apache 2.0. v0.4.0-rc.2 release candidate; single-maintainer project; no independent third-party security audit yet.
+Attestix provides verifiable identity, W3C credentials, delegation chains, compliance declarations, provenance tracking, reputation scoring, and Base L2 testnet anchoring for autonomous AI agents. 47 MCP tools across 9 modules. 481 automated tests (390 functional + 91 RFC / W3C conformance benchmarks). Apache 2.0. Stable 0.4.0 (pre-release 0.4.1rc1 via pip install --pre attestix); single-maintainer project; no independent third-party security audit yet.
 
 ## Marketing
 
@@ -14,7 +14,7 @@ Attestix provides verifiable identity, W3C credentials, delegation chains, compl
 - [Community](https://attestix.io/community): GitHub, contributing, resources
 - [Blog](https://attestix.io/blog): Release notes and field reports
 - [Research](https://attestix.io/research): Paper abstract, contributions, evaluation
-- [Changelog](https://attestix.io/changelog): v0.1.0 through v0.3.0 release history
+- [Changelog](https://attestix.io/changelog): v0.1.0 through v0.4.0 release history
 - [Verify a credential](https://attestix.io/verify): Client-side W3C Verifiable Credential verifier — paste or drop a VC and check its Ed25519 signature, structure, and validity window entirely in-browser via the @vibetensor/attestix npm package. Nothing uploaded; no backend. By-id deep link form is /verify?id=<credential-id> (by-id resolution itself is an Attestix Cloud feature). Live revocation not checked offline.
 - [Security](https://attestix.io/security): Responsible disclosure, CVE process
 - [SBOM](https://attestix.io/sbom): Software bill of materials with licenses

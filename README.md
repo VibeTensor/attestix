@@ -32,7 +32,8 @@
 </p>
 
 <p align="center">
-  <em>Status: v0.4.0-rc.3 release candidate. Single-maintainer project, community
+  <em>Status: v0.4.0 stable (pre-release 0.4.1rc1 available via the --pre channel).
+  Single-maintainer project, community
   contributions welcome. No independent third-party security audit has been
   performed yet; deploy with the same diligence you would apply to any
   pre-1.0 open-source crypto stack.</em>
@@ -43,12 +44,15 @@
 ## Install
 
 ```bash
-# v0.4.0-rc.3 is a release candidate (pre-release). Use --pre to install it:
+# Stable 0.4.0:
+pip install attestix
+
+# Pre-release 0.4.1rc1 (opt in with --pre):
 pip install --pre attestix
 ```
 
-> v0.4.0-rc.3 packaging fix: the wheel now ships only the canonical
-> `attestix.*` namespace. The pre-rc.2 flat layout (`from services... import`,
+> Stable 0.4.0 ships only the canonical
+> `attestix.*` namespace. The older flat layout (`from services... import`,
 > `from auth... import`, ...) keeps working via thin deprecation shims that
 > emit a `DeprecationWarning` on first import and are scheduled for removal in
 > v0.5.0. Update imports to `from attestix.services... import` at your earliest
@@ -262,7 +266,7 @@ Every artifact Attestix produces is cryptographically signed with Ed25519:
 ## Architecture
 
 ```
-attestix/                  # Canonical Python package (v0.4.0-rc.3)
+attestix/                  # Canonical Python package (v0.4.0)
   main.py                  # MCP server entry point (47 tools)
   cli.py                   # `attestix` console script
   config.py                # Environment-based configuration
@@ -293,7 +297,7 @@ attestix/                  # Canonical Python package (v0.4.0-rc.3)
   tools/                   # MCP tool definitions (one file per module)
 ```
 
-The pre-v0.4.0-rc.3 flat layout (`services/`, `auth/`, `storage/`, ...) is
+The pre-v0.4.0 flat layout (`services/`, `auth/`, `storage/`, ...) is
 preserved as deprecation shims at the same paths. They re-export from the
 canonical `attestix.*` namespace and emit a `DeprecationWarning` on first
 import. The shims are scheduled for removal in v0.5.0.

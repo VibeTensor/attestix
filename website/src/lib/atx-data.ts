@@ -1,7 +1,7 @@
 /*
  * Attestix v2 landing data.
  * Numbers here are the real project surface:
- *   - v0.4.0-rc.2 release candidate, 481 tests (390 functional + 91 conformance benchmarks),
+ *   - Stable 0.4.0, 481 tests (390 functional + 91 conformance benchmarks),
  *     47 MCP tools, 9 modules, 44 REST endpoints. Single-maintainer project.
  *   - Base L2 is testnet (integration complete, mainnet schema not yet registered).
  *   - Real framework integrations: LangChain, OpenAI Agents SDK, CrewAI.

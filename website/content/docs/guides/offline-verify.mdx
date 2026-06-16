@@ -3,7 +3,7 @@ title: Offline Verification Walkthrough
 description: How a regulator, auditor, or other agent verifies an Attestix Verifiable Credential without any network access.
 ---
 
-This guide walks through verifying an Attestix-issued Verifiable Credential with no internet connection. All that is required is the public key of the issuer, which is embedded in the DID.
+This guide walks through verifying an Attestix-issued Verifiable Credential with no internet connection. All that is required is the credential JSON itself: the issuer's public key is encoded directly in the `did:key` carried in the credential's `issuer.id`, so verification never has to fetch a DID document or call the issuer.
 
 ## Scenario
 
@@ -13,7 +13,7 @@ You are a regulator. A supplier has sent you a Declaration of Conformity VC for 
 2. The signature has not been tampered with.
 3. The audit trail behind it is internally consistent.
 
-No network calls. Everything should verify from the JSON blob and the public key.
+No network calls. Everything verifies from the JSON blob, because the issuer's Ed25519 public key is embedded in the `did:key`.
 
 ## Prerequisites
 
@@ -25,92 +25,196 @@ pip install attestix
 
 Ask the supplier to send:
 
-- The Verifiable Credential JSON (Annex V Declaration of Conformity)
-- The issuer's DID document (or the embedded public key)
-- Optionally, the hash-chained audit trail export
+- The Verifiable Credential JSON (for example an EU AI Act Declaration of Conformity).
+- Optionally, a Verifiable Presentation JSON bundling several credentials.
+- Optionally, the Article 12 audit trail entries for the agent.
 
-All three come from `export_compliance_pack`:
-
-```python
-from attestix.services.compliance_service import ComplianceService
-
-pack = ComplianceService().export_compliance_pack(
-    agent_id="attestix:f9bdb7a94ccb40f1"
-)
-# pack -> zip with credential.json, did-document.json, audit.ndjson
-```
-
-## Step 2 / Verify the signature
+These are plain JSON. The issuer's public key is not a separate file: it is the `did:key` in `credential["issuer"]["id"]`, which decodes to the raw Ed25519 verifying key. That is what makes verification self contained and offline.
 
 ```python
 import json
-from attestix.services.credential_service import CredentialService
-
-credential_svc = CredentialService()
 
 with open("credential.json") as f:
     vc = json.load(f)
 
-ok = credential_svc.verify_credential_offline(
-    credential=vc,
-    did_document_path="did-document.json",
-)
-# -> True (or False with a reason)
+print(vc["issuer"]["id"])  # did:key:z6Mk... encodes the issuer public key
+```
+
+## Step 2 / Verify the signature
+
+`verify_credential_external` verifies any credential supplied as raw JSON. It does not require the credential to be in local storage, which is exactly the external verifier case.
+
+```python
+from attestix.services.credential_service import CredentialService
+
+credential_svc = CredentialService()
+
+result = credential_svc.verify_credential_external(vc)
+# result -> {
+#   "valid": True,
+#   "credential_id": "urn:uuid:...",
+#   "type": ["VerifiableCredential", "ConformityAssessmentCredential"],
+#   "subject": "attestix:f9bdb7a94ccb40f1",
+#   "checks": {
+#       "structure_valid": True,
+#       "not_revoked": True,
+#       "not_expired": True,
+#       "signature_valid": True,
+#   },
+# }
+print(result["valid"], result["checks"])
 ```
 
 Internally this:
 
-1. Canonicalises the VC with [RFC 8785](https://www.rfc-editor.org/rfc/rfc8785) JCS.
-2. Extracts the `proofValue` field.
-3. Looks up the `verificationMethod` key in the DID document.
-4. Verifies the Ed25519 signature per [RFC 8032](https://www.rfc-editor.org/rfc/rfc8032).
+1. Confirms the object is a `VerifiableCredential`.
+2. Strips the mutable fields (`proof` and `credentialStatus`) and canonicalises the rest with the Attestix canonical JSON form (a practical subset of [RFC 8785](https://www.rfc-editor.org/rfc/rfc8785) JCS, sorted keys, no whitespace, NFC normalized).
+3. Decodes the verifying key from `issuer.id` (the trust anchor), not from `proof.verificationMethod`. If `proof.verificationMethod` names a different DID, verification fails. This blocks issuer key substitution.
+4. Verifies the Ed25519 signature in `proof.proofValue` per [RFC 8032](https://www.rfc-editor.org/rfc/rfc8032), and checks expiry and (when the revocation list is available locally) revocation.
+
+The credential is valid only when `signature_valid` AND `not_expired` AND `not_revoked` all hold. An external verifier with no revocation list assumes not revoked, so confirm revocation separately if that matters for your use case.
 
 If the signature is valid, you have cryptographic proof that the issuer controlled the private key at signing time.
 
-## Step 3 / Verify the audit chain
+## Step 3 / Verify a presentation (optional)
+
+If the supplier sent a Verifiable Presentation that bundles several credentials, verify it in one call. `verify_presentation` checks the presentation signature plus every embedded credential.
 
 ```python
+with open("presentation.json") as f:
+    vp = json.load(f)
+
+result = credential_svc.verify_presentation(vp)
+# result -> {
+#   "valid": True,
+#   "holder": "attestix:f9bdb7a94ccb40f1",
+#   "credential_count": 2,
+#   "checks": {
+#       "structure_valid": True,
+#       "vp_signature_valid": True,
+#       "credentials_valid": True,
+#       "holder_matches_subjects": True,
+#       ...
+#   },
+# }
+print(result["valid"], result["checks"])
+```
+
+Each embedded credential is verified against its own `issuer.id`, and every credential subject is checked against the presentation holder.
+
+## Step 4 / Verify the audit chain
+
+The Article 12 audit trail is a SHA-256 hash chain: each entry links to the previous one, so tampering with any row invalidates every later row. Pull the entries with `get_audit_trail`, then recompute the chain offline.
+
+```python
+import hashlib
+import json
 from attestix.services.provenance_service import ProvenanceService
 
-ok, first_bad_index = ProvenanceService().verify_audit_chain(
-    trail_path="audit.ndjson"
-)
-# -> (True, None) or (False, 42)
+entries = ProvenanceService().get_audit_trail(agent_id="attestix:f9bdb7a94ccb40f1")
+
+GENESIS = "0" * 64
+
+
+def chain_hash(previous_hash: str, entry: dict) -> str:
+    # Same rule the recorder uses: SHA-256 over "{prev_hash}:{canonical_json}"
+    # where canonical_json excludes the prev_hash, chain_hash, and signature
+    # fields and uses sorted keys with compact separators.
+    body = {
+        k: v
+        for k, v in entry.items()
+        if k not in {"prev_hash", "chain_hash", "signature"}
+    }
+    canonical = json.dumps(body, sort_keys=True, separators=(",", ":"))
+    return hashlib.sha256(f"{previous_hash}:{canonical}".encode("utf-8")).hexdigest()
+
+
+prev = GENESIS
+first_bad = None
+for index, entry in enumerate(entries):
+    if entry.get("prev_hash") != prev or chain_hash(prev, entry) != entry.get("chain_hash"):
+        first_bad = index
+        break
+    prev = entry["chain_hash"]
+
+print("chain consistent" if first_bad is None else f"tamper at entry {first_bad}")
 ```
 
-Each entry is checked with `SHA-256(prev_hash + canonical_json(entry_without_hash_fields)) = hash`, where `canonical_json` uses sorted keys and compact separators. Any tamper with any row invalidates all subsequent rows.
-
-## Step 4 / Verify the declaration against the profile
-
-```python
-ok = ComplianceService().verify_declaration_offline(
-    declaration_path="credential.json",
-    profile_path="profile.json",
-)
-```
-
-Confirms the declaration references the correct risk category, notified body, and covered articles.
+Any change to any row, or any reordering, breaks the recomputed hash and surfaces the first bad index.
 
 ## Full example script
 
-A runnable script is included in the repo at `examples/offline_verify.py`:
+Putting the three checks together into one runnable script:
+
+```python
+# offline_verify.py
+import hashlib
+import json
+import sys
+
+from attestix.services.credential_service import CredentialService
+from attestix.services.provenance_service import ProvenanceService
+
+GENESIS = "0" * 64
+
+
+def chain_hash(previous_hash: str, entry: dict) -> str:
+    body = {
+        k: v
+        for k, v in entry.items()
+        if k not in {"prev_hash", "chain_hash", "signature"}
+    }
+    canonical = json.dumps(body, sort_keys=True, separators=(",", ":"))
+    return hashlib.sha256(f"{previous_hash}:{canonical}".encode("utf-8")).hexdigest()
+
+
+def main(vc_path: str, agent_id: str) -> int:
+    with open(vc_path) as f:
+        vc = json.load(f)
+
+    result = CredentialService().verify_credential_external(vc)
+    if not result.get("valid"):
+        print(f"[fail] credential not valid: {result.get('checks')}")
+        return 1
+    print(f"[ok] signature verified (issuer {vc['issuer']['id']})")
+
+    entries = ProvenanceService().get_audit_trail(agent_id=agent_id)
+    prev = GENESIS
+    for index, entry in enumerate(entries):
+        if entry.get("prev_hash") != prev or chain_hash(prev, entry) != entry.get("chain_hash"):
+            print(f"[fail] audit chain broken at entry {index}")
+            return 1
+        prev = entry["chain_hash"]
+    print(f"[ok] audit chain consistent ({len(entries)} entries)")
+
+    print("VERIFY = PASS")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main(sys.argv[1], sys.argv[2]))
+```
+
+Run it:
 
 ```bash
-python examples/offline_verify.py ./compliance-pack.zip
+python offline_verify.py ./credential.json attestix:f9bdb7a94ccb40f1
 ```
 
 Output:
 
 ```
-[ok] signature verified (Ed25519Signature2020)
-[ok] audit chain consistent (1,247 entries)
-[ok] declaration references profile:3c8f21e9
-[ok] 9 / 9 obligations met (Articles 9, 10, 11, 12, 13, 14, 15, 43, Annex V)
+[ok] signature verified (issuer did:key:z6Mk...)
+[ok] audit chain consistent (1247 entries)
 VERIFY = PASS
 ```
+
+## Verify without Python
+
+The same credential verifies in any language. Six independent verifier implementations share one conformance suite at [`spec/verify/v1`](https://github.com/VibeTensor/attestix/tree/main/spec/verify/v1), so a Go, Rust, JS, Java, or R verifier reaches the identical verdict on the identical canonical bytes. You can also verify a credential in the browser at [attestix.io/verify](https://attestix.io/verify). Issuance stays in the Python core; verification is open and portable.
 
 ## Why this matters
 
 Every other compliance artefact you receive as a regulator comes as a PDF or a dashboard screenshot. Neither is cryptographically bindable to a specific operator or point in time. Attestix artefacts are.
 
-The same function is what a peer agent calls when it decides whether to trust another agent's capability claim. See [UCAN delegation](/docs/guides/integration-guide) for how delegation chains are verified the same way.
+The same verification is what a peer agent runs when it decides whether to trust another agent's capability claim. See [UCAN delegation](/docs/guides/integration-guide) for how delegation chains are verified the same way.
