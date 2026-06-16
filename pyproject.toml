@@ -76,6 +76,11 @@ dependencies = [
 [project.optional-dependencies]
 blockchain = ["web3>=7.0.0,<8.0.0"]
 reports = ["weasyprint>=62.0"]
+# Post-quantum signing (FIPS 204 ML-DSA-65 + hybrid Ed25519+ML-DSA). Optional,
+# never required: the default install stays classical Ed25519. dilithium-py is
+# pure-Python (no native build) so the verifier stays portable. See
+# attestix.auth.pqc.
+pqc = ["dilithium-py>=1.0.0,<2.0.0"]
 # v0.4.0 extensibility extras. The default install stays file-storage +
 # in-process Ed25519 signer with no external services (constitution: "Optional,
 # never required"). These extras are only needed for the non-default Repository /
