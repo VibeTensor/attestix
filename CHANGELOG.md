@@ -4,6 +4,19 @@ All notable changes to Attestix are documented here.
 
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.4.1rc2] - 2026-06-16
+
+Pre-release. Adds post-quantum signing on top of 0.4.1rc1. `pip install --pre attestix`.
+
+### Added
+- **Post-quantum / hybrid signing** (`attestix.auth.pqc`, optional `[pqc]` extra):
+  FIPS 204 **ML-DSA-65** sign/verify over the shared JCS canonical form, and a
+  **hybrid Ed25519 + ML-DSA-65** composite where a verifier MUST validate BOTH
+  signatures (anti-stripping / weak non-separability), so attestations stay
+  verifiable after a quantum break. `did:key` Multikey encoding for ML-DSA-65.
+  The default Ed25519 path is unchanged. Cryptosuites: `mldsa65-jcs-2026`,
+  `hybrid-ed25519-mldsa65-jcs-2026`.
+
 ## [0.4.1rc1] - 2026-06-16
 
 Pre-release. Security hardening from a multi-persona audit. Available on the
