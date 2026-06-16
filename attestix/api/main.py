@@ -215,19 +215,42 @@ def _resolve_client_ip(request: Request) -> str:
 class APIKeyMiddleware(BaseHTTPMiddleware):
     """Validate X-API-Key header against ATTESTIX_API_KEY env var.
 
-    If ATTESTIX_API_KEY is not set, all requests are allowed (dev mode).
-    Health check, docs, and OpenAPI schema endpoints are always open.
-    Also accepts Authorization: Bearer <key> as a fallback.
+    Auth is REQUIRED by default. If ATTESTIX_API_KEY is unset the server
+    fails closed (503 on every non-open path) so that a single missing env
+    var cannot silently expose write/destroy endpoints such as
+    ``purge_agent_data``. To run without auth (development/tests only), the
+    operator must explicitly set ``ATTESTIX_ALLOW_NO_AUTH`` to a truthy value.
+    Health check, docs, and OpenAPI schema endpoints are always open. Also
+    accepts ``Authorization: Bearer <key>`` as a fallback.
     """
 
     OPEN_PATHS = {"/", "/health", "/docs", "/redoc", "/openapi.json"}
 
+    @staticmethod
+    def _allow_no_auth() -> bool:
+        return os.environ.get("ATTESTIX_ALLOW_NO_AUTH", "").strip().lower() in {
+            "1", "true", "yes", "on",
+        }
+
     async def dispatch(self, request: Request, call_next):
         api_key = os.environ.get("ATTESTIX_API_KEY")
 
-        # Dev mode - no key configured, allow everything
+        # No key configured. Open paths are always served; everything else
+        # fails closed unless the operator explicitly opted into no-auth mode.
         if not api_key:
-            return await call_next(request)
+            if request.url.path in self.OPEN_PATHS or self._allow_no_auth():
+                return await call_next(request)
+            return JSONResponse(
+                status_code=503,
+                content={
+                    "error": (
+                        "Server is refusing requests because no API key is "
+                        "configured. Set ATTESTIX_API_KEY to require "
+                        "authentication, or set ATTESTIX_ALLOW_NO_AUTH=1 to "
+                        "run without auth (development only)."
+                    )
+                },
+            )
 
         # Allow open paths without auth
         if request.url.path in self.OPEN_PATHS:
@@ -300,6 +323,19 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     logger.info("Attestix API starting up")
+    if not os.environ.get("ATTESTIX_API_KEY"):
+        if APIKeyMiddleware._allow_no_auth():
+            logger.warning(
+                "ATTESTIX_API_KEY is not set and ATTESTIX_ALLOW_NO_AUTH is "
+                "enabled: the API is serving ALL endpoints WITHOUT "
+                "authentication. Do not use this configuration in production."
+            )
+        else:
+            logger.warning(
+                "ATTESTIX_API_KEY is not set: the API will refuse all "
+                "non-public requests (503) until a key is configured. Set "
+                "ATTESTIX_API_KEY, or ATTESTIX_ALLOW_NO_AUTH=1 for local dev."
+            )
     yield
     logger.info("Attestix API shutting down")
 

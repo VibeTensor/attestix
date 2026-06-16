@@ -138,7 +138,15 @@ def _row_credential(cloud: dict) -> dict:
     cloud row's ``id`` only as ``_cloud_id`` metadata — the VC's own ``id``
     (a ``urn:uuid:...``) is the OSS primary key.
     """
-    body = cloud.get("credential") or cloud.get("vc") or cloud.get("body")
+    # ``vc_jsonld`` is the key the cloud DB actually exports the signed VC under
+    # (packages/db/src/schema/credentials.ts); ``credential``/``vc``/``body`` are
+    # fixture/legacy aliases. Probe all so real cloud bundles import correctly.
+    body = (
+        cloud.get("credential")
+        or cloud.get("vc")
+        or cloud.get("body")
+        or cloud.get("vc_jsonld")
+    )
     if isinstance(body, dict) and body.get("id"):
         out = dict(body)
         out["_cloud_id"] = cloud.get("id")
@@ -424,14 +432,18 @@ class Importer:
 
             try:
                 if bundle_name == "audit_events":
-                    # audit_events need the **bundle's original workspace slug**
-                    # threaded into every row so chain verification matches the
-                    # cloud-side hash (the cloud hashed the chain under that
-                    # tenant string). Storage tenant (self._tenant_id) may be
-                    # the user-chosen --workspace override; the chain row's
-                    # `tenant_id` is therefore set from the bundle, and the
-                    # Repository tags its own `tenant_id` field on write under
-                    # self._tenant_id, leaving the chain body untouched.
+                    # KNOWN ISSUE (audit B8, 2026-06-16): the cloud mints the
+                    # chain under the workspace UUID
+                    # (packages/audit/src/audit-service.ts
+                    # ``computeChainHash({ tenantId: workspaceId })``), but the
+                    # FileRepository overwrites each row's ``tenant_id`` field
+                    # with the import *storage* tenant on write, so a re-verify
+                    # from stored rows recomputes under the storage tenant, not
+                    # the UUID. Threading the bundle slug here keeps the
+                    # existing fixture round-trip green but does NOT fix cloud
+                    # UUID chains. The real fix must decouple the chain tenant
+                    # (preserved from the bundle) from the storage partition
+                    # tenant in verify_chain — a deliberate audit-model change.
                     bundle_tenant = (
                         bundle.workspace.get("slug")
                         or self._tenant_id

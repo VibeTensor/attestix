@@ -45,6 +45,12 @@ def tmp_attestix(tmp_path, monkeypatch):
         original = getattr(config, attr)
         monkeypatch.setattr(config, attr, tmp_path / original.name)
 
+    # The HTTP API fails closed when no ATTESTIX_API_KEY is set. Tests exercise
+    # the app without a key, so opt into no-auth mode explicitly. A dedicated
+    # auth test can monkeypatch.delenv("ATTESTIX_ALLOW_NO_AUTH") to assert the
+    # fail-closed behaviour.
+    monkeypatch.setenv("ATTESTIX_ALLOW_NO_AUTH", "1")
+
     # Also patch PROJECT_DIR and DATA_DIR so any code using them resolves to tmp
     monkeypatch.setattr(config, "PROJECT_DIR", tmp_path)
     monkeypatch.setattr(config, "DATA_DIR", tmp_path)

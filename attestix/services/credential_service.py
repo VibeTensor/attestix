@@ -195,10 +195,8 @@ class CredentialService:
             if proof_value:
                 proof_payload = {k: v for k, v in cred.items() if k not in self.MUTABLE_FIELDS}
                 try:
-                    issuer_did = cred.get("issuer", {}).get("id", self._server_did)
-                    pub_key = did_key_to_public_key(issuer_did)
-                    checks["signature_valid"] = verify_json_signature(
-                        pub_key, proof_payload, proof_value
+                    checks["signature_valid"] = self._verify_proof_bound(
+                        self._issuer_did(cred), proof, proof_payload
                     )
                 except Exception:
                     checks["signature_valid"] = False
@@ -361,6 +359,36 @@ class CredentialService:
             )
             return {"error": msg}
 
+    @staticmethod
+    def _issuer_did(obj: dict) -> str:
+        """Issuer DID of a credential, accepting ``issuer`` as a string or ``{id}``."""
+        issuer = obj.get("issuer")
+        if isinstance(issuer, dict):
+            return issuer.get("id", "")
+        return issuer or ""
+
+    def _verify_proof_bound(self, expected_did: str, proof: dict, payload: dict) -> bool:
+        """Verify ``proof.proofValue`` over ``payload`` against ``expected_did``.
+
+        ``expected_did`` is the trust anchor -- a credential's ``issuer.id`` or
+        a presentation's legitimate signer. The verifying key is decoded from
+        ``expected_did``, never from ``proof.verificationMethod``: that field
+        lives outside the signed payload and is attacker-controlled, so
+        trusting it lets a self-signed object masquerade as a trusted issuer
+        (key substitution). If ``verificationMethod`` is present it MUST
+        reference the same DID as ``expected_did`` or verification fails.
+        """
+        if not expected_did:
+            return False
+        proof_value = proof.get("proofValue")
+        if not proof_value:
+            return False
+        vm = proof.get("verificationMethod", "")
+        if vm and vm.split("#")[0] != expected_did:
+            return False
+        pub_key = did_key_to_public_key(expected_did)
+        return verify_json_signature(pub_key, payload, proof_value)
+
     def verify_presentation(self, presentation: dict) -> dict:
         """Verify a Verifiable Presentation: check holder signature, domain, challenge,
         and verify each contained credential."""
@@ -381,12 +409,11 @@ class CredentialService:
             if proof_value:
                 proof_payload = {k: v for k, v in presentation.items() if k != "proof"}
                 try:
-                    vm = proof.get("verificationMethod", "")
-                    # Extract DID from verification method (remove fragment)
-                    issuer_did = vm.split("#")[0] if "#" in vm else self._server_did
-                    pub_key = did_key_to_public_key(issuer_did)
-                    checks["vp_signature_valid"] = verify_json_signature(
-                        pub_key, proof_payload, proof_value
+                    # Presentations are signed by the server on behalf of the
+                    # holder; the server DID is the trust anchor, not the
+                    # attacker-controlled verificationMethod.
+                    checks["vp_signature_valid"] = self._verify_proof_bound(
+                        self._server_did, proof, proof_payload
                     )
                 except Exception:
                     checks["vp_signature_valid"] = False
@@ -412,11 +439,10 @@ class CredentialService:
                         k: v for k, v in cred.items() if k not in self.MUTABLE_FIELDS
                     }
                     try:
-                        vm = cred_proof.get("verificationMethod", "")
-                        issuer_did = vm.split("#")[0] if "#" in vm else self._server_did
-                        pub_key = did_key_to_public_key(issuer_did)
-                        cred_valid = verify_json_signature(
-                            pub_key, cred_payload, cred_proof_value
+                        # Each credential's key is bound to its own issuer.id
+                        # (the trust anchor), not to proof.verificationMethod.
+                        cred_valid = self._verify_proof_bound(
+                            self._issuer_did(cred), cred_proof, cred_payload
                         )
                         if not cred_valid:
                             checks["credentials_valid"] = False
@@ -488,11 +514,11 @@ class CredentialService:
                     k: v for k, v in credential.items() if k not in self.MUTABLE_FIELDS
                 }
                 try:
-                    vm = proof.get("verificationMethod", "")
-                    issuer_did = vm.split("#")[0] if "#" in vm else ""
-                    pub_key = did_key_to_public_key(issuer_did)
-                    checks["signature_valid"] = verify_json_signature(
-                        pub_key, proof_payload, proof_value
+                    # Bind the verifying key to issuer.id (the trust anchor),
+                    # rejecting any proof.verificationMethod that names a
+                    # different DID (prevents issuer key-substitution).
+                    checks["signature_valid"] = self._verify_proof_bound(
+                        self._issuer_did(credential), proof, proof_payload
                     )
                 except Exception:
                     checks["signature_valid"] = False

@@ -123,7 +123,9 @@ def _sample_credentials() -> list[dict]:
         {
             "id": "cccccccc-cccc-4ccc-8ccc-cccccccccc01",
             "workspace_id": WORKSPACE_ID,
-            "credential": {
+            # Real cloud exports the signed VC under ``vc_jsonld`` (the DB column
+            # name in packages/db/src/schema/credentials.ts), not ``credential``.
+            "vc_jsonld": {
                 "id": "urn:uuid:cred-fixture-0001",
                 "type": ["VerifiableCredential", "AgentIdentityCredential"],
                 "issuer": {"id": "did:key:fixture-issuer", "name": "Fixture Issuer"},
@@ -235,6 +237,12 @@ def _sample_audit_events() -> list[dict]:
             target_id=f"attestix:fixture000000000{i+1}",
             target_collection="identities" if i == 0 else "credentials",
             actor="user:operator@fixture.attestix.io",
+            # NOTE: real cloud mints the chain under the workspace UUID
+            # (audit-service.ts computeChainHash uses workspaceId). This fixture
+            # still uses the slug because the OSS importer/FileRepository
+            # currently re-verifies under the storage tenant (= slug here); see
+            # audit B8. Switch to WORKSPACE_ID once the chain-tenant decoupling
+            # fix lands so this fixture mirrors real cloud output.
             tenant_id=WORKSPACE_SLUG,
             after={"id": f"attestix:fixture000000000{i+1}"},
             prev_hash=prev,
