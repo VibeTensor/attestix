@@ -1,5 +1,5 @@
 ---
-title: DevTools / DX skeptic — Quickstart
+title: DevTools / DX skeptic Quickstart
 description: Does the package actually import? Yes, in v0.4.0-rc.5. Here's the smallest possible test you can run in 60 seconds to verify the DX claim before reading anything else.
 ---
 
@@ -55,18 +55,18 @@ python -W error::DeprecationWarning -c \
   "from attestix.services.identity_service import IdentityService; print('canonical ok')"
 ```
 
-If you see `canonical ok` and zero stderr, the import surface is clean. If you see a `DeprecationWarning` it means something in your tree is still hitting the legacy flat shim (`from services...`, `from auth...`, etc.) — see the [namespace migration guide](/docs/guides/migration-v0.4.0-namespace).
+If you see `canonical ok` and zero stderr, the import surface is clean. If you see a `DeprecationWarning` it means something in your tree is still hitting the legacy flat shim (`from services...`, `from auth...`, etc.). See the [namespace migration guide](/docs/guides/migration-v0.4.0-namespace).
 
 ## What you just got
 
 - Proof the package imports from a clean venv with no path hacks.
 - A signed Ed25519 identity row in `identities.json` (cwd-relative). Delete the file to reset.
-- A canonical `attestix.*` import path that maps 1:1 to every module name — same names you'd discover via `python -c "import attestix; help(attestix)"`.
+- A canonical `attestix.*` import path that maps 1:1 to every module name, the same names you'd discover via `python -c "import attestix; help(attestix)"`.
 
 ## Honest things you should know before sending this to your team
 
 - v0.4.0-rc.5 is a release candidate. The legacy flat top-level packages (`services/`, `auth/`, `storage/`, …) are still installed as deprecation shims and **will be removed in v0.5.0**.
-- Single maintainer, ~15 GitHub stars, no third-party security audit. The package is functional but not yet enterprise-hardened — see the [enterprise architect quickstart](/docs/quickstart/enterprise-architect) for the explicit gap list.
+- Single maintainer, ~15 GitHub stars, no third-party security audit. The package is functional but not yet enterprise-hardened. See the [enterprise architect quickstart](/docs/quickstart/enterprise-architect) for the explicit gap list.
 - The signing key lives in `.signing_key.json` in the working directory and is plaintext by default. Set `ATTESTIX_KEY_PASSPHRASE` to enable AES-256-GCM encryption at rest.
 
 ## Next step (5 minutes)

@@ -1,11 +1,11 @@
 ---
-title: Enterprise platform architect — Quickstart
+title: Enterprise platform architect Quickstart
 description: Run Attestix as a service behind your own ingress. Multi-tenant context, idempotent REST, hash-chained audit. Honest about what's not in v0.4.0.
 ---
 
 ## You're here because…
 
-You're evaluating whether Attestix can sit inside an enterprise platform as a deployable service, not a CLI. The funnel evaluation flagged that enterprise evaluators got past install but dropped at integration — file-based storage, one signing key, no RBAC, no multi-tenant isolation, no KMS. **Most of that is still true in v0.4.0.** What v0.4.0 *does* ship: a proper Python package, idempotent REST endpoints, audit events per service, and an in-process tenant context. The honest gaps are listed at the bottom of this page so your architecture review can land on them now.
+You're evaluating whether Attestix can sit inside an enterprise platform as a deployable service, not a CLI. The funnel evaluation flagged that enterprise evaluators got past install but dropped at integration: file-based storage, one signing key, no RBAC, no multi-tenant isolation, no KMS. **Most of that is still true in v0.4.0.** What v0.4.0 *does* ship: a proper Python package, idempotent REST endpoints, audit events per service, and an in-process tenant context. The honest gaps are listed at the bottom of this page so your architecture review can land on them now.
 
 ## 60-second install
 
@@ -64,7 +64,7 @@ print(len(trail), "audit rows so far")
 
 ## What you just got
 
-- An HTTP service exposing the 44 REST endpoints, all under a `/v1/` prefix (`/v1/identities`, `/v1/credentials`, `/v1/compliance`, `/v1/provenance/audit-trail/{id}`, `/v1/delegations`, …) — same surface as the 47 MCP tools.
+- An HTTP service exposing the 44 REST endpoints, all under a `/v1/` prefix (`/v1/identities`, `/v1/credentials`, `/v1/compliance`, `/v1/provenance/audit-trail/{id}`, `/v1/delegations`, …), the same surface as the 47 MCP tools.
 - An idempotency middleware: repeating the same `Idempotency-Key` returns the cached response, not a duplicate write.
 - A tenant context header (`X-Tenant-Id`) that is plumbed through every service and stamped onto audit events. Pair it with your existing OIDC / mTLS edge.
 

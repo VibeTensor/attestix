@@ -40,7 +40,7 @@ export const siteConfig = {
   // 4-tier model. Single source of truth: attestix-cloud-plan/18-TIER-MATRIX.md
   // (OSS free, self-host / Cloud Free / Cloud Pro / Cloud Enterprise).
   // CTA destinations are honest: checkout is NOT wired (no payment keys, no M4
-  // billing backend) — Pro/Free route to the waitlist, OSS to GitHub/PyPI,
+  // billing backend). Pro/Free route to the waitlist, OSS to GitHub/PyPI,
   // Enterprise to sales. See src/lib/billing.ts for the documented seam.
   pricing: [
     {
@@ -69,7 +69,7 @@ export const siteConfig = {
       price: { monthly: "$0", yearly: "$0" },
       frequency: { monthly: "hosted · capped usage", yearly: "hosted · capped usage" },
       description:
-        "The same OSS capabilities, run by us. One workspace, hosted Postgres, nothing to operate. The funnel step — start here, move to Pro when you outgrow the caps.",
+        "The same OSS capabilities, run by us. One workspace, hosted Postgres, nothing to operate. The funnel step: start here, then move to Pro when you outgrow the caps.",
       features: [
         "Hosted dashboard, no database to run",
         "1 workspace (capped usage)",
@@ -89,7 +89,7 @@ export const siteConfig = {
       price: { monthly: "$99", yearly: "$99" },
       frequency: { monthly: "/ month / workspace", yearly: "/ month / workspace" },
       description:
-        "Production hosting with team management, webhooks, and mainnet anchoring. You pay us to run the operation — managed Postgres, workers, dispatcher — not for capability.",
+        "Production hosting with team management, webhooks, and mainnet anchoring. You pay us to run the operation (managed Postgres, workers, dispatcher), not for capability.",
       features: [
         "Everything in Cloud Free, uncapped",
         "Up to 10 team members + RBAC",
@@ -114,7 +114,7 @@ export const siteConfig = {
         "Everything in Pro, unlimited",
         "SSO / SAML / SCIM + custom roles",
         "Custom residency (India, Middle East, country-specific)",
-        "BYOK — HSM / KMS signing keys",
+        "BYOK: HSM / KMS signing keys",
         "Cold archive (R2/S3, 7-year), dedicated workers, SLA",
         "DPA / BAA + customer-funded SOC 2 / ISO 42001 packs",
       ],
@@ -278,7 +278,7 @@ export const siteConfig = {
     {
       question: "What is the current maturity level?",
       answer:
-        `Attestix v${ATTESTIX_VERSION} is a release candidate (v0.4.0-rc.2) under active development. It includes 481 tests across functional, end-to-end, and conformance benchmark suites (390 functional + 91 RFC / W3C conformance) covering all 9 modules, plus real integrations with LangChain, OpenAI Agents SDK, and CrewAI. GitHub Actions CI runs the full pytest matrix, lint, and security scans on every push. Single-maintainer project; no independent third-party security audit has been performed yet. Treat it as you would any pre-1.0 open-source crypto stack — pin the version, review the diff, and test thoroughly before relying on it in production.`,
+        `Attestix v${ATTESTIX_VERSION} is a release candidate (v0.4.0-rc.2) under active development. It includes 481 tests across functional, end-to-end, and conformance benchmark suites (390 functional + 91 RFC / W3C conformance) covering all 9 modules, plus real integrations with LangChain, OpenAI Agents SDK, and CrewAI. GitHub Actions CI runs the full pytest matrix, lint, and security scans on every push. Single-maintainer project; no independent third-party security audit has been performed yet. Treat it as you would any pre-1.0 open-source crypto stack: pin the version, review the diff, and test thoroughly before relying on it in production.`,
     },
     {
       question: "Does Attestix work with LangChain, OpenAI Agents SDK, or CrewAI?",

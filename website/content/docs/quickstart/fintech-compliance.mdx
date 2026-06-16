@@ -1,11 +1,11 @@
 ---
-title: Fintech compliance engineer — Quickstart
-description: Wire a trading or credit-scoring agent with hash-chained audit, signed inference logs, and a third-party conformity assessment record — without a database.
+title: Fintech compliance engineer Quickstart
+description: Wire a trading or credit-scoring agent with hash-chained audit, signed inference logs, and a third-party conformity assessment record, without a database.
 ---
 
 ## You're here because…
 
-You're a compliance engineer on a fintech / trading-agent stack. The funnel evaluation flagged that fintech evaluators dropped at install because the legacy package needed a `sys.path` hack and because Base L2 anchoring is **testnet only** — not legally binding for trading audit yet. v0.4.0-rc.5 fixes the import problem (`pip install --pre attestix` gives you the canonical `attestix.*` namespace). The testnet caveat still applies and is called out below.
+You're a compliance engineer on a fintech / trading-agent stack. The funnel evaluation flagged that fintech evaluators dropped at install because the legacy package needed a `sys.path` hack and because Base L2 anchoring is **testnet only**, not legally binding for trading audit yet. v0.4.0-rc.5 fixes the import problem (`pip install --pre attestix` gives you the canonical `attestix.*` namespace). The testnet caveat still applies and is called out below.
 
 ## 60-second install
 
@@ -79,11 +79,11 @@ print(declaration["declaration_id"])
 
 ## What you just got
 
-- Article 10 training-data record + Article 11 model-lineage record (call `record_model_lineage` for the latter) — both Ed25519-signed.
+- Article 10 training-data record + Article 11 model-lineage record (call `record_model_lineage` for the latter), both Ed25519-signed.
 - An Article 43 third-party assessment row. The service **refuses** to record a `self`-assessment for high-risk; that gate is in the code.
 - An Annex V Declaration of Conformity. Bundle it with the compliance VCs into a Verifiable Presentation for a regulator (see [EU AI Act compliance guide](/docs/guides/eu-ai-act-compliance)).
 
-Every inference your trading agent makes should be logged through `ProvenanceService().log_action(...)` — that's the hash-chained Article 12 trail you'll show an auditor.
+Every inference your trading agent makes should be logged through `ProvenanceService().log_action(...)`. That's the hash-chained Article 12 trail you'll show an auditor.
 
 ## Next step (5 minutes)
 
@@ -99,4 +99,4 @@ ProvenanceService().log_action(
 )
 ```
 
-**Open caveats for fintech production:** there is no SOC 2 / ISO 27001 today, no DPA template, the signing key is plaintext-by-default (`.signing_key.json`), and Base L2 anchoring is testnet — so the cryptographic chain proves integrity locally, but is not yet a legally non-repudiable anchor. Track these on the [roadmap](/docs/project/roadmap).
+**Open caveats for fintech production:** there is no SOC 2 / ISO 27001 today, no DPA template, the signing key is plaintext-by-default (`.signing_key.json`), and Base L2 anchoring is testnet, so the cryptographic chain proves integrity locally, but is not yet a legally non-repudiable anchor. Track these on the [roadmap](/docs/project/roadmap).

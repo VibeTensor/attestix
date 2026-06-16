@@ -1,16 +1,16 @@
 // ---------------------------------------------------------------------------
-// Billing seam — DOCUMENTED, NOT WIRED.
+// Billing seam: DOCUMENTED, NOT WIRED.
 // ---------------------------------------------------------------------------
 //
 // Self-serve checkout is intentionally NOT live yet. Two things are missing:
-//   1. Payment-provider keys (STRIPE_PUBLISHABLE_KEY / RAZORPAY_KEY_ID) — the
-//      founder has not provisioned them.
-//   2. The cloud billing backend (M4 — `attestix-cloud/apps/api`) that mints a
+//   1. Payment-provider keys (STRIPE_PUBLISHABLE_KEY / RAZORPAY_KEY_ID), which
+//      the founder has not provisioned.
+//   2. The cloud billing backend (M4, `attestix-cloud/apps/api`) that mints a
 //      checkout session against a plan + region. It is not built.
 //
 // Until BOTH exist, every "buy" intent routes to a waitlist (the /demo-call
 // page) where we onboard customers directly. There is deliberately NO dead
-// Stripe button and NO fake checkout — the honest "billing launching soon,
+// Stripe button and NO fake checkout. The honest "billing launching soon,
 // we onboard you directly" state is the correct one for this stage.
 //
 // WHEN BILLING IS LIVE (M4):
@@ -41,7 +41,7 @@ export interface CheckoutResult {
 
 /**
  * Returns true once both the payment keys and the M4 billing API are present.
- * Today this is always false — the env vars are unset and the backend is unbuilt.
+ * Today this is always false: the env vars are unset and the backend is unbuilt.
  */
 export function isBillingEnabled(): boolean {
 	const stripe = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY;
@@ -53,7 +53,7 @@ export function isBillingEnabled(): boolean {
 /**
  * Pick the payment provider for a region. Razorpay handles INR/UPI for Indian
  * customers (issue #13); Stripe handles international cards. This decision is
- * already correct — only the checkout-session call behind it is stubbed.
+ * already correct; only the checkout-session call behind it is stubbed.
  */
 export function providerForRegion(region: BillingRegion): "stripe" | "razorpay" {
 	return region === "in" ? "razorpay" : "stripe";
@@ -81,7 +81,7 @@ export function startCheckout(
 	};
 }
 
-/** Indicative INR conversion for display only — NOT a billed rate. */
+/** Indicative INR conversion for display only, NOT a billed rate. */
 export const USD_TO_INR_INDICATIVE = 84; // ~2026-05; review before billing goes live.
 
 /** Pro price, single source of truth for the page copy. */

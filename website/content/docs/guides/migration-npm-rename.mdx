@@ -1,11 +1,11 @@
 ---
-title: npm package rename — @vibetensor/attestix → attestix
+title: 'npm package rename: @vibetensor/attestix to attestix'
 description: How to migrate to the bare 'attestix' name on npm (now matching pip install attestix on PyPI).
 ---
 
-# npm package rename — `@vibetensor/attestix` → `attestix`
+# npm package rename: `@vibetensor/attestix` → `attestix`
 
-**TL;DR** — the JS/TS verifier package is now published as bare `attestix`
+**TL;DR**: the JS/TS verifier package is now published as bare `attestix`
 on npm, matching `pip install attestix` on PyPI. The old scoped name
 `@vibetensor/attestix` is **deprecated** and will receive no new versions.
 
@@ -18,7 +18,7 @@ on npm, matching `pip install attestix` on PyPI. The old scoped name
 | **Import** | `from '@vibetensor/attestix'` | `from 'attestix'` |
 | **PyPI name** | `attestix` | `attestix` (unchanged) |
 
-The intent is symmetry — `pip install attestix` and `npm install attestix`
+The intent is symmetry: `pip install attestix` and `npm install attestix`
 install the language-respective verifier under one canonical name.
 
 ## Migration in 60 seconds
@@ -36,7 +36,7 @@ grep -rln "@vibetensor/attestix" . --include='*.{js,ts,jsx,tsx,mjs,cjs}' \
   | xargs sed -i 's|@vibetensor/attestix|attestix|g'
 ```
 
-The exports and API surface are **identical** — only the package name
+The exports and API surface are **identical**. Only the package name
 changed. No source code changes are required beyond the import string.
 
 ### Before / after
@@ -70,7 +70,7 @@ import { verifyCredential } from 'attestix'
 - **Symmetry with PyPI.** `pip install attestix` was always the canonical
   Python install. The scoped npm name created asymmetric muscle memory.
 - **Cleaner install command** for blog posts, tutorials, and quickstarts.
-- **Cross-language ecosystem coherence** — future Rust crate (`attestix`),
+- **Cross-language ecosystem coherence.** Future Rust crate (`attestix`),
   Go module (`github.com/VibeTensor/attestix-go`), and other ports follow
   the same bare-name pattern.
 
@@ -83,7 +83,7 @@ import { verifyCredential } from 'attestix'
 | 2026-08-01 | Scoped name receives no further updates. Use `npm install attestix` for all new versions. |
 
 The scoped package will remain installable indefinitely (npm does not
-unpublish packages older than 72 hours after first publish) — but it
+unpublish packages older than 72 hours after first publish), but it
 freezes at the deprecation date.
 
 ## Verify your migration
@@ -95,7 +95,7 @@ node -e "console.log(require('attestix'))"
 ```
 
 You should see the exported surface. If you still get
-`Cannot find module 'attestix'`, the install step did not run — re-run
+`Cannot find module 'attestix'`, the install step did not run. Re-run
 `npm install attestix` from the project root.
 
 For TypeScript projects, make sure `tsc --noEmit` still passes after the
@@ -115,8 +115,8 @@ The type declarations are identical between the two package names.
 
 ## See also
 
-- [Offline Verification Walkthrough](/docs/guides/offline-verify) — the
+- [Offline Verification Walkthrough](/docs/guides/offline-verify): the
   same canonical-JSON form + Ed25519 verification, in Python.
 - [Migrating to the canonical `attestix.*` namespace
-  (v0.4.0-rc.2)](/docs/guides/migration-v0.4.0-namespace) — the
+  (v0.4.0-rc.2)](/docs/guides/migration-v0.4.0-namespace): the
   Python-side namespace migration for the same release.
