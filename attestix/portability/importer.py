@@ -207,11 +207,13 @@ def _project_audit_event(cloud: dict, *, tenant_id: str) -> dict:
     (the OSS shape uses ``occurred_at`` as its time field).
 
     The cloud chains audit events per-workspace and includes the tenant string
-    in the JCS-canonical body that is hashed into ``chain_hash``. The importer
-    therefore re-projects with the **bundle's workspace slug** as the OSS
-    ``tenant_id`` — that is the string the cloud used when minting the chain,
-    so :func:`verify_chain` recomputes the same hashes. Re-tagging the rows to
-    a different OSS tenant would silently break chain verification.
+    in the JCS-canonical body hashed into ``chain_hash``. The cloud exports each
+    row with ``tenant_id`` already set to the workspace id it minted the chain
+    under (audit-service ``toOssDict`` sets ``tenant_id = workspaceId``), so the
+    importer PRESERVES that value verbatim. Re-tagging it to a slug or any other
+    OSS tenant would change the hashed body and silently break chain
+    verification. The passed ``tenant_id`` is only a fallback for legacy bundles
+    whose rows predate the exported ``tenant_id`` column.
     """
     required = (
         "event_id",
@@ -231,7 +233,7 @@ def _project_audit_event(cloud: dict, *, tenant_id: str) -> dict:
         )
     return {
         "event_id": cloud["event_id"],
-        "tenant_id": tenant_id,
+        "tenant_id": cloud.get("tenant_id") or tenant_id,
         "actor": cloud["actor"],
         "action": cloud["action"],
         "target_id": cloud["target_id"],
@@ -432,18 +434,13 @@ class Importer:
 
             try:
                 if bundle_name == "audit_events":
-                    # KNOWN ISSUE (audit B8, 2026-06-16): the cloud mints the
-                    # chain under the workspace UUID
-                    # (packages/audit/src/audit-service.ts
-                    # ``computeChainHash({ tenantId: workspaceId })``), but the
-                    # FileRepository overwrites each row's ``tenant_id`` field
-                    # with the import *storage* tenant on write, so a re-verify
-                    # from stored rows recomputes under the storage tenant, not
-                    # the UUID. Threading the bundle slug here keeps the
-                    # existing fixture round-trip green but does NOT fix cloud
-                    # UUID chains. The real fix must decouple the chain tenant
-                    # (preserved from the bundle) from the storage partition
-                    # tenant in verify_chain — a deliberate audit-model change.
+                    # Preserve each row's own tenant_id (the workspace id the
+                    # cloud minted the chain under, carried in the exported
+                    # tenant_id column); fall back to the bundle slug only for
+                    # legacy bundles whose rows predate that column. The chain
+                    # tenant is kept distinct from the user's storage tenant
+                    # (self._tenant_id) so re-verification from stored rows holds
+                    # regardless of which workspace minted the chain.
                     bundle_tenant = (
                         bundle.workspace.get("slug")
                         or self._tenant_id
@@ -514,16 +511,20 @@ class Importer:
             return result
 
         # ---------- Commit all staged rows through the repository -----------
-        # audit_events MUST stay under the bundle's original tenant slug so the
-        # chain hash (which includes `tenant_id`) remains valid; every other
-        # collection routes to the user-chosen storage tenant. This is the
-        # documented behaviour of `--workspace`: it relabels the OSS local
-        # tenant for everything except the audit chain, which is immutable.
-        bundle_tenant = bundle.workspace.get("slug") or self._tenant_id
+        # audit_events MUST persist under the chain tenant they were minted
+        # under (each row's own tenant_id, which the cloud sets to the workspace
+        # id) so the chain_hash, which includes tenant_id, stays verifiable when
+        # re-read from storage. Every other collection routes to the user-chosen
+        # storage tenant. This decouples the audit chain tenant from the storage
+        # partition tenant (the v0.4.1 audit-model fix); `--workspace` relabels
+        # the local tenant for everything except the immutable audit chain.
+        audit_chain_tenant = (
+            audit_rows[0]["tenant_id"] if audit_rows else self._tenant_id
+        )
 
         for name, collection, id_field, projected in staged:
             target_tenant = (
-                bundle_tenant if collection == "audit" else self._tenant_id
+                audit_chain_tenant if collection == "audit" else self._tenant_id
             )
             for row in projected:
                 # The OSS shape uses different id fields per collection

@@ -29,6 +29,7 @@ from attestix.storage import FileRepository
 from attestix.storage.repository import DEFAULT_TENANT
 
 from tests.fixtures.bundles.generate_sample_bundle import (
+    WORKSPACE_ID,
     WORKSPACE_SLUG,
     write_bundle,
 )
@@ -79,10 +80,15 @@ def test_round_trip_writes_every_expected_collection(fresh_bundle: Bundle):
     assert len(compliance) == 1
     assert compliance[0]["profile_id"] == "comp:fixture00001"
 
-    audit = repo.list("audit", tenant_id=FIXTURE_TENANT, id_field="event_id")
+    # The audit chain persists under the chain tenant the cloud minted it under
+    # (the workspace UUID), decoupled from the storage tenant (the slug). This
+    # is the audit B8 fix: a cloud chain minted under the UUID stays verifiable.
+    audit = repo.list("audit", tenant_id=WORKSPACE_ID, id_field="event_id")
     assert len(audit) == 3
     # Chain field shape is preserved.
     assert all("chain_hash" in row and "prev_hash" in row for row in audit)
+    # Decoupling: the audit chain is NOT stored under the storage/slug tenant.
+    assert repo.list("audit", tenant_id=FIXTURE_TENANT, id_field="event_id") == []
 
     anchors = repo.list("anchors", tenant_id=FIXTURE_TENANT, id_field="anchor_id")
     assert len(anchors) == 1
@@ -95,7 +101,7 @@ def test_chain_verification_on_committed_audit_events(fresh_bundle: Bundle):
     importer.run(fresh_bundle)
 
     repo = FileRepository()
-    rows = repo.list("audit", tenant_id=FIXTURE_TENANT, id_field="event_id")
+    rows = repo.list("audit", tenant_id=WORKSPACE_ID, id_field="event_id")
     # Order is the bundle's insert order — strip Repository-injected fields.
     from attestix.audit.events import verify_chain
 

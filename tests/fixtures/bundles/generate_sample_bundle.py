@@ -237,13 +237,12 @@ def _sample_audit_events() -> list[dict]:
             target_id=f"attestix:fixture000000000{i+1}",
             target_collection="identities" if i == 0 else "credentials",
             actor="user:operator@fixture.attestix.io",
-            # NOTE: real cloud mints the chain under the workspace UUID
-            # (audit-service.ts computeChainHash uses workspaceId). This fixture
-            # still uses the slug because the OSS importer/FileRepository
-            # currently re-verifies under the storage tenant (= slug here); see
-            # audit B8. Switch to WORKSPACE_ID once the chain-tenant decoupling
-            # fix lands so this fixture mirrors real cloud output.
-            tenant_id=WORKSPACE_SLUG,
+            # Mirror real cloud: the chain is minted under the workspace UUID
+            # (audit-service.ts computeChainHash uses workspaceId), and the
+            # exported row carries tenant_id=WORKSPACE_ID. The OSS importer
+            # preserves that chain tenant and persists the audit chain under it,
+            # decoupled from the user's storage tenant (audit B8 fix, v0.4.1).
+            tenant_id=WORKSPACE_ID,
             after={"id": f"attestix:fixture000000000{i+1}"},
             prev_hash=prev,
             occurred_at=f"2026-05-01T1{i}:00:00+00:00",
@@ -259,7 +258,8 @@ def _sample_audit_events() -> list[dict]:
                 "anchor_id": None,
                 "retention_days": 7,
                 "created_at": f"2026-05-01T1{i}:00:01Z",
-                # OSS chain fields:
+                # OSS chain fields (tenant_id mirrors cloud toOssDict = workspace id):
+                "tenant_id": WORKSPACE_ID,
                 "event_id": ev.event_id,
                 "actor": ev.actor,
                 "action": ev.action,
