@@ -312,7 +312,7 @@ export default function BundleSpecV1Page() {
               },
               {
                 k: "Canonicalization",
-                v: 'JCS-style: json.dumps(sort_keys=True, separators=(",",":"), ensure_ascii=False) followed by Unicode NFC. NOT strict RFC 8785 — documented in the Python attestix.auth.crypto.canonicalize_json and the equivalent canonicalizeJson in the npm attestix package (today @vibetensor/attestix until the unscoped publish completes).',
+                v: 'JCS-style: json.dumps(sort_keys=True, separators=(",",":"), ensure_ascii=False) followed by Unicode NFC. NOT strict RFC 8785 — documented in the Python attestix.auth.crypto.canonicalize_json and the equivalent canonicalizeJson in the npm attestix package.',
               },
               {
                 k: "Member order",

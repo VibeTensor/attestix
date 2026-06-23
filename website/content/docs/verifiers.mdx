@@ -11,12 +11,12 @@ The result: a regulator, an auditor, or a peer agent can confirm a Verifiable Cr
 
 ## Status
 
-Python is published to PyPI; the JS/TS verifier is published as the scoped package @vibetensor/attestix. Go and Rust are publishing soon.
+Python is published to PyPI and the JS/TS verifier to npm as `attestix`. Go and Rust are publishing soon.
 
 | Language | Install | Status |
 |----------|---------|--------|
 | **Python** | `pip install attestix` | Live: full library (issue + verify) |
-| **JS / TS** | `npm install @vibetensor/attestix` | Live: [attestix-js](https://github.com/VibeTensor/attestix-js) |
+| **JS / TS** | `npm install attestix` | Live: [attestix-js](https://github.com/VibeTensor/attestix-js) |
 | **Go** | `go get github.com/VibeTensor/attestix-go` | Publishing soon: [attestix-go](https://github.com/VibeTensor/attestix-go) |
 | **Rust** | `cargo add attestix` | Publishing soon: [attestix-rs](https://github.com/VibeTensor/attestix-rs) |
 | **Java** | `com.vibetensor:attestix:0.4.0` | Publishing soon: [attestix-java](https://github.com/VibeTensor/attestix-java) |
@@ -40,7 +40,7 @@ result = CredentialService().verify_credential_external(vc)  # the VC JSON
 ### JavaScript / TypeScript
 
 ```ts
-import { verifyCredential } from "@vibetensor/attestix";
+import { verifyCredential } from "attestix";
 
 const result = await verifyCredential(vc, { didDocument });
 if (!result.valid) {

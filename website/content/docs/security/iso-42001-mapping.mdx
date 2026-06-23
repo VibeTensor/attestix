@@ -66,11 +66,11 @@ attestix verify-chain <agent-did>
 ### JavaScript / browser
 
 ```bash
-npm install @vibetensor/attestix
+npm install attestix
 ```
 
 ```javascript
-import { verifyCredential } from "@vibetensor/attestix";
+import { verifyCredential } from "attestix";
 
 const result = await verifyCredential(impactAssessmentCredentialJson);
 // result.valid === true if the Ed25519 signature over the JCS-canonical body

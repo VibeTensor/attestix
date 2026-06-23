@@ -66,11 +66,11 @@ attestix bundle export --include-security-credentials --out my-agent.atxbundle
 ### JavaScript / browser
 
 ```bash
-npm install @vibetensor/attestix
+npm install attestix
 ```
 
 ```javascript
-import { verifyCredential } from "@vibetensor/attestix";
+import { verifyCredential } from "attestix";
 
 const result = await verifyCredential(securityCheckCredentialJson);
 // result.valid === true if the Ed25519 signature over the JCS-canonical body

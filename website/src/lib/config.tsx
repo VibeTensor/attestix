@@ -51,7 +51,7 @@ export const siteConfig = {
       description:
         "The complete attestation toolkit. Every cryptographic primitive and standards-conformance claim is here, reproducible offline. Run it on your own infrastructure.",
       features: [
-        "47 MCP tools, full Python core + npm verifier (scoped @vibetensor/attestix)",
+        "47 MCP tools, full Python core + npm verifier (attestix)",
         "Ed25519 / JCS / RFC 6962 Merkle, W3C VC + DID, UCAN",
         "Local SQLite storage",
         "Base L2 Sepolia testnet anchoring (BYO testnet ETH)",

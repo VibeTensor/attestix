@@ -106,10 +106,10 @@ pip install attestix
 JS/TS verifier (same canonical-JSON form + Ed25519 verification):
 
 ```
-npm install @vibetensor/attestix
+npm install attestix
 ```
 
-The bare npm name `attestix` is planned but not yet published; install the scoped package `@vibetensor/attestix` (verifier-only) for now.
+The scoped npm name `@vibetensor/attestix` is deprecated; install the bare `attestix` package (matches `pip install attestix`).
 
 ## Links
 
