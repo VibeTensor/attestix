@@ -4,6 +4,45 @@ All notable changes to Attestix are documented here.
 
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.4.1] - 2026-06-24
+
+Stable. Promotes `0.4.1rc2` with the cloud-to-OSS audit-chain known issue now
+resolved. `pip install attestix`. Rolls up the rc1 security hardening and the
+rc2 post-quantum signing below into one stable release.
+
+### Added
+- **Post-quantum / hybrid signing** (`attestix.auth.pqc`, optional `[pqc]`
+  extra): FIPS 204 **ML-DSA-65** sign/verify over the shared JCS canonical form,
+  and a **hybrid Ed25519 + ML-DSA-65** composite where a verifier MUST validate
+  BOTH signatures, so attestations stay verifiable after a quantum break.
+  `did:key` Multikey encoding for ML-DSA-65. The default Ed25519 path is
+  unchanged. Cryptosuites: `mldsa65-jcs-2026`, `hybrid-ed25519-mldsa65-jcs-2026`.
+
+### Security
+- **Credential verification key-binding (High).** `verify_credential`,
+  `verify_credential_external` and `verify_presentation` now decode the Ed25519
+  key from the trust anchor (`issuer.id` for credentials, the server DID for
+  presentations) and reject a `verificationMethod` that names a different DID,
+  closing an issuer key-substitution masquerade.
+- **Fail-closed API auth (High).** The REST `APIKeyMiddleware` now refuses
+  non-public requests (503) when `ATTESTIX_API_KEY` is unset, unless
+  `ATTESTIX_ALLOW_NO_AUTH` is explicitly set (development/tests only).
+- **Dependency CVE floors (High).** `requirements.txt` pins
+  `cryptography>=46.0.7` and `PyJWT[crypto]>=2.12.0` to match `pyproject.toml`.
+
+### Fixed
+- **Cloud-to-OSS audit-chain re-verification (the rc1 known issue).** The cloud
+  mints each audit chain under the workspace id (`computeChainHash` uses
+  `workspaceId`) and exports every row with `tenant_id` set to that id. The OSS
+  importer was overwriting `tenant_id` with the workspace slug and persisting
+  the chain under the storage tenant, so a re-verify from stored rows recomputed
+  under the wrong tenant and failed. The importer now preserves each row's chain
+  tenant verbatim and persists the audit chain under it, decoupled from the
+  user's storage tenant. Cloud bundles minted under a workspace UUID now import
+  and re-verify cleanly.
+- Bundle import reads the cloud `vc_jsonld` credential key, so credentials in
+  real cloud bundles import correctly.
+
 ## [0.4.1rc2] - 2026-06-16
 
 Pre-release. Adds post-quantum signing on top of 0.4.1rc1. `pip install --pre attestix`.
