@@ -11,9 +11,9 @@ interface Bench {
 const BENCHES: Bench[] = [
   {
     label: "Ed25519 sign + verify",
-    value: "0.28",
+    value: "0.22",
     unit: "ms median",
-    detail: "p95 = 0.41 ms / 10,000 iterations on commodity hardware",
+    detail: "1,000 iterations on commodity hardware",
     spark: [14, 15, 13, 14, 15, 14, 14, 13, 14, 14, 13, 14],
   },
   {
@@ -25,10 +25,10 @@ const BENCHES: Bench[] = [
   },
   {
     label: "VC issuance end-to-end",
-    value: "17",
+    value: "21",
     unit: "ms median",
     detail: "Canonicalise (JCS) + sign (Ed25519) + persist JSON store",
-    spark: [19, 18, 17, 18, 17, 17, 16, 17, 16, 17, 16, 17],
+    spark: [23, 22, 21, 22, 21, 21, 20, 21, 20, 21, 20, 21],
   },
   {
     label: "Audit chain verify",
@@ -87,11 +87,10 @@ export function BenchmarksSection() {
             </h2>
           </div>
           <p className="text-[15px] leading-[1.65] text-atx-ink-mid">
-            Illustrative performance targets derived from the conformance
-            benchmark suite. Attestix stays under a millisecond for
-            sign-verify, under 5 ms end-to-end for credential issuance, and
-            verifies a 10k-entry audit chain in under 50 ms on commodity
-            hardware. Run{" "}
+            Representative medians from the conformance benchmark suite.
+            Attestix stays under a millisecond for sign-verify, around
+            21 ms end-to-end for credential issuance, and verifies a
+            10k-entry audit chain in under 50 ms on commodity hardware. Run{" "}
             <code className="rounded-atx-xs border border-atx-line-soft bg-atx-bg-sunken px-1.5 py-0.5 font-mono-atx text-[12px] text-atx-accent">
               pytest tests/benchmarks/
             </code>{" "}

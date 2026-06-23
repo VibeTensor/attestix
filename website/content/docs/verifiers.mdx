@@ -11,14 +11,14 @@ The result: a regulator, an auditor, or a peer agent can confirm a Verifiable Cr
 
 ## Status
 
-Four verifiers are live on their language registries today; Java and R are publishing soon.
+Python is published to PyPI; the JS/TS verifier is published as the scoped package @vibetensor/attestix. Go and Rust are publishing soon.
 
 | Language | Install | Status |
 |----------|---------|--------|
 | **Python** | `pip install attestix` | Live: full library (issue + verify) |
-| **JS / TS** | `npm install attestix` | Live: [attestix-js](https://github.com/VibeTensor/attestix-js) |
-| **Go** | `go get github.com/VibeTensor/attestix-go` | Live: [attestix-go](https://github.com/VibeTensor/attestix-go) |
-| **Rust** | `cargo add attestix` | Live: [attestix-rs](https://github.com/VibeTensor/attestix-rs) |
+| **JS / TS** | `npm install @vibetensor/attestix` | Live: [attestix-js](https://github.com/VibeTensor/attestix-js) |
+| **Go** | `go get github.com/VibeTensor/attestix-go` | Publishing soon: [attestix-go](https://github.com/VibeTensor/attestix-go) |
+| **Rust** | `cargo add attestix` | Publishing soon: [attestix-rs](https://github.com/VibeTensor/attestix-rs) |
 | **Java** | `com.vibetensor:attestix:0.4.0` | Publishing soon: [attestix-java](https://github.com/VibeTensor/attestix-java) |
 | **R** | `install.packages("attestix")` | Coming to CRAN: [attestix-r](https://github.com/VibeTensor/attestix-r) |
 
@@ -33,17 +33,14 @@ Each verifier exposes a `verifyCredential` entry point that takes a credential J
 ```python
 from attestix.services.credential_service import CredentialService
 
-ok = CredentialService().verify_credential_offline(
-    credential=vc,                       # the VC JSON
-    did_document_path="did-document.json",
-)
-# -> True, or False with a reason
+result = CredentialService().verify_credential_external(vc)  # the VC JSON
+# -> dict with result["valid"] and per-check breakdown
 ```
 
 ### JavaScript / TypeScript
 
 ```ts
-import { verifyCredential } from "attestix";
+import { verifyCredential } from "@vibetensor/attestix";
 
 const result = await verifyCredential(vc, { didDocument });
 if (!result.valid) {

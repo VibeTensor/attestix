@@ -16,6 +16,29 @@ interface Release {
 
 const RELEASES: Release[] = [
   {
+    version: "0.4.1",
+    date: "2026-06-24",
+    headline: "Post-quantum hybrid signing, verification hardening, fail-closed API auth",
+    items: [
+      "Post-quantum / hybrid signing (ML-DSA-65 + Ed25519, optional [pqc] extra)",
+      "Credential verification key-binding hardening (decode key from the trust anchor)",
+      "Fail-closed REST API auth when ATTESTIX_API_KEY is unset",
+      "Cloud-to-OSS audit-chain re-verification fix (preserve the chain tenant on import)",
+      "585 passing tests (494 functional + 91 conformance)",
+    ],
+  },
+  {
+    version: "0.4.0",
+    date: "2026-05-30",
+    headline: "First stable 0.4.0: embeddable, multi-tenant, portable foundation",
+    items: [
+      "First stable 0.4.0: embeddable, multi-tenant, portable foundation",
+      "Pluggable storage + signer protocols (Postgres / HSM-KMS without forking)",
+      "Portability bundle export/import (cloud-to-OSS)",
+      "Promoted from a clean 10/10 source-blind RC validation",
+    ],
+  },
+  {
     version: "0.3.0",
     date: "2026-04-17",
     headline: "Real framework integrations, CI/CD, delegation chain auth fix",

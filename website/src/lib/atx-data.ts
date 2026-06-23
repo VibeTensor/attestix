@@ -1,7 +1,7 @@
 /*
  * Attestix v2 landing data.
  * Numbers here are the real project surface:
- *   - Stable 0.4.0, 481 tests (390 functional + 91 conformance benchmarks),
+ *   - Stable 0.4.1, 585 passing tests (494 functional + 91 conformance benchmarks),
  *     47 MCP tools, 9 modules, 44 REST endpoints. Single-maintainer project.
  *   - Base L2 is testnet (integration complete, mainnet schema not yet registered).
  *   - Real framework integrations: LangChain, OpenAI Agents SDK, CrewAI.
@@ -348,7 +348,7 @@ export const ATX_CERT_SAMPLE: AtxCertSample = {
 
 export const ATX_HERO_STATS = [
   { v: "47", k: "MCP Tools \u00B7 9 Modules" },
-  { v: "481", k: "Automated Tests \u00B7 91 Conformance" },
-  { v: "0.28 ms", k: "Ed25519 Sign + Verify (median)" },
+  { v: "585", k: "Passing Tests \u00B7 91 Conformance" },
+  { v: "0.22 ms", k: "Ed25519 Sign + Verify (median)" },
   { v: "6", k: "IETF \u00B7 W3C \u00B7 UCAN Standards" },
 ];

@@ -104,7 +104,7 @@ const MANIFEST_FIELDS = [
     required: true,
     meaning:
       "Producer build pin in the form attestix==<semver>. The OSS exporter stamps its installed package version; the cloud worker stamps the CORE_VERSION_PIN constant.",
-    example: '"attestix==0.4.0rc2"',
+    example: '"attestix==0.4.0"',
   },
   {
     field: "schemas.db_migration_max",
@@ -758,7 +758,7 @@ assert sha256(canonical).hexdigest() == sidecar.strip()`}
           <code className="font-mono-atx text-[12.5px]">tests/portability/</code>
         </a>{" "}
         exercises every code path on this page against the fixture and is part
-        of the 481-test CI matrix.
+        of the 585-test CI matrix.
       </p>
 
       {/* ----- Section 11: versions index ---------------------------------- */}

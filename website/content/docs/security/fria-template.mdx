@@ -80,11 +80,11 @@ attestix audit list --security-check eu_ai_act.art.27.fria_section_12_signed
 ### JavaScript / browser
 
 ```bash
-npm install attestix
+npm install @vibetensor/attestix
 ```
 
 ```javascript
-import { verifyCredential } from "attestix";
+import { verifyCredential } from "@vibetensor/attestix";
 
 const result = await verifyCredential(impactAssessmentCredentialJson);
 // result.valid === true if the Ed25519 signature over the JCS-canonical body

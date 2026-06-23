@@ -78,7 +78,7 @@ const COMPARE: CompareGroup[] = [
 			},
 			{
 				label: "Base mainnet anchoring (pay-as-you-go gas)",
-				cells: ["no", "no", "yes", "dedicated cadence"],
+				cells: ["no", "no", "planned", "planned cadence"],
 			},
 		],
 	},

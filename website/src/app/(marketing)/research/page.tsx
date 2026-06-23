@@ -42,8 +42,8 @@ export default function ResearchPage() {
           Verifiable Credentials 1.1, W3C DID 1.0, UCAN v0.9, MCP 1.8) through
           91 automated conformance benchmarks, and against ten EU AI Act
           articles plus Annex III and Annex V through compliance-workflow tests.
-          Ed25519 sign + verify runs at 0.28 ms median. End-to-end credential
-          issuance runs at 3.2 ms median.
+          Ed25519 sign + verify runs at 0.22 ms median. End-to-end credential
+          issuance runs at 21 ms median on commodity hardware.
         </p>
         <p>
           The artefact and all tests are open-source under Apache 2.0 and
@@ -75,8 +75,8 @@ export default function ResearchPage() {
         </li>
         <li>
           <strong className="text-atx-ink">5.</strong> An MCP-native,
-          open-source reference implementation validated by 481 automated
-          tests (390 functional + 91 RFC / W3C conformance benchmarks).
+          open-source reference implementation validated by 585 automated
+          tests (494 functional + 91 RFC / W3C conformance benchmarks).
         </li>
       </ul>
 

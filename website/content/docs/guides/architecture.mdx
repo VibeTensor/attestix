@@ -169,7 +169,7 @@ Attestix uses environment variables for configuration. No config files needed. S
 
 ## Testing
 
-358 tests (1 skipped on Windows) across unit, end-to-end, and conformance benchmark suites:
+585 tests (7 skipped) across unit, end-to-end, and conformance benchmark suites:
 
 ```bash
 # Run all tests
@@ -210,10 +210,10 @@ The performance benchmark enforces hard upper bounds:
 
 | Operation | Threshold | Typical |
 |-----------|-----------|---------|
-| Ed25519 key generation | < 50 ms | ~0.08 ms |
+| Ed25519 key generation | < 50 ms | ~0.07 ms |
 | JSON canonicalization | < 10 ms | ~0.02 ms |
-| Ed25519 sign + verify | < 20 ms | ~0.28 ms |
-| Identity creation | < 200 ms | ~14 ms |
-| Credential issuance | < 200 ms | ~17 ms |
-| Credential verification | < 200 ms | ~2 ms |
-| UCAN token creation | < 200 ms | ~9 ms |
+| Ed25519 sign + verify | < 20 ms | ~0.22 ms |
+| Identity creation | < 200 ms | ~20 ms |
+| Credential issuance | < 200 ms | ~21 ms |
+| Credential verification | < 200 ms | ~0.5 ms |
+| UCAN token creation | < 200 ms | ~16 ms |

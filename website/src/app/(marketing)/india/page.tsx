@@ -12,7 +12,7 @@ const WHY_NOW = [
   {
     n: "01",
     title: "DPDP Act 2023 + Rules 2025",
-    body: "Notified 14 November 2025; substantive duties — notice, consent, data-principal rights, Consent Manager, breach notification — land on 14 May 2027. Today Attestix has zero DPDP-specific code; this is referenced in our roadmap, not shipped in v0.4.0.",
+    body: "Notified 14 November 2025; substantive duties — notice, consent, data-principal rights, Consent Manager, breach notification — land on 14 May 2027. Today Attestix has zero DPDP-specific code; this is referenced in our roadmap, not shipped in v0.4.1.",
   },
   {
     n: "02",
@@ -47,8 +47,8 @@ const ICPS = [
   },
 ];
 
-const INSTALL_SNIPPET = `# Install the v0.4.0 release candidate
-pip install --pre attestix==0.4.0rc2
+const INSTALL_SNIPPET = `# Install the v0.4.1 stable
+pip install attestix
 
 # Issue an agent identity
 attestix identity create --name research-bot --did-method key
@@ -263,7 +263,7 @@ export default function IndiaPage() {
         </div>
         <p className="mt-3 text-[12.5px] leading-[1.6] text-atx-ink-mid">
           DPDP Act coverage is referenced in our roadmap; it is{" "}
-          <span className="text-atx-ink">not yet implemented in v0.4.0</span> —
+          <span className="text-atx-ink">not yet implemented in v0.4.1</span> —
           planned for v0.5, ahead of the 14 May 2027 substantive-duties date.
           Attestix is an evidence tool, not a guarantor of compliance:
           providers remain liable under EU AI Act Articles 16-22, and under

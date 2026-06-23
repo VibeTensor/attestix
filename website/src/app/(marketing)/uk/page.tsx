@@ -47,8 +47,8 @@ const ICPS = [
   },
 ];
 
-const INSTALL_SNIPPET = `# Install the v0.4.0 release candidate
-pip install --pre attestix==0.4.0rc2
+const INSTALL_SNIPPET = `# Install the v0.4.1 stable
+pip install attestix
 
 # Issue an agent identity
 attestix identity create --name research-bot --did-method key
@@ -168,7 +168,7 @@ export default function UKPage() {
       <div className="mt-4 rounded-atx-md border border-atx-line-soft bg-atx-panel p-6 text-[13.5px] leading-[1.65] text-atx-ink-mid">
         <p>
           Attestix is a single-maintainer beta with 15 GitHub stars and no
-          independent third-party security audit as of v0.4.0rc2. Open-source
+          independent third-party security audit as of v0.4.1. Open-source
           signing keys live as filesystem-mode-0600 JSON; there is no HSM/KMS
           backend in the OSS engine today.
         </p>
@@ -250,7 +250,7 @@ export default function UKPage() {
           Attestix is an evidence tool, not a guarantor of compliance —
           providers remain liable under EU AI Act Articles 16-22 regardless of
           which evidence tool they use. We do not provide legal advice. Base L2
-          anchoring is Sepolia testnet only as of v0.4.0rc2; mainnet schema
+          anchoring is Sepolia testnet only as of v0.4.1; mainnet schema
           registration is on the roadmap.
         </p>
       </div>

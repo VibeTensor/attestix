@@ -70,7 +70,7 @@ export function HeroCert() {
         </div>
 
         <div className="atx-cert-foot">
-          <span>&#9673; anchored &middot; base-l2</span>
+          <span>&#9673; anchored &middot; base-l2 testnet</span>
           <span>verified &#10003;</span>
         </div>
       </div>

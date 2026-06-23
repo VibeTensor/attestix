@@ -80,7 +80,8 @@ export default function PrivacyPolicy() {
         When you use the optional blockchain anchoring features, Attestix sends
         cryptographic hashes (not raw data) to the Base L2 blockchain via the
         Ethereum Attestation Service (EAS). These hashes are publicly visible
-        and permanently immutable on the blockchain. No personal data or raw
+        and immutable on the Base Sepolia testnet (mainnet anchoring is
+        planned). No personal data or raw
         credential content is sent to the blockchain. You control whether to use
         this feature.
       </p>
