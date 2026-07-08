@@ -25,7 +25,7 @@
     "fumadocs-mdx": "13.0.8",
     "fumadocs-ui": "^15.8.5",
     "geist": "^1.7.2",
-    "lucide-react": "^0.417.0",
+    "lucide-react": "^1.21.0",
     "mermaid": "^11.15.0",
     "motion": "^12.40.0",
     "next": "^15.5.19",
