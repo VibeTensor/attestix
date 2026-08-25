@@ -15,10 +15,12 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy dependency files first for layer caching
-COPY requirements.txt requirements-api.txt ./
+COPY requirements-runtime.txt ./
 
 # Install Python dependencies
-RUN pip install --no-cache-dir -r requirements.txt -r requirements-api.txt
+# Hash-pinned lockfile (pip-compile --generate-hashes of pyproject.toml
+# [api,blockchain,sbom]) so OpenSSF Scorecard Pinned-Dependencies passes.
+RUN pip install --no-cache-dir --require-hashes -r requirements-runtime.txt
 
 # Copy application code
 COPY . .

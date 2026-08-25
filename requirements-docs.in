@@ -1,0 +1,4 @@
+# Input for requirements-docs.txt (hash-pinned lockfile used by
+# .github/workflows/docs.yml). Regenerate with:
+#   pip-compile --generate-hashes --output-file=requirements-docs.txt requirements-docs.in
+mkdocs-material>=9.5

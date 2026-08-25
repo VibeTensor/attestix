@@ -34,7 +34,7 @@ jobs:
           node-version: '20'
 
       - name: Install dependencies
-        run: npm install --legacy-peer-deps
+        run: npm ci --legacy-peer-deps
 
       - name: Build static export
         run: npm run build

@@ -19,7 +19,7 @@ jobs:
           python-version: '3.12'
 
       - name: Install build tools
-        run: pip install build
+        run: pip install --require-hashes -r requirements-ci.txt
 
       - name: Build package
         run: python -m build
