@@ -29,7 +29,7 @@ jobs:
           python-version: '3.12'
 
       - name: Install MkDocs
-        run: pip install mkdocs-material
+        run: pip install --require-hashes -r requirements-docs.txt
 
       - name: Copy root docs into docs/ for MkDocs
         run: |

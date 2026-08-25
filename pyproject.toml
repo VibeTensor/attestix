@@ -47,11 +47,13 @@ dependencies = [
     # prevent silent breakage from major-version drift (mcp 2.x, PyJWT 3.x,
     # cryptography 47.x, etc.) on fresh `pip install attestix`. See
     # paper/internal/dependency-audit-v0.3.0-2026-04-17.md for the rationale.
-    "mcp[cli]>=1.8.0,<2.0.0",
+    # mcp >=1.28.1 closes the 1.27.x / <1.28.1 advisories flagged by Dependabot.
+    "mcp[cli]>=1.28.1,<2.0.0",
     # cryptography >=48.0.1 closes GHSA-537c-gmf6-5ccf (in addition to the
     # earlier CVE-2026-34073 name-constraints bypass and CVE-2026-39892
     # Hash.update buffer overflow closed in 46.0.7).
-    "cryptography>=48.0.1,<50.0.0",
+    # cryptography >=50.0.0 closes the 44.x-49.x advisory flagged by Dependabot.
+    "cryptography>=50.0.0,<51.0.0",
     # PyJWT >=2.12.0 closes CVE-2026-32597 (crit header validation bypass).
     # This directly impacts Attestix's JWT / Verifiable Credential / UCAN
     # verification paths and is the hard blocker for the v0.3.0 release.
@@ -74,7 +76,9 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-blockchain = ["web3>=7.0.0,<8.0.0"]
+# Transitive pin: web3 pulls aiohttp. Versions <=3.14.2 carry the two
+# advisories flagged by Dependabot, so force the floor here.
+blockchain = ["web3>=7.0.0,<8.0.0", "aiohttp>=3.14.3,<4.0.0"]
 reports = ["weasyprint>=62.0"]
 # Post-quantum signing (FIPS 204 ML-DSA-65 + hybrid Ed25519+ML-DSA). Optional,
 # never required: the default install stays classical Ed25519. dilithium-py is

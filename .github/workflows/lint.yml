@@ -30,9 +30,7 @@ jobs:
           cache-dependency-path: pyproject.toml
 
       - name: Install lint dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install "ruff>=0.6.0"
+        run: pip install --require-hashes -r requirements-ci.txt
 
       - name: Run ruff check
         run: ruff check . --output-format=github
@@ -57,8 +55,8 @@ jobs:
 
       - name: Install dependencies
         run: |
-          python -m pip install --upgrade pip
-          pip install -e ".[dev,blockchain]"
+          pip install --require-hashes -r requirements-ci.txt
+          pip install -e . --no-deps
 
       - name: Run mypy
         # Advisory only: do not block merges while type coverage is being added.

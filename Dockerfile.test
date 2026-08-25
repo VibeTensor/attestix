@@ -15,7 +15,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 COPY . .
 
 # Install package with test and blockchain dependencies
-RUN pip install --no-cache-dir -e ".[test,blockchain]"
+# Same hash-pinned lockfile as .github/workflows/test.yml; the package itself
+# is installed editable with --no-deps because editable installs cannot be hashed.
+RUN pip install --no-cache-dir --require-hashes -r requirements-ci.txt \
+    && pip install --no-cache-dir --no-deps -e .
 
 # Default: run full test suite
 CMD ["python", "-m", "pytest", "tests/", "-v", "--tb=short", "-m", "not live_blockchain", "--color=yes"]

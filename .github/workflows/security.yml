@@ -34,9 +34,8 @@ jobs:
 
       - name: Install package and pip-audit
         run: |
-          python -m pip install --upgrade pip
-          pip install -e ".[blockchain]"
-          pip install "pip-audit>=2.7"
+          pip install --require-hashes -r requirements-ci.txt
+          pip install -e . --no-deps
 
       - name: Run pip-audit
         # Advisory on PR, enforced on schedule + push to main.
@@ -67,9 +66,7 @@ jobs:
           cache-dependency-path: pyproject.toml
 
       - name: Install bandit
-        run: |
-          python -m pip install --upgrade pip
-          pip install "bandit[toml]>=1.7"
+        run: pip install --require-hashes -r requirements-ci.txt
 
       - name: Run bandit (medium+ severity, medium+ confidence)
         run: bandit -r services tools auth blockchain api -c pyproject.toml -ll -ii
@@ -90,9 +87,7 @@ jobs:
           cache-dependency-path: pyproject.toml
 
       - name: Install safety
-        run: |
-          python -m pip install --upgrade pip
-          pip install "safety>=3.2"
+        run: pip install --require-hashes -r requirements-ci.txt
 
       - name: Run safety check
         run: safety check --file=requirements.txt --full-report || true
