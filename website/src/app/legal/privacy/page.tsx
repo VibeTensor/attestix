@@ -8,8 +8,8 @@ export const metadata: Metadata = {
 export default function PrivacyPolicy() {
   return (
     <>
-      <h1>Privacy Policy</h1>
-      <p className="text-muted-foreground">
+      <h1>Privacy policy</h1>
+      <p className="!mt-4 text-[14px] text-atx-ink-dim">
         Last updated: February 27, 2026
       </p>
 
@@ -29,7 +29,7 @@ export default function PrivacyPolicy() {
         Protection Regulation (GDPR) for users in the European Economic Area.
       </p>
 
-      <h2>2. Data Controller</h2>
+      <h2>2. Data controller</h2>
       <p>
         VibeTensor Private Limited is the data controller responsible for your
         personal data.
@@ -44,7 +44,7 @@ export default function PrivacyPolicy() {
         </li>
       </ul>
 
-      <h2>3. Information We Collect</h2>
+      <h2>3. Information we collect</h2>
       <h3>3.1 Information you provide</h3>
       <ul>
         <li>
@@ -75,7 +75,7 @@ export default function PrivacyPolicy() {
         </li>
       </ul>
 
-      <h3>3.4 Blockchain Anchoring Disclosure</h3>
+      <h3>3.4 Blockchain anchoring disclosure</h3>
       <p>
         When you use the optional blockchain anchoring features, Attestix sends
         cryptographic hashes (not raw data) to the Base L2 blockchain via the
@@ -86,7 +86,7 @@ export default function PrivacyPolicy() {
         this feature.
       </p>
 
-      <h2>4. Lawful Basis for Processing (GDPR)</h2>
+      <h2>4. Lawful basis for processing (GDPR)</h2>
       <ul>
         <li>
           <strong>Legitimate interest:</strong> Website analytics to improve user
@@ -102,14 +102,14 @@ export default function PrivacyPolicy() {
         </li>
       </ul>
 
-      <h2>5. How We Use Your Information</h2>
+      <h2>5. How we use your information</h2>
       <ul>
         <li>To respond to your inquiries and support requests</li>
         <li>To improve our website and documentation</li>
         <li>To comply with legal obligations</li>
       </ul>
 
-      <h2>6. Data Sharing and Transfers</h2>
+      <h2>6. Data sharing and transfers</h2>
       <p>
         We do not sell your personal data. We may share data with:
       </p>
@@ -129,14 +129,14 @@ export default function PrivacyPolicy() {
         Contractual Clauses (SCCs) or equivalent safeguards.
       </p>
 
-      <h2>7. Data Retention</h2>
+      <h2>7. Data retention</h2>
       <p>
         We retain personal data only as long as necessary for the purposes
         described above. Contact inquiries are retained for up to 2 years.
         Server logs are retained for up to 30 days.
       </p>
 
-      <h2>8. Your Rights</h2>
+      <h2>8. Your rights</h2>
       <h3>Under GDPR (EEA residents)</h3>
       <ul>
         <li>Right of access</li>
@@ -166,7 +166,7 @@ export default function PrivacyPolicy() {
         <a href="/legal/cookies">Cookie Policy</a> for details.
       </p>
 
-      <h2>10. Children&#39;s Privacy</h2>
+      <h2>10. Children&#39;s privacy</h2>
       <p>
         Our services are not directed at individuals under 18. We do not
         knowingly collect personal data from children. If you believe we have
@@ -180,7 +180,7 @@ export default function PrivacyPolicy() {
         controls, consistent with Rule 8 of the IT Rules 2011.
       </p>
 
-      <h2>12. Grievance Redressal</h2>
+      <h2>12. Grievance redressal</h2>
       <p>
         If you have any concerns about our data practices, please contact our
         Grievance Officer:
@@ -198,7 +198,7 @@ export default function PrivacyPolicy() {
         30 days.
       </p>
 
-      <h2>13. Changes to This Policy</h2>
+      <h2>13. Changes to this policy</h2>
       <p>
         We may update this Privacy Policy from time to time. Changes will be
         posted on this page with an updated &quot;Last updated&quot; date.

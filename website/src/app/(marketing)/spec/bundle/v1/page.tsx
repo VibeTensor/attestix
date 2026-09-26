@@ -246,56 +246,56 @@ const VERIFIER_ALGORITHM = `1. Open bundle.tar.gz; extract every member to memor
 
 export default function BundleSpecV1Page() {
   return (
-    <section className="mx-auto max-w-[1080px] px-7 py-24">
+    <section className="mx-auto w-full max-w-[1080px] px-6 pb-20 pt-16 md:pt-20">
+      <div className="mx-auto max-w-[860px] text-center">
       <AtxEyebrow>Specification</AtxEyebrow>
-      <h1 className="mt-3 font-serif text-[clamp(36px,4.8vw,60px)] leading-[1.05] tracking-[-0.012em] text-atx-ink">
-        Bundle wire format
-        <br />
-        <em className="italic text-atx-accent">v1.</em>
+      <h1 className="mt-3 text-[clamp(34px,5vw,52px)] font-normal leading-[1.09] tracking-[-0.03em] text-atx-ink [text-wrap:balance]">
+        Bundle wire format <span className="text-atx-accent">v1.</span>
       </h1>
-      <p className="mt-6 max-w-[760px] text-[15px] leading-[1.65] text-atx-ink-mid">
+      <p className="mx-auto mt-5 max-w-[640px] text-[17.5px] leading-[1.6] text-atx-ink-mid [text-wrap:balance]">
         The on-disk shape every Attestix portability bundle speaks. Tamper-evident,
         deterministic, JCS-canonical, and identical byte-for-byte across the OSS
         Python exporter and the cloud TypeScript worker. Published{" "}
         <span className="font-mono-atx text-[13px] text-atx-ink">{PUBLISHED_DATE}</span>.
         v1 is frozen.
       </p>
+      </div>
 
       {/* ----- Section 1: Identifier --------------------------------------- */}
-      <h2 className="mt-16 font-mono-atx text-[11px] uppercase tracking-[0.14em] text-atx-ink-dim">
-        01 / Identifier
+      <h2 className="mt-20 text-[32px] font-medium leading-[1.15] tracking-[-0.8px] text-atx-ink">
+        1. Identifier
       </h2>
-      <p className="mt-3 max-w-[760px] text-[14px] leading-[1.7] text-atx-ink-mid">
+      <p className="mt-4 max-w-[720px] text-[15px] leading-[1.7] text-atx-ink-mid">
         The canonical URI for this version of the spec is:
       </p>
-      <pre className="mt-4 overflow-x-auto rounded-atx-md border border-atx-line-soft bg-atx-bg-sunken px-5 py-4 font-mono-atx text-[13px] text-atx-accent">
+      <pre className="mt-5 overflow-x-auto rounded-xl border border-atx-line-soft bg-atx-bg-sunken px-5 py-4 font-mono-atx text-[13px] text-atx-accent">
         {SPEC_URI}
       </pre>
-      <p className="mt-4 max-w-[760px] text-[14px] leading-[1.7] text-atx-ink-mid">
+      <p className="mt-4 max-w-[720px] text-[15px] leading-[1.7] text-atx-ink-mid">
         Every bundle produced by Attestix — Python core ≥ v0.4.0 via
-        the <code className="font-mono-atx text-[12.5px] text-atx-ink">attestix.portability.bundle_writer</code>{" "}
+        the <code className="font-mono-atx text-[13px] text-atx-ink">attestix.portability.bundle_writer</code>{" "}
         module, the TypeScript cloud worker, and both the{" "}
-        <code className="font-mono-atx text-[12.5px] text-atx-ink">attestix export</code> and{" "}
-        <code className="font-mono-atx text-[12.5px] text-atx-ink">attestix import</code>{" "}
+        <code className="font-mono-atx text-[13px] text-atx-ink">attestix export</code> and{" "}
+        <code className="font-mono-atx text-[13px] text-atx-ink">attestix import</code>{" "}
         CLIs — emits this exact string as the{" "}
-        <code className="font-mono-atx text-[12.5px] text-atx-ink">attestix_bundle_format</code>{" "}
-        field in <code className="font-mono-atx text-[12.5px] text-atx-ink">manifest.json</code>.
+        <code className="font-mono-atx text-[13px] text-atx-ink">attestix_bundle_format</code>{" "}
+        field in <code className="font-mono-atx text-[13px] text-atx-ink">manifest.json</code>.
         The URI is dereferenceable to this page so a verifier holding only the
         bundle on disk can find the spec.
       </p>
 
       {/* ----- Section 2: Wire format at a glance -------------------------- */}
-      <h2 className="mt-16 font-mono-atx text-[11px] uppercase tracking-[0.14em] text-atx-ink-dim">
-        02 / Wire format at a glance
+      <h2 className="mt-20 text-[32px] font-medium leading-[1.15] tracking-[-0.8px] text-atx-ink">
+        2. Wire format at a glance
       </h2>
-      <div className="mt-6 overflow-hidden rounded-atx-md border border-atx-line-soft">
-        <table className="w-full border-collapse text-left text-[13px]">
+      <div className="mt-6 overflow-x-auto rounded-2xl border border-atx-line">
+        <table className="w-full border-collapse text-left text-[14px] leading-[1.55]">
           <thead className="bg-atx-bg-sunken">
             <tr>
-              <th className="border-b border-atx-line-soft px-4 py-3 font-mono-atx text-[10.5px] uppercase tracking-[0.14em] text-atx-ink-faint">
+              <th className="border-b border-atx-line-soft px-4 py-3 text-[13px] font-medium text-atx-ink-dim">
                 Property
               </th>
-              <th className="border-b border-atx-line-soft px-4 py-3 font-mono-atx text-[10.5px] uppercase tracking-[0.14em] text-atx-ink-faint">
+              <th className="border-b border-atx-line-soft px-4 py-3 text-[13px] font-medium text-atx-ink-dim">
                 Value
               </th>
             </tr>
@@ -335,8 +335,8 @@ export default function BundleSpecV1Page() {
                 v: "Bundle: 256 MiB. Single member: 128 MiB. Verifiers MUST refuse anything larger.",
               },
             ].map((row) => (
-              <tr key={row.k} className="bg-atx-panel">
-                <td className="border-b border-atx-line-soft px-4 py-3 font-mono-atx text-[11.5px] text-atx-ink">
+              <tr key={row.k} className="bg-atx-panel/60">
+                <td className="whitespace-nowrap border-b border-atx-line-soft px-4 py-3 font-medium text-atx-ink">
                   {row.k}
                 </td>
                 <td className="border-b border-atx-line-soft px-4 py-3 text-atx-ink-mid">
@@ -349,18 +349,18 @@ export default function BundleSpecV1Page() {
       </div>
 
       {/* ----- Section 3: Manifest schema ---------------------------------- */}
-      <h2 className="mt-16 font-mono-atx text-[11px] uppercase tracking-[0.14em] text-atx-ink-dim">
-        03 / Manifest schema
+      <h2 className="mt-20 text-[32px] font-medium leading-[1.15] tracking-[-0.8px] text-atx-ink">
+        3. Manifest schema
       </h2>
-      <p className="mt-3 max-w-[760px] text-[14px] leading-[1.7] text-atx-ink-mid">
+      <p className="mt-4 max-w-[720px] text-[15px] leading-[1.7] text-atx-ink-mid">
         Every bundle carries one{" "}
-        <code className="font-mono-atx text-[12.5px] text-atx-ink">manifest.json</code>{" "}
+        <code className="font-mono-atx text-[13px] text-atx-ink">manifest.json</code>{" "}
         whose body is the JCS-canonical serialisation of the following object.
         Field order is irrelevant on the wire (the canonicaliser sorts keys);
         the table below lists fields in semantic order.
       </p>
 
-      <pre className="mt-6 overflow-x-auto rounded-atx-md border border-atx-line-soft bg-atx-bg-sunken px-5 py-4 font-mono-atx text-[12px] leading-[1.55] text-atx-ink">
+      <pre className="mt-6 overflow-x-auto rounded-xl border border-atx-line-soft bg-atx-bg-sunken px-5 py-4 font-mono-atx text-[12px] leading-[1.55] text-atx-ink">
 {`{
   "manifest_version": "1.0",
   "attestix_bundle_format": "${SPEC_URI}",
@@ -385,14 +385,14 @@ export default function BundleSpecV1Page() {
 }`}
       </pre>
 
-      <div className="mt-6 overflow-hidden rounded-atx-md border border-atx-line-soft">
-        <table className="w-full border-collapse text-left text-[13px]">
+      <div className="mt-6 overflow-x-auto rounded-2xl border border-atx-line">
+        <table className="w-full border-collapse text-left text-[14px] leading-[1.55]">
           <thead className="bg-atx-bg-sunken">
             <tr>
               {["Field", "Type", "Req", "Meaning", "Example"].map((h) => (
                 <th
                   key={h}
-                  className="border-b border-atx-line-soft px-4 py-3 font-mono-atx text-[10.5px] uppercase tracking-[0.14em] text-atx-ink-faint"
+                  className="border-b border-atx-line-soft px-4 py-3 text-[13px] font-medium text-atx-ink-dim"
                 >
                   {h}
                 </th>
@@ -401,7 +401,7 @@ export default function BundleSpecV1Page() {
           </thead>
           <tbody>
             {MANIFEST_FIELDS.map((f) => (
-              <tr key={f.field} className="bg-atx-panel align-top">
+              <tr key={f.field} className="bg-atx-panel/60 align-top">
                 <td className="border-b border-atx-line-soft px-4 py-3 font-mono-atx text-[11.5px] text-atx-accent">
                   {f.field}
                 </td>
@@ -426,27 +426,27 @@ export default function BundleSpecV1Page() {
       </div>
 
       {/* ----- Section 4: manifest.sha256 side-car ------------------------- */}
-      <h2 className="mt-16 font-mono-atx text-[11px] uppercase tracking-[0.14em] text-atx-ink-dim">
-        04 / Side-car: manifest.sha256
+      <h2 className="mt-20 text-[32px] font-medium leading-[1.15] tracking-[-0.8px] text-atx-ink">
+        4. Side-car: manifest.sha256
       </h2>
-      <p className="mt-3 max-w-[760px] text-[14px] leading-[1.7] text-atx-ink-mid">
+      <p className="mt-4 max-w-[720px] text-[15px] leading-[1.7] text-atx-ink-mid">
         A plain-text file inside the tarball alongside{" "}
-        <code className="font-mono-atx text-[12.5px] text-atx-ink">manifest.json</code>.
+        <code className="font-mono-atx text-[13px] text-atx-ink">manifest.json</code>.
         It contains the lowercase hex SHA-256 of the JCS-canonical manifest body
         followed by a single trailing newline (65 bytes total). Critical for
         verifier round-trips: the consumer can recompute the hash and compare
         without first parsing the manifest, and producers can transport the
         digest separately without round-tripping the full body.
       </p>
-      <p className="mt-3 max-w-[760px] text-[14px] leading-[1.7] text-atx-ink-mid">
+      <p className="mt-4 max-w-[720px] text-[15px] leading-[1.7] text-atx-ink-mid">
         The sha is computed over the manifest{" "}
         <em className="italic text-atx-ink">as it was written</em> — the
         manifest&apos;s own{" "}
-        <code className="font-mono-atx text-[12.5px] text-atx-ink">sha256</code>{" "}
+        <code className="font-mono-atx text-[13px] text-atx-ink">sha256</code>{" "}
         appears only inside per-table entries; there is no self-reference at the
         manifest root, so no field needs to be stripped before re-canonicalising.
       </p>
-      <pre className="mt-4 overflow-x-auto rounded-atx-md border border-atx-line-soft bg-atx-bg-sunken px-5 py-4 font-mono-atx text-[12px] text-atx-ink">
+      <pre className="mt-5 overflow-x-auto rounded-xl border border-atx-line-soft bg-atx-bg-sunken px-5 py-4 font-mono-atx text-[12px] text-atx-ink">
 {`# Producer side
 canonical = canonicalize_json(manifest)            # JCS bytes
 sha = sha256(canonical).hexdigest()                # 64 hex chars
@@ -459,26 +459,26 @@ assert sha256(canonical).hexdigest() == sidecar.strip()`}
       </pre>
 
       {/* ----- Section 5: per-table tables --------------------------------- */}
-      <h2 className="mt-16 font-mono-atx text-[11px] uppercase tracking-[0.14em] text-atx-ink-dim">
-        05 / Per-table tables
+      <h2 className="mt-20 text-[32px] font-medium leading-[1.15] tracking-[-0.8px] text-atx-ink">
+        5. Per-table tables
       </h2>
-      <p className="mt-3 max-w-[760px] text-[14px] leading-[1.7] text-atx-ink-mid">
+      <p className="mt-4 max-w-[720px] text-[15px] leading-[1.7] text-atx-ink-mid">
         Thirteen tables. Order in the manifest{" "}
-        <code className="font-mono-atx text-[12.5px] text-atx-ink">tables[]</code>{" "}
+        <code className="font-mono-atx text-[13px] text-atx-ink">tables[]</code>{" "}
         array and on-disk MUST match the order below — cloud and OSS producers
         agree on this byte-for-byte. Cloud-only tables are emitted as empty
         JSONL members by OSS producers so the bundle&apos;s member set stays
         symmetric across producers.
       </p>
 
-      <div className="mt-6 overflow-hidden rounded-atx-md border border-atx-line-soft">
-        <table className="w-full border-collapse text-left text-[13px]">
+      <div className="mt-6 overflow-x-auto rounded-2xl border border-atx-line">
+        <table className="w-full border-collapse text-left text-[14px] leading-[1.55]">
           <thead className="bg-atx-bg-sunken">
             <tr>
               {["#", "Table", "Purpose", "Notes"].map((h) => (
                 <th
                   key={h}
-                  className="border-b border-atx-line-soft px-4 py-3 font-mono-atx text-[10.5px] uppercase tracking-[0.14em] text-atx-ink-faint"
+                  className="border-b border-atx-line-soft px-4 py-3 text-[13px] font-medium text-atx-ink-dim"
                 >
                   {h}
                 </th>
@@ -487,14 +487,14 @@ assert sha256(canonical).hexdigest() == sidecar.strip()`}
           </thead>
           <tbody>
             {TABLES.map((t, i) => (
-              <tr key={t.name} className="bg-atx-panel align-top">
+              <tr key={t.name} className="bg-atx-panel/60 align-top">
                 <td className="border-b border-atx-line-soft px-4 py-3 font-mono-atx text-[11px] text-atx-ink-dim">
                   {String(i + 1).padStart(2, "0")}
                 </td>
                 <td className="border-b border-atx-line-soft px-4 py-3 font-mono-atx text-[11.5px]">
                   <span className="text-atx-accent">{t.name}</span>
                   {t.cloudOnly ? (
-                    <span className="ml-2 rounded-atx-xs border border-atx-line-soft px-1.5 py-0.5 text-[9.5px] uppercase tracking-[0.12em] text-atx-ink-dim">
+                    <span className="ml-2 inline-flex rounded-full border border-atx-line px-2 py-0.5 font-sans text-[11px] font-medium text-atx-ink-dim">
                       cloud-only
                     </span>
                   ) : null}
@@ -511,82 +511,82 @@ assert sha256(canonical).hexdigest() == sidecar.strip()`}
         </table>
       </div>
 
-      <p className="mt-6 max-w-[760px] text-[14px] leading-[1.7] text-atx-ink-mid">
+      <p className="mt-6 max-w-[720px] text-[15px] leading-[1.7] text-atx-ink-mid">
         Per-row schema for each table mirrors the Postgres column names used by
         the cloud database — snake_cased, with{" "}
-        <code className="font-mono-atx text-[12.5px] text-atx-ink">Date</code>{" "}
+        <code className="font-mono-atx text-[13px] text-atx-ink">Date</code>{" "}
         values rendered as ISO-8601 UTC strings,{" "}
-        <code className="font-mono-atx text-[12.5px] text-atx-ink">bigint</code>{" "}
+        <code className="font-mono-atx text-[13px] text-atx-ink">bigint</code>{" "}
         values rendered as strings (JCS rejects numeric overflow),{" "}
-        <code className="font-mono-atx text-[12.5px] text-atx-ink">Buffer</code>{" "}
-        and <code className="font-mono-atx text-[12.5px] text-atx-ink">Uint8Array</code>{" "}
+        <code className="font-mono-atx text-[13px] text-atx-ink">Buffer</code>{" "}
+        and <code className="font-mono-atx text-[13px] text-atx-ink">Uint8Array</code>{" "}
         rendered as lowercase hex, and{" "}
-        <code className="font-mono-atx text-[12.5px] text-atx-ink">null</code>{" "}
+        <code className="font-mono-atx text-[13px] text-atx-ink">null</code>{" "}
         preserved verbatim. See the row projectors in{" "}
-        <code className="font-mono-atx text-[12.5px] text-atx-ink">attestix.portability.bundle_writer</code>{" "}
+        <code className="font-mono-atx text-[13px] text-atx-ink">attestix.portability.bundle_writer</code>{" "}
         for the authoritative shape.
       </p>
 
       {/* ----- Section 6: verifier algorithm ------------------------------- */}
-      <h2 className="mt-16 font-mono-atx text-[11px] uppercase tracking-[0.14em] text-atx-ink-dim">
-        06 / Verifier algorithm (reference)
+      <h2 className="mt-20 text-[32px] font-medium leading-[1.15] tracking-[-0.8px] text-atx-ink">
+        6. Verifier algorithm (reference)
       </h2>
-      <p className="mt-3 max-w-[760px] text-[14px] leading-[1.7] text-atx-ink-mid">
+      <p className="mt-4 max-w-[720px] text-[15px] leading-[1.7] text-atx-ink-mid">
         Two reference implementations: Python in{" "}
-        <code className="font-mono-atx text-[12.5px] text-atx-ink">attestix.portability.bundle_reader</code>{" "}
+        <code className="font-mono-atx text-[13px] text-atx-ink">attestix.portability.bundle_reader</code>{" "}
         (PyPI{" "}
         <a
           href="https://pypi.org/project/attestix/"
           target="_blank"
           rel="noopener noreferrer"
-          className="font-mono-atx text-[12.5px] text-atx-accent hover:underline"
+          className="font-mono-atx text-[13px] text-atx-ink underline decoration-atx-line underline-offset-4 transition-colors duration-200 hover:text-atx-accent hover:decoration-atx-accent"
         >
           attestix
         </a>
         ) and TypeScript in attestix-js (today{" "}
-        <code className="font-mono-atx text-[12.5px] text-atx-ink">@vibetensor/attestix@0.2.0</code>;
+        <code className="font-mono-atx text-[13px] text-atx-ink">@vibetensor/attestix@0.2.0</code>;
         unscoped{" "}
-        <code className="font-mono-atx text-[12.5px] text-atx-ink">attestix</code>{" "}
+        <code className="font-mono-atx text-[13px] text-atx-ink">attestix</code>{" "}
         publish in flight). Both follow the same algorithm:
       </p>
-      <pre className="mt-4 overflow-x-auto rounded-atx-md border border-atx-line-soft bg-atx-bg-sunken px-5 py-4 font-mono-atx text-[12px] leading-[1.6] text-atx-ink">
+      <pre className="mt-5 overflow-x-auto rounded-xl border border-atx-line-soft bg-atx-bg-sunken px-5 py-4 font-mono-atx text-[12px] leading-[1.6] text-atx-ink">
         {VERIFIER_ALGORITHM}
       </pre>
 
       {/* ----- Section 7: compatibility + versioning ----------------------- */}
-      <h2 className="mt-16 font-mono-atx text-[11px] uppercase tracking-[0.14em] text-atx-ink-dim">
-        07 / Compatibility and versioning
+      <h2 className="mt-20 text-[32px] font-medium leading-[1.15] tracking-[-0.8px] text-atx-ink">
+        7. Compatibility and versioning
       </h2>
-      <ul className="mt-4 space-y-3 text-[14px] leading-[1.7] text-atx-ink-mid">
+      <ul className="mt-4 max-w-[720px] space-y-3 text-[15px] leading-[1.7] text-atx-ink-mid">
         <li>
-          <strong className="text-atx-ink">v1 is frozen.</strong> No breaking
+          <strong className="font-medium text-atx-ink">v1 is frozen.</strong> No breaking
           changes will land within v1. A future v2 will be published at a new
-          URI (e.g. <code className="font-mono-atx text-[12.5px] text-atx-ink">/spec/bundle/v2</code>)
+          URI (e.g. <code className="font-mono-atx text-[13px] text-atx-ink">/spec/bundle/v2</code>)
           and producers will stamp the new URI in{" "}
-          <code className="font-mono-atx text-[12.5px] text-atx-ink">attestix_bundle_format</code>.
+          <code className="font-mono-atx text-[13px] text-atx-ink">attestix_bundle_format</code>.
         </li>
         <li>
-          <strong className="text-atx-ink">Forward compatibility.</strong>{" "}
+          <strong className="font-medium text-atx-ink">Forward compatibility.</strong>{" "}
           Producers MAY add fields to the manifest or new tables to{" "}
-          <code className="font-mono-atx text-[12.5px] text-atx-ink">tables[]</code>;
+          <code className="font-mono-atx text-[13px] text-atx-ink">tables[]</code>;
           verifiers MUST ignore unknown manifest fields and MUST ignore unknown
           tables that are not referenced by a verification rule.
         </li>
         <li>
-          <strong className="text-atx-ink">Schema gating.</strong> The{" "}
-          <code className="font-mono-atx text-[12.5px] text-atx-ink">schemas.db_migration_max</code>{" "}
+          <strong className="font-medium text-atx-ink">Schema gating.</strong> The{" "}
+          <code className="font-mono-atx text-[13px] text-atx-ink">schemas.db_migration_max</code>{" "}
           field carries the producer&apos;s database migration version. Consumers
           refuse bundles whose{" "}
-          <code className="font-mono-atx text-[12.5px] text-atx-ink">db_migration_max</code>{" "}
+          <code className="font-mono-atx text-[13px] text-atx-ink">db_migration_max</code>{" "}
           is strictly newer than the consumer&apos;s supported max — see{" "}
-          <code className="font-mono-atx text-[12.5px] text-atx-ink">BundleSchemaTooNewError</code>{" "}
-          in <code className="font-mono-atx text-[12.5px] text-atx-ink">bundle_reader.py</code>.
+          <code className="font-mono-atx text-[13px] text-atx-ink">BundleSchemaTooNewError</code>{" "}
+          in <code className="font-mono-atx text-[13px] text-atx-ink">bundle_reader.py</code>.
         </li>
         <li>
-          <strong className="text-atx-ink">v2 plans (non-binding).</strong>{" "}
+          <strong className="font-medium text-atx-ink">v2 plans (non-binding).</strong>{" "}
           zstd compression in place of gzip; optional Parquet representation
           for{" "}
-          <code className="font-mono-atx text-[12.5px] text-atx-ink">audit_events</code>{" "}
+          <code className="font-mono-atx text-[13px] text-atx-ink">audit_events</code>{" "}
           for large tenants; manifest signed via the producer&apos;s DID using
           Ed25519Signature2020. In v1 the manifest is unsigned; integrity is by
           SHA-256 only.
@@ -594,60 +594,60 @@ assert sha256(canonical).hexdigest() == sidecar.strip()`}
       </ul>
 
       {/* ----- Section 8: security model ----------------------------------- */}
-      <h2 className="mt-16 font-mono-atx text-[11px] uppercase tracking-[0.14em] text-atx-ink-dim">
-        08 / Security model
+      <h2 className="mt-20 text-[32px] font-medium leading-[1.15] tracking-[-0.8px] text-atx-ink">
+        8. Security model
       </h2>
-      <div className="mt-4 grid gap-5 md:grid-cols-2">
-        <div className="rounded-atx-md border border-atx-ok/30 bg-atx-ok/[0.06] p-5">
-          <div className="font-mono-atx text-[10.5px] uppercase tracking-[0.14em] text-atx-ok">
+      <div className="mt-8 grid gap-5 md:grid-cols-2">
+        <div className="rounded-2xl border border-atx-ok/30 bg-atx-ok/[0.05] p-6">
+          <h3 className="text-[19px] font-semibold tracking-[-0.48px] text-atx-ok">
             Guarantees
-          </div>
-          <ul className="mt-3 space-y-2 text-[13.5px] leading-[1.65] text-atx-ink-mid">
+          </h3>
+          <ul className="mt-4 space-y-3 text-[15px] leading-[1.6] text-atx-ink-mid">
             <li>
-              <strong className="text-atx-ink">Byte-level tamper evidence.</strong>{" "}
+              <strong className="font-medium text-atx-ink">Byte-level tamper evidence.</strong>{" "}
               Any modification to a table body, the manifest, or a sha256 breaks
               verification.
             </li>
             <li>
-              <strong className="text-atx-ink">Audit chain integrity.</strong>{" "}
+              <strong className="font-medium text-atx-ink">Audit chain integrity.</strong>{" "}
               <code className="font-mono-atx text-[12px] text-atx-ink">audit_events</code>{" "}
               chain is re-verified end-to-end at import; any break aborts.
             </li>
             <li>
-              <strong className="text-atx-ink">Row-count consistency.</strong>{" "}
+              <strong className="font-medium text-atx-ink">Row-count consistency.</strong>{" "}
               Per-table row counts in the manifest must match the JSONL line
               count.
             </li>
             <li>
-              <strong className="text-atx-ink">Schema gating.</strong> Bundles
+              <strong className="font-medium text-atx-ink">Schema gating.</strong> Bundles
               from a strictly newer producer are refused rather than silently
               losing rows or columns.
             </li>
           </ul>
         </div>
-        <div className="rounded-atx-md border border-atx-warn/40 bg-atx-warn/[0.06] p-5">
-          <div className="font-mono-atx text-[10.5px] uppercase tracking-[0.14em] text-atx-warn">
+        <div className="rounded-2xl border border-atx-warn/30 bg-atx-warn/[0.05] p-6">
+          <h3 className="text-[19px] font-semibold tracking-[-0.48px] text-atx-warn">
             Does NOT guarantee
-          </div>
-          <ul className="mt-3 space-y-2 text-[13.5px] leading-[1.65] text-atx-ink-mid">
+          </h3>
+          <ul className="mt-4 space-y-3 text-[15px] leading-[1.6] text-atx-ink-mid">
             <li>
-              <strong className="text-atx-ink">Confidentiality.</strong> Bundle
+              <strong className="font-medium text-atx-ink">Confidentiality.</strong> Bundle
               contents are plaintext JCS. Encrypt at rest separately.
             </li>
             <li>
-              <strong className="text-atx-ink">Producer authenticity.</strong>{" "}
+              <strong className="font-medium text-atx-ink">Producer authenticity.</strong>{" "}
               The manifest is UNSIGNED in v1 — anyone can produce a structurally
               valid bundle. v2 will add a DID-signed manifest.
             </li>
             <li>
-              <strong className="text-atx-ink">Freshness.</strong> The manifest
+              <strong className="font-medium text-atx-ink">Freshness.</strong> The manifest
               carries no nonce or anti-replay marker beyond{" "}
               <code className="font-mono-atx text-[12px] text-atx-ink">exported_at</code>.
               Consumers that need freshness MUST pair the bundle with a
               short-lived attestation.
             </li>
             <li>
-              <strong className="text-atx-ink">Anchor freshness.</strong> An
+              <strong className="font-medium text-atx-ink">Anchor freshness.</strong> An
               anchor row records that a hash was once posted to Base Sepolia;
               re-verifying the anchor against the chain is the consumer&apos;s
               responsibility.
@@ -655,66 +655,66 @@ assert sha256(canonical).hexdigest() == sidecar.strip()`}
           </ul>
         </div>
       </div>
-      <p className="mt-6 max-w-[760px] text-[14px] leading-[1.7] text-atx-ink-mid">
-        <strong className="text-atx-ink">Recommended deployment.</strong> Pair
+      <p className="mt-6 max-w-[720px] text-[15px] leading-[1.7] text-atx-ink-mid">
+        <strong className="font-medium text-atx-ink">Recommended deployment.</strong> Pair
         every bundle export with a signed{" "}
-        <code className="font-mono-atx text-[12.5px] text-atx-ink">BundleExportedCredential</code>{" "}
+        <code className="font-mono-atx text-[13px] text-atx-ink">BundleExportedCredential</code>{" "}
         (W3C VC) issued at export time that attests to the bundle&apos;s SHA-256.
         The credential provides producer authenticity that the v1 wire format
         does not, without bloating the manifest with signature material.
       </p>
 
       {/* ----- Section 9: example ------------------------------------------ */}
-      <h2 className="mt-16 font-mono-atx text-[11px] uppercase tracking-[0.14em] text-atx-ink-dim">
-        09 / Example
+      <h2 className="mt-20 text-[32px] font-medium leading-[1.15] tracking-[-0.8px] text-atx-ink">
+        9. Example
       </h2>
-      <p className="mt-3 max-w-[760px] text-[14px] leading-[1.7] text-atx-ink-mid">
+      <p className="mt-4 max-w-[720px] text-[15px] leading-[1.7] text-atx-ink-mid">
         The bytes below are extracted verbatim from the deterministic test
         fixture at{" "}
-        <code className="font-mono-atx text-[12.5px] text-atx-ink">tests/fixtures/bundles/sample-v1.tar.gz</code>{" "}
+        <code className="font-mono-atx text-[13px] text-atx-ink">tests/fixtures/bundles/sample-v1.tar.gz</code>{" "}
         in the{" "}
         <a
           href="https://github.com/VibeTensor/attestix"
           target="_blank"
           rel="noopener noreferrer"
-          className="text-atx-accent hover:underline"
+          className="text-atx-ink underline decoration-atx-line underline-offset-4 transition-colors duration-200 hover:text-atx-accent hover:decoration-atx-accent"
         >
           attestix
         </a>{" "}
         repo. The bundle is{" "}
-        <code className="font-mono-atx text-[12.5px] text-atx-ink">2,768</code>{" "}
+        <code className="font-mono-atx text-[13px] text-atx-ink">2,768</code>{" "}
         bytes on disk and contains 15 tar members (13 table JSONLs + manifest +
         sha side-car).
       </p>
 
-      <h3 className="mt-8 font-mono-atx text-[11px] uppercase tracking-[0.14em] text-atx-ink-faint">
+      <h3 className="mt-10 text-[15px] font-medium text-atx-ink">
         manifest.json (verbatim, JCS-canonical, 2,367 bytes)
       </h3>
-      <pre className="mt-3 overflow-x-auto rounded-atx-md border border-atx-line-soft bg-atx-bg-sunken px-5 py-4 font-mono-atx text-[11.5px] leading-[1.55] text-atx-ink">
+      <pre className="mt-3 overflow-x-auto rounded-xl border border-atx-line-soft bg-atx-bg-sunken px-5 py-4 font-mono-atx text-[11.5px] leading-[1.55] text-atx-ink">
         {EXAMPLE_MANIFEST}
       </pre>
 
-      <h3 className="mt-8 font-mono-atx text-[11px] uppercase tracking-[0.14em] text-atx-ink-faint">
+      <h3 className="mt-10 text-[15px] font-medium text-atx-ink">
         manifest.sha256 (verbatim, 65 bytes including trailing newline)
       </h3>
-      <pre className="mt-3 overflow-x-auto rounded-atx-md border border-atx-line-soft bg-atx-bg-sunken px-5 py-4 font-mono-atx text-[12.5px] text-atx-accent">
+      <pre className="mt-3 overflow-x-auto rounded-xl border border-atx-line-soft bg-atx-bg-sunken px-5 py-4 font-mono-atx text-[12.5px] text-atx-accent">
         {EXAMPLE_MANIFEST_SHA}
       </pre>
 
-      <h3 className="mt-8 font-mono-atx text-[11px] uppercase tracking-[0.14em] text-atx-ink-faint">
+      <h3 className="mt-10 text-[15px] font-medium text-atx-ink">
         credentials.jsonl (one row; full W3C VC envelope; 586 bytes)
       </h3>
-      <pre className="mt-3 overflow-x-auto rounded-atx-md border border-atx-line-soft bg-atx-bg-sunken px-5 py-4 font-mono-atx text-[11.5px] leading-[1.55] text-atx-ink">
+      <pre className="mt-3 overflow-x-auto rounded-xl border border-atx-line-soft bg-atx-bg-sunken px-5 py-4 font-mono-atx text-[11.5px] leading-[1.55] text-atx-ink">
         {EXAMPLE_CREDENTIAL_ROW}
       </pre>
 
-      <h3 className="mt-8 font-mono-atx text-[11px] uppercase tracking-[0.14em] text-atx-ink-faint">
+      <h3 className="mt-10 text-[15px] font-medium text-atx-ink">
         audit_events.jsonl (first row of a 3-row hash chain)
       </h3>
-      <pre className="mt-3 overflow-x-auto rounded-atx-md border border-atx-line-soft bg-atx-bg-sunken px-5 py-4 font-mono-atx text-[11.5px] leading-[1.55] text-atx-ink">
+      <pre className="mt-3 overflow-x-auto rounded-xl border border-atx-line-soft bg-atx-bg-sunken px-5 py-4 font-mono-atx text-[11.5px] leading-[1.55] text-atx-ink">
         {EXAMPLE_AUDIT_FIRST_ROW}
       </pre>
-      <p className="mt-3 max-w-[760px] text-[13px] leading-[1.6] text-atx-ink-mid">
+      <p className="mt-3 max-w-[720px] text-[14px] leading-[1.6] text-atx-ink-mid">
         The first row&apos;s{" "}
         <code className="font-mono-atx text-[12px] text-atx-ink">prev_hash</code>{" "}
         is the genesis sentinel (64 zero bytes). Each subsequent row&apos;s{" "}
@@ -728,16 +728,16 @@ assert sha256(canonical).hexdigest() == sidecar.strip()`}
       </p>
 
       {/* ----- Section 10: test vectors ------------------------------------ */}
-      <h2 className="mt-16 font-mono-atx text-[11px] uppercase tracking-[0.14em] text-atx-ink-dim">
-        10 / Test vectors
+      <h2 className="mt-20 text-[32px] font-medium leading-[1.15] tracking-[-0.8px] text-atx-ink">
+        10. Test vectors
       </h2>
-      <p className="mt-3 max-w-[760px] text-[14px] leading-[1.7] text-atx-ink-mid">
+      <p className="mt-4 max-w-[720px] text-[15px] leading-[1.7] text-atx-ink-mid">
         The deterministic fixture above is regenerated by{" "}
         <a
           href="https://github.com/VibeTensor/attestix/blob/main/tests/fixtures/bundles/generate_sample_bundle.py"
           target="_blank"
           rel="noopener noreferrer"
-          className="text-atx-accent hover:underline"
+          className="text-atx-ink underline decoration-atx-line underline-offset-4 transition-colors duration-200 hover:text-atx-accent hover:decoration-atx-accent"
         >
           <code className="font-mono-atx text-[12.5px]">tests/fixtures/bundles/generate_sample_bundle.py</code>
         </a>
@@ -747,13 +747,13 @@ assert sha256(canonical).hexdigest() == sidecar.strip()`}
         generator can produce (manifest body mutation, table body mutation, and
         schema-too-new bump).
       </p>
-      <p className="mt-3 max-w-[760px] text-[14px] leading-[1.7] text-atx-ink-mid">
+      <p className="mt-4 max-w-[720px] text-[15px] leading-[1.7] text-atx-ink-mid">
         The round-trip suite at{" "}
         <a
           href="https://github.com/VibeTensor/attestix/tree/main/tests/portability"
           target="_blank"
           rel="noopener noreferrer"
-          className="text-atx-accent hover:underline"
+          className="text-atx-ink underline decoration-atx-line underline-offset-4 transition-colors duration-200 hover:text-atx-accent hover:decoration-atx-accent"
         >
           <code className="font-mono-atx text-[12.5px]">tests/portability/</code>
         </a>{" "}
@@ -762,17 +762,17 @@ assert sha256(canonical).hexdigest() == sidecar.strip()`}
       </p>
 
       {/* ----- Section 11: versions index ---------------------------------- */}
-      <h2 className="mt-16 font-mono-atx text-[11px] uppercase tracking-[0.14em] text-atx-ink-dim">
-        11 / Versions index
+      <h2 className="mt-20 text-[32px] font-medium leading-[1.15] tracking-[-0.8px] text-atx-ink">
+        11. Versions index
       </h2>
-      <div className="mt-4 overflow-hidden rounded-atx-md border border-atx-line-soft">
-        <table className="w-full border-collapse text-left text-[13px]">
+      <div className="mt-4 overflow-x-auto rounded-2xl border border-atx-line">
+        <table className="w-full border-collapse text-left text-[14px] leading-[1.55]">
           <thead className="bg-atx-bg-sunken">
             <tr>
               {["Version", "Status", "Published", "Identifier"].map((h) => (
                 <th
                   key={h}
-                  className="border-b border-atx-line-soft px-4 py-3 font-mono-atx text-[10.5px] uppercase tracking-[0.14em] text-atx-ink-faint"
+                  className="border-b border-atx-line-soft px-4 py-3 text-[13px] font-medium text-atx-ink-dim"
                 >
                   {h}
                 </th>
@@ -780,12 +780,12 @@ assert sha256(canonical).hexdigest() == sidecar.strip()`}
             </tr>
           </thead>
           <tbody>
-            <tr className="bg-atx-panel">
+            <tr className="bg-atx-panel/60">
               <td className="border-b border-atx-line-soft px-4 py-3 font-mono-atx text-[11.5px] text-atx-accent">
                 v1
               </td>
               <td className="border-b border-atx-line-soft px-4 py-3">
-                <span className="rounded-atx-xs border border-atx-ok/40 bg-atx-ok/[0.08] px-2 py-0.5 font-mono-atx text-[10.5px] uppercase tracking-[0.12em] text-atx-ok">
+                <span className="inline-flex rounded-full border border-atx-ok/40 bg-atx-ok/[0.08] px-2.5 py-0.5 text-[12px] font-medium text-atx-ok">
                   current
                 </span>
               </td>
@@ -796,12 +796,12 @@ assert sha256(canonical).hexdigest() == sidecar.strip()`}
                 {SPEC_URI}
               </td>
             </tr>
-            <tr className="bg-atx-panel">
+            <tr className="bg-atx-panel/60">
               <td className="border-b border-atx-line-soft px-4 py-3 font-mono-atx text-[11.5px] text-atx-ink-dim">
                 v2
               </td>
               <td className="border-b border-atx-line-soft px-4 py-3">
-                <span className="rounded-atx-xs border border-atx-line-soft px-2 py-0.5 font-mono-atx text-[10.5px] uppercase tracking-[0.12em] text-atx-ink-dim">
+                <span className="inline-flex rounded-full border border-atx-line px-2.5 py-0.5 text-[12px] font-medium text-atx-ink-dim">
                   planned
                 </span>
               </td>
@@ -817,16 +817,14 @@ assert sha256(canonical).hexdigest() == sidecar.strip()`}
       </div>
 
       {/* ----- See also ---------------------------------------------------- */}
-      <div className="mt-12 rounded-atx-md border border-atx-line-soft bg-atx-bg-sunken p-6">
-        <div className="font-mono-atx text-[10.5px] uppercase tracking-[0.14em] text-atx-ink-dim">
-          See also
-        </div>
-        <div className="mt-2 flex flex-wrap gap-4 text-[13.5px]">
+      <div className="mt-16 rounded-2xl border border-atx-line bg-atx-panel/60 p-6">
+        <p className="text-[14px] font-medium text-atx-ink">See also</p>
+        <div className="mt-3 flex flex-wrap gap-x-6 gap-y-2 text-[15px]">
           <a
             href="https://github.com/VibeTensor/attestix/blob/main/attestix/portability/bundle_writer.py"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-atx-accent hover:underline"
+            className="text-atx-ink underline decoration-atx-line underline-offset-4 transition-colors duration-200 hover:text-atx-accent hover:decoration-atx-accent"
           >
             bundle_writer.py (Python producer)
           </a>
@@ -834,24 +832,24 @@ assert sha256(canonical).hexdigest() == sidecar.strip()`}
             href="https://github.com/VibeTensor/attestix/blob/main/attestix/portability/bundle_reader.py"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-atx-accent hover:underline"
+            className="text-atx-ink underline decoration-atx-line underline-offset-4 transition-colors duration-200 hover:text-atx-accent hover:decoration-atx-accent"
           >
             bundle_reader.py (Python verifier)
           </a>
-          <Link href="/security" className="text-atx-accent hover:underline">
+          <Link href="/security" className="text-atx-ink underline decoration-atx-line underline-offset-4 transition-colors duration-200 hover:text-atx-accent hover:decoration-atx-accent">
             Security
           </Link>
-          <Link href="/changelog" className="text-atx-accent hover:underline">
+          <Link href="/changelog" className="text-atx-ink underline decoration-atx-line underline-offset-4 transition-colors duration-200 hover:text-atx-accent hover:decoration-atx-accent">
             Changelog
           </Link>
         </div>
-        <p className="mt-4 text-[12.5px] leading-[1.6] text-atx-ink-dim">
+        <p className="mt-5 text-[13px] leading-[1.6] text-atx-ink-dim">
           Apache 2.0 license. Maintained by{" "}
           <a
             href="https://vibetensor.com"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-atx-accent hover:underline"
+            className="text-atx-ink underline decoration-atx-line underline-offset-4 transition-colors duration-200 hover:text-atx-accent hover:decoration-atx-accent"
           >
             VibeTensor
           </a>
@@ -860,7 +858,7 @@ assert sha256(canonical).hexdigest() == sidecar.strip()`}
             href="https://github.com/VibeTensor/attestix/issues"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-atx-accent hover:underline"
+            className="text-atx-ink underline decoration-atx-line underline-offset-4 transition-colors duration-200 hover:text-atx-accent hover:decoration-atx-accent"
           >
             github.com/VibeTensor/attestix/issues
           </a>

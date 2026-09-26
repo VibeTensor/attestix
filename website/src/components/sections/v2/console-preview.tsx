@@ -124,7 +124,7 @@ export function ConsolePreviewSection() {
       id="console-preview"
       className="border-t border-atx-line-soft py-24"
     >
-      <div className="mx-auto max-w-[1320px] px-7">
+      <div className="mx-auto max-w-[1200px] px-7">
         <div className="grid items-start gap-10 lg:grid-cols-[1fr_1.2fr]">
           <div>
             <AtxEyebrow number="04">The product</AtxEyebrow>

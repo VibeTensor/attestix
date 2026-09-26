@@ -31,15 +31,26 @@ def check_calculator(port):
     with sync_playwright() as pw:
         page = pw.chromium.launch().new_page()
         page.goto(f"http://127.0.0.1:{port}/demo/fine-calculator.html")
-        tier1 = page.get_by_role("heading", name="Tier 1").locator(
-            "xpath=ancestor::div[contains(@class,'p-6')][1]"
-        )
-        box = page.get_by_label("Annual global revenue in USD")
+        def card(name):
+            return page.get_by_role("heading", name=name).locator(
+                "xpath=ancestor::div[contains(@class,'p-6')][1]"
+            )
+
+        tier1, tier2 = card("Tier 1"), card("Tier 2")
+        box = page.get_by_label("Worldwide annual turnover in USD")
         box.fill("5400000")  # = EUR 5,000,000 at the page's 1.08 rate
         box.press("Enter")
-        expect(tier1).to_contain_text(f"{EUR}35,000,000")  # higher of 35M / 7%
-        page.get_by_label(re.compile("SME or start-up")).check()
-        expect(tier1).to_contain_text(f"{EUR}350,000")  # lower of 35M / 7%
+        # large: higher-of everywhere
+        expect(tier1).to_contain_text(f"{EUR}35,000,000")
+        expect(tier2).to_contain_text(f"{EUR}15,000,000")
+        # small mid-cap, Art. 99(6a): lower-of for tiers 2-3 only
+        page.get_by_role("button", name="Small mid-cap").click()
+        expect(tier1).to_contain_text(f"{EUR}35,000,000")
+        expect(tier2).to_contain_text(f"{EUR}150,000")
+        # SME, Art. 99(6): lower-of everywhere
+        page.get_by_role("button", name="SME or start-up").click()
+        expect(tier1).to_contain_text(f"{EUR}350,000")
+        expect(tier2).to_contain_text(f"{EUR}150,000")
 
         phone = pw.chromium.launch().new_page(viewport={"width": 390, "height": 844})
         phone.goto(f"http://127.0.0.1:{port}/index.html")

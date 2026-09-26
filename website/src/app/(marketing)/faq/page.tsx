@@ -8,15 +8,7 @@ export const metadata = constructMetadata({
 
 export default function FAQPage() {
   return (
-    <div className="mt-24">
-      <div className="text-center py-16">
-        <h1 className="text-3xl font-bold text-foreground sm:text-4xl">
-          Frequently Asked Questions
-        </h1>
-        <p className="mt-4 text-xl text-muted-foreground">
-          Everything you need to know about Attestix
-        </p>
-      </div>
+    <div className="pt-8">
       <FAQ />
     </div>
   );

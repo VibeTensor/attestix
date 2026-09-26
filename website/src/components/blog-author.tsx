@@ -22,7 +22,7 @@ export default function Author({
         alt={name}
         width={36}
         height={36}
-        className="rounded-full transition-all group-hover:brightness-90"
+        className="rounded-full border border-atx-line transition-all duration-200 group-hover:brightness-90"
       />
     );
   }
@@ -35,11 +35,11 @@ export default function Author({
           alt={name}
           width={36}
           height={36}
-          className="rounded-full"
+          className="rounded-full border border-atx-line"
         />
         <div className="flex flex-col">
-          <p className="text-sm text-muted-foreground">Written by {name}</p>
-          <time dateTime={updatedAt} className="text-sm font-light">
+          <p className="text-[14px] text-atx-ink-mid">Written by {name}</p>
+          <time dateTime={updatedAt} className="text-[13px] text-atx-ink-dim">
             Last updated {formatDate(updatedAt)}
           </time>
         </div>
@@ -59,11 +59,11 @@ export default function Author({
         alt={name}
         width={40}
         height={40}
-        className="rounded-full transition-all group-hover:brightness-90"
+        className="rounded-full border border-atx-line transition-all duration-200 group-hover:brightness-90"
       />
       <div className="flex flex-col">
-        <p className="font-medium text-foreground">{name}</p>
-        <p className="text-sm text-muted-foreground">@{twitterUsername}</p>
+        <p className="text-[15px] font-medium text-atx-ink transition-colors duration-200 group-hover:text-atx-accent">{name}</p>
+        <p className="text-[13px] text-atx-ink-dim">@{twitterUsername}</p>
       </div>
     </Link>
   );

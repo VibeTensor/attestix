@@ -8,7 +8,7 @@ export function ModulesSection() {
       id="modules"
       className="border-t border-atx-line-soft py-24"
     >
-      <div className="mx-auto max-w-[1320px] px-7">
+      <div className="mx-auto max-w-[1200px] px-7">
         <div className="grid items-start gap-10 lg:grid-cols-[1fr_1.2fr]">
           <div>
             <AtxEyebrow number="02">The stack</AtxEyebrow>
@@ -21,8 +21,8 @@ export function ModulesSection() {
           <p className="text-[15px] leading-[1.65] text-atx-ink-mid">
             Attestix exposes the full compliance surface as MCP tools, REST
             endpoints and a Python library. Each module is independently
-            testable, cryptographically self-contained, and conformant to the
-            W3C, UCAN and RFC standards it implements.
+            testable and self-contained, and builds on W3C DID and Verifiable
+            Credential data models, IETF RFCs, and UCAN-style delegation.
           </p>
         </div>
 

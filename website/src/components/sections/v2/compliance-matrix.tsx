@@ -83,7 +83,7 @@ const ROWS: Row[] = [
   {
     article: "Article 43",
     title: "Conformity assessment",
-    evidence: "Third-party enforcement, notified body capture.",
+    evidence: "Conformity route recorded; self-assessment refused where a notified body is required.",
     tool: "compliance.record_conformity_assessment",
     status: "shipped",
     audience: ["provider", "high"],
@@ -151,7 +151,7 @@ export function ComplianceMatrixSection() {
 
   return (
     <section id="compliance-matrix" className="border-t border-atx-line-soft py-24">
-      <div className="mx-auto max-w-[1320px] px-7">
+      <div className="mx-auto max-w-[1200px] px-7">
         <div className="grid items-start gap-10 lg:grid-cols-[1fr_1.2fr]">
           <div>
             <AtxEyebrow number="09">Compliance matrix</AtxEyebrow>

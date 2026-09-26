@@ -113,39 +113,56 @@ export function HomeHow() {
               tint="gold"
               icon={<KeyRound className="h-5 w-5" />}
               title="Issue an identity"
-              body="Give each agent a DID and a signed identity before it takes its first action."
+              body="Each agent gets a DID and a signed identity record before its first action."
             >
-              <div className="text-atx-ink-dim">$ attestix init --name quarterly-analyst</div>
-              <div className="truncate text-atx-accent">did:key:z6Mkfz1de3keHmij4P5B...</div>
+              <div className="text-atx-ink-dim">$ attestix init --name loan-screener</div>
+              <div className="truncate text-atx-ink">created attestix:3bc98bdc57e34279</div>
+              <div className="truncate text-atx-accent">did:key:z6MkqfYpFxHNGSdtfoJpom...</div>
             </FlowCard>
           </div>
 
-          <div aria-hidden className="mx-auto hidden h-10 w-px bg-atx-line lg:col-start-2 lg:block" />
+          {/* identity flows down into the agents: solid line + arrowhead */}
+          <div aria-hidden className="relative mx-auto hidden h-12 w-[2px] bg-atx-accent/60 lg:col-start-2 lg:block">
+            <span className="absolute -bottom-[1px] left-1/2 -translate-x-1/2 border-x-[6px] border-t-[8px] border-x-transparent border-t-atx-accent/80" />
+          </div>
 
           <div className="lg:col-start-1 lg:row-start-3 lg:pr-6">
             <FlowCard
               tint="info"
               icon={<ListOrdered className="h-5 w-5" />}
               title="Record every action"
-              body="Tool calls land in a hash-chained audit trail that shows exactly where it was altered."
+              body="Actions append to a hash-chained trail signed by your Attestix instance. Any edit breaks the chain."
             >
-              <div className="text-atx-ink-dim">#9c1e &rarr; #4a7b &rarr; #e03d</div>
-              <div className="text-atx-ok">chain intact &middot; 3 of 3 linked</div>
+              <div className="text-atx-ink-dim">data_access&nbsp;&nbsp; 3f39525c &larr; 00000000</div>
+              <div className="text-atx-ink-dim">inference&nbsp;&nbsp;&nbsp;&nbsp; e5f7013f &larr; 3f39525c</div>
+              <div className="text-atx-ink-dim">external_call 7328e467 &larr; e5f7013f</div>
+              <div className="text-atx-ok">Chain integrity: VERIFIED</div>
             </FlowCard>
           </div>
 
           <div className="relative lg:col-start-2 lg:row-start-3">
-            <span aria-hidden className="absolute -left-6 top-1/2 hidden w-6 border-t border-dashed border-atx-line lg:block" />
-            <span aria-hidden className="absolute -right-6 top-1/2 hidden w-6 border-t border-dashed border-atx-line lg:block" />
+            {/* actions flow out to the record, credentials out to verifiers */}
+            <span aria-hidden className="absolute -left-6 top-1/2 hidden w-6 border-t-2 border-dashed border-atx-info/60 lg:block">
+              <span className="absolute -left-[2px] -top-[7px] border-y-[6px] border-r-[8px] border-y-transparent border-r-atx-info/80" />
+            </span>
+            <span aria-hidden className="absolute -right-6 top-1/2 hidden w-6 border-t-2 border-dashed border-atx-ok/60 lg:block">
+              <span className="absolute -right-[2px] -top-[7px] border-y-[6px] border-l-[8px] border-y-transparent border-l-atx-ok/80" />
+            </span>
             <div className="rounded-2xl border border-atx-line bg-atx-panel p-4 text-left">
-              <p className="text-[13px] font-medium text-atx-ink">Your AI agents</p>
+              <p className="text-[13px] font-medium text-atx-ink">Your agents, connected through</p>
               <div className="mt-3 grid grid-cols-2 gap-2">
-                {["LangChain", "CrewAI", "OpenAI Agents", "Claude Code"].map((a) => (
+                {[
+                  ["LangChain", "callback"],
+                  ["CrewAI", "MCP"],
+                  ["OpenAI Agents", "MCP"],
+                  ["Claude Code", "MCP"],
+                ].map(([name, via]) => (
                   <div
-                    key={a}
-                    className="rounded-lg border border-atx-line-soft bg-atx-bg-sunken px-2 py-3 text-center text-[12px] font-medium text-atx-ink-mid"
+                    key={name}
+                    className="rounded-lg border border-atx-line-soft bg-atx-bg-sunken px-2 py-2.5 text-center"
                   >
-                    {a}
+                    <div className="text-[12px] font-medium text-atx-ink-mid">{name}</div>
+                    <div className="mt-0.5 font-mono-atx text-[10px] text-atx-ink-dim">{via}</div>
                   </div>
                 ))}
               </div>
@@ -157,15 +174,21 @@ export function HomeHow() {
               tint="ok"
               icon={<ShieldCheck className="h-5 w-5" />}
               title="Verify anywhere"
-              body="Check credentials offline in Python, Go, Rust, Java, JavaScript, or R. Nothing is uploaded."
+              body="A credential issued in Python verifies offline in JavaScript; SDKs for Go, Rust, Java, and R share the same test vectors. Live revocation still needs the issuer."
             >
-              <div className="text-atx-ink">attestix:addc20ca69bc4c93 is VALID</div>
-              <div className="text-atx-ok">signature_valid: PASS</div>
+              <div className="text-atx-ink-dim">verifyCredential(vc) &nbsp;// JavaScript</div>
+              <div className="text-atx-ok">valid: true</div>
+              <div className="text-atx-ok">signature_valid: true</div>
             </FlowCard>
           </div>
         </div>
 
-        <div className="mt-10">
+        <p className="mx-auto mt-8 max-w-[640px] text-[13px] leading-[1.6] text-atx-ink-dim">
+          Output from a real run of attestix {siteConfig.version} (CLI and Python API),
+          with the credential verified by the JavaScript SDK. Hashes shortened to 8
+          characters.
+        </p>
+        <div className="mt-6">
           <TextLink href="/platform">See the full platform</TextLink>
         </div>
       </div>
@@ -196,8 +219,9 @@ export function HomeResults() {
           ))}
         </div>
         <p className="mx-auto mt-6 max-w-[720px] text-center text-[13px] leading-[1.6] text-atx-ink-dim">
-          Tool count read from source. Verifiers in six languages share one set of
-          test vectors. The browser verifier at /verify uploads nothing. Apache 2.0:
+          Tool count read from source. Verifier SDKs in six languages share one set
+          of test vectors; Python and JavaScript are documented as passing it. The
+          browser verifier at /verify uploads nothing. Apache 2.0:
           self-host free, forever.
         </p>
 

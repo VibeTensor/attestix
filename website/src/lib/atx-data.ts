@@ -227,24 +227,27 @@ profile = compliance_svc.create_compliance_profile(
   {
     n: "05",
     title: "Conformity assessment",
-    article: "Article 43 \u00B7 Third-party",
-    desc: "High-risk systems are blocked from self-assessment. Record the notified body third-party assessment.",
+    article: "Article 43",
+    desc: "Record the conformity route each system takes. Most Annex III systems use internal control (Annex VI); Annex III point 1 biometrics needs a notified body, and self-assessment is refused there.",
     bullets: [
-      "Notified body (example): NB-XXXX \u00B7 Your certified auditor",
-      "Assessment type: third_party",
-      "Evidence attached",
+      "Annex III points 2-8: internal control (Annex VI)",
+      "Annex III point 1: notified body (Annex VII)",
+      "Result, findings, and CE-marking eligibility recorded",
     ],
     code: `<span class="c">// attestix.compliance.record_conformity_assessment</span>
 compliance_svc.record_conformity_assessment(
   <span class="k">agent_id</span>=<span class="s">"attestix:f9bdb7a94ccb40f1"</span>,
-  <span class="k">assessment_type</span>=<span class="s">"third_party"</span>,
-  <span class="k">notified_body</span>={<span class="k">"id"</span>: <span class="s">"NB-XXXX"</span>, <span class="k">"name"</span>: <span class="s">"Your certified auditor"</span>},
-  <span class="k">evidence_urls</span>=[<span class="s">"ipfs://QmX4...fB2"</span>],
+  <span class="k">assessment_type</span>=<span class="s">"self"</span>,  <span class="c"># internal control, Annex VI</span>
+  <span class="k">assessor_name</span>=<span class="s">"Internal QA board"</span>,
+  <span class="k">result</span>=<span class="s">"pass"</span>,
+  <span class="k">ce_marking_eligible</span>=<span class="k">True</span>,
 )
 
-<span class="c"># blocked path</span>
+<span class="c"># Annex III point 1 (biometrics): a notified body is required</span>
 compliance_svc.record_conformity_assessment(<span class="k">assessment_type</span>=<span class="s">"self"</span>, ...)
-<span class="y">ERROR: high-risk AI systems require third_party conformity assessment</span>`,
+<span class="y">error: Self-assessment not permitted: Annex III Point 1 (biometrics) requires
+third-party conformity assessment via notified body per Article 43 (Annex VII
+procedure). Use assessment_type='third_party' with a notified body.</span>`,
   },
   {
     n: "06",
@@ -339,7 +342,7 @@ export const ATX_CERT_SAMPLE: AtxCertSample = {
   issuerName: "VibeTensor",
   issuerDid: "did:web:vibetensor.com",
   riskTier: "HIGH \u00B7 EU AI Act Article 6(2)",
-  basis: "Article 43 third-party conformity \u00B7 NB-XXXX Your certified auditor",
+  basis: "Article 43(2) internal control \u00B7 Annex VI",
   issued: "2026-04-18T14:02:41Z",
   validThru: "2027-04-18",
   proofValue:
@@ -351,7 +354,7 @@ export const ATX_CERT_SAMPLE: AtxCertSample = {
 // library, not Attestix).
 export const ATX_HERO_STATS = [
   { v: "47", k: "MCP tools across 9 modules" },
-  { v: "6", k: "languages verify credentials offline" },
+  { v: "6", k: "verifier SDKs share one test-vector suite" },
   { v: "0", k: "bytes uploaded to verify a credential" },
   { v: "Apache 2.0", k: "open source, self-host free" },
 ];

@@ -22,7 +22,7 @@ export const metadata = constructMetadata({
 export default function PlatformPage() {
   return (
     <>
-      <section className="mx-auto grid max-w-[1320px] items-center gap-14 px-7 pb-16 pt-16 lg:grid-cols-[1.1fr_1fr]">
+      <section className="mx-auto grid max-w-[1200px] items-center gap-14 px-7 pb-16 pt-16 lg:grid-cols-[1.1fr_1fr]">
         <div>
           <h1 className="text-[clamp(34px,4.6vw,52px)] font-normal leading-[1.09] tracking-[-0.03em] text-atx-ink">
             The <span className="text-atx-accent">Attestix</span> platform

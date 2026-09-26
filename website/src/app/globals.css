@@ -201,7 +201,8 @@
 
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-  --font-serif: var(--font-serif);
+  /* no display serif: `font-serif` resolves to Geist sans site-wide */
+  --font-serif: var(--font-geist-sans);
   --font-mono-atx: var(--font-mono-atx);
 
   /* Attestix v2 palette (Tailwind utility friendly) */
@@ -588,12 +589,18 @@
   color: var(--color-fd-muted-foreground);
 }
 
-/* Fumadocs docs prose: serif h1 for editorial consistency with marketing */
+/* Docs page titles match the marketing section-title style */
 .fd-docs article h1:first-of-type,
 #nd-page h1:first-of-type {
-  font-family: var(--font-serif);
-  font-weight: 400;
-  letter-spacing: -0.01em;
+  font-family: var(--font-sans);
+  font-weight: 500;
+  letter-spacing: -0.025em;
+}
+
+/* Emphasis in headings is carried by colour, not italics */
+:is(h1, h2, h3) em.italic,
+:is(h1, h2, h3) em {
+  font-style: normal;
 }
 
 @layer base {

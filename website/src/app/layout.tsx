@@ -7,17 +7,12 @@ import { RootProvider } from "fumadocs-ui/provider";
 import SearchDialog from "@/components/search";
 import { GeistMono } from "geist/font/mono";
 import { GeistSans } from "geist/font/sans";
-import { Instrument_Serif, JetBrains_Mono } from "next/font/google";
+import { JetBrains_Mono } from "next/font/google";
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 
-const instrumentSerif = Instrument_Serif({
-  subsets: ["latin"],
-  weight: ["400"],
-  style: ["normal", "italic"],
-  variable: "--font-serif",
-  display: "swap",
-});
+// No display serif: headings site-wide use Geist sans; the --font-serif token
+// is mapped to it in globals.css so existing `font-serif` classes follow.
 
 const jetbrainsMono = JetBrains_Mono({
   subsets: ["latin"],
@@ -61,7 +56,7 @@ export default function RootLayout({
     <html
       lang="en"
       suppressHydrationWarning
-      className={`dark ${GeistSans.variable} ${GeistMono.variable} ${instrumentSerif.variable} ${jetbrainsMono.variable}`}
+      className={`dark ${GeistSans.variable} ${GeistMono.variable} ${jetbrainsMono.variable}`}
     >
       <body
         className={cn(

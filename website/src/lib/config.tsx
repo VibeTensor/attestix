@@ -170,7 +170,7 @@ export const siteConfig = {
     stats: [
       "EUR 35M maximum fine",
       "7% of global annual revenue",
-      "August 2, 2026 enforcement date",
+      "2 Dec 2027: Annex III high-risk rules apply",
     ],
     description:
       "Every organization deploying AI in the European Union will need to prove their systems are compliant with the EU AI Act. Today, most teams rely on manual documentation, static PDFs, and spreadsheets that cannot be independently verified. There is no standard way for AI agents to carry proof of identity, authorization, or regulatory compliance. Attestix closes that gap with open-source tooling that generates cryptographic proof of compliance, identity, and trust for every AI agent in your stack.",
@@ -256,9 +256,9 @@ export const siteConfig = {
         "Attestix serves AI startups selling into the EU market, compliance teams preparing for EU AI Act enforcement, enterprises deploying AI agents at scale, and any developer building with the Model Context Protocol (MCP). If your AI systems need to demonstrate accountability, traceability, or regulatory compliance, Attestix provides the infrastructure to prove it.",
     },
     {
-      question: "What happens if I'm not EU AI Act compliant by August 2026?",
+      question: "What happens if an AI system is not EU AI Act compliant?",
       answer:
-        "Organizations deploying non-compliant AI systems face fines of up to EUR 35 million or 7% of global annual revenue, whichever is higher. National market surveillance authorities can order non-compliant systems to be withdrawn from the market entirely. The regulation applies to any organization offering AI systems in the EU, regardless of where the organization is headquartered. Attestix helps you build compliance into your AI agents from day one rather than retrofitting before the deadline.",
+        "Fines reach EUR 35 million or 7% of worldwide annual turnover for prohibited practices, and EUR 15 million or 3% for breaches of other obligations such as high-risk requirements and Article 50 transparency, whichever is higher; for SMEs and start-ups the lower amount applies. National market surveillance authorities can order non-compliant systems to be withdrawn from the market entirely. The regulation applies to any organization offering AI systems in the EU, regardless of where the organization is headquartered. Annex III high-risk requirements apply from 2 December 2027 (Regulation (EU) 2026/1744). Attestix helps you keep the identity, audit, and documentation records from day one rather than reconstructing them later.",
     },
     {
       question: "What is Attestix?",

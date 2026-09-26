@@ -32,11 +32,11 @@ const USE_CASES: UseCase[] = [
     agentName: "quarterly-analyst-v2",
     industry: "Financial services",
     tier: "high",
-    article: "Article 43",
+    article: "Annex III 5(b)",
     summary:
-      "Analyses quarterly financial data, generates regulatory reports, and produces narrative summaries for board review. Sits in the Annex III high-risk list under credit scoring and financial automation.",
+      "Assesses creditworthiness and generates reports for board review. Credit scoring of natural persons is high-risk under Annex III point 5(b).",
     outcome:
-      "Third-party conformity assessment recorded, Annex V declaration auto-issued as a W3C VC, every analysis call hash-chained into the audit trail.",
+      "Internal-control conformity assessment (Annex VI) recorded, Annex V declaration issued as a W3C VC, every analysis call hash-chained into the audit trail.",
   },
   {
     id: "healthcare",
@@ -53,12 +53,12 @@ const USE_CASES: UseCase[] = [
     id: "hr",
     agentName: "hr-screener-v1",
     industry: "HR / Hiring",
-    tier: "prohibited",
-    article: "Article 5",
+    tier: "high",
+    article: "Annex III 4(a)",
     summary:
-      "CV pre-screening agent for shortlisting candidates. Sits adjacent to prohibited practices if used for automated decisions without human oversight.",
+      "CV pre-screening agent for shortlisting candidates. Recruitment and candidate filtering are high-risk under Annex III point 4(a), with human oversight required under Article 14.",
     outcome:
-      "Attestix blocks self-assessment, forces third-party conformity, and halts credential issuance if bias audit fails. Revocation is tamper-evident on the hash chain.",
+      "Risk profile, bias-testing records, and human-override events captured; the credential can be revoked if an audit fails, and revocation is tamper-evident on the hash chain.",
   },
   {
     id: "logistics",
@@ -76,7 +76,7 @@ const USE_CASES: UseCase[] = [
 export function UseCasesSection() {
   return (
     <section id="use-cases" className="border-t border-atx-line-soft py-24">
-      <div className="mx-auto max-w-[1320px] px-7">
+      <div className="mx-auto max-w-[1200px] px-7">
         <div className="grid items-start gap-10 lg:grid-cols-[1fr_1.2fr]">
           <div>
             <AtxEyebrow number="07">Use cases</AtxEyebrow>

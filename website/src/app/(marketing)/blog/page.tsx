@@ -18,51 +18,52 @@ export default async function Blog() {
   );
 
   return (
-    <section className="mx-auto max-w-[1320px] px-7 py-24">
-      <div className="grid items-start gap-10 lg:grid-cols-[1fr_1.2fr]">
-        <div>
+    <>
+      <section className="px-6 pb-12 pt-16 text-center md:pt-20">
+        <div className="mx-auto max-w-[860px]">
           <AtxEyebrow>Writing</AtxEyebrow>
-          <h1 className="mt-3 font-serif text-[clamp(36px,4.8vw,60px)] leading-[1.05] tracking-[-0.012em] text-atx-ink">
-            Notes, releases,
-            <br />
-            <em className="italic text-atx-accent">field reports.</em>
+          <h1 className="mt-3 text-[clamp(34px,5vw,52px)] font-normal leading-[1.09] tracking-[-0.03em] text-atx-ink [text-wrap:balance]">
+            Notes, releases, <span className="text-atx-accent">field reports.</span>
           </h1>
+          <p className="mx-auto mt-5 max-w-[640px] text-[17.5px] leading-[1.6] text-atx-ink-mid [text-wrap:balance]">
+            Release notes, research summaries, and updates from building
+            attestation infrastructure for AI agents. Subscribe via RSS or JSON
+            Feed.
+          </p>
+          <div className="mt-6 flex flex-wrap items-center justify-center gap-4 text-[14px] font-medium text-atx-ink-mid">
+            <a
+              href="/feed.xml"
+              className="inline-flex items-center gap-1.5 underline decoration-atx-line underline-offset-4 transition-colors duration-200 hover:text-atx-ink hover:decoration-atx-ink-dim"
+              title="RSS Feed"
+            >
+              <RssIcon className="h-3.5 w-3.5" />
+              RSS
+            </a>
+            <span aria-hidden className="text-atx-ink-faint">/</span>
+            <a
+              href="/feed.json"
+              className="inline-flex items-center gap-1.5 underline decoration-atx-line underline-offset-4 transition-colors duration-200 hover:text-atx-ink hover:decoration-atx-ink-dim"
+              title="JSON Feed"
+            >
+              JSON feed
+            </a>
+          </div>
         </div>
-        <p className="text-[15px] leading-[1.65] text-atx-ink-mid">
-          Release notes, research summaries, and updates from building
-          attestation infrastructure for AI agents. Subscribe via RSS or JSON
-          Feed.
-        </p>
-      </div>
+      </section>
 
-      <div className="mt-6 flex flex-wrap items-center gap-4 font-mono-atx text-[11px] uppercase tracking-[0.14em] text-atx-ink-dim">
-        <a
-          href="/feed.xml"
-          className="inline-flex items-center gap-1.5 transition-colors hover:text-atx-accent"
-          title="RSS Feed"
-        >
-          <RssIcon className="h-3.5 w-3.5" />
-          RSS
-        </a>
-        <span className="text-atx-ink-faint">/</span>
-        <a
-          href="/feed.json"
-          className="inline-flex items-center gap-1.5 transition-colors hover:text-atx-accent"
-          title="JSON Feed"
-        >
-          JSON feed
-        </a>
-      </div>
+      <section className="bg-atx-bg pb-20">
+        <div className="mx-auto w-full max-w-[1200px] px-6">
+          <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
+            {articles.map((data, idx) => (
+              <BlogCard key={data.slug} data={data} priority={idx <= 1} />
+            ))}
+          </div>
 
-      <div className="mt-14 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-        {articles.map((data, idx) => (
-          <BlogCard key={data.slug} data={data} priority={idx <= 1} />
-        ))}
-      </div>
-
-      <div className="mt-16">
-        <AtxSubstackSubscribe />
-      </div>
-    </section>
+          <div className="mt-16">
+            <AtxSubstackSubscribe />
+          </div>
+        </div>
+      </section>
+    </>
   );
 }

@@ -17,7 +17,7 @@ const BEFORE: Column = {
     "Human-readable reports with no cryptographic binding",
     "Identity scattered across Entra, AgentCore, A2A, ERC-8004",
     "Audit trails stored in vendor databases, no tamper-evidence",
-    "High-risk systems self-assessing (blocked under Article 43)",
+    "No record of which Article 43 conformity route a system took",
     "No offline-verifiable proof for regulators",
   ],
 };
@@ -31,7 +31,7 @@ const AFTER: Column = {
     "W3C Verifiable Credentials with Ed25519Signature2020",
     "Unified Agent Identity Tokens bridge MCP, A2A, DIDs, OAuth",
     "Hash-chained audit trail, tamper-evident by construction",
-    "Article 43 enforcement, high-risk triggers third-party required",
+    "Article 43 routes recorded; self-assessment refused where a notified body is required",
     "No cloud dependency, works offline, JSON-file storage",
   ],
 };
@@ -80,7 +80,7 @@ function Col({ col }: { col: Column }) {
 export function ProblemSection() {
   return (
     <section id="problem" className="border-t border-atx-line-soft py-24">
-      <div className="mx-auto max-w-[1320px] px-7">
+      <div className="mx-auto max-w-[1200px] px-7">
         <div className="grid items-start gap-10 lg:grid-cols-[1fr_1.2fr]">
           <div>
             <AtxEyebrow number="01">The gap</AtxEyebrow>

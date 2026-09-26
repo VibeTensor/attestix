@@ -13,7 +13,7 @@ export default function BlogCard({
   return (
     <Link
       href={`/blog/${data.slug}`}
-      className="group flex flex-col overflow-hidden rounded-atx-md border border-atx-line-soft bg-atx-panel transition-colors hover:border-atx-accent/60 hover:bg-atx-panel-hi"
+      className="group flex flex-col overflow-hidden rounded-2xl border border-atx-line bg-atx-panel/60 transition-colors duration-200 hover:border-atx-ink-dim"
     >
       <div className="relative aspect-[16/9] w-full overflow-hidden border-b border-atx-line-soft bg-atx-bg-sunken">
         {data.image ? (
@@ -27,21 +27,21 @@ export default function BlogCard({
           />
         ) : null}
       </div>
-      <div className="flex flex-1 flex-col gap-2 p-5">
+      <div className="flex flex-1 flex-col gap-2 p-6">
         <time
           dateTime={data.publishedAt}
-          className="font-mono-atx text-[10.5px] uppercase tracking-[0.14em] text-atx-ink-faint"
+          className="text-[13px] text-atx-ink-dim"
         >
           {formatDate(data.publishedAt)}
         </time>
-        <h3 className="font-serif text-[22px] leading-[1.25] text-atx-ink">
+        <h3 className="text-[19px] font-semibold leading-[1.3] tracking-[-0.48px] text-atx-ink">
           {data.title}
         </h3>
-        <p className="text-[13.5px] leading-[1.55] text-atx-ink-mid">
+        <p className="text-[15px] leading-[1.6] text-atx-ink-mid">
           {data.summary}
         </p>
-        <div className="mt-auto pt-4 font-mono-atx text-[11px] uppercase tracking-[0.14em] text-atx-accent">
-          read article <span className="inline-block transition-transform group-hover:translate-x-0.5">&rarr;</span>
+        <div className="mt-auto pt-4 text-[14px] font-medium text-atx-ink-mid transition-colors duration-200 group-hover:text-atx-ink">
+          Read article <span className="inline-block transition-transform duration-200 group-hover:translate-x-0.5">&rarr;</span>
         </div>
       </div>
     </Link>

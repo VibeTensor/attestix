@@ -50,10 +50,10 @@ export function StepDeploymentContext({
 }: StepDeploymentContextProps) {
   return (
     <div>
-      <h2 className="text-xl font-semibold text-foreground mb-2">
+      <h2 className="mb-2 text-[26px] font-medium leading-[1.2] tracking-[-0.6px] text-atx-ink">
         Deployment context
       </h2>
-      <p className="text-sm text-muted-foreground mb-6">
+      <p className="mb-6 text-[15px] leading-[1.6] text-atx-ink-mid">
         Select all that apply to your AI system.
       </p>
 
@@ -66,10 +66,10 @@ export function StepDeploymentContext({
               key={option.id}
               type="button"
               onClick={() => onToggleContext(option.id)}
-              className={`group relative flex items-start gap-4 rounded-lg border p-4 text-left transition-all duration-200 ${
+              className={`group relative flex items-start gap-4 rounded-2xl border p-5 text-left transition-colors duration-200 ${
                 isSelected
-                  ? "border-primary bg-primary/5 ring-1 ring-primary/20"
-                  : "border-border hover:border-primary/40 hover:bg-accent/50"
+                  ? "border-atx-accent/50 bg-atx-accent/[0.05]"
+                  : "border-atx-line bg-atx-panel/60 hover:border-atx-ink-dim"
               }`}
             >
               {/* Checkbox indicator */}
@@ -77,13 +77,13 @@ export function StepDeploymentContext({
                 <div
                   className={`flex h-5 w-5 items-center justify-center rounded-md border-2 transition-colors duration-200 ${
                     isSelected
-                      ? "border-primary bg-primary"
-                      : "border-muted-foreground/40 group-hover:border-primary/60"
+                      ? "border-atx-accent bg-atx-accent"
+                      : "border-atx-ink-faint group-hover:border-atx-ink-dim"
                   }`}
                 >
                   {isSelected && (
                     <svg
-                      className="h-3.5 w-3.5 text-primary-foreground"
+                      className="h-3.5 w-3.5 text-[oklch(0.14_0.01_180)]"
                       fill="none"
                       viewBox="0 0 24 24"
                       strokeWidth={3}
@@ -102,13 +102,13 @@ export function StepDeploymentContext({
               {/* Label and description */}
               <div className="min-w-0">
                 <div
-                  className={`text-sm font-medium ${
-                    isSelected ? "text-foreground" : "text-foreground/90"
+                  className={`text-[15px] font-medium ${
+                    isSelected ? "text-atx-ink" : "text-atx-ink/90"
                   }`}
                 >
                   {option.label}
                 </div>
-                <div className="mt-0.5 text-xs text-muted-foreground">
+                <div className="mt-1 text-[13px] leading-[1.5] text-atx-ink-dim">
                   {option.description}
                 </div>
               </div>

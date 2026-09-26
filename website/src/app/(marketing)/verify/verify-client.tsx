@@ -250,11 +250,11 @@ export function VerifyClient() {
   return (
     <div className="mt-10">
       {showDeepLinkNotice && deepLinkId ? (
-        <div className="mb-8 rounded-atx-md border border-atx-warn/40 bg-atx-warn/[0.06] p-5">
-          <div className="font-mono-atx text-[10.5px] uppercase tracking-[0.14em] text-atx-warn">
+        <div className="mb-8 rounded-2xl border border-atx-warn/30 bg-atx-warn/[0.05] p-6">
+          <div className="text-[14px] font-medium text-atx-warn">
             By-id lookup
           </div>
-          <p className="mt-2 text-[13.5px] leading-[1.65] text-atx-ink-mid">
+          <p className="mt-2 text-[15px] leading-[1.6] text-atx-ink-mid">
             You followed a link for credential{" "}
             <code className="font-mono-atx text-[12px] text-atx-ink">
               {deepLinkId}
@@ -262,7 +262,7 @@ export function VerifyClient() {
             . Resolving a credential by id requires a hosted lookup (an{" "}
             <a
               href="/pricing"
-              className="text-atx-accent hover:underline"
+              className="text-atx-ink underline decoration-atx-line underline-offset-4 transition-colors duration-200 hover:text-atx-accent hover:decoration-atx-accent"
             >
               Attestix Cloud
             </a>{" "}
@@ -287,15 +287,15 @@ export function VerifyClient() {
           const file = e.dataTransfer.files?.[0];
           if (file) onFile(file);
         }}
-        className={`rounded-atx-md border ${
+        className={`rounded-2xl border ${
           dragging
             ? "border-atx-accent bg-atx-accent/[0.05]"
-            : "border-atx-line-soft bg-atx-bg-sunken"
-        } p-4 transition-colors`}
+            : "border-atx-line bg-atx-panel/60"
+        } p-5 text-left transition-colors duration-200 md:p-6`}
       >
         <label
           htmlFor="vc-input"
-          className="font-mono-atx text-[10.5px] uppercase tracking-[0.14em] text-atx-ink-dim"
+          className="text-[14px] font-medium text-atx-ink-mid"
         >
           Paste credential JSON · or drop a .json file
         </label>
@@ -305,20 +305,20 @@ export function VerifyClient() {
           onChange={(e) => setText(e.target.value)}
           spellCheck={false}
           placeholder='{ "@context": [...], "type": ["VerifiableCredential", ...], "issuer": {...}, "credentialSubject": {...}, "proof": {...} }'
-          className="mt-3 h-64 w-full resize-y rounded-atx-sm border border-atx-line-soft bg-atx-panel px-4 py-3 font-mono-atx text-[12.5px] leading-[1.55] text-atx-ink outline-none focus:border-atx-accent"
+          className="mt-3 h-64 w-full resize-y rounded-xl border border-atx-line-soft bg-atx-bg-sunken px-4 py-3 font-mono-atx text-[12.5px] leading-[1.6] text-atx-ink outline-none transition-colors duration-200 focus:border-atx-accent"
         />
-        <div className="mt-3 flex flex-wrap items-center gap-3">
+        <div className="mt-4 flex flex-wrap items-center gap-3">
           <button
             type="button"
             onClick={() => void runVerify(text)}
-            className="rounded-atx-sm bg-atx-accent px-5 py-2 font-mono-atx text-[12px] font-medium uppercase tracking-[0.1em] text-atx-bg transition-opacity hover:opacity-90"
+            className="rounded-full bg-atx-accent px-6 py-2.5 text-[15px] font-medium text-[oklch(0.14_0.01_180)] transition-colors duration-200 hover:bg-atx-accent-deep"
           >
             Verify
           </button>
           <button
             type="button"
             onClick={() => fileInputRef.current?.click()}
-            className="rounded-atx-sm border border-atx-line-soft px-4 py-2 font-mono-atx text-[12px] uppercase tracking-[0.1em] text-atx-ink-mid hover:border-atx-accent hover:text-atx-ink"
+            className="rounded-full border border-atx-line px-5 py-2.5 text-[14px] font-medium text-atx-ink-mid transition-colors duration-200 hover:border-atx-ink-dim hover:text-atx-ink"
           >
             Upload .json
           </button>
@@ -328,7 +328,7 @@ export function VerifyClient() {
               setText(SAMPLE_VALID_VC_TEXT);
               void runVerify(SAMPLE_VALID_VC_TEXT);
             }}
-            className="rounded-atx-sm border border-atx-line-soft px-4 py-2 font-mono-atx text-[12px] uppercase tracking-[0.1em] text-atx-ink-mid hover:border-atx-accent hover:text-atx-ink"
+            className="rounded-full border border-atx-line px-5 py-2.5 text-[14px] font-medium text-atx-ink-mid transition-colors duration-200 hover:border-atx-ink-dim hover:text-atx-ink"
           >
             Load a sample
           </button>
@@ -338,7 +338,7 @@ export function VerifyClient() {
               setText(SAMPLE_TAMPERED_VC_TEXT);
               void runVerify(SAMPLE_TAMPERED_VC_TEXT);
             }}
-            className="rounded-atx-sm border border-atx-line-soft px-4 py-2 font-mono-atx text-[12px] uppercase tracking-[0.1em] text-atx-ink-mid hover:border-atx-warn hover:text-atx-warn"
+            className="rounded-full border border-atx-line px-5 py-2.5 text-[14px] font-medium text-atx-ink-mid transition-colors duration-200 hover:border-atx-warn hover:text-atx-warn"
           >
             Load a tampered sample
           </button>
@@ -349,7 +349,7 @@ export function VerifyClient() {
                 setText("");
                 setReport(null);
               }}
-              className="rounded-atx-sm px-3 py-2 font-mono-atx text-[12px] uppercase tracking-[0.1em] text-atx-ink-dim hover:text-atx-ink"
+              className="rounded-full px-4 py-2.5 text-[14px] font-medium text-atx-ink-dim transition-colors duration-200 hover:text-atx-ink"
             >
               Clear
             </button>
@@ -389,14 +389,14 @@ function Badge({
 }) {
   if (state === "pending") {
     return (
-      <span className="rounded-atx-xs border border-atx-line-soft px-2 py-0.5 font-mono-atx text-[10.5px] uppercase tracking-[0.12em] text-atx-ink-dim">
+      <span className="inline-flex rounded-full border border-atx-line px-2.5 py-0.5 text-[12px] font-medium text-atx-ink-dim">
         {pendingLabel}
       </span>
     );
   }
   return (
     <span
-      className={`rounded-atx-xs border px-2 py-0.5 font-mono-atx text-[10.5px] uppercase tracking-[0.12em] ${
+      className={`inline-flex rounded-full border px-2.5 py-0.5 text-[12px] font-medium ${
         pass
           ? "border-atx-ok/40 bg-atx-ok/[0.08] text-atx-ok"
           : "border-atx-err/40 bg-atx-err/[0.08] text-atx-err"
@@ -416,10 +416,10 @@ function Row({
 }) {
   return (
     <div className="flex flex-col gap-1 border-b border-atx-line-soft px-5 py-3.5 sm:flex-row sm:items-start sm:gap-6">
-      <div className="w-44 shrink-0 font-mono-atx text-[10.5px] uppercase tracking-[0.14em] text-atx-ink-faint">
+      <div className="w-44 shrink-0 text-[13px] font-medium text-atx-ink-dim">
         {label}
       </div>
-      <div className="min-w-0 flex-1 break-words text-[13px] leading-[1.6] text-atx-ink-mid">
+      <div className="min-w-0 flex-1 break-words text-[14px] leading-[1.6] text-atx-ink-mid">
         {children}
       </div>
     </div>
@@ -450,10 +450,10 @@ function ResultPanel({ report }: { report: Report }) {
           };
 
   return (
-    <div className={`mt-8 overflow-hidden rounded-atx-md border ${tone.border}`}>
-      <div className={`flex items-center gap-3 ${tone.bg} px-5 py-4`}>
+    <div className={`mt-8 overflow-hidden rounded-2xl border text-left ${tone.border}`}>
+      <div className={`flex items-center gap-4 ${tone.bg} px-5 py-5`}>
         <span
-          className={`font-serif text-[26px] leading-none ${tone.text}`}
+          className={`grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-current/10 text-[20px] leading-none ${tone.text}`}
           aria-hidden
         >
           {report.outcome === "valid"
@@ -464,11 +464,11 @@ function ResultPanel({ report }: { report: Report }) {
         </span>
         <div>
           <div
-            className={`font-mono-atx text-[11px] uppercase tracking-[0.16em] ${tone.text}`}
+            className={`text-[19px] font-semibold tracking-[-0.48px] ${tone.text}`}
           >
             {tone.label}
           </div>
-          <div className="mt-0.5 text-[13px] text-atx-ink-mid">
+          <div className="mt-0.5 text-[15px] leading-[1.55] text-atx-ink-mid">
             {report.outcome === "valid"
               ? "The signature is authentic and the credential is well-formed and within its validity window."
               : report.outcome === "invalid"
@@ -479,7 +479,7 @@ function ResultPanel({ report }: { report: Report }) {
       </div>
 
       {report.outcome !== "malformed" ? (
-        <div className="bg-atx-panel">
+        <div className="bg-atx-panel/60">
           {report.checks ? (
             <Row label="Signature">
               <span className="inline-flex flex-wrap items-center gap-3">

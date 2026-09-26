@@ -4,7 +4,7 @@ import { AtxEyebrow } from "@/components/atx/atx-eyebrow";
 export function CtaV2() {
   return (
     <section className="border-t border-atx-line-soft bg-atx-bg-sunken py-24">
-      <div className="mx-auto flex max-w-[1320px] flex-col items-start gap-10 px-7 lg:flex-row lg:items-center lg:justify-between">
+      <div className="mx-auto flex max-w-[1200px] flex-col items-start gap-10 px-7 lg:flex-row lg:items-center lg:justify-between">
         <div>
           <AtxEyebrow number="10" className="mb-5">
             Next
