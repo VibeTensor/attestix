@@ -41,6 +41,11 @@ def check_calculator(port):
         page.get_by_label(re.compile("SME or start-up")).check()
         expect(tier1).to_contain_text(f"{EUR}350,000")  # lower of 35M / 7%
 
+        phone = pw.chromium.launch().new_page(viewport={"width": 390, "height": 844})
+        phone.goto(f"http://127.0.0.1:{port}/index.html")
+        width = phone.evaluate("document.documentElement.scrollWidth")
+        assert width <= 390, f"homepage scrolls sideways on phones: {width}px"
+
 
 if __name__ == "__main__":
     check_html()
