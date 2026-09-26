@@ -90,6 +90,7 @@ export function HeroCert() {
         }
         .atx-cert-head {
           display: flex;
+          flex-wrap: wrap; /* the seal padding must not widen the hero on phones */
           align-items: center;
           gap: 10px;
           border-bottom: 1px dashed var(--atx-line);
