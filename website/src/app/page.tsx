@@ -1,5 +1,7 @@
 import { Header } from "@/components/sections/header";
 import { HeroV2 } from "@/components/sections/v2/hero-v2";
+import { HeroStats } from "@/components/sections/v2/hero-stats";
+import { TrustStrip } from "@/components/sections/v2/trust-strip";
 import { StandardsStrip } from "@/components/sections/v2/standards-strip";
 import { ProblemSection } from "@/components/sections/v2/problem";
 import { ModulesSection } from "@/components/sections/v2/modules";
@@ -49,12 +51,17 @@ export default function Home() {
       <div className="bg-atx-bg text-atx-ink">
         <Header />
         <main id="main-content" tabIndex={-1}>
+          {/* hero -> trust -> the product itself -> numbers, then the story */}
           <HeroV2 />
+          <TrustStrip />
+          <ConsolePreviewSection />
+          <div className="mx-auto max-w-[1320px] px-7">
+            <HeroStats />
+          </div>
           <StandardsStrip />
           <ProblemSection />
           <ModulesSection />
           <WorkflowSection />
-          <ConsolePreviewSection />
           <ValidationSection />
           <FrameworksSection />
           <UseCasesSection />
