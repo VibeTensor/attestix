@@ -120,6 +120,28 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: "monthly",
       priority: 0.8,
     },
+    // Public marketing/demo pages that were live but never listed.
+    // /cross-post is an internal guide and is intentionally excluded.
+    ...[
+      "/console",
+      "/demo",
+      "/demo/compliance-checker",
+      "/demo/fine-calculator",
+      "/demo/identity-explorer",
+      "/demo/reputation-dashboard",
+      "/security",
+      "/sbom",
+      "/research",
+      "/changelog",
+      "/india",
+      "/uk",
+      "/demo-call",
+    ].map((path) => ({
+      url: `${siteConfig.url}${path}`,
+      lastModified: new Date(),
+      changeFrequency: "monthly" as const,
+      priority: 0.6,
+    })),
     ...docsRoutes,
     ...blogRoutes,
   ];
