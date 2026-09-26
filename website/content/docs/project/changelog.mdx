@@ -3,98 +3,92 @@ title: Changelog
 description: All notable changes to Attestix documented in Keep a Changelog format.
 ---
 
-# Changelog
-
-All notable changes to Attestix are documented here.
+All notable changes to Attestix are documented here. This page lists stable releases; release candidates (for example `0.4.0-rc.1` to `0.4.0-rc.5`, `0.4.1rc1`, `0.4.1rc2`) are listed in the [repository CHANGELOG.md](https://github.com/VibeTensor/attestix/blob/main/CHANGELOG.md).
 
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.4.1] - 2026-06-24
+
+Stable. Rolls up the 0.4.1rc1 security hardening and the 0.4.1rc2 post-quantum signing into one release. Install with `pip install attestix`.
+
+### Added
+- **Post-quantum / hybrid signing** (`attestix.auth.pqc`, optional `[pqc]` extra): FIPS 204 ML-DSA-65 sign/verify over the shared canonical form, and a hybrid Ed25519 + ML-DSA-65 composite where a verifier must validate both signatures. `did:key` Multikey encoding for ML-DSA-65. The default Ed25519 path is unchanged, and the default services do not use the post-quantum signer. Cryptosuites: `mldsa65-jcs-2026`, `hybrid-ed25519-mldsa65-jcs-2026`.
+
+### Security
+- **Credential verification key-binding (High).** `verify_credential`, `verify_credential_external` and `verify_presentation` now decode the Ed25519 key from the trust anchor (`issuer.id` for credentials, the server DID for presentations) and reject a `verificationMethod` that names a different DID, closing an issuer key-substitution masquerade.
+- **Fail-closed API auth (High).** The REST `APIKeyMiddleware` now refuses non-public requests (503) when `ATTESTIX_API_KEY` is unset, unless `ATTESTIX_ALLOW_NO_AUTH` is explicitly set (development/tests only).
+- **Dependency CVE floors (High).** `requirements.txt` pins `cryptography>=46.0.7` and `PyJWT[crypto]>=2.12.0` to match `pyproject.toml`.
+
+### Fixed
+- **Cloud-to-self-host audit-chain re-verification.** The importer now preserves each row's chain tenant verbatim and persists the audit chain under it, so bundles minted under a cloud workspace ID import and re-verify cleanly.
+- Bundle import reads the cloud `vc_jsonld` credential key, so credentials in cloud bundles import correctly.
+
+## [0.4.0] - 2026-05-30
+
+First stable 0.4.0: the embeddable, multi-tenant, portable foundation. Promotes `0.4.0rc5` unchanged.
+
+### Added
+- **Pluggable storage and signer seams** (`Repository` / `Signer` protocols). The package ships the file and in-memory repositories and the in-process Ed25519 signer; the `[pg]` and `[kms]` extras install drivers only, and the Postgres and KMS adapter modules are not included in the package.
+- **Multi-tenancy.** Resources carry `tenant_id`; structured, hash-chained, idempotency-aware audit events (`audit.json`) are chained per tenant and do not leak across tenants.
+- **Portability.** Bundle export and import (`attestix export` / `attestix import`) with a byte-stable canonical JSON wire format (see the bundle spec at [attestix.io/spec/bundle/v1](https://attestix.io/spec/bundle/v1)).
+- **Offline JS verifier** for Python-issued credentials, now published on npm as `attestix` (the earlier scoped `@vibetensor/attestix` package is superseded).
+- **Structured `verify_chain`** returning `VerifyChainResult` with `broken_event_id` and `failure_reason`.
+- **Canonical `attestix.*` namespace** with back-compat shims; `[api]`, `[langchain]`, `[crewai]`, `[openai-agents]` install extras; LangChain (`AttestixCallbackHandler`), OpenAI Agents SDK (`AttestixAuditHook`), and CrewAI (`AttestixCrewAdapter`) integrations shipped in the wheel.
+- **REST idempotency** replays the original cached body verbatim (`Idempotency-Replayed` header), exactly-one-resource dedup, 24h TTL.
+- **Docs:** per-audience quickstarts; OWASP Agentic Top 10, ISO/IEC 42001, NIST AI RMF, SOC 2, and FRIA mapping pages; a browser verification page; the bundle spec page.
+- **Supply chain:** Docker base images SHA-pinned, CI dependencies hash-pinned (`--require-hashes`).
+
+### Changed
+- `generate_declaration_of_conformity` reports all missing prerequisites at once; declarations surface `credential_id`.
+
+### Known issues (at release)
+- `get_audit_trail` returns only the legacy Article 12 `log_action` chain, not the structured audit events.
+- `create_delegation` refuses capability escalation by returning an error dict rather than raising (escalation is still blocked).
+
 ## [0.3.0] - 2026-04-17
 
-Flagship release introducing real framework integrations, a security hardening sweep, and GitHub Actions CI/CD.
+Security hardening release bundling seven previously merged but unreleased pull requests (#45 through #51): a critical delegation auth-bypass fix, corrected Article 43 Annex III conformity logic, three framework integrations, and GitHub Actions CI/CD. No breaking API changes for MCP tool callers.
+
+### Security
+- **Critical: delegation chain auth bypass fixed** (#45). Parent tokens in a delegation chain are now fully verified and capability attenuation is enforced when a parent token is supplied. Previously a delegate could craft a child token claiming more capabilities than its parent. Long-lived delegation tokens issued before this release should be reviewed and re-issued.
+- **SSRF hardening** (#47). Agent discovery, DID resolution, and credential fetch paths go through the centralized SSRF guard (private IP blocking, metadata endpoint blocking, DNS rebinding defence) on every outbound request.
+- **Timing-safe comparisons** (#47). Signature and token equality checks use `hmac.compare_digest`.
+- **API error sanitization** (#47). REST API exception paths no longer leak stack traces, file paths, or internal type names.
 
 ### Added
-
-**Real framework integrations (not simulations)**
-- LangChain integration via `BaseCallbackHandler` that logs every tool call, LLM call, and chain step to the Attestix audit trail with hash chaining (#42)
-- OpenAI Agents SDK integration using `MCPServerStdio` so agents can call Attestix tools directly as MCP tools (#48)
-- CrewAI integration that attaches Attestix to the `mcps` field on every agent, giving each crew member full attestation capabilities (#51)
-- 7 additional framework integration examples and 15 integration tests covering LangChain, OpenAI Agents SDK, and CrewAI end to end (#41)
-
-**CI/CD and release tooling**
-- GitHub Actions workflow with pytest matrix (Linux and Windows), lint, and security scan jobs (#49)
-- Single-job PyPI publish workflow restored to token auth (#54, #56)
-- Automated release for v0.3.0 including tag, PyPI push, and documentation sync (#52, #58)
-
-**Security fixes (HIGH severity)**
-- SSRF redirect following hardened to re-check every redirect target against the private IP and metadata endpoint allow list (#47)
-- API key comparison moved to constant-time HMAC to prevent timing side channels (#47)
-- Exception messages sanitized so internal file paths and stack traces no longer leak to MCP clients (#47)
-- `display_name` validation tightened to block control characters and oversized values (#47)
-- Signing key file permissions locked down to owner-only read/write on POSIX (#47)
-- Delegation chain authentication bypass fixed: parent tokens are now fully verified and capability attenuation is enforced so a delegatee cannot silently escalate privileges beyond its delegator (#45)
-- PyJWT CVE remediated, plus simplified publish workflow removed the id-token and environment gate that blocked v0.3.0 publishing (#55)
-
-**Correctness fixes**
-- EAS schema UID derivation corrected and on-chain event decoding hardened so `anchor_credential` and `verify_anchor` no longer misreport status (#50)
-- Article 43 conformity assessment now differentiates Annex III categories per the EU AI Act text, so self-assessment is permitted where the regulation allows and blocked where it does not (#46)
-- Persona e2e test findings addressed: version printout, `python -m attestix`, and quickstart path fixed (#57)
-
-### Changed
-
-- Total automated tests: 284 -> 358 (267 functional + 91 conformance benchmarks), 1 skipped on Windows
-- Documentation refreshed to reflect v0.3.0 current state: 358 tests, 3 real framework integrations, CI/CD pipeline (#58)
-
-## [0.2.4] - 2026-03-10
-
-### Added
-- 4 interactive demo apps: Identity Explorer, Reputation Dashboard, EU AI Act Compliance Checker, Fine Calculator
-- Mermaid diagram rendering in docs (remark plugin with dark theme)
-- Static client-side search via Orama (Fumadocs static mode)
-- Reputation scoring guide (`/docs/guides/reputation`)
-- EU AI Act urgency blog post (146 days countdown)
-- Testimonials section on landing page (anonymous reviewer validation, names on file)
-- `llms.txt` for AI discoverability
-
-### Changed
-- Forced dark-mode-only (removed theme toggle, hardcoded dark class)
-- Tables now fill full container width (display:table + width:100%)
-- All documentation links updated from docs.attestix.io to attestix.io/docs
-- Hero messaging rewritten for non-technical audiences ("TurboTax for AI compliance")
-- README documentation table updated with all current guide links
+- **LangChain integration** (#42): a `BaseCallbackHandler` subclass that logs LLM, chain, and tool events into the Attestix audit trail.
+- **OpenAI Agents SDK integration** (#48): connects the OpenAI Agents runtime to the Attestix MCP server over stdio via `MCPServerStdio`.
+- **CrewAI integration** (#51): uses `MCPServerAdapter` so CrewAI crews can load Attestix tools like any other MCP toolset.
 
 ### Fixed
-- Client-side search error on Cloudflare Pages (switched to static search mode)
-- Mermaid sequence diagram text invisible in dark mode (added explicit theme variables)
-- 3 broken CTA links in demo pages
-- CodeQL security alerts (workflow permissions, unused imports, broad exception handling)
+- **Article 43 Annex III conformity assessment** (#46). Self-assessment is now permitted for high-risk profiles with `annex_iii_category` set to points 2-8 and blocked for point 1 (biometrics) or when the category is unspecified.
+- **EAS schema UID derivation** (#50). The schema UID is derived with the same encoding EAS uses (schema string, resolver address, revocable flag).
+- **Attested event decoding hardened** (#50). Receipt logs are decoded through web3.py's ABI-level event processing, with a topic-signature fallback.
+- Test mock log shape updated so the hardened decoder path is exercised in CI.
 
-## [0.2.3] - 2026-03-05
+### Infrastructure
+- **GitHub Actions CI/CD** (#49): pytest matrix (Python 3.10-3.13) on pull requests plus `ruff`, `mypy`, `bandit`, and `pip-audit` jobs; a release workflow publishes to PyPI on tag push.
+- Default pytest `addopts` include `-p no:logfire` to avoid an OpenTelemetry ABI import error pulled in via CrewAI.
+
+## [0.2.3] - 2026-02-27
 
 ### Added
-- Fumadocs v15 integration (migrated 17 docs pages from MkDocs to in-app MDX)
-- Sidebar navigation with collapsible sections (Getting Started, Guides, Reference, Project)
-- Dark mode prose typography overrides for Fumadocs
+- **Namespace package support:** `attestix` namespace package for cleaner imports, for example `from attestix.services.identity_service import IdentityService`. Flat imports (`from services.identity_service import ...`) still worked for backward compatibility.
 
 ### Changed
-- Docs now served at attestix.io/docs instead of docs.attestix.io
-- Next.js upgraded from 15.3.5 to 15.5.12 (resolved 8 security vulnerabilities)
-
-## [0.2.2] - 2026-02-27
-
-### Added
-- Marketing website at attestix.io (Next.js 15 + Tailwind v4 + Cloudflare Pages)
-- Landing page: Hero, Architecture, TechStack, Examples, UseCases, Statistics, CTA sections
-- Standalone pages: /pricing, /faq, /community, /blog
-- 3 blog posts (MDX)
-- RSS and JSON feeds
-- Domain migration from attestix.vibetensor.com to attestix.io
-- Namespace package for cleaner imports (`from attestix.services import ...`)
-- PyPI Trusted Publishing via OIDC (GitHub Actions)
-- Cross-post guide for distribution
+- Package structure included both flat modules and the `attestix.*` namespace.
 
 ### Fixed
-- CI Merkle smoke test passing strings instead of bytes
+- Replaced wildcard imports with explicit named imports and `__all__` declarations across namespace shim modules; consistent relative imports; sorted `__all__` lists.
+
+## [0.2.2] - 2026-02-22
+
+### Added
+- MCP Registry listing, published as `io.github.VibeTensor/attestix`
+- `server.json` for MCP Registry verification
+- Research paper page with citation references (BibTeX, APA, IEEE)
+
+Website-only changes from February and March 2026 (the attestix.io marketing site, the move of the docs to attestix.io/docs, the Fumadocs migration, and the interactive demos) were not package releases and are not versioned here.
 
 ## [0.2.1] - 2026-02-21
 
@@ -103,7 +97,7 @@ Flagship release introducing real framework integrations, a security hardening s
   - RFC 8032 Section 7.1 Ed25519 canonical test vectors (4 IETF vectors, 18 tests)
   - W3C VC Data Model 1.1 conformance (credential structure, proof, presentations, 24 tests)
   - W3C DID Core 1.0 conformance (did:key, did:web, roundtrip resolution, 16 tests)
-  - UCAN v0.9.0 conformance (JWT header, payload, attenuation, revocation, 16 tests)
+  - UCAN-style delegation token checks (JWT header, payload, attenuation, revocation, 16 tests)
   - MCP tool registration conformance (47 tools, 9 modules, naming, 5 tests)
   - Performance benchmarks with hard latency thresholds (7 tests)
 - Standards Conformance section in README with measured performance numbers
@@ -111,7 +105,7 @@ Flagship release introducing real framework integrations, a security hardening s
 - FAQ entry on standards validation methodology
 
 ### Changed
-- Total automated tests: 193 -> 284 (193 functional + 91 conformance benchmarks). See the 0.3.0 entry for the current figure (358).
+- Total automated tests: 193 -> 284 (193 functional + 91 conformance benchmarks).
 - Updated research paper evaluation section with conformance test results and measured latencies
 - Updated all documentation (architecture, changelog, contributing, roadmap, FAQ) with benchmark details
 
@@ -128,7 +122,7 @@ Flagship release introducing real framework integrations, a security hardening s
 **Security Enhancements**
 - SSRF protection with private IP blocking, metadata endpoint blocking, and DNS rebinding prevention
 - Hash-chained audit trail with SHA-256 chain hashes for tamper-evident logging
-- Encrypted key storage with AES-256-GCM when `ATTESTIX_KEY_PASSWORD` is set
+- Encrypted key storage when `ATTESTIX_KEY_PASSWORD` is set (current releases use Fernet with a PBKDF2-HMAC-SHA256-derived key)
 - GDPR Article 17 right to erasure via `purge_agent_data` across all data stores
 
 **New Tools**
@@ -139,12 +133,12 @@ Flagship release introducing real framework integrations, a security hardening s
 - `verify_presentation` - Verify Verifiable Presentations with embedded credentials
 
 **Testing**
-- 284 automated tests at the 0.2.0 cut (unit, integration, e2e, conformance benchmarks). The current figure is 358 (see 0.3.0).
+- 284 automated tests at the 0.2.0 cut (unit, integration, e2e, conformance benchmarks)
 - 91 conformance benchmark tests validating standards compliance:
   - RFC 8032 Section 7.1 Ed25519 canonical test vectors (4 IETF vectors, 18 tests)
   - W3C VC Data Model 1.1 conformance (credential structure, proof, presentations, 24 tests)
   - W3C DID Core 1.0 conformance (did:key, did:web, roundtrip resolution, 16 tests)
-  - UCAN v0.9.0 conformance (JWT header, payload, attenuation, revocation, 16 tests)
+  - UCAN-style delegation token checks (JWT header, payload, attenuation, revocation, 16 tests)
   - MCP tool registration conformance (47 tools, 9 modules, naming, 5 tests)
   - Performance benchmarks with hard latency thresholds (7 tests)
 - 16 user persona test scenarios (cybersecurity, government regulator, legal, healthcare, DPO, enterprise architect)
@@ -174,7 +168,7 @@ Initial public release.
 
 **EU AI Act Compliance (17 tools)**
 - Compliance module (6 tools): risk categorization (minimal/limited/high), conformity assessments (Article 43), Annex V declarations of conformity
-- Credentials module (6 tools): W3C Verifiable Credentials (VC Data Model 1.1) with Ed25519Signature2020 proofs, Verifiable Presentations
+- Credentials module (6 tools): W3C Verifiable Credentials (VC Data Model 1.1) with Ed25519 proofs labelled `Ed25519Signature2020` over Attestix's RFC 8785-style canonical JSON (verify with the Attestix verifiers), Verifiable Presentations
 - Provenance module (5 tools): training data provenance (Article 10), model lineage (Article 11), audit trail (Article 12)
 
 **Infrastructure**

@@ -3,19 +3,25 @@ title: Attestix
 description: Attestation Infrastructure for AI Agents - the compliance identity layer for the EU AI Act era.
 ---
 
-# Attestix
-
 **Attestation Infrastructure for AI Agents**
 
 The compliance identity layer for the EU AI Act era. Verifiable identity, W3C credentials, delegation chains, and reputation scoring for every AI agent.
 
 [Get Started](/docs/getting-started) | [API Reference](/docs/reference/api-reference)
 
+## These docs are LLM-first
+
+Written to be read by coding agents as much as by people. Every page is also
+served as raw Markdown at its URL plus `.md`, and the whole set is indexed,
+one line per page, in [`/llms.txt`](/llms.txt). Hand that one link to your
+agent and it can find and fetch everything else. Both are regenerated from
+these pages on every build.
+
 ---
 
 ## Why Attestix Exists
 
-From **August 2, 2026**, the EU AI Act's Article 50 transparency obligations apply. Breaching them carries fines up to EUR 15M or 3% of global revenue (Article 99(4)); prohibited practices reach EUR 35M or 7%. High-risk AI systems deployed in EU markets must demonstrate compliance.
+From **August 2, 2026**, the EU AI Act's Article 50 transparency obligations apply. Breaching them carries fines up to EUR 15M or 3% of global revenue (Article 99(4)); prohibited practices reach EUR 35M or 7%. Annex III high-risk requirements apply from 2 December 2027 (Regulation (EU) 2026/1744).
 
 Existing compliance tools (Credo AI, Holistic AI, Vanta) operate as organizational dashboards. None produce a **machine-readable, cryptographically verifiable proof** that an AI agent can present to another agent, regulator, or system.
 
@@ -32,12 +38,12 @@ Attestix solves this.
 | **Identity** | 8 | Unified Agent Identity Tokens (UAITs) bridging MCP OAuth, A2A, DIDs, and API keys. GDPR Article 17 erasure |
 | **Agent Cards** | 3 | Parse, generate, and discover A2A-compatible agent cards |
 | **DID** | 3 | Create and resolve W3C Decentralized Identifiers (`did:key`, `did:web`) |
-| **Delegation** | 4 | UCAN-style capability delegation with signed JWT tokens, revocation |
+| **Delegation** | 4 | UCAN-style delegation tokens (server-signed JWTs), revocation |
 | **Reputation** | 3 | Recency-weighted trust scoring with category breakdown |
 | **Compliance** | 7 | EU AI Act risk profiles, conformity assessments, Annex V declarations |
-| **Credentials** | 8 | W3C Verifiable Credentials with Ed25519Signature2020, external verification |
+| **Credentials** | 8 | Credentials in the W3C VC data model, Ed25519 proof over Attestix's RFC 8785-style canonical JSON (verify with the Attestix verifiers) |
 | **Provenance** | 5 | Training data provenance, model lineage, hash-chained audit trail |
-| **Blockchain** | 6 | Anchor artifact hashes to Base L2 testnet via EAS, Merkle batch anchoring (mainnet schema planned) |
+| **Blockchain** | 6 | Anchor artifact hashes to Base L2 via EAS (Sepolia by default, mainnet via `BASE_NETWORK`), Merkle batch anchoring. Needs the `[blockchain]` extra and a funded wallet |
 
 ---
 
@@ -53,7 +59,7 @@ Add to your Claude Code config:
     "attestix": {
       "type": "stdio",
       "command": "python",
-      "args": ["/path/to/attestix/main.py"]
+      "args": ["-m", "attestix.main"]
     }
   }
 }
@@ -75,7 +81,7 @@ pip install attestix
 git clone https://github.com/VibeTensor/attestix.git
 cd attestix
 pip install -r requirements.txt
-python main.py
+python -m attestix.main
 ```
 
 See the [Getting Started guide](/docs/getting-started) for full setup instructions.
@@ -86,9 +92,9 @@ See the [Getting Started guide](/docs/getting-started) for full setup instructio
 
 ```mermaid
 flowchart TD
-    A[create_agent_identity] --> B[UAIT + DID<br/>Ed25519 signed]
+    A[create_agent_identity] --> B[UAIT<br/>signed with server Ed25519 key]
     C[create_compliance_profile] --> D[Risk profile + provenance<br/>training data, lineage]
-    E[generate_declaration_of_conformity] --> F[W3C Verifiable Credential<br/>Ed25519Signature2020]
+    E[generate_declaration_of_conformity] --> F[Verifiable Credential<br/>Ed25519 proof]
 
     B --> G[create_verifiable_presentation]
     D --> G
@@ -96,7 +102,7 @@ flowchart TD
     F --> H[anchor_credential]
 
     G --> I[Signed VP for regulator]
-    H --> J[On-chain proof - Base L2 testnet]
+    H --> J[On-chain proof - Base L2]
 
     style A fill:#4f46e5,color:#fff
     style C fill:#4f46e5,color:#fff
@@ -112,10 +118,10 @@ flowchart TD
 ## Key Properties
 
 - **Local-first** - No cloud dependency. All core operations work offline with JSON file storage
-- **Cryptographically signed** - Every artifact is signed with Ed25519. Anyone can verify without contacting Attestix
-- **Standards-based** - W3C Verifiable Credentials, W3C DIDs, UCAN delegation, A2A agent cards
+- **Cryptographically signed** - Identities, credentials, presentations, and delegations are signed with the server's Ed25519 key; structured audit events are hash-chained (tamper-evident, not signed). Signatures can be checked offline with the Attestix verifiers, but an offline check cannot see revocation status
+- **Standards-based** - W3C Verifiable Credential and DID data models, UCAN-style delegation tokens (server-signed JWTs), A2A agent cards
 - **Vendor-neutral** - Works with any AI framework (LangChain, OpenAI Agents SDK, CrewAI, or plain Python)
-- **EU AI Act ready** - Risk classification, conformity assessments, Annex V declarations, Article 10/11/12 documentation
+- **EU AI Act documentation support** - Risk classification, conformity assessment records, Annex V declarations, Article 10/11/12 evidence. It helps you document compliance; it does not make a system compliant
 
 ---
 

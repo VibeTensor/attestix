@@ -16,11 +16,11 @@ Open-access, Apache 2.0. IEEE format.
 <Cards>
   <Card href="/research" title="Read the research page">Canonical page with abstract, contributions, and evaluation.</Card>
   <Card href="https://github.com/VibeTensor/attestix/tree/main/paper" title="LaTeX source on GitHub" external>Paper source, figures, and build scripts.</Card>
-  <Card href="https://github.com/VibeTensor/attestix" title="Reference implementation" external>Apache 2.0 source code, 585 tests.</Card>
+  <Card href="https://github.com/VibeTensor/attestix" title="Reference implementation" external>Apache 2.0 source code and test suite.</Card>
 </Cards>
 
 ## Quick summary
 
-The paper introduces a machine-verifiable trust layer for autonomous AI agents. Three primitives combined: Unified Agent Identity Tokens (UAIT), W3C Verifiable Credentials with Ed25519Signature2020 proofs, and a hash-chained audit trail with optional Base L2 testnet anchoring via the Ethereum Attestation Service.
+The paper introduces a machine-verifiable trust layer for autonomous AI agents. Three primitives combined: Unified Agent Identity Tokens (UAIT), W3C Verifiable Credentials signed with Ed25519 over Attestix's RFC 8785-style canonical JSON (proofs labelled `Ed25519Signature2020`, verified with the Attestix verifiers), and a hash-chained audit trail with optional Base L2 anchoring via the Ethereum Attestation Service.
 
 See [/research](/research) for the full writeup.

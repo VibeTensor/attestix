@@ -9,23 +9,23 @@ description: Terms and acronyms used throughout Attestix documentation
 
 **Agent Card** - A JSON document describing an AI agent's name, capabilities, URL, and version. Follows the A2A specification. Hosted at a well-known URL for discovery.
 
-**Attestation** - A cryptographically signed statement about a fact. In Attestix, attestations include identity tokens, compliance declarations, and credential proofs.
+**Attestation** - A cryptographically signed statement about a fact. In Attestix, attestations include identity tokens, compliance declarations, and credential proofs, all signed by the Attestix server key.
 
 ## B
 
-**Base L2** - A Layer 2 Ethereum rollup built by Coinbase. Attestix anchors to Base L2 testnet (Sepolia) today via EAS due to sub-$0.01 gas costs and fast finality. Mainnet schema registration is planned for a future release.
+**Base L2** - A Layer 2 Ethereum rollup built by Coinbase. Attestix anchors to Base via EAS, on Base Sepolia by default or Base mainnet with `BASE_NETWORK=mainnet`. The EAS schema is registered on the first anchor. Requires the `[blockchain]` extra and `EVM_PRIVATE_KEY`.
 
-**Batch Anchoring** - Combining multiple attestation hashes into a single Merkle tree and anchoring only the root hash on-chain. Reduces cost by up to 100x compared to individual anchoring.
+**Batch Anchoring** - Combining multiple audit log entry hashes into a single Merkle tree and anchoring only the root hash on-chain. One transaction covers the whole batch, so the cost per entry falls as the batch grows.
 
 ## C
 
-**Chain Hash** - A SHA-256 hash linking each audit trail entry to the previous entry. Creates a tamper-evident log where altering any entry invalidates all subsequent hashes.
+**Chain Hash** - A SHA-256 hash (stored as `chain_hash`) linking each audit trail entry to the previous entry via its `prev_hash`. Creates a tamper-evident log: altering an entry breaks its own hash and the link from the next entry.
 
-**Conformity Assessment** - An evaluation of whether an AI system meets EU AI Act requirements. Can be self-assessment (limited-risk) or third-party (high-risk via notified bodies).
+**Conformity Assessment** - An evaluation of whether a high-risk AI system meets EU AI Act requirements (Article 43). For Annex III point 1 (biometrics) a notified body is needed when harmonised standards are not applied; Annex III points 2-8 use internal control (Annex VI, self-assessment); Annex I products follow their sectoral procedures.
 
 ## D
 
-**DID (Decentralized Identifier)** - A W3C standard for globally unique identifiers that do not require a central registry. Attestix supports `did:key` (ephemeral, no network needed) and `did:web` (domain-hosted).
+**DID (Decentralized Identifier)** - A W3C standard for globally unique identifiers that do not require a central registry. Attestix creates `did:key` (no network needed) and `did:web` (domain-hosted) DIDs and resolves other methods through a Universal Resolver.
 
 **DID Document** - A JSON-LD document associated with a DID containing public keys, authentication methods, and service endpoints.
 
@@ -33,27 +33,27 @@ description: Terms and acronyms used throughout Attestix documentation
 
 ## E
 
-**EAS (Ethereum Attestation Service)** - An open protocol for creating on-chain attestations on Ethereum and L2 networks. Attestix uses EAS on Base L2 testnet for tamper-proof anchoring.
+**EAS (Ethereum Attestation Service)** - An open protocol for creating on-chain attestations on Ethereum and L2 networks. Attestix uses EAS on Base (Sepolia by default, mainnet optional) for tamper-evident anchoring.
 
-**Ed25519** - An elliptic curve digital signature algorithm (RFC 8032). Attestix uses Ed25519 for signing all identity tokens, credentials, and audit entries. Fast, compact, and quantum-aware.
+**Ed25519** - An elliptic curve digital signature algorithm (RFC 8032). Attestix uses Ed25519 for signing identity tokens, credentials, presentations, delegation tokens, compliance records, and legacy provenance log entries. Fast and compact, but not quantum-resistant. An optional ML-DSA-65 module (`attestix.auth.pqc`, `[pqc]` extra) exists but is not used by the default services.
 
-**Ed25519Signature2020** - A linked data proof type using Ed25519 signatures. Used in Attestix's W3C Verifiable Credentials.
+**Ed25519Signature2020** - A W3C linked data proof type. Attestix labels its credential proofs with this type, but signs Attestix's own RFC 8785-style canonical JSON (with a base64url value) rather than following the suite exactly, so standard verifiers reject these proofs. Use the Attestix verifiers.
 
-**EU AI Act** - Regulation (EU) 2024/1689 establishing harmonized rules for AI systems in the European Union. Transparency enforcement begins August 2, 2026.
+**EU AI Act** - Regulation (EU) 2024/1689 establishing harmonized rules for AI systems in the European Union. Generally applicable since 2 August 2026; Annex III high-risk requirements apply from 2 December 2027 under Regulation (EU) 2026/1744.
 
 ## G
 
-**GDPR Article 17** - The "right to erasure" (right to be forgotten). Attestix implements this for agent identities, allowing cryptographic erasure while preserving audit trail integrity.
+**GDPR Article 17** - The "right to erasure" (right to be forgotten). Attestix's `purge_agent_data` deletes an agent's rows across the local stores, including its audit events. It does not recompute the remaining chain hashes, so the audit chain will no longer verify end to end after a purge; re-anchoring is an operator step.
 
 ## H
 
-**High-Risk AI System** - An AI system classified under EU AI Act Annex III as requiring conformity assessment, registration, and ongoing monitoring. Examples: medical diagnosis, credit scoring, law enforcement.
+**High-Risk AI System** - An AI system classified as high-risk under EU AI Act Article 6: either a safety component of (or itself) a product covered by Annex I legislation, or a use case listed in Annex III. Examples: credit scoring and law enforcement uses (Annex III); medical diagnosis software usually falls under Annex I via the Medical Devices Regulation.
 
 ## J
 
-**JCS (JSON Canonicalization Scheme)** - RFC 8785. A deterministic JSON serialization method ensuring the same data always produces the same byte sequence. Required for consistent signature verification.
+**JCS (JSON Canonicalization Scheme)** - RFC 8785. A deterministic JSON serialization method ensuring the same data always produces the same byte sequence. Attestix uses its own RFC 8785-style canonical form (sorted keys, compact separators, NFC normalisation), which is close to but not guaranteed identical to strict JCS.
 
-**JWT (JSON Web Token)** - A compact, URL-safe token format. Attestix uses JWT for UCAN delegation tokens.
+**JWT (JSON Web Token)** - A compact, URL-safe token format. Attestix uses server-signed EdDSA JWTs for its UCAN-style delegation tokens.
 
 ## M
 
@@ -69,28 +69,28 @@ description: Terms and acronyms used throughout Attestix documentation
 
 ## P
 
-**PBKDF2** - Password-Based Key Derivation Function 2. Used internally for deterministic key generation from passphrases.
+**PBKDF2** - Password-Based Key Derivation Function 2. When `ATTESTIX_KEY_PASSWORD` is set, Attestix derives a Fernet key from it with PBKDF2-HMAC-SHA256 (fixed salt) to encrypt the server signing key at rest.
 
 **Provenance** - The documented history of an AI system's training data sources, model lineage, and decision-making process. Required by EU AI Act Articles 10, 11, and 12.
 
 ## R
 
-**Reputation Score** - A normalized 0.0-1.0 trust score calculated from an agent's verified interactions. Uses recency-weighted averaging (more recent interactions have higher weight).
+**Reputation Score** - A normalized 0.0-1.0 trust score calculated from an agent's recorded interactions. Uses a recency-weighted mean with a 30-day half-life. Interactions are self-reported and not signed; the score is `null` when there are none.
 
 **Risk Category** - EU AI Act classification: unacceptable (banned), high (Annex III, requires conformity assessment), limited (transparency obligations), or minimal (voluntary codes).
 
 ## S
 
-**Schema UID** - A unique identifier for an EAS attestation schema on-chain. Attestix uses a specific schema UID for its blockchain-anchored attestations.
+**Schema UID** - A unique identifier for an EAS attestation schema on-chain. Attestix registers its schema on the first anchor and stores the UID per network in `.blockchain_config.json`.
 
 ## U
 
-**UAIT (Unified Agent Identity Token)** - Attestix's core identity primitive. A signed JSON document containing an agent's ID, capabilities, DID, metadata, and Ed25519 signature. Bridges MCP OAuth, A2A, and DID ecosystems.
+**UAIT (Unified Agent Identity Token)** - Attestix's core identity primitive. A JSON document containing an agent's ID, capabilities, the issuing server's DID, metadata, and an Ed25519 signature by the server key. Bridges MCP OAuth, A2A, and DID ecosystems.
 
-**UCAN (User Controlled Authorization Networks)** - A decentralized authorization protocol using chained JWTs. Attestix implements UCAN v0.9.0 for capability delegation between agents with time-bounded, scope-limited permissions.
+**UCAN (User Controlled Authorization Networks)** - A decentralized authorization protocol using chained tokens. Attestix issues UCAN-style delegation tokens (server-signed JWTs with a UCAN-like payload and a `ucv` header) for time-bounded, scope-limited delegation between agents. They are not spec-conformant UCANs.
 
 ## V
 
-**VC (Verifiable Credential)** - A W3C standard for tamper-evident, cryptographically verifiable claims. Attestix issues VCs with Ed25519Signature2020 proofs for compliance declarations, identity attestations, and custom claims.
+**VC (Verifiable Credential)** - A W3C standard for tamper-evident, cryptographically verifiable claims. Attestix issues VCs in the W3C data model, signed by the server key (Ed25519 over its RFC 8785-style canonical JSON, labelled `Ed25519Signature2020`), for compliance declarations, identity attestations, and custom claims. Verify them with the Attestix verifiers.
 
-**VP (Verifiable Presentation)** - A W3C standard for bundling one or more VCs into a signed package for a specific verifier. Includes a challenge-response mechanism to prevent replay attacks.
+**VP (Verifiable Presentation)** - A W3C standard for bundling one or more VCs into a signed package for a specific verifier. Attestix VPs are signed by the server key and can carry a verifier-supplied challenge to help prevent replay.

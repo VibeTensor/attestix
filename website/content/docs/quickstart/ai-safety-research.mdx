@@ -5,12 +5,12 @@ description: Produce signed, hash-chained telemetry from an LLM-agent eval run t
 
 ## You're here because…
 
-You work on agent evaluation / interpretability / monitor evals and you want a citable evidence layer for what an agent did during a run. The funnel evaluation flagged that the safety persona was one of two TRIAL verdicts, but still dropped at integration because the path from "run my eval" to "produce a verifiable, replayable artefact bundle" wasn't laid out. This page is that path: a single Python session that captures structured agent telemetry into a hash-chained audit log, then issues a signed credential bundle another lab can verify offline.
+You work on agent evaluation / interpretability / monitor evals and you want a citable evidence layer for what an agent did during a run. The path from "run my eval" to "produce a verifiable, replayable artefact bundle" used to be missing from these docs. This page is that path: a single Python session that captures structured agent telemetry into a hash-chained audit log, then issues a signed credential another lab can verify offline with the Attestix verifiers.
 
 ## 60-second install
 
 ```bash
-pip install --pre attestix
+pip install attestix
 ```
 
 No network calls are made for any of the steps below; everything serialises to local JSON.
@@ -18,9 +18,22 @@ No network calls are made for any of the steps below; everything serialises to l
 ## First 30 lines that actually do something
 
 ```python
+import hashlib
+
 from attestix.services.identity_service import IdentityService
 from attestix.services.provenance_service import ProvenanceService
 from attestix.services.credential_service import CredentialService
+
+
+def sha256(text: str) -> str:
+    return hashlib.sha256(text.encode("utf-8")).hexdigest()
+
+
+# Replace with your eval loop: (probe_id, prompt, completion, monitor_score) tuples.
+eval_results = [
+    ("p-001", "prompt text", "completion text", 0.12),
+    ("p-002", "another prompt", "another completion", 0.87),
+]
 
 # 1. Register the eval subject (the agent being studied).
 subject = IdentityService().create_identity(
@@ -43,16 +56,16 @@ ProvenanceService().record_model_lineage(
 
 # 3. Log every probe -> response as a hash-chained audit entry.
 prov = ProvenanceService()
-for probe_id, prompt, completion, monitor_score in your_eval_iter():
+for probe_id, prompt, completion, monitor_score in eval_results:
     prov.log_action(
         agent_id=subject_id,
         action_type="inference",
-        input_summary=f"probe={probe_id}; prompt_sha256={prompt_hash(prompt)}",
-        output_summary=f"completion_sha256={prompt_hash(completion)}; monitor={monitor_score}",
+        input_summary=f"probe={probe_id}; prompt_sha256={sha256(prompt)}",
+        output_summary=f"completion_sha256={sha256(completion)}; monitor={monitor_score}",
         decision_rationale="eval-run-042; monitor=white_box_v3",
     )
 
-# 4. Bundle the run as a signed credential another lab can verify offline.
+# 4. Summarise the run as a signed credential another lab can verify offline.
 run_cred = CredentialService().issue_credential(
     agent_id=subject_id,
     credential_type="EvaluationRunCredential",
@@ -69,9 +82,9 @@ print(run_cred["id"], run_cred["proof"]["type"])  # Ed25519Signature2020
 
 ## What you just got
 
-- A signed `EvaluationRunCredential` (W3C VC 1.1 + `Ed25519Signature2020`) pinning the run id, subject DID, monitor name, and entry count.
-- A hash-chained Article 12-style audit trail (`prev_hash` -> `entry_hash`) that any third lab can re-derive from the JSON without contacting you.
-- Reproducibility metadata (model name, provider, eval metrics) recorded under the same agent DID.
+- A signed `EvaluationRunCredential` pinning the run id, subject agent id, monitor name, and entry count. It uses the W3C VC data model; the proof is labelled `Ed25519Signature2020` but is an Ed25519 signature over Attestix's RFC 8785-style canonical JSON, so verify it with the [Attestix verifiers](/docs/verifiers), not a generic W3C VC library.
+- A hash-chained Article 12-style audit trail (`prev_hash` -> `chain_hash`, each row also signed with the server key) that a third lab can re-derive from the JSON without contacting you. The credential records only the entry count, not a hash of the entries, so share the audit rows alongside it.
+- Reproducibility metadata (model name, provider, eval metrics) recorded under the same agent id.
 
 ## Verifying offline (what a reviewer would run)
 
@@ -81,11 +94,11 @@ result = CredentialService().verify_credential(run_cred["id"])
 print(result["valid"], result["checks"])  # signature_valid, not_revoked, ...
 ```
 
-Or pass the credential JSON directly to `verify_credential_external(credential_dict)` so the reviewer never has to import your local store.
+`verify_credential` looks the credential up in your local store, so it is the issuer-side check. A reviewer with only the credential JSON can run `CredentialService().verify_credential_external(credential_dict)` or the [JS / Go verifiers](/docs/verifiers). Offline checks confirm the signature and expiry; they cannot see a revocation recorded in your store.
 
 ## Next step (5 minutes)
 
-To make the bundle citable, anchor the audit batch's Merkle root to **Base Sepolia testnet** (mainnet anchoring is on the roadmap; testnet anchors are timestamped evidence, not legal non-repudiation):
+To make the bundle citable, anchor the audit batch's Merkle root to **Base Sepolia testnet**. This needs `pip install 'attestix[blockchain]'` and a funded wallet key in `EVM_PRIVATE_KEY` (set `BASE_NETWORK=mainnet` for mainnet). Anchors are timestamped evidence, not legal non-repudiation:
 
 ```python
 from attestix.services.blockchain_service import BlockchainService
@@ -94,4 +107,4 @@ print(BlockchainService().anchor_audit_batch(agent_id=subject_id))
 
 You can then cite the attestation UID alongside the credential in your paper; any reviewer can query EAS on Base Sepolia to confirm the bundle existed at the cited block height.
 
-If you want the wider context (UCAN delegations for multi-agent eval setups, the full audit-row schema, the canonical-JSON spec), see the [offline verify guide](/docs/guides/offline-verify) and the [API reference](/docs/reference/api-reference).
+If you want the wider context (UCAN-style delegation tokens for multi-agent eval setups, the full audit-row schema, the canonical-JSON spec), see the [offline verify guide](/docs/guides/offline-verify) and the [API reference](/docs/reference/api-reference).

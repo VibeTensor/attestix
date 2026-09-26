@@ -3,8 +3,6 @@ title: Examples
 description: Runnable examples for every Attestix module, from identity creation to full EU AI Act compliance workflows.
 ---
 
-# Examples
-
 Runnable examples for every Attestix module. All examples work standalone after `pip install attestix` (stable 0.4.1).
 
 Stable 0.4.1 ships the canonical `attestix.*` namespace shown below. The older
@@ -63,7 +61,7 @@ agent = svc.create_identity(
 # Convert to A2A Agent Card
 card = svc.translate_identity(agent["agent_id"], target_format="a2a_agent_card")
 print(card["name"])       # CustomerBot
-print(card["skills"])     # [{id: "customer_support", ...}, ...]
+print(card["skills"])     # [{"id": "68b3df88", "name": "customer_support", ...}, ...]
 
 # Convert to DID Document
 did_doc = svc.translate_identity(agent["agent_id"], target_format="did_document")
@@ -93,8 +91,8 @@ print(f"Public Key: {did_key['public_key_multibase']}")
 did_web = svc.create_did_web(domain="agent.example.com", path="bots/analyzer")
 print(f"DID: {did_web['did']}")
 # did:web:agent.example.com:bots:analyzer
-print(f"Host path: {did_web['hosting_path']}")
-# /.well-known/did.json or /bots/analyzer/did.json
+print(f"Host at: {did_web['hosting_url']}")
+# https://agent.example.com/bots/analyzer/did.json
 
 # Resolve any DID
 doc = svc.resolve_did("did:key:z6MkkQBTUzQDDXj2rj9N6bViEGZ7Yku5B5zQKpRHznWHPY3e")
@@ -102,9 +100,9 @@ print(f"Resolved: {doc['id']}")
 print(f"Verification methods: {len(doc['verificationMethod'])}")
 ```
 
-## 4. UCAN Delegation Chains
+## 4. UCAN-Style Delegation Chains
 
-Delegate capabilities from one agent to another with verifiable authority chains:
+Delegate capabilities from one agent to another with UCAN-style delegation tokens (JWTs signed by the Attestix server key, not by the agents). Attenuation is enforced when you pass `parent_token`:
 
 ```python
 from attestix.services.identity_service import IdentityService
@@ -142,12 +140,12 @@ delegation1 = delegation_svc.create_delegation(
     capabilities=["data_access"],
     expiry_hours=8,
 )
-print(f"Admin -> Analyst: {delegation1['delegation']['delegation_id']}")
+print(f"Admin -> Analyst: {delegation1['delegation']['jti']}")
 
 # Verify the delegation
 check = delegation_svc.verify_delegation(delegation1["token"])
 print(f"Valid: {check['valid']}")
-print(f"Capabilities: {check['payload']['att']}")
+print(f"Capabilities: {check['capabilities']}")
 # ['data_access']
 
 # Analyst chains delegation to reporter (must be subset of received capabilities)
@@ -242,7 +240,12 @@ print(f"Completion: {status['completion_pct']}%")
 print(f"Missing: {status.get('missing', [])}")
 
 # Step 6: Conformity assessment (Article 43)
-# Self-assessment is blocked for high-risk:
+# No annex_iii_category is set: a radiology diagnostic tool is usually a medical
+# device, so it is high-risk via Article 6(1) / Annex I (MDR) and follows the
+# MDR notified-body procedure. With no Annex III point set, Attestix fails safe
+# and rejects self-assessment. (For Annex III points 2-8, pass annex_iii_category
+# to create_compliance_profile and internal control per Annex VI is accepted;
+# Annex III point 1 needs a notified body when harmonised standards are not applied.)
 blocked = compliance_svc.record_conformity_assessment(
     agent_id=agent_id,
     assessment_type="self",
@@ -257,7 +260,7 @@ assessment = compliance_svc.record_conformity_assessment(
     assessment_type="third_party",
     assessor_name="TUV Rheinland AG",
     result="pass",
-    findings="Meets all Annex III requirements for medical AI.",
+    findings="Meets the high-risk requirements of Chapter III, Section 2 (assessed alongside the MDR procedure).",
     ce_marking_eligible=True,
 )
 
@@ -267,8 +270,13 @@ print(f"Declaration: {declaration['declaration_id']}")
 
 # Step 8: Verify final status
 final = compliance_svc.get_compliance_status(agent_id)
-print(f"Compliant: {final['compliant']}")    # True
-print(f"Completion: {final['completion_pct']}%")  # 100.0
+print(f"Compliant: {final['compliant']}")    # False
+print(f"Completion: {final['completion_pct']}%")  # 75.0
+print(f"Missing: {final['missing']}")
+# ['risk_management_system', 'record_keeping', 'post_market_monitoring', 'serious_incident_reporting']
+# record_keeping is met once you log actions with provenance_svc.log_action().
+# In v0.4.1 no API records the other three items yet, so a high-risk profile
+# cannot reach compliant=True. Track them outside Attestix for now.
 
 # Step 9: Get the auto-issued credential
 creds = credential_svc.list_credentials(
@@ -302,7 +310,7 @@ agent_id = agent["agent_id"]
 
 # Issue a custom credential
 cred = credential_svc.issue_credential(
-    subject_id=agent_id,
+    agent_id=agent_id,
     credential_type="SecurityClearanceCredential",
     issuer_name="Federal Security Office",
     claims={
@@ -330,7 +338,7 @@ print(f"Valid after revoke: {result2['valid']}")  # False
 
 # Issue another credential for presentation
 cred2 = credential_svc.issue_credential(
-    subject_id=agent_id,
+    agent_id=agent_id,
     credential_type="AgentIdentityCredential",
     issuer_name="CertAuthority",
     claims={"role": "analyst", "org": "Acme"},
@@ -473,7 +481,7 @@ from attestix.services.agent_card_service import AgentCardService
 svc = AgentCardService()
 
 # Generate an agent card for hosting
-card = svc.generate_agent_card(
+result = svc.generate_agent_card(
     name="WeatherBot",
     url="https://weather.example.com",
     description="Provides real-time weather forecasts",
@@ -483,13 +491,14 @@ card = svc.generate_agent_card(
     ],
     version="2.1.0",
 )
+card = result["agent_card"]
 print(f"Card name: {card['name']}")
 print(f"Skills: {len(card['skills'])}")
+print(result["hosting_path"])  # /.well-known/agent.json
 # Host this JSON at https://weather.example.com/.well-known/agent.json
 
-# Parse an existing agent card
-import json
-parsed = svc.parse_agent_card(json.dumps(card))
+# Parse an existing agent card (pass the card as a dict)
+parsed = svc.parse_agent_card(card)
 print(f"Parsed: {parsed['name']}")
 print(f"Capabilities: {parsed['capabilities']}")
 ```
@@ -516,7 +525,7 @@ class AttestixMiddleware:
         """Call before processing. Raises if non-compliant."""
         status = self.compliance.get_compliance_status(self.agent_id)
         if not status.get("compliant"):
-            missing = status.get("missing", [])
+            missing = status.get("missing") or status.get("error")
             raise RuntimeError(f"Non-compliant. Missing: {missing}")
         return True
 
@@ -573,7 +582,7 @@ from mcp.client.stdio import stdio_client
 async def main():
     server = StdioServerParameters(
         command="python",
-        args=["/path/to/attestix/main.py"],
+        args=["-m", "attestix.main"],
     )
 
     async with stdio_client(server) as (read, write):

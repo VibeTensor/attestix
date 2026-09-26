@@ -13,12 +13,23 @@ You are a regulator. A supplier has sent you a Declaration of Conformity VC for 
 2. The signature has not been tampered with.
 3. The audit trail behind it is internally consistent.
 
-No network calls. Everything verifies from the JSON blob, because the issuer's Ed25519 public key is embedded in the `did:key`.
+No network calls. The credential verifies from the JSON blob, because the issuer's Ed25519 public key is embedded in the `did:key`.
+
+Two things offline verification cannot tell you on its own:
+
+- **Who the issuer is.** The `did:key` identifies the supplier's Attestix instance (its server signing key), not a legal entity. Confirm out of band that this `did:key` belongs to the supplier.
+- **Whether the credential has been revoked.** Revocation status lives in the issuer's local store, which you do not have (see Step 2).
 
 ## Prerequisites
 
 ```bash
 pip install attestix
+```
+
+Creating an Attestix service object also creates a local server signing key and data files on first use. On a verifier machine, point `ATTESTIX_DATA_DIR` at a scratch directory so this does not mix with any Attestix data of your own:
+
+```bash
+export ATTESTIX_DATA_DIR=/tmp/attestix-verifier
 ```
 
 ## Step 1 / Fetch the artefacts
@@ -27,7 +38,7 @@ Ask the supplier to send:
 
 - The Verifiable Credential JSON (for example an EU AI Act Declaration of Conformity).
 - Optionally, a Verifiable Presentation JSON bundling several credentials.
-- Optionally, the Article 12 audit trail entries for the agent.
+- Optionally, the Article 12 audit trail entries for the agent, exported as a JSON list (see Step 4).
 
 These are plain JSON. The issuer's public key is not a separate file: it is the `did:key` in `credential["issuer"]["id"]`, which decodes to the raw Ed25519 verifying key. That is what makes verification self contained and offline.
 
@@ -53,7 +64,7 @@ result = credential_svc.verify_credential_external(vc)
 # result -> {
 #   "valid": True,
 #   "credential_id": "urn:uuid:...",
-#   "type": ["VerifiableCredential", "ConformityAssessmentCredential"],
+#   "type": ["VerifiableCredential", "EUAIActComplianceCredential"],
 #   "subject": "attestix:f9bdb7a94ccb40f1",
 #   "checks": {
 #       "structure_valid": True,
@@ -68,17 +79,17 @@ print(result["valid"], result["checks"])
 Internally this:
 
 1. Confirms the object is a `VerifiableCredential`.
-2. Strips the mutable fields (`proof` and `credentialStatus`) and canonicalises the rest with the Attestix canonical JSON form (a practical subset of [RFC 8785](https://www.rfc-editor.org/rfc/rfc8785) JCS, sorted keys, no whitespace, NFC normalized).
+2. Strips the mutable fields (`proof` and `credentialStatus`) and canonicalises the rest with Attestix's RFC 8785-style canonical JSON (sorted keys, no whitespace, NFC-normalised strings, UTF-8). This is Attestix's own form, not full [RFC 8785](https://www.rfc-editor.org/rfc/rfc8785) JCS, and the proof is labelled `Ed25519Signature2020` without following that suite's Data Integrity format, so generic W3C VC verifiers will not accept it. Use the Attestix verifiers.
 3. Decodes the verifying key from `issuer.id` (the trust anchor), not from `proof.verificationMethod`. If `proof.verificationMethod` names a different DID, verification fails. This blocks issuer key substitution.
-4. Verifies the Ed25519 signature in `proof.proofValue` per [RFC 8032](https://www.rfc-editor.org/rfc/rfc8032), and checks expiry and (when the revocation list is available locally) revocation.
+4. Verifies the base64url Ed25519 signature in `proof.proofValue` per [RFC 8032](https://www.rfc-editor.org/rfc/rfc8032), and checks expiry.
 
-The credential is valid only when `signature_valid` AND `not_expired` AND `not_revoked` all hold. An external verifier with no revocation list assumes not revoked, so confirm revocation separately if that matters for your use case.
+Revocation is only checked if the same credential ID exists in the verifier's own local store. For a credential you received from someone else it does not, so `not_revoked` is reported as `True` without any check. Offline verification therefore cannot detect revocation: ask the issuer for current status if that matters for your use case.
 
-If the signature is valid, you have cryptographic proof that the issuer controlled the private key at signing time.
+If `valid` is `True`, you have cryptographic evidence that whoever holds the private key behind `issuer.id` signed this exact content, and that it has not expired.
 
 ## Step 3 / Verify a presentation (optional)
 
-If the supplier sent a Verifiable Presentation that bundles several credentials, verify it in one call. `verify_presentation` checks the presentation signature plus every embedded credential.
+If the supplier sent a Verifiable Presentation that bundles several credentials, `verify_presentation` checks the presentation signature plus every embedded credential:
 
 ```python
 with open("presentation.json") as f:
@@ -100,31 +111,43 @@ result = credential_svc.verify_presentation(vp)
 print(result["valid"], result["checks"])
 ```
 
-Each embedded credential is verified against its own `issuer.id`, and every credential subject is checked against the presentation holder.
+Limitation in the current release: `verify_presentation` checks the presentation signature against the **local** Attestix server key, so it only returns `vp_signature_valid: True` on the instance that created the presentation. On a regulator's machine it reports `vp_signature_valid: False` even for a genuine presentation. It also only checks that `challenge` and `domain` are present, not that they match the values you expect. Until this is fixed, verify each embedded credential with `verify_credential_external` (Step 2), check that every `credentialSubject.id` equals `vp["holder"]`, and compare `vp["proof"]["challenge"]` and `vp["proof"]["domain"]` with the values you issued.
 
 ## Step 4 / Verify the audit chain
 
-The Article 12 audit trail is a SHA-256 hash chain: each entry links to the previous one, so tampering with any row invalidates every later row. Pull the entries with `get_audit_trail`, then recompute the chain offline.
+The Article 12 action log is a SHA-256 hash chain per agent: each entry stores the previous entry's `chain_hash` as `prev_hash`, so editing, deleting, or reordering any entry breaks the chain from that point on. Each entry is also signed with the issuing instance's server key (the `did:key` in `logged_by`).
+
+The supplier exports the entries on their side. Pass a large `limit`: `get_audit_trail` returns at most 50 entries by default, oldest first.
+
+```python
+# Run by the supplier, on the issuing Attestix instance
+import json
+from attestix.services.provenance_service import ProvenanceService
+
+entries = ProvenanceService().get_audit_trail(
+    agent_id="attestix:f9bdb7a94ccb40f1", limit=1_000_000,
+)
+with open("audit_trail.json", "w", encoding="utf-8") as f:
+    json.dump(entries, f)
+```
+
+The verifier then recomputes the chain offline from that file:
 
 ```python
 import hashlib
 import json
-from attestix.services.provenance_service import ProvenanceService
 
-entries = ProvenanceService().get_audit_trail(agent_id="attestix:f9bdb7a94ccb40f1")
+with open("audit_trail.json", encoding="utf-8") as f:
+    entries = json.load(f)
 
 GENESIS = "0" * 64
 
 
 def chain_hash(previous_hash: str, entry: dict) -> str:
-    # Same rule the recorder uses: SHA-256 over "{prev_hash}:{canonical_json}"
-    # where canonical_json excludes the prev_hash, chain_hash, and signature
-    # fields and uses sorted keys with compact separators.
-    body = {
-        k: v
-        for k, v in entry.items()
-        if k not in {"prev_hash", "chain_hash", "signature"}
-    }
+    # Same rule the recorder uses: SHA-256 over "{prev_hash}:{canonical_json}".
+    # The hashed body INCLUDES prev_hash; exclude only chain_hash and signature.
+    # canonical_json = sorted keys, compact separators, json.dumps defaults.
+    body = {k: v for k, v in entry.items() if k not in {"chain_hash", "signature"}}
     canonical = json.dumps(body, sort_keys=True, separators=(",", ":"))
     return hashlib.sha256(f"{previous_hash}:{canonical}".encode("utf-8")).hexdigest()
 
@@ -140,11 +163,11 @@ for index, entry in enumerate(entries):
 print("chain consistent" if first_bad is None else f"tamper at entry {first_bad}")
 ```
 
-Any change to any row, or any reordering, breaks the recomputed hash and surfaces the first bad index.
+Any edit, deletion, or reordering breaks the recomputed hash and surfaces the first bad index. The chain alone is tamper-evident, not tamper-proof: someone who edits an entry could recompute every later hash. Checking each entry's signature against the issuer key (as the full script below does) closes that gap for anyone who does not hold the server key. Two gaps remain: dropping the newest entries from the end of the export is not detectable from the file alone, and the holder of the server key can rewrite and re-sign the whole chain. Anchor audit batches on-chain ([Base L2 anchoring](/docs/guides/base-l2-anchor)) if you need evidence against those.
 
 ## Full example script
 
-Putting the three checks together into one runnable script:
+Putting the checks together into one runnable script. It takes the credential and the exported audit trail as files and never reads the supplier's data store:
 
 ```python
 # offline_verify.py
@@ -152,37 +175,50 @@ import hashlib
 import json
 import sys
 
+from attestix.auth.crypto import did_key_to_public_key, verify_json_signature
 from attestix.services.credential_service import CredentialService
-from attestix.services.provenance_service import ProvenanceService
 
 GENESIS = "0" * 64
 
 
 def chain_hash(previous_hash: str, entry: dict) -> str:
-    body = {
-        k: v
-        for k, v in entry.items()
-        if k not in {"prev_hash", "chain_hash", "signature"}
-    }
+    # The hashed body INCLUDES prev_hash; exclude only chain_hash and signature.
+    body = {k: v for k, v in entry.items() if k not in {"chain_hash", "signature"}}
     canonical = json.dumps(body, sort_keys=True, separators=(",", ":"))
     return hashlib.sha256(f"{previous_hash}:{canonical}".encode("utf-8")).hexdigest()
 
 
-def main(vc_path: str, agent_id: str) -> int:
-    with open(vc_path) as f:
+def entry_signature_ok(entry: dict) -> bool:
+    # Each entry is signed by the server key named in logged_by (a did:key),
+    # over every field except signature.
+    signable = {k: v for k, v in entry.items() if k != "signature"}
+    try:
+        public_key = did_key_to_public_key(entry["logged_by"])
+        return verify_json_signature(public_key, signable, entry["signature"])
+    except Exception:
+        return False
+
+
+def main(vc_path: str, audit_path: str) -> int:
+    with open(vc_path, encoding="utf-8") as f:
         vc = json.load(f)
+    with open(audit_path, encoding="utf-8") as f:
+        entries = json.load(f)
 
     result = CredentialService().verify_credential_external(vc)
     if not result.get("valid"):
         print(f"[fail] credential not valid: {result.get('checks')}")
         return 1
-    print(f"[ok] signature verified (issuer {vc['issuer']['id']})")
+    issuer = vc["issuer"]["id"]
+    print(f"[ok] signature verified (issuer {issuer})")
 
-    entries = ProvenanceService().get_audit_trail(agent_id=agent_id)
     prev = GENESIS
     for index, entry in enumerate(entries):
         if entry.get("prev_hash") != prev or chain_hash(prev, entry) != entry.get("chain_hash"):
             print(f"[fail] audit chain broken at entry {index}")
+            return 1
+        if entry.get("logged_by") != issuer or not entry_signature_ok(entry):
+            print(f"[fail] audit entry {index} not signed by the credential issuer")
             return 1
         prev = entry["chain_hash"]
     print(f"[ok] audit chain consistent ({len(entries)} entries)")
@@ -198,23 +234,25 @@ if __name__ == "__main__":
 Run it:
 
 ```bash
-python offline_verify.py ./credential.json attestix:f9bdb7a94ccb40f1
+python offline_verify.py ./credential.json ./audit_trail.json
 ```
 
-Output:
+Output for a genuine credential and log (the entry count depends on the agent):
 
 ```
 [ok] signature verified (issuer did:key:z6Mk...)
-[ok] audit chain consistent (1247 entries)
+[ok] audit chain consistent (60 entries)
 VERIFY = PASS
 ```
 
+If an entry was edited, deleted, or reordered, the script stops with `[fail] audit chain broken at entry N`; if the chain was recomputed after an edit, it stops with `[fail] audit entry N not signed by the credential issuer`.
+
 ## Verify without Python
 
-The same credential verifies in any language. Six independent verifier implementations share one conformance suite at [`spec/verify/v1`](https://github.com/VibeTensor/attestix/tree/main/spec/verify/v1), so a Go, Rust, JS, Java, or R verifier reaches the identical verdict on the identical canonical bytes. You can also verify a credential in the browser at [attestix.io/verify](https://attestix.io/verify). Issuance stays in the Python core; verification is open and portable.
+The canonicalisation and signature rules are specified in a shared conformance suite at [`spec/verify/v1`](https://github.com/VibeTensor/attestix/tree/main/spec/verify/v1). The Python and JS/TS (`npm install attestix`) verifiers are documented as passing it. Go, Rust, Java, and R verifiers are implemented against the same vectors but are not yet documented as passing. You can also verify a credential in the browser at [attestix.io/verify](https://attestix.io/verify). Issuance stays in the Python core; verification is open and portable.
 
 ## Why this matters
 
-Every other compliance artefact you receive as a regulator comes as a PDF or a dashboard screenshot. Neither is cryptographically bindable to a specific operator or point in time. Attestix artefacts are.
+Many compliance artefacts reach a regulator as a PDF or a dashboard screenshot, which cannot be cryptographically tied to a specific signing key or checked for later edits. Attestix artefacts are signed JSON that can be checked offline, with the limits described above.
 
-The same verification is what a peer agent runs when it decides whether to trust another agent's capability claim. See [UCAN delegation](/docs/guides/integration-guide) for how delegation chains are verified the same way.
+The same verification is what a peer agent runs when it decides whether to trust another agent's capability claim. Delegations use UCAN-style tokens (server-signed JWTs) verified with `verify_delegation`; see the [MCP tool reference](/docs/reference/mcp-tools) for the delegation tools.

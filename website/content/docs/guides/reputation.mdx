@@ -3,23 +3,23 @@ title: Reputation Scoring Guide
 description: Build trust between AI agents using Attestix's recency-weighted reputation system with interaction tracking, category breakdowns, and threshold-based queries.
 ---
 
-# Reputation Scoring Guide
-
-Attestix tracks agent trustworthiness through a recency-weighted reputation system. Every interaction is recorded, scored, and aggregated into a trust score that decays over time, rewarding consistent good behavior.
+Attestix tracks agent trustworthiness through a recency-weighted reputation system. Every interaction is recorded with an outcome, and the trust score is a weighted average of those outcomes in which recent interactions count more than old ones.
 
 ## How Reputation Works
 
-Each agent starts with a neutral trust score. As interactions are recorded, the score adjusts based on:
+An agent has no score until its first interaction is recorded: `get_reputation` returns `trust_score: None` for an agent with no interactions. Once interactions exist, the score is computed from:
 
-- **Outcome weighting** - Success (+1.0), partial (+0.5), failure (0.0)
-- **Recency decay** - Recent interactions matter more than old ones (exponential moving average, alpha = 0.08)
-- **Category breakdown** - Scores are tracked per category (compliance, accuracy, safety, etc.)
+- **Outcome values** - `success` = 1.0, `partial` = 0.5, `timeout` = 0.2, `failure` = 0.0
+- **Recency weighting** - each interaction is weighted by `exp(-lambda * age)` with a 30-day half-life, so an interaction from 30 days ago counts half as much as one from today
+- **Category tracking** - each interaction carries a category, and `get_reputation` returns per-category outcome counts
 
-The trust score ranges from 0.0 to 1.0:
+The trust score is `sum(outcome_value * weight) / sum(weight)` and ranges from 0.0 to 1.0.
 
-| Range | Label | Meaning |
-|-------|-------|---------|
-| 0.70 - 1.00 | Trusted | Consistently reliable, safe for autonomous delegation |
+Attestix does not assign labels to score ranges. The bands below are a suggested starting point; choose thresholds that fit your use case:
+
+| Range | Suggested label | Suggested meaning |
+|-------|-----------------|-------------------|
+| 0.70 - 1.00 | Trusted | Consistently reliable |
 | 0.50 - 0.69 | Moderate | Mixed track record, human oversight recommended |
 | 0.00 - 0.49 | At Risk | Unreliable, should not be trusted for critical tasks |
 
@@ -62,30 +62,39 @@ reputation_svc.record_interaction(
 )
 ```
 
+`outcome` must be one of `success`, `partial`, `failure`, or `timeout`; anything else returns `{"error": ...}`. `record_interaction` also accepts an optional `details` string.
+
 ### 2. Check Trust Score
 
 ```python
 score = reputation_svc.get_reputation(agent_id)
-print(f"Trust score: {score['trust_score']:.2f}")
-print(f"Total interactions: {score['interaction_count']}")
-print(f"Breakdown: {score['category_scores']}")
+if score["trust_score"] is None:
+    print("No interactions recorded yet")
+else:
+    print(f"Trust score: {score['trust_score']:.2f}")
+    print(f"Total interactions: {score['total_interactions']}")
+    print(f"Breakdown: {score['category_breakdown']}")
 ```
+
+`category_breakdown` maps each category to outcome counts, for example `{"accuracy": {"success": 1, "failure": 1, "partial": 0, "timeout": 0, "total": 2}}`. It contains counts, not per-category scores. The result also includes `last_interaction` (timestamp).
 
 ### 3. Query by Threshold
 
-Find all agents above a minimum trust score:
+Find all agents within a score range:
 
 ```python
 trusted_agents = reputation_svc.query_reputation(min_score=0.7)
 for agent in trusted_agents:
-    print(f"{agent['agent_id']}: {agent['trust_score']:.2f}")
+    print(f"{agent['agent_id']}: {agent['trust_score']:.2f} ({agent['interaction_count']} interactions)")
 ```
+
+`query_reputation` also takes `max_score`, `min_interactions`, `category` (scores only that category's interactions), and `limit` (default 50). Agents with no recorded interactions never appear in the results.
 
 ## Using via MCP Tools
 
 All reputation operations are available as MCP tools:
 
-```bash
+```
 # Record an interaction
 record_interaction(
     agent_id="attestix:abc123",
@@ -101,9 +110,11 @@ get_reputation(agent_id="attestix:abc123")
 query_reputation(min_score=0.8)
 ```
 
+Interactions are stored unsigned in `~/.attestix/reputation.json`; each `record_interaction` call also emits a `reputation.record` event to the hash-chained audit log.
+
 ## Categories
 
-Interactions can be categorized to track different dimensions of trust:
+`category` is a free-form string (default `general`). Attestix does not validate it against a fixed list. Some useful conventions:
 
 | Category | What it Measures |
 |----------|-----------------|
@@ -114,26 +125,26 @@ Interactions can be categorized to track different dimensions of trust:
 | `reliability` | Consistent availability and response times |
 | `general` | Default category for uncategorized interactions |
 
-## Recency Decay
+## Recency Weighting
 
-The scoring algorithm uses exponential moving average (EMA) with alpha = 0.08. This means:
+The score is a recency-weighted mean with exponential decay and a 30-day half-life (not an exponential moving average). This means:
 
 - A single failure won't destroy a long track record
-- Sustained failures will steadily erode trust
-- Recovery is possible through consistent good behavior
-- An agent with no recent interactions will gradually drift toward neutral
+- Sustained failures will steadily lower the score
+- Recovery is possible through consistent good behavior, because new successes outweigh older failures
+- If an agent has no new interactions, its score does not drift toward any neutral value: all of its interactions age at the same rate, so their relative weights and the score stay the same
 
 ## Best Practices
 
-1. **Record every interaction** - Even partial outcomes provide signal
+1. **Record every interaction** - Even partial outcomes and timeouts provide signal
 2. **Use specific categories** - Helps identify which dimension needs improvement
 3. **Set thresholds per use case** - Critical medical AI might require 0.90+, while a chatbot might accept 0.60+
-4. **Monitor trends** - A declining score is a leading indicator of problems
-5. **Combine with credentials** - High reputation + valid compliance credential = strong trust signal
+4. **Require a minimum history** - Use `min_interactions` so that one lucky success does not count as trusted
+5. **Combine with credentials** - High reputation + valid compliance credential = stronger trust signal
 
 ## Integration with Delegation
 
-Reputation scores can inform delegation decisions. Before delegating capabilities to another agent, check their trust score:
+Reputation scores can inform delegation decisions. Before delegating capabilities to another agent, check their trust score, and handle the `None` case for agents with no history:
 
 ```python
 from attestix.services.delegation_service import DelegationService
@@ -142,7 +153,8 @@ delegation_svc = DelegationService()
 
 # Check reputation before delegating
 score = reputation_svc.get_reputation(target_agent_id)
-if score["trust_score"] >= 0.7:
+trust = score.get("trust_score")
+if trust is not None and trust >= 0.7:
     delegation_svc.create_delegation(
         issuer_agent_id=my_agent_id,
         audience_agent_id=target_agent_id,
@@ -150,8 +162,10 @@ if score["trust_score"] >= 0.7:
         expiry_hours=4,
     )
 else:
-    print(f"Agent trust too low ({score['trust_score']:.2f}), delegation denied")
+    print(f"Agent trust too low or unknown ({trust}), delegation denied")
 ```
+
+Attestix does not enforce this check itself; `create_delegation` does not look at reputation.
 
 ## Next Steps
 

@@ -1,13 +1,11 @@
 ---
 title: "Quickstart: pick your role"
-description: Copy-paste to verifiable agents in 90 seconds. One page per ICP persona from the v0.4.0 funnel evaluation, written against the actual pain point that persona hit.
+description: Copy-paste paths to verifiable agents, one page per role, each written against the first problem that role usually hits.
 ---
 
-# Quickstart
+Pick the page that matches your role. Every page is **90-second-readable** with a copy-paste path that runs against a clean `pip install attestix` (v0.4.1, canonical `attestix.*` namespace).
 
-Pick the page that matches your role. Every page is **90-second-readable** with a copy-paste path that runs against a clean `pip install --pre attestix` (v0.4.0-rc.5, canonical `attestix.*` namespace).
-
-The 10 pages below correspond to the 10 ICP personas surfaced in the [v0.4.0 funnel evaluation](https://github.com/VibeTensor/attestix/blob/main/CHANGELOG.md#040-rc2---2026-05-28). Each one targets the exact step at which that persona dropped off.
+The 10 pages below each cover one role and target the step where people in that role most often get stuck.
 
 | You are… | Start here |
 |---|---|
@@ -17,18 +15,18 @@ The 10 pages below correspond to the 10 ICP personas surfaced in the [v0.4.0 fun
 | Enterprise platform architect evaluating a self-hosted attestation layer | [Enterprise architect →](/docs/quickstart/enterprise-architect) |
 | EU AI Act / GRC consultant collecting Annex IV / Annex V evidence | [GRC consultant →](/docs/quickstart/grc-consultant) |
 | Senior DevTools / DX skeptic checking whether the package actually imports | [DevTools skeptic →](/docs/quickstart/devtools-skeptic) |
-| Web3 / blockchain dev anchoring artefacts to Base L2 testnet | [Web3 / on-chain →](/docs/quickstart/web3-onchain) |
+| Web3 / blockchain dev anchoring artefacts to Base L2 | [Web3 / on-chain →](/docs/quickstart/web3-onchain) |
 | Academic AI-safety researcher wanting verifiable agent telemetry | [AI safety research →](/docs/quickstart/ai-safety-research) |
 | Startup CTO running a build-vs-buy evaluation for agent governance | [Startup CTO →](/docs/quickstart/startup-cto) |
 | MLOps engineer wiring attestation into CI/CD and a model pipeline | [MLOps engineer →](/docs/quickstart/mlops-engineer) |
 
 ## Honesty rules these pages follow
 
-The v0.4.0 ICP funnel evaluation surfaced three universal failures: a broken package import, an over-claim of maturity, and conflating cryptographic integrity with regulatory conformity. These pages do not repeat them.
+Earlier versions of these docs had three recurring problems: a broken package import, an over-claim of maturity, and conflating cryptographic integrity with regulatory conformity. These pages try not to repeat them.
 
-- Base L2 anchoring is **Base Sepolia testnet only** in v0.4.0. Mainnet schema registration is on the roadmap. Every code sample that mentions anchoring says so.
+- Base L2 anchoring defaults to **Base Sepolia testnet**. Mainnet works by setting `BASE_NETWORK=mainnet` (real funds; the EAS schema is registered on your first anchor). Anchoring needs the `[blockchain]` extra and a funded wallet in `EVM_PRIVATE_KEY`.
 - DPDP (India) is **referenced but not implemented**. GDPR Article 17 (erasure) is implemented. Anything DPDP-shaped is called out as planned for v0.5.
-- LangChain, OpenAI Agents SDK, and CrewAI are **real** integrations (shipped v0.3.0). Dify, Google ADK, Semantic Kernel, and Strands are **example-only** (MCP-config templates, not first-party adapters).
+- LangChain, OpenAI Agents SDK, and CrewAI are **real** integrations: MCP-based examples since v0.3.0, and first-party adapter classes in the package (`attestix.integrations.*`) since v0.4.0. Dify, Google ADK, Semantic Kernel, and Strands are **example-only** (example scripts, not first-party adapters).
 - Maturity is **beta with one maintainer**. There is no third-party security audit. The signing key is stored locally by default. Treat artefacts produced today as evidence, not as a substitute for legal counsel or a notified body.
 
 ## If none of these fit you

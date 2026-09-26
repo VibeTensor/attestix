@@ -3,20 +3,49 @@ title: Configuration
 description: Attestix configuration via environment variables, storage setup, signing key management, and MCP client configuration.
 ---
 
-# Configuration
-
 Attestix is configured via environment variables. No config file is needed for basic usage.
 
 ## Environment Variables
 
+Only the variables below are read by the code. Anything else is ignored.
+
+### Core
+
 | Variable | Required | Default | Description |
 |----------|----------|---------|-------------|
-| `ATTESTIX_DATA_DIR` | No | Same directory as `main.py` | Directory for JSON storage files |
-| `ATTESTIX_KEY_FILE` | No | `.signing_key.json` | Path to Ed25519 signing key file |
-| `BASE_RPC_URL` | For blockchain | - | Base L2 RPC endpoint (e.g., `https://sepolia.base.org`) |
-| `BASE_WALLET_KEY` | For blockchain | - | Private key for blockchain transactions (hex string, no `0x` prefix) |
-| `EAS_CONTRACT` | For blockchain | Sepolia default | Ethereum Attestation Service contract address |
-| `ATTESTIX_LOG_LEVEL` | No | `INFO` | Logging level (`DEBUG`, `INFO`, `WARNING`, `ERROR`) |
+| `ATTESTIX_DATA_DIR` | No | `~/.attestix` | Directory for JSON storage files and keys |
+| `ATTESTIX_KEY_PASSWORD` | No | unset | If set, the server signing key is encrypted at rest (Fernet, key derived with PBKDF2-HMAC-SHA256 from this password and a fixed salt). If unset, the key is stored in plaintext |
+| `DEFAULT_EXPIRY_DAYS` | No | `365` | Default UAIT expiry in days |
+| `UNIVERSAL_RESOLVER_URL` | No | `https://dev.uniresolver.io/1.0/identifiers/` | Resolver used for DID methods other than `did:key` and `did:web` |
+| `ATTESTIX_SIGNER` | No | `inprocess` | Signer backend: `inprocess` or `kms` (the `kms` option expects an adapter module that is not shipped in 0.4.1) |
+| `ATTESTIX_STORAGE` | No | `file` | Storage backend: `file`, `memory` (volatile, for tests), or `postgres` (expects an adapter module that is not shipped in 0.4.1) |
+| `ATTESTIX_DURABILITY` | No | `safe` | File storage durability mode: `safe` or `fast` |
+
+### Blockchain (optional, requires `pip install "attestix[blockchain]"`)
+
+| Variable | Required | Default | Description |
+|----------|----------|---------|-------------|
+| `EVM_PRIVATE_KEY` | For anchoring | - | Private key of the wallet that pays for anchoring transactions |
+| `BASE_NETWORK` | No | `sepolia` | `sepolia` or `mainnet` |
+| `BASE_RPC_URL` | No | Network default (`https://sepolia.base.org` or `https://mainnet.base.org`) | Override the RPC endpoint |
+
+The EAS contract address is a constant in the code, not an environment variable.
+
+### REST API (optional, requires `pip install "attestix[api]"`)
+
+| Variable | Required | Default | Description |
+|----------|----------|---------|-------------|
+| `ATTESTIX_API_KEY` | Yes, unless no-auth is allowed | unset | API key clients send in the `X-API-Key` header (or `Authorization: Bearer`). If unset (and no-auth is not allowed), non-public paths return 503 |
+| `ATTESTIX_ALLOW_NO_AUTH` | No | unset | Set to `1`, `true`, `yes`, or `on` to serve without an API key (local testing only) |
+| `ATTESTIX_API_HOST` | No | `127.0.0.1` | Bind host when the API module is run directly |
+| `ATTESTIX_API_PORT` | No | `8000` | Bind port when the API module is run directly |
+| `CORS_ORIGINS` | No | `*` | Comma-separated list of allowed CORS origins |
+| `RATE_LIMIT_MAX` | No | `60` | Requests allowed per window per client IP |
+| `RATE_LIMIT_WINDOW` | No | `60` | Rate-limit window in seconds |
+| `RATE_LIMIT_MAX_TRACKED_IPS` | No | `10000` | Maximum number of client IPs tracked by the rate limiter |
+| `TRUSTED_PROXIES` | No | empty | Comma-separated IPs or CIDR blocks of trusted proxies; `X-Forwarded-For` / `X-Real-IP` are honoured only from these |
+
+When you start the API with `uvicorn attestix.api.main:app`, pass `--host` and `--port` to uvicorn instead.
 
 ## Setting Environment Variables
 
@@ -24,44 +53,38 @@ Attestix is configured via environment variables. No config file is needed for b
 
 ```bash
 export ATTESTIX_DATA_DIR=/var/lib/attestix
-export ATTESTIX_LOG_LEVEL=DEBUG
-python main.py
+python -m attestix.main
 ```
 
 ### Windows
 
 ```powershell
 $env:ATTESTIX_DATA_DIR = "C:\attestix-data"
-$env:ATTESTIX_LOG_LEVEL = "DEBUG"
-python main.py
+python -m attestix.main
 ```
 
 ### .env file
 
-Create a `.env` file in the Attestix directory:
-
-```
-ATTESTIX_DATA_DIR=/var/lib/attestix
-ATTESTIX_LOG_LEVEL=DEBUG
-```
-
-Attestix uses `python-dotenv` and loads `.env` automatically.
+Attestix calls `python-dotenv` on a `.env` file located in the installed `attestix` package directory (not the current working directory). For most setups, set variables in your shell, process manager, or MCP client config instead.
 
 ## Storage Configuration
 
-By default, Attestix stores all data in JSON files alongside `main.py`:
+By default, Attestix stores all data in JSON files under `~/.attestix`:
 
 ```
-attestix/
-  main.py
-  identities.json        # Created on first identity creation
-  credentials.json       # Created on first credential issuance
-  compliance.json        # Created on first compliance profile
-  provenance.json        # Created on first provenance record
-  reputation.json        # Created on first interaction recording
-  delegations.json       # Created on first delegation
-  .signing_key.json      # Created on first run (DO NOT SHARE)
-  .keypairs.json         # Created on first DID key generation (DO NOT SHARE)
+~/.attestix/
+  identities.json          # Created on first identity creation
+  credentials.json         # Created on first credential issuance
+  compliance.json          # Created on first compliance profile
+  provenance.json          # Training data, lineage, and the legacy audit log
+  reputation.json          # Created on first interaction recording
+  delegations.json         # Created on first delegation
+  audit.json               # Structured, hash-chained audit events
+  anchors.json             # Local record of blockchain anchors
+  idempotency.json         # Idempotency keys
+  .signing_key.json        # Server signing key, created on first run (DO NOT SHARE)
+  .keypairs.json           # Created on first DID key generation (DO NOT SHARE)
+  .blockchain_config.json  # EAS schema UID per network, created on first anchor
 ```
 
 To use a custom directory:
@@ -74,35 +97,32 @@ All JSON files will be created in that directory instead.
 
 ## Signing Key Management
 
-On first run, Attestix generates an Ed25519 keypair and stores it in `.signing_key.json`. This key is used to sign every UAIT, credential, compliance record, and audit entry.
+On first run, Attestix generates an Ed25519 keypair and stores it in `.signing_key.json` inside the data directory. This key signs UAITs, credentials, presentations, delegation tokens, compliance records, and legacy provenance log entries. Structured audit events in `audit.json` are hash-chained but not signed.
 
-**Important:** Back up `.signing_key.json` securely. If you lose it, you cannot create new artifacts that chain to the same DID.
+**Important:** Back up `.signing_key.json` securely. If you lose it, you cannot create new artifacts under the same server DID. Set `ATTESTIX_KEY_PASSWORD` to encrypt the key at rest; if the key file exists but cannot be loaded (for example, wrong or missing password), Attestix raises an error rather than minting a new key.
 
-To use a specific key file:
-
-```bash
-export ATTESTIX_KEY_FILE=/secure/path/attestix-key.json
-```
+There is no environment variable for a custom key path. The key always lives at `$ATTESTIX_DATA_DIR/.signing_key.json`.
 
 ## Blockchain Configuration
 
-Blockchain anchoring is optional. Attestix currently anchors to Base L2 testnet (Sepolia). To enable it, you need a funded wallet on Base Sepolia. Mainnet anchoring will ship once the mainnet schema is registered.
+Blockchain anchoring is optional and requires `pip install "attestix[blockchain]"`. Attestix anchors to Base Sepolia by default; set `BASE_NETWORK=mainnet` for Base mainnet. You need a funded wallet on the chosen network. The EAS schema is registered on the first anchor and its UID is stored in `.blockchain_config.json`.
 
 ### Base Sepolia (Testnet)
 
 ```bash
-export BASE_RPC_URL=https://sepolia.base.org
-export BASE_WALLET_KEY=your_private_key_hex_no_0x_prefix
+export EVM_PRIVATE_KEY=your_wallet_private_key
+# optional, this is the default
+export BASE_NETWORK=sepolia
 ```
 
 ### Base Mainnet
 
 ```bash
-export BASE_RPC_URL=https://mainnet.base.org
-export BASE_WALLET_KEY=your_private_key_hex_no_0x_prefix
+export EVM_PRIVATE_KEY=your_wallet_private_key
+export BASE_NETWORK=mainnet
 ```
 
-> **Warning:** The `BASE_WALLET_KEY` is a private key that controls funds. Never commit it to version control. Use environment variables or a secrets manager.
+> **Warning:** `EVM_PRIVATE_KEY` is a private key that controls funds. Never commit it to version control. Use environment variables or a secrets manager.
 
 ### Gas Estimation
 
@@ -112,7 +132,7 @@ Use `estimate_anchor_cost` to check costs before anchoring:
 estimate_anchor_cost(artifact_type="identity")
 ```
 
-Returns estimated gas in ETH at current gas prices.
+Returns `estimated_gas` (a fixed 300000 gas limit), `gas_price_gwei`, `estimated_cost_eth`, `balance_eth`, and `can_afford`.
 
 ## MCP Client Configuration
 
@@ -126,7 +146,7 @@ Add to `~/.claude.json` (macOS/Linux) or `%USERPROFILE%\.claude.json` (Windows):
     "attestix": {
       "type": "stdio",
       "command": "python",
-      "args": ["/absolute/path/to/attestix/main.py"]
+      "args": ["-m", "attestix.main"]
     }
   }
 }
@@ -141,7 +161,7 @@ Add to `claude_desktop_config.json`:
   "mcpServers": {
     "attestix": {
       "command": "python",
-      "args": ["/absolute/path/to/attestix/main.py"]
+      "args": ["-m", "attestix.main"]
     }
   }
 }
@@ -149,11 +169,13 @@ Add to `claude_desktop_config.json`:
 
 ### Any MCP Client
 
-Attestix communicates over stdio using the MCP protocol. Start the server with:
+Attestix communicates over stdio using the MCP protocol (there is no HTTP transport for MCP; use the REST API for HTTP). Start the server with:
 
 ```bash
-python main.py
+python -m attestix.main
 ```
+
+Use the same Python interpreter (or virtual environment) where Attestix is installed.
 
 Connect your MCP client to the process's stdin/stdout.
 
@@ -163,16 +185,16 @@ To share data across multiple Attestix instances (e.g., development and staging)
 
 1. Set `ATTESTIX_DATA_DIR` to a shared directory
 2. Copy `.signing_key.json` to the shared directory
-3. Each instance reads/writes the same JSON files with file locking
+3. Each instance reads/writes the same JSON files with file locking (lock files may not be reliable on every network filesystem)
 
 ```bash
 # Instance 1
 export ATTESTIX_DATA_DIR=/shared/attestix
-python main.py
+python -m attestix.main
 
 # Instance 2 (different process or machine with shared filesystem)
 export ATTESTIX_DATA_DIR=/shared/attestix
-python main.py
+python -m attestix.main
 ```
 
 ## Docker
@@ -181,29 +203,29 @@ python main.py
 
 ```dockerfile
 FROM python:3.12-slim
-WORKDIR /app
-COPY . .
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir attestix
 ENV ATTESTIX_DATA_DIR=/data
 VOLUME /data
-CMD ["python", "main.py"]
+CMD ["python", "-m", "attestix.main"]
 ```
+
+The MCP server speaks stdio, so run the container with `-i` and attach it to your MCP client.
 
 ```bash
 docker build -t attestix .
-docker run -v attestix-data:/data attestix
+docker run -i -v attestix-data:/data attestix
 ```
 
 ### Running the Test Suite
 
-The project includes `Dockerfile.test` which runs all 585 tests (7 skipped) across unit, e2e, and conformance benchmarks in a clean container:
+The repository includes `Dockerfile.test`, which runs the full pytest suite (unit, end-to-end, integration, and conformance benchmarks, excluding live blockchain tests) in a clean container:
 
 ```bash
 docker build -f Dockerfile.test -t attestix-bench . && docker run --rm attestix-bench
 ```
 
-This validates:
+This covers:
 
-- 267 unit and end-to-end tests (functional, framework integrations, security)
-- 91 conformance benchmarks (RFC 8032, W3C VC, W3C DID, UCAN, MCP, performance)
-- Performance thresholds for all cryptographic and service operations
+- Unit and end-to-end tests (functional, framework integrations, security)
+- Conformance benchmarks (RFC 8032 vectors, VC and DID structure, delegation tokens, MCP, performance)
+- Performance thresholds for cryptographic and service operations

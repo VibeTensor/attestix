@@ -3,8 +3,6 @@ title: API Reference
 description: Complete reference for all 47 Attestix MCP tools organized by module.
 ---
 
-# API Reference
-
 All 47 Attestix MCP tools organized by module.
 
 ## Identity (8 tools)
@@ -23,11 +21,11 @@ Create a Unified Agent Identity Token (UAIT) from any identity source.
 | `issuer_name` | string | No | `""` | Who issued this identity |
 | `expiry_days` | int | No | `365` | Days until expiry |
 
-**Returns:** UAIT object with `agent_id`, `signature`, `issuer.did`, and all metadata.
+**Returns:** UAIT object with `agent_id`, `signature`, `issuer.did`, and all metadata. The UAIT is signed by the server key and carries the server DID; no per-agent keypair is created.
 
 ### `resolve_identity`
 
-Auto-detect token type (JWT/DID/URL/API key) and create a UAIT.
+Auto-detect token type (JWT/DID/URL/API key) and register it as a new UAIT. Each call creates a new identity record; it does not look up an existing one.
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
@@ -113,7 +111,7 @@ Fetch `/.well-known/agent.json` from a URL (HTTPS only, SSRF-protected).
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
-| `url` | string | Yes | Base URL of the agent (e.g., `https://agent.example.com`) |
+| `base_url` | string | Yes | Base URL of the agent (e.g., `https://agent.example.com`) |
 
 ---
 
@@ -150,7 +148,7 @@ Resolve any DID to its DID Document. Supports `did:key` (local), `did:web` (HTTP
 
 ### `create_delegation`
 
-Create a UCAN-style delegation JWT with EdDSA signature.
+Create a UCAN-style delegation token: a server-signed EdDSA JWT (not a spec-conformant UCAN). The response includes the token's `jti`.
 
 | Parameter | Type | Required | Default | Description |
 |-----------|------|----------|---------|-------------|
@@ -158,7 +156,8 @@ Create a UCAN-style delegation JWT with EdDSA signature.
 | `audience_agent_id` | string | Yes | - | Agent receiving capabilities |
 | `capabilities` | string | Yes | - | Comma-separated capabilities to delegate |
 | `expiry_hours` | int | No | `24` | Hours until delegation expires |
-| `parent_token` | string | No | `""` | Parent delegation token for chaining |
+
+The MCP tool does not accept a parent token. Chained delegation with attenuation checks is only available through the Python service (`DelegationService.create_delegation(..., parent_token=...)`).
 
 ### `verify_delegation`
 
@@ -182,7 +181,7 @@ Revoke a delegation token, immediately invalidating the delegated capabilities.
 
 | Parameter | Type | Required | Default | Description |
 |-----------|------|----------|---------|-------------|
-| `delegation_id` | string | Yes | - | Delegation ID to revoke |
+| `jti` | string | Yes | - | The delegation's `jti` (from the `create_delegation` response) |
 | `reason` | string | No | `""` | Revocation reason |
 
 ---
@@ -197,8 +196,8 @@ Record an interaction outcome and update trust score.
 |-----------|------|----------|---------|-------------|
 | `agent_id` | string | Yes | - | Agent being rated |
 | `counterparty_id` | string | Yes | - | Agent on the other side of the interaction |
-| `outcome` | string | Yes | - | `success`, `failure`, or `partial` |
-| `category` | string | No | `"general"` | Category (e.g., `data_quality`, `response_time`) |
+| `outcome` | string | Yes | - | `success`, `failure`, `partial`, or `timeout` |
+| `category` | string | No | `"general"` | Category (e.g., `task`, `delegation`, `general`) |
 | `details` | string | No | `""` | Additional context |
 
 ### `get_reputation`
@@ -209,7 +208,7 @@ Get reputation score with category breakdown.
 |-----------|------|----------|-------------|
 | `agent_id` | string | Yes | Agent ID to query |
 
-**Returns:** `{ "trust_score": 0.85, "total_interactions": 42, "category_breakdown": {...} }`
+**Returns:** `{ "trust_score": 0.85, "total_interactions": 42, "category_breakdown": {...} }`. The score is a recency-weighted mean (30-day half-life). `trust_score` is `null` when the agent has no recorded interactions.
 
 ### `query_reputation`
 
@@ -234,13 +233,17 @@ Create an EU AI Act compliance profile with risk categorization.
 | Parameter | Type | Required | Default | Description |
 |-----------|------|----------|---------|-------------|
 | `agent_id` | string | Yes | - | Agent ID |
-| `risk_category` | string | Yes | - | `minimal`, `limited`, or `high` |
+| `risk_category` | string | Yes | - | `minimal`, `limited`, or `high` (`unacceptable` is rejected as prohibited under Article 5) |
 | `provider_name` | string | Yes | - | Company legal name |
 | `intended_purpose` | string | No | `""` | What the AI system does |
 | `transparency_obligations` | string | No | `""` | How transparency requirements are met |
 | `human_oversight_measures` | string | No | `""` | Human oversight mechanisms (required for high-risk) |
 | `provider_address` | string | No | `""` | Provider's registered address |
 | `authorised_representative` | string | No | `""` | EU authorised representative |
+| `annex_iii_category` | int | No | `0` | For high-risk systems, the Annex III point (1-8). Point 1 (biometrics) requires third-party assessment; points 2-8 permit self-assessment (Annex VI internal control). `0` leaves it unspecified, which defaults to requiring third-party assessment |
+| `annex_iii_exception` | string | No | `""` | One of `biometric_identification_law_enforcement`, `financial_fraud_detection`, `political_campaign_organization`. Setting it forces third-party assessment |
+
+Note: the code treats `financial_fraud_detection` and `political_campaign_organization` as third-party triggers, but in the Act these are exclusions from Annex III points 5(b) and 8(b), not grounds for notified-body assessment. This is a known code issue; do not rely on these two values for legal classification.
 
 ### `get_compliance_profile`
 
@@ -303,7 +306,7 @@ Generate Annex V declaration + auto-issue W3C Verifiable Credential.
 
 ### `issue_credential`
 
-Issue a W3C Verifiable Credential with Ed25519Signature2020 proof.
+Issue a W3C Verifiable Credential signed by the server key. The proof is Ed25519 over Attestix's RFC 8785-style canonical JSON, labelled `Ed25519Signature2020`; verify it with the Attestix verifiers (generic W3C VC verifiers will not accept it).
 
 | Parameter | Type | Required | Default | Description |
 |-----------|------|----------|---------|-------------|
@@ -345,7 +348,7 @@ Check signature, expiry, and revocation status.
 
 ### `create_verifiable_presentation`
 
-Bundle multiple VCs into a signed VP for a specific verifier.
+Bundle multiple VCs into a VP for a specific verifier. The VP is signed by the server key.
 
 | Parameter | Type | Required | Default | Description |
 |-----------|------|----------|---------|-------------|
@@ -356,13 +359,13 @@ Bundle multiple VCs into a signed VP for a specific verifier.
 
 ### `verify_credential_external`
 
-Verify any W3C Verifiable Credential JSON from an external source (does not need to be in the local store).
+Verify an Attestix-issued Verifiable Credential JSON without it being in the local store. Revocation is only checked if the credential happens to be in the local store; otherwise `not_revoked` is reported as `true` without a check.
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
 | `credential_json` | string | Yes | Full JSON string of the Verifiable Credential |
 
-**Returns:** `{ "valid": bool, "checks": { "structure_valid", "signature_valid", "not_expired" } }`
+**Returns:** `{ "valid": bool, "checks": { "structure_valid", "not_revoked", "not_expired", "signature_valid" } }`
 
 ### `verify_presentation`
 
@@ -402,7 +405,7 @@ Record model lineage chain (Article 11 compliance).
 | `base_model` | string | Yes | - | Foundation model name |
 | `base_model_provider` | string | No | `""` | Model provider (e.g., `Anthropic`) |
 | `fine_tuning_method` | string | No | `""` | Adaptation method |
-| `evaluation_metrics_json` | string | No | `"{}"` | JSON of metrics |
+| `evaluation_metrics_json` | string | No | `""` | JSON of metrics |
 
 ### `log_action`
 
@@ -443,7 +446,7 @@ Query audit trail with filters.
 
 ### `anchor_identity`
 
-Anchor an identity hash to Base L2 testnet via Ethereum Attestation Service.
+Anchor an identity hash to Base L2 via Ethereum Attestation Service (Base Sepolia by default; set `BASE_NETWORK=mainnet` for mainnet). Requires the `[blockchain]` extra and `EVM_PRIVATE_KEY`.
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
@@ -451,7 +454,7 @@ Anchor an identity hash to Base L2 testnet via Ethereum Attestation Service.
 
 ### `anchor_credential`
 
-Anchor a credential hash to Base L2 testnet via EAS.
+Anchor a credential hash to Base L2 via EAS (same requirements as `anchor_identity`).
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
@@ -464,30 +467,32 @@ Merkle batch anchor of audit log entries for an agent.
 | Parameter | Type | Required | Default | Description |
 |-----------|------|----------|---------|-------------|
 | `agent_id` | string | Yes | - | Agent ID |
-| `limit` | int | No | `100` | Maximum entries to include in batch |
+| `start_date` | string | No | `""` | ISO timestamp for start of range. Empty = all |
+| `end_date` | string | No | `""` | ISO timestamp for end of range. Empty = all |
 
-**Returns:** Merkle root hash, entry count, and transaction receipt.
+**Returns:** The anchor record (transaction hash, explorer URL) plus `batch_metadata` with `merkle_root` and `entry_count`. There is no entry cap.
 
 ### `verify_anchor`
 
-Verify an on-chain anchor against local data.
-
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `artifact_id` | string | Yes | Agent ID or credential URN to verify |
-
-### `get_anchor_status`
-
-Get all anchoring records for an artifact.
-
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `artifact_id` | string | Yes | Agent ID or credential URN |
-
-### `estimate_anchor_cost`
-
-Estimate gas cost for anchoring an artifact.
+Verify an on-chain anchor against local data. Provide either `artifact_id` or `artifact_hash`. The result carries a `verified` field (`true`, `false`, or `"local_only"` when the blockchain is not configured but a local record exists).
 
 | Parameter | Type | Required | Default | Description |
 |-----------|------|----------|---------|-------------|
-| `artifact_type` | string | Yes | - | `identity`, `credential`, or `audit_batch` |
+| `artifact_id` | string | No | `""` | Agent ID or credential URN; looked up and hashed |
+| `artifact_hash` | string | No | `""` | SHA-256 hex hash to verify directly |
+
+### `get_anchor_status`
+
+Get all anchoring records for an agent, grouped by type.
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `agent_id` | string | Yes | Attestix agent ID |
+
+### `estimate_anchor_cost`
+
+Estimate gas cost for anchoring an artifact. Returns `estimated_gas` (a fixed 300000), `gas_price_gwei`, `estimated_cost_eth`, `balance_eth`, and `can_afford`.
+
+| Parameter | Type | Required | Default | Description |
+|-----------|------|----------|---------|-------------|
+| `artifact_type` | string | No | `"identity"` | `identity`, `credential`, `declaration`, or `audit_batch` |

@@ -1,28 +1,29 @@
 ---
 title: Enterprise platform architect Quickstart
-description: Run Attestix as a service behind your own ingress. Multi-tenant context, idempotent REST, hash-chained audit. Honest about what's not in v0.4.0.
+description: Run Attestix as a service behind your own ingress. Multi-tenant context, idempotent REST, hash-chained audit. Honest about what's not in v0.4.1.
 ---
 
 ## You're here because…
 
-You're evaluating whether Attestix can sit inside an enterprise platform as a deployable service, not a CLI. The funnel evaluation flagged that enterprise evaluators got past install but dropped at integration: file-based storage, one signing key, no RBAC, no multi-tenant isolation, no KMS. **Most of that is still true in v0.4.0.** What v0.4.0 *does* ship: a proper Python package, idempotent REST endpoints, audit events per service, and an in-process tenant context. The honest gaps are listed at the bottom of this page so your architecture review can land on them now.
+You're evaluating whether Attestix can sit inside an enterprise platform as a deployable service, not a CLI. Enterprise teams usually get past install and stall at integration: file-based storage, one signing key, no RBAC, no multi-tenant isolation, no KMS. **Most of that is still true in v0.4.1.** What v0.4.x *does* ship: a proper Python package, a REST API with optional idempotency keys, structured audit events per service, and a tenant-context slot. The honest gaps are listed at the bottom of this page so your architecture review can land on them now.
 
 ## 60-second install
 
 ```bash
-pip install --pre 'attestix[api]'
+pip install 'attestix[api]'
 ```
 
-Run as a service:
+Run as a service. Auth is required by default: set `ATTESTIX_API_KEY` and send it as the `X-API-Key` header (or set `ATTESTIX_ALLOW_NO_AUTH=1` for local development only; otherwise protected endpoints return 503):
 
 ```bash
+export ATTESTIX_API_KEY=change-me
 uvicorn attestix.api.main:app --host 0.0.0.0 --port 8000
 ```
 
-Or as an MCP server over HTTP for AI workloads:
+The MCP server is stdio-only (no HTTP transport). For AI workloads that speak MCP, launch it as a subprocess:
 
 ```bash
-attestix mcp --transport http --port 8501
+python -m attestix.main
 ```
 
 ## First 30 lines that actually do something
@@ -33,6 +34,7 @@ attestix mcp --transport http --port 8501
 import os, requests, uuid
 
 BASE = os.environ.get("ATTESTIX_URL", "http://localhost:8000")
+AUTH = {"X-API-Key": os.environ["ATTESTIX_API_KEY"]}
 
 resp = requests.post(
     f"{BASE}/v1/identities",
@@ -43,10 +45,11 @@ resp = requests.post(
         "issuer_name": "VibeTensor",
     },
     headers={
+        **AUTH,
         "Idempotency-Key": str(uuid.uuid4()),
-        # In a multi-tenant deployment, your gateway maps an authenticated
-        # principal to a tenant id and stamps this header before forwarding.
-        "X-Tenant-Id": "tenant_a",
+        # Optional. In v0.4.1 this header only scopes idempotency keys;
+        # it does not isolate stored data between tenants.
+        "X-Attestix-Tenant": "tenant_a",
     },
     timeout=10,
 )
@@ -54,10 +57,12 @@ resp.raise_for_status()
 agent = resp.json()
 print(agent["agent_id"], agent["issuer"]["did"])
 
-# Subsequent reads scope to the same tenant.
+# Action log for the agent (rows written by log_action / POST /v1/provenance/actions;
+# 0 until you log something).
 trail = requests.get(
     f"{BASE}/v1/provenance/audit-trail/{agent['agent_id']}",
-    headers={"X-Tenant-Id": "tenant_a"},
+    headers=AUTH,
+    timeout=10,
 ).json()
 print(len(trail), "audit rows so far")
 ```
@@ -65,28 +70,29 @@ print(len(trail), "audit rows so far")
 ## What you just got
 
 - An HTTP service exposing the 44 REST endpoints, all under a `/v1/` prefix (`/v1/identities`, `/v1/credentials`, `/v1/compliance`, `/v1/provenance/audit-trail/{id}`, `/v1/delegations`, …), the same surface as the 47 MCP tools.
-- An idempotency middleware: repeating the same `Idempotency-Key` returns the cached response, not a duplicate write.
-- A tenant context header (`X-Tenant-Id`) that is plumbed through every service and stamped onto audit events. Pair it with your existing OIDC / mTLS edge.
+- An idempotency middleware: repeating the same `Idempotency-Key` on a write returns the cached response, not a duplicate write.
+- An optional tenant header (`X-Attestix-Tenant`). In v0.4.1 it scopes idempotency keys only; services and stored data are not partitioned by tenant, so run one instance per tenant if you need isolation. Put your existing OIDC / mTLS edge in front of the API key.
 
 ## Next step (5 minutes)
 
-Wire structured audit shipping to your SIEM. Audit events emit as JSON lines into `audit_log.jsonl` (rotateable); the simplest path is a sidecar tailing it:
+Wire structured audit shipping to your SIEM. Structured audit events (hash-chained, not signed) are stored in a single JSON document, `~/.attestix/audit.json` (or under `ATTESTIX_DATA_DIR`); there is no JSON-lines log file to tail. The simplest path is a scheduled job that reads the file and forwards new events:
 
 ```bash
-tail -F audit_log.jsonl | your-siem-shipper --type attestix
+# example: forward the audit document on a schedule
+cat ~/.attestix/audit.json | your-siem-shipper --type attestix
 ```
 
 The deeper [architecture guide](/docs/guides/architecture) covers the service decomposition (9 services), the on-disk format, and the hash-chain layout.
 
 ## Open caveats for enterprise production
 
-These are explicit gaps in v0.4.0; track them on the [roadmap](/docs/project/roadmap):
+These are explicit gaps in v0.4.1; track them on the [roadmap](/docs/project/roadmap):
 
-| Concern | v0.4.0 reality |
+| Concern | v0.4.1 reality |
 |---|---|
 | Storage | Flat JSON files. Postgres / S3 backend is planned. |
-| Signing key | `.signing_key.json`, plaintext by default. Encrypted-at-rest is opt-in via `ATTESTIX_KEY_PASSPHRASE`. KMS / HSM / Vault is planned. |
-| RBAC / IAM | Tenant header is honoured by services; full RBAC + OIDC / SAML mapping is not in scope for v0.4.0. |
+| Signing key | `~/.attestix/.signing_key.json`, unencrypted by default. Encrypted-at-rest is opt-in via `ATTESTIX_KEY_PASSWORD` (Fernet, PBKDF2-derived key). KMS / HSM / Vault is planned. |
+| RBAC / IAM | A single shared API key. The tenant header scopes idempotency keys only; RBAC, per-tenant data isolation, and OIDC / SAML mapping are not in v0.4.1. |
 | HA | Single-process. Multi-replica with shared state needs the pluggable storage backend first. |
 | Third-party security audit | None to date. |
-| Anchoring | Base L2 **testnet** only (Sepolia). Mainnet schema registration on the roadmap. |
+| Anchoring | Base L2 via EAS; Sepolia testnet by default, mainnet with `BASE_NETWORK=mainnet` (real funds). Needs the `[blockchain]` extra and `EVM_PRIVATE_KEY`. |

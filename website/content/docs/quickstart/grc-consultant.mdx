@@ -5,12 +5,12 @@ description: Generate Annex IV technical documentation and an Annex V Declaratio
 
 ## You're here because…
 
-You're consulting on EU AI Act readiness and you need a tool that produces *machine-readable* evidence for Annex IV / Annex V, not another GRC dashboard. The funnel evaluation flagged that the GRC persona was one of only two TRIAL verdicts, but still dropped at integration because the docs conflated cryptographic integrity with regulatory conformity. This page de-conflates them: a signed VC proves an artefact existed and wasn't tampered with; it does **not** replace notified-body sign-off for high-risk systems.
+You're consulting on EU AI Act readiness and you need a tool that produces *machine-readable* evidence for Annex IV / Annex V, not another GRC dashboard. Earlier versions of these docs conflated cryptographic integrity with regulatory conformity. This page separates them: a signed VC proves an artefact existed and wasn't tampered with; it does **not** replace the conformity assessment itself, or notified-body sign-off where Article 43 requires one.
 
 ## 60-second install
 
 ```bash
-pip install --pre attestix
+pip install attestix
 ```
 
 ## First 30 lines that actually do something
@@ -38,23 +38,27 @@ ProvenanceService().record_training_data(
     data_governance_measures="Removed protected attributes per Art. 10(2)(f). Bias audit Q4-2025.",
 )
 
-# Annex III §4(a) — employment / HR screening = high-risk
+# Annex III point 4(a): employment / CV screening = high-risk
 ComplianceService().create_compliance_profile(
     agent_id=agent_id,
     risk_category="high",
     provider_name="Client Co.",
     intended_purpose="Initial CV screening with human reviewer in the loop.",
     human_oversight_measures="Recruiter reviews shortlist; no automated rejection.",
-    transparency_obligations="Candidates informed of AI assistance per Article 50.",
+    transparency_obligations="Candidates informed that a high-risk AI system assists screening (Art. 26(11)).",
+    annex_iii_category=4,
 )
 
-# Article 43 — record the third-party assessment your client procured.
+# Article 43(2): Annex III points 2-8 use internal control (Annex VI), so the
+# provider's own assessment is the conformity assessment here. (Annex III point 1,
+# biometrics, needs a notified body when harmonised standards are not applied;
+# Annex I products follow their sectoral procedure.)
 ComplianceService().record_conformity_assessment(
     agent_id=agent_id,
-    assessment_type="third_party",
-    assessor_name="Notified Body NB-0482",
+    assessment_type="self",
+    assessor_name="Client Co. conformity team (Annex VI internal control)",
     result="pass",
-    findings="System meets Annex III §4(a) requirements with documented oversight.",
+    findings="Chapter III, Section 2 requirements met; human oversight documented.",
     ce_marking_eligible=True,
 )
 
@@ -64,8 +68,8 @@ print(declaration["declaration_id"])  # signed Annex V document id
 
 ## What you just got
 
-- An Annex IV-shaped technical documentation bundle (identity + training data + model lineage + compliance profile + audit trail), every entry Ed25519-signed.
-- A signed Annex V Declaration of Conformity, issued only after a third-party assessment row exists, because the service refuses to declare conformity on a self-assessment for high-risk systems.
+- The start of an Annex IV-shaped evidence set (identity + training data + compliance profile + conformity assessment), each record signed with the server's Ed25519 key. Add `record_model_lineage` and `log_action` calls to cover model lineage and the Article 12 trail.
+- A signed Annex V Declaration of Conformity, issued only after a passing conformity assessment row exists. The service accepts a `self` assessment for Annex III points 2-8 (when `annex_iii_category` is set) and requires `third_party` for point 1 or when no category is set.
 - A path to bundle the evidence into a W3C Verifiable Presentation for the regulator:
 
 ```python
@@ -84,7 +88,7 @@ Read this section before billing a client. It is the single most important disti
 | Attestix proves… | Attestix does NOT prove |
 |---|---|
 | The declaration existed at this hash | A notified body has approved CE marking |
-| The third-party assessment row was recorded by this issuer DID | The assessor's findings are factually sound |
+| The conformity assessment row was recorded by this issuer DID | The assessor's findings are factually sound |
 | The audit trail is internally consistent (hash chain unbroken) | The agent's actual behaviour matched the declared purpose |
 | The signing key controlled by this issuer signed the artefact | Legal liability has shifted from provider to anyone else |
 
@@ -92,10 +96,19 @@ Provider liability under Articles 16 to 22 stays with the provider regardless of
 
 ## Next step (5 minutes)
 
-Pull the full hash-chained Article 12 trail for the client's audit binder:
+Pull the full hash-chained Article 12 trail for the client's audit binder. `attestix audit` prints human-readable text (and a chain-integrity check), not JSON:
 
 ```bash
-attestix audit <agent_id> --limit 500 > client-audit-2026.jsonl
+attestix audit <agent_id> --limit 500 > client-audit-2026.txt
+```
+
+For machine-readable rows, use Python:
+
+```python
+import json
+from attestix.services.provenance_service import ProvenanceService
+rows = ProvenanceService().get_audit_trail(agent_id, limit=500)  # default limit is 50
+json.dump(rows, open("client-audit-2026.json", "w"), indent=2)
 ```
 
 Inspect the chained provenance bundle (training data + model lineage + audit log) for the binder:
@@ -107,9 +120,9 @@ print(bundle["audit_log_count"], "audit rows;",
       len(bundle.get("training_data", [])), "datasets")
 ```
 
-Each row in `get_audit_trail(agent_id)` carries the `prev_hash` and `entry_hash` fields, so a third party can re-derive the chain offline without contacting Attestix.
+Each row in `get_audit_trail(agent_id)` carries `prev_hash` and `chain_hash` fields, so a third party can re-derive the chain offline without contacting Attestix: `chain_hash` is SHA-256 of `prev_hash + ":" + ` the row serialised as sorted, compact JSON with only `chain_hash` and `signature` removed (`prev_hash` stays in).
 
-If you want an on-ledger commitment so the client can prove the bundle existed at a block height, add a Base **Sepolia testnet** anchor (mainnet schema is on the roadmap; testnet anchors are **not** legally non-repudiable):
+If you want an on-ledger commitment so the client can prove the bundle existed at a block height, add a Base L2 anchor. This needs `pip install 'attestix[blockchain]'` and a funded wallet key in `EVM_PRIVATE_KEY`; it uses **Sepolia testnet** by default (`BASE_NETWORK=mainnet` for mainnet). An anchor proves a hash existed at a block height; it is **not** a legal non-repudiation guarantee:
 
 ```python
 from attestix.services.blockchain_service import BlockchainService

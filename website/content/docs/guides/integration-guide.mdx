@@ -3,31 +3,32 @@ title: Integration Guide
 description: How to use Attestix with LangChain, OpenAI Agents SDK, CrewAI, plain Python, and other MCP clients.
 ---
 
-Attestix integrates with three agent frameworks as real (not example) integrations shipped in v0.3.0 (LangChain, OpenAI Agents SDK, and CrewAI) and with any MCP-compatible client through the generic MCP server. v0.4.0 is the current stable release; treat the integrations as you would any pre-1.0 OSS crypto stack and pin the version you depend on.
+Attestix ships helper classes for three agent frameworks in the `attestix.integrations` package (LangChain, OpenAI Agents SDK, and CrewAI; importable from the wheel since v0.4.0) and works with any MCP-compatible client through its stdio MCP server. The current release is 0.4.1. Attestix is pre-1.0 software: pin the version you depend on.
 
 ## Shipped integrations
 
 <Cards>
   <Card href="/docs/guides/langchain" title="LangChain">
-    First-party `BaseCallbackHandler`. Every tool call, LLM call, and chain step is attested.
+    `AttestixCallback`, a first-party `BaseCallbackHandler` that logs LLM, tool, and chain events to the Attestix audit log.
   </Card>
   <Card href="/docs/guides/openai-agents-sdk" title="OpenAI Agents SDK">
-    Native MCP server via `MCPServerStdio`. All 47 Attestix tools discovered automatically.
+    Stdio MCP server via `MCPServerStdio` (all 47 tools discovered automatically), plus the `AttestixAuditHook` helper.
   </Card>
   <Card href="/docs/guides/crewai" title="CrewAI">
-    `MCPServerAdapter` per agent. Crew-wide compliance profile and UCAN hand-offs.
+    Stdio MCP server via `MCPServerAdapter`, plus the `AttestixCrewAdapter` helper for task start/finish logging.
   </Card>
 </Cards>
 
 ## Example integrations via MCP
 
-Any MCP client can consume Attestix. The following ship with reference configs as example integrations, not production-certified:
+Any MCP client that can launch a stdio server can consume Attestix. The repository also contains example scripts for other frameworks in [`integrations/examples/`](https://github.com/VibeTensor/attestix/tree/main/integrations/examples). These are illustrative only: they simulate the framework runtime (no framework install needed) and call Attestix services directly. They are not shipped integrations or reference configs.
 
-- Dify / `mcp_servers` in the workflow config
-- Google ADK / `McpClient` tool registration
-- Microsoft Semantic Kernel / MCP plugin layer
-- Strands / MCP runtime binding
-- Claude Desktop, Cursor, Continue, Windsurf, VS Code
+- Dify (`dify_compliance.py`)
+- Google ADK (`google_adk_compliance.py`)
+- Microsoft Semantic Kernel (`semantic_kernel_compliance.py`)
+- AWS Strands Agents (`strands_compliance.py`)
+
+For desktop MCP clients such as Claude Desktop, Cursor, Continue, Windsurf, or VS Code, use the generic stdio configuration below. Attestix does not ship client-specific configs for them.
 
 ## As a plain Python library
 
@@ -53,28 +54,36 @@ agent = identity_svc.create_identity(
 )
 ```
 
-All services share the same Ed25519 signing key (auto-generated on first use) and the same JSON storage files.
+All services share the same Ed25519 server signing key (auto-generated on first use) and the same JSON storage files, both under `~/.attestix` by default (override with `ATTESTIX_DATA_DIR`).
 
 ## As an MCP server (stdio)
+
+The MCP server speaks stdio only. Launch it with `python -m attestix.main`:
 
 ```json
 {
   "mcpServers": {
     "attestix": {
-      "command": "attestix",
-      "args": ["mcp"]
+      "command": "python",
+      "args": ["-m", "attestix.main"]
     }
   }
 }
 ```
 
-## As an MCP server (HTTP)
+Use the full path to the Python interpreter of the environment where `attestix` is installed if `python` on the client's PATH points elsewhere.
+
+## Over HTTP (REST API)
+
+The MCP server has no HTTP transport. For network access, run the REST API instead:
 
 ```bash
-attestix mcp --transport http --port 8501
+pip install "attestix[api]"
+export ATTESTIX_API_KEY="change-me"
+uvicorn attestix.api.main:app --port 8000
 ```
 
-Then connect any MCP client to `http://localhost:8501/mcp`.
+Clients send the key in the `X-API-Key` header. If neither `ATTESTIX_API_KEY` nor `ATTESTIX_ALLOW_NO_AUTH=1` (local development only) is set, non-public paths return 503.
 
 ## Next
 

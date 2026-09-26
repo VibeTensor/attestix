@@ -3,8 +3,6 @@ title: 'npm package rename: @vibetensor/attestix to attestix'
 description: How to migrate to the bare 'attestix' name on npm (now matching pip install attestix on PyPI).
 ---
 
-# npm package rename: `@vibetensor/attestix` → `attestix`
-
 **TL;DR**: the JS/TS verifier package is now published as bare `attestix`
 on npm, matching `pip install attestix` on PyPI. The old scoped name
 `@vibetensor/attestix` is **deprecated** and will receive no new versions.
@@ -31,13 +29,14 @@ npm uninstall @vibetensor/attestix
 npm install attestix
 
 # 3. Find and replace imports across your repo
-#    (POSIX / Git Bash / WSL — adjust for your shell):
+#    (POSIX / Git Bash / WSL - adjust for your shell):
 grep -rln "@vibetensor/attestix" . --include='*.{js,ts,jsx,tsx,mjs,cjs}' \
   | xargs sed -i 's|@vibetensor/attestix|attestix|g'
 ```
 
-The exports and API surface are **identical**. Only the package name
-changed. No source code changes are required beyond the import string.
+The exports and API surface are **identical**. The bare package starts at
+version 0.4.0 (the scoped package stopped at 0.2.0), so update the version
+range as well as the import string.
 
 ### Before / after
 
@@ -50,17 +49,17 @@ import { verifyCredential } from 'attestix'
 ```
 
 ```json
-// package.json — before
+// package.json - before
 {
   "dependencies": {
     "@vibetensor/attestix": "^0.2.0"
   }
 }
 
-// package.json — after
+// package.json - after
 {
   "dependencies": {
-    "attestix": "^0.2.0"
+    "attestix": "^0.4.1"
   }
 }
 ```
@@ -78,13 +77,13 @@ import { verifyCredential } from 'attestix'
 
 | Date | Event |
 |------|-------|
-| 2026-05-28 | `attestix@0.2.0` published to npm. `@vibetensor/attestix@0.2.0` deprecated with a redirect message in the `npm install` output. |
-| 2026-06-30 | Last scoped patch (`@vibetensor/attestix@0.2.1`) ships only if a P0 security fix is required. |
-| 2026-08-01 | Scoped name receives no further updates. Use `npm install attestix` for all new versions. |
+| 2026-05-30 | `attestix@0.4.0` published to npm under the bare name. `@vibetensor/attestix@0.2.0` deprecated with a redirect message in the `npm install` output. |
+| 2026-06-16 | `attestix@0.4.1` published (current). |
+| 2026-06-30 | Window for a final scoped patch closed; no `@vibetensor/attestix@0.2.1` was needed or published. |
+| 2026-08-01 | Scoped name frozen. It received no further updates; use `npm install attestix` for all versions. |
 
-The scoped package will remain installable indefinitely (npm does not
-unpublish packages older than 72 hours after first publish), but it
-freezes at the deprecation date.
+The scoped package remains installable (npm does not unpublish packages
+older than 72 hours after first publish), but it is frozen at 0.2.0.
 
 ## Verify your migration
 
@@ -118,5 +117,5 @@ The type declarations are identical between the two package names.
 - [Offline Verification Walkthrough](/docs/guides/offline-verify): the
   same canonical-JSON form + Ed25519 verification, in Python.
 - [Migrating to the canonical `attestix.*` namespace
-  (v0.4.0-rc.2)](/docs/guides/migration-v0.4.0-namespace): the
+  (v0.4.0)](/docs/guides/migration-v0.4.0-namespace): the
   Python-side namespace migration for the same release.

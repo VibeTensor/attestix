@@ -1,28 +1,31 @@
 ---
 title: CrewAI Integration
-description: Attach Attestix to every CrewAI agent via MCPServerAdapter. Real (not example) integration shipped in v0.3.0; v0.4.0-rc.2 release candidate. Crews become attestable by default.
+description: Give CrewAI agents the 47 Attestix MCP tools via MCPServerAdapter, and log task starts and finishes with the AttestixCrewAdapter helper (shipped in the attestix wheel since v0.4.0; current release 0.4.1).
 ---
 
-CrewAI agents receive Attestix tools through the `tools` field, populated by the `MCPServerAdapter`. Every agent in the crew discovers all 47 Attestix tools, and role hand-offs are recorded as UCAN delegations.
+CrewAI agents receive Attestix tools through the `tools` field, populated by CrewAI's `MCPServerAdapter` over stdio. Every agent in the crew can discover all 47 Attestix tools. For an audit trail of the crew's task graph, Attestix also ships `AttestixCrewAdapter`, a small helper you call from your task callbacks.
 
 ## Install
 
 ```bash
-pip install attestix[crewai]
+pip install "attestix[crewai]" crewai-tools
 ```
+
+The `[crewai]` extra installs `crewai` (`>=0.95,<0.200`). `MCPServerAdapter` lives in `crewai-tools`, and `StdioServerParameters` comes from the `mcp` package (already an Attestix dependency).
 
 ## Minimal wiring
 
-`MCPServerAdapter` is a context manager that yields the discovered tool list. Pass it into the agent's `tools` field.
+`MCPServerAdapter` is a context manager that yields the discovered tool list. The Attestix MCP server is stdio only; launch it with `python -m attestix.main`.
 
 ```python
+import sys
 from crewai import Agent, Crew, Task
 from crewai_tools import MCPServerAdapter
 from mcp import StdioServerParameters
 
 server_params = StdioServerParameters(
-    command="attestix",
-    args=["mcp"],
+    command=sys.executable,
+    args=["-m", "attestix.main"],
 )
 
 with MCPServerAdapter(server_params) as attestix_tools:
@@ -36,37 +39,69 @@ with MCPServerAdapter(server_params) as attestix_tools:
     task = Task(
         description="Produce the Q4 report",
         agent=analyst,
-        expected_output="A signed compliance declaration.",
+        expected_output="A Q4 report summary.",
     )
 
     crew = Crew(agents=[analyst], tasks=[task])
     result = crew.kickoff()
 ```
 
-## Crew-wide compliance profile
+Giving agents the tools does not by itself audit the crew. Attestix records an audit event only when a state-changing Attestix tool is actually called (for example `create_agent_identity`, `issue_credential`, `log_action`).
 
-Before the crew runs, issue a single compliance profile that every agent references:
+## Logging the task graph with AttestixCrewAdapter
+
+`AttestixCrewAdapter` (in `attestix.integrations.crewai`) does not import or hook into CrewAI itself. You call it from your own CrewAI task callbacks, and each call writes one `log_action` entry (`action_type="data_access"`) to the Attestix audit log, hash-chained per agent and signed with the Attestix server key.
 
 ```python
+from attestix.integrations.crewai import AttestixCrewAdapter
+
+adapter = AttestixCrewAdapter(
+    agent_id=None,               # existing Attestix agent_id; None = auto-create
+    display_name="ResearchCrew", # only used when auto-creating
+    issuer_name="self",          # only used when auto-creating
+)
+
+adapter.log_task_start(task_name="research", agent_role="researcher", inputs={"quarter": "Q4"})
+# ... run the task ...
+adapter.log_task_finish(task_name="research", output_summary="3 documents summarised")
+
+print(adapter.get_audit_summary()["audit_entries"])
+```
+
+- `log_task_start(*, task_name, agent_role="", inputs=None)` stores `inputs` as a string, truncated to 500 characters.
+- `log_task_finish(*, task_name, output_summary="")` stores the summary truncated to 500 characters.
+- When `agent_id` is `None`, a new identity is created on every construction; pass a stable `agent_id` to attribute all runs to one agent.
+
+## Crew-wide compliance profile
+
+A compliance profile is attached to an existing Attestix identity, so create the identity first:
+
+```python
+from attestix.services.identity_service import IdentityService
 from attestix.services.compliance_service import ComplianceService
 
+crew_identity = IdentityService().create_identity(
+    display_name="crew-q4-report",
+    source_protocol="manual",
+)
+
 profile = ComplianceService().create_compliance_profile(
-    agent_id="attestix:crew-q4-report",
-    risk_category="high",
+    agent_id=crew_identity["agent_id"],
+    risk_category="minimal",  # classify your own system; see the risk classification guide
     provider_name="VibeTensor",
     intended_purpose="Quarterly financial analysis for board review",
 )
 ```
 
-All audit entries from the crew link to this profile for traceability.
+`create_compliance_profile` returns `{"error": ...}` if the agent does not exist or already has a profile. Audit entries are not linked to the profile automatically; they are linked by `agent_id`, so use the same `agent_id` for `AttestixCrewAdapter` if you want one trail per crew.
 
-## Role hand-offs as UCAN
+## Role hand-offs
 
-When an agent hands a task to another agent, Attestix records a UCAN delegation with the attenuated capabilities. Useful for Article 14 (human oversight) evidence.
+CrewAI delegation between agents is not recorded by Attestix, and no delegation tokens are created for it. If you need a hand-off on the record, log it with `adapter.log_task_start(...)` / `log_task_finish(...)`, and if the receiving agent should hold scoped rights, issue a UCAN-style delegation token (a server-signed JWT) with the `create_delegation` MCP tool or `DelegationService`.
 
 ## Sequential vs hierarchical crews
 
-Both topologies work. For hierarchical crews with a manager agent, issue the compliance profile under the manager and let it flow down via delegation.
+Both topologies work with `MCPServerAdapter`:
 
 ```python
 from crewai import Crew, Process
@@ -77,7 +112,7 @@ with MCPServerAdapter(server_params) as attestix_tools:
     reviewer = Agent(role="Reviewer", tools=attestix_tools, ...)
 
     crew = Crew(
-        agents=[manager, analyst, reviewer],
+        agents=[analyst, reviewer],
         tasks=[report_task],
         process=Process.hierarchical,
         manager_agent=manager,
@@ -85,21 +120,25 @@ with MCPServerAdapter(server_params) as attestix_tools:
     result = crew.kickoff()
 ```
 
-## Verify the crew output
+Nothing flows down automatically in a hierarchical crew: the compliance profile stays attached to the identity you created it for.
 
-Each task emits a VC on success. Bundle them for a regulator with a Verifiable Presentation:
+## Bundling credentials for a reviewer
+
+No credential is issued per task automatically. If you issue credentials yourself (for example with `CredentialService().issue_credential(...)` or the `issue_credential` tool), you can bundle those that belong to one agent into a Verifiable Presentation:
 
 ```python
 from attestix.services.credential_service import CredentialService
 
 vp = CredentialService().create_verifiable_presentation(
-    holder_id="attestix:crew-q4-report",
-    credentials=[credential_id],
-    verifier="did:web:eu.regulator",
+    agent_id=crew_identity["agent_id"],
+    credential_ids=[credential_id],
+    audience_did="did:web:eu.regulator",
     challenge="ch_q4_2026",
 )
 ```
 
-## Sample repository
+Every credential must have the given agent as its subject. The presentation is signed with the Attestix server key (Ed25519 over Attestix's RFC 8785-style canonical JSON), so verify it with the Attestix verifiers (`verify_presentation`), not a generic W3C verifier.
 
-See [github.com/VibeTensor/attestix/tree/main/examples](https://github.com/VibeTensor/attestix/tree/main/examples) for a complete crew with three roles and a signed hand-off chain.
+## Sample code
+
+[`integrations/examples/crewai_real_integration.py`](https://github.com/VibeTensor/attestix/blob/main/integrations/examples/crewai_real_integration.py) launches the Attestix MCP server through `MCPServerAdapter` and drives a three-agent crew (researcher, compliance officer, report writer) against real Attestix services. Note that the script launches the server with `python -m main` from a repo checkout; with the installed package use `python -m attestix.main`.

@@ -3,12 +3,10 @@ title: Getting Started with Attestix
 description: Get your first AI agent identity in under 5 minutes.
 ---
 
-# Getting Started with Attestix
-
 Get your first AI agent identity in under 5 minutes.
 
 <Callout title="Looking for a role-specific path?">
-The [quickstart pages](/docs/quickstart) cover 10 ICP personas (indie dev, fintech compliance, healthcare ML, enterprise architect, GRC consultant, DevTools skeptic, web3, AI safety, startup CTO, MLOps). Each is a 90-second-readable copy-paste path written against the exact pain point that persona hit in the v0.4.0 funnel evaluation.
+The [quickstart pages](/docs/quickstart) cover 10 roles (indie dev, fintech compliance, healthcare ML, enterprise architect, GRC consultant, DevTools skeptic, web3, AI safety, startup CTO, MLOps). Each is a short copy-paste path aimed at the first problem that role usually hits.
 </Callout>
 
 ## Prerequisites
@@ -47,7 +45,7 @@ Add to your Claude Code config (`~/.claude.json` on macOS/Linux, `%USERPROFILE%\
     "attestix": {
       "type": "stdio",
       "command": "python",
-      "args": ["/path/to/attestix/main.py"]
+      "args": ["-m", "attestix.main"]
     }
   }
 }
@@ -83,8 +81,7 @@ print(f"Signed: {bool(agent['signature'])}")
 ## Option C: Run as Standalone MCP Server
 
 ```bash
-cd attestix
-python main.py
+python -m attestix.main
 ```
 
 This starts the MCP server on stdio, ready for any MCP client to connect.
@@ -96,8 +93,8 @@ When you created an identity, Attestix:
 1. Generated a unique agent ID (e.g., `attestix:f9bdb7a94ccb40f1`)
 2. Created a Unified Agent Identity Token (UAIT) containing your agent's name, capabilities, and metadata
 3. Signed the UAIT with Ed25519 using the server's cryptographic key
-4. Stored the UAIT in `identities.json` (created automatically)
-5. Assigned a DID (Decentralized Identifier) derived from the signing key
+4. Stored the UAIT in `~/.attestix/identities.json` (or under `ATTESTIX_DATA_DIR` if set; created automatically)
+5. Recorded the issuer DID, which is the server's `did:key` derived from its signing key (agents do not get their own keypair)
 
 ## Verify Your Agent
 
@@ -117,8 +114,8 @@ print(result)
 
 ## First-Time Setup Notes
 
-- **Signing key**: On first run, Attestix auto-generates an Ed25519 keypair stored in `.signing_key.json`. This is your server's identity. Keep it safe.
-- **Data files**: JSON files (`identities.json`, `credentials.json`, etc.) are created lazily on first use. No database setup needed.
+- **Signing key**: On first run, Attestix auto-generates an Ed25519 keypair stored in `~/.attestix/.signing_key.json`. This is your server's identity. Keep it safe and back it up; set `ATTESTIX_KEY_PASSWORD` to encrypt it at rest.
+- **Data files**: JSON files (`identities.json`, `credentials.json`, `audit.json`, etc.) are created lazily under `~/.attestix` on first use. No database setup needed.
 - **No cloud dependency**: Everything runs locally. No external API calls needed for core operations.
 
 ## Next Steps
