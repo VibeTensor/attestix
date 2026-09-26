@@ -3,24 +3,23 @@ import { constructMetadata } from "@/lib/utils";
 import Link from "next/link";
 
 export const metadata = constructMetadata({
-  title: "Research",
+  title: "Research paper",
   description:
     "The research paper behind Attestix. IEEE-format LaTeX, open-access, peer review in progress.",
 });
 
-export default function ResearchPage() {
+export default function ResearchPaperPage() {
   return (
-    <section className="mx-auto max-w-[1080px] px-7 py-24">
-      <AtxEyebrow>Research</AtxEyebrow>
-      <h1 className="mt-3 font-serif text-[clamp(36px,4.8vw,60px)] leading-[1.05] tracking-[-0.012em] text-atx-ink">
-        Attestation
-        <br />
-        infrastructure
-        <br />
-        <em className="italic text-atx-accent">for AI agents.</em>
+    <section className="mx-auto max-w-[760px] px-6 pb-20 pt-16">
+      <Link href="/research" className="text-[14px] text-atx-ink-dim transition-colors duration-200 hover:text-atx-ink">
+        &larr; Research
+      </Link>
+      <AtxEyebrow className="mt-8">Research paper</AtxEyebrow>
+      <h1 className="mt-3 text-[clamp(34px,5vw,52px)] font-normal leading-[1.09] tracking-[-0.03em] text-atx-ink [text-wrap:balance]">
+        Attestation infrastructure <span className="text-atx-accent">for AI agents</span>
       </h1>
 
-      <div className="mt-10 flex flex-wrap items-center gap-4 font-mono-atx text-[11px] uppercase tracking-[0.14em] text-atx-ink-dim">
+      <div className="mt-6 flex flex-wrap items-center gap-3 text-[13px] text-atx-ink-dim">
         <span>IEEE format</span>
         <span>&middot;</span>
         <span>Open access (Apache 2.0)</span>
