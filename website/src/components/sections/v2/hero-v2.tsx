@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { HeroCert } from "./hero-cert";
-import { HeroStats } from "./hero-stats";
 import { siteConfig } from "@/lib/config";
 
 export function HeroV2() {
@@ -66,8 +65,6 @@ export function HeroV2() {
 
         <HeroCert />
       </div>
-
-      <HeroStats />
     </section>
   );
 }

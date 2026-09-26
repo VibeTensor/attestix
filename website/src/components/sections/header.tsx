@@ -45,8 +45,8 @@ export function Header() {
                 key={link.label}
                 href={link.href}
                 aria-current={active ? "page" : undefined}
-                className={`font-mono-atx text-[11px] uppercase tracking-[0.14em] transition-colors hover:text-atx-accent ${
-                  active ? "text-atx-ink" : "text-atx-ink-dim"
+                className={`text-[14px] transition-colors hover:text-atx-accent ${
+                  active ? "text-atx-ink" : "text-atx-ink-mid"
                 }`}
               >
                 {link.label}

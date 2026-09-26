@@ -14,6 +14,7 @@ export function HeroStats() {
           <div className="font-mono-atx text-[11px] uppercase tracking-[0.12em] text-atx-ink-dim">
             {s.k}
           </div>
+          <div className="text-[12px] text-atx-ink-faint">{s.n}</div>
         </div>
       ))}
     </div>
