@@ -26,18 +26,23 @@ const jetbrainsMono = JetBrains_Mono({
   display: "swap",
 });
 
-export const metadata: Metadata = constructMetadata({
-  title: `${siteConfig.name} - ${siteConfig.description}`,
-  description:
-    "Verifiable identity, W3C credentials, delegation chains, and reputation scoring for every AI agent. 47 MCP tools, 9 modules, EU AI Act ready. Open source, Apache 2.0.",
-  alternates: {
-    canonical: siteConfig.url,
-    types: {
-      "application/rss+xml": `${siteConfig.url}/feed.xml`,
-      "application/feed+json": `${siteConfig.url}/feed.json`,
+const homeTitle = `${siteConfig.name} - Cryptographic proof your AI agents are compliant`;
+
+export const metadata: Metadata = {
+  ...constructMetadata({
+    title: homeTitle,
+    description:
+      "Verifiable identity, W3C credentials, delegation chains, and reputation scoring for every AI agent. 47 MCP tools, 9 modules, EU AI Act ready. Open source, Apache 2.0.",
+    alternates: {
+      // No canonical at the root: it is inherited by every route.
+      types: {
+        "application/rss+xml": `${siteConfig.url}/feed.xml`,
+        "application/feed+json": `${siteConfig.url}/feed.json`,
+      },
     },
-  },
-});
+  }),
+  title: { default: homeTitle, template: `%s | ${siteConfig.name}` },
+};
 
 export const viewport: Viewport = {
   colorScheme: "dark",

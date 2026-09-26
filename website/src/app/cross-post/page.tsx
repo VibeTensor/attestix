@@ -4,11 +4,15 @@ import { Header } from "@/components/sections/header";
 import { FooterV2 } from "@/components/sections/v2/footer-v2";
 import Link from "next/link";
 
-export const metadata = constructMetadata({
-  title: "Cross-Post Guide",
-  description:
-    "How to syndicate Attestix blog posts to Dev.to, Hashnode, and other platforms with proper canonical URLs.",
-});
+// Internal syndication guide: reachable by URL, kept out of search results.
+export const metadata = {
+  ...constructMetadata({
+    title: "Cross-Post Guide",
+    description:
+      "How to syndicate Attestix blog posts to Dev.to, Hashnode, and other platforms with proper canonical URLs.",
+  }),
+  robots: { index: false, follow: false },
+};
 
 export default function CrossPostGuide() {
   const baseUrl = siteConfig.url;
