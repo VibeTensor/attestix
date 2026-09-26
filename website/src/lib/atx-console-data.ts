@@ -148,14 +148,14 @@ export const CONSOLE_AGENTS: ConsoleAgent[] = [
     issuer: "Example Financial Services",
     protocol: "manual",
     capabilities: ["anomaly_detect", "risk_score", "alert"],
-    risk: "prohibited",
+    risk: "minimal",
     status: "compl",
     trust: 0.96,
     interactions: 104832,
     created: "2025-12-02T07:18:44Z",
     expiry: "2026-12-02",
     description:
-      "Prohibited-use-adjacent: real-time fraud scoring with mandatory human-in-loop review.",
+      "Real-time fraud scoring with human review. Financial fraud detection is excluded from the Annex III 5(b) credit-scoring category.",
     anchored: true,
     anchorTxn:
       "0x9d2e5b8c1f4a7e3d6b0c9f2a5d8e1b4c7f0a3d6e9b2c5f8a1d4e7b0c3f6a9d2e",
@@ -304,8 +304,8 @@ export const CONSOLE_CREDENTIALS: ConsoleCredential[] = [
     article: "Annex V",
     status: "valid",
     claims: {
-      conformity_basis: "EU AI Act Article 43 (third_party)",
-      notified_body: "NB-0482",
+      conformity_basis: "EU AI Act Article 43(2), internal control (Annex VI)",
+      assessor: "Internal QA board",
       risk_category: "high",
       assessment_id: "assmt:3c8f21e9b7a6d4c0",
     },
