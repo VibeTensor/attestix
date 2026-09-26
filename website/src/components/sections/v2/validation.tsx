@@ -1,5 +1,8 @@
-import { AtxEyebrow } from "@/components/atx/atx-eyebrow";
 import { siteConfig } from "@/lib/config";
+
+const WRAP = "mx-auto w-full max-w-[1200px] px-6";
+const H2 = "text-[32px] font-medium leading-[1.15] tracking-[-0.8px] text-atx-ink";
+const LEAD = "text-[17.5px] leading-[1.6] text-atx-ink-mid";
 
 type Highlight = (typeof siteConfig.highlights)[number];
 
@@ -19,20 +22,13 @@ function displaySubline(h: Highlight) {
 
 export function ValidationSection() {
   return (
-    <section id="validation" className="border-t border-atx-line-soft py-24">
-      <div className="mx-auto max-w-[1200px] px-7">
-        <div className="grid items-start gap-10 lg:grid-cols-[1fr_1.2fr]">
-          <div>
-            <AtxEyebrow number="05">Correspondence</AtxEyebrow>
-            <h2 className="mt-3 font-serif text-[clamp(28px,3.2vw,40px)] leading-[1.15] tracking-[-0.01em] text-atx-ink">
-              Reviewed by
-              <br />
-              the people who
-              <br />
-              write the rules.
-            </h2>
-          </div>
-          <p className="text-[15px] leading-[1.65] text-atx-ink-mid">
+    <section id="validation" className="scroll-mt-20 bg-atx-bg py-20">
+      <div className={WRAP}>
+        <div className="text-center">
+          <h2 className={H2}>
+            Reviewed by the people who <span className="text-atx-accent">write the rules</span>
+          </h2>
+          <p className={`mx-auto mt-4 max-w-[760px] ${LEAD}`}>
             Attestix has been reviewed by senior engineers building public
             attestation infrastructure, a European AI-privacy researcher, a
             GenAI governance director, and engineers building adjacent
@@ -41,30 +37,22 @@ export function ValidationSection() {
           </p>
         </div>
 
-        <div className="mt-14 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+        <div className="mt-12 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
           {siteConfig.highlights.map((h) => {
             const subline = displaySubline(h);
             return (
               <figure
                 key={h.id}
-                className="flex flex-col rounded-atx-md border border-atx-line-soft bg-atx-panel p-7"
+                className="flex flex-col rounded-2xl border border-atx-line bg-atx-panel/60 p-6 transition-colors duration-200 hover:border-atx-ink-dim"
               >
-                <div className="font-mono-atx text-[10.5px] uppercase tracking-[0.14em] text-atx-ink-faint">
-                  {h.event}
-                </div>
-                <blockquote className="mt-5 font-serif text-[22px] leading-[1.3] text-atx-ink">
+                <div className="text-[13px] font-medium text-atx-accent">{h.event}</div>
+                <blockquote className="mt-4 text-[17px] leading-[1.55] text-atx-ink">
                   &ldquo;{h.text}&rdquo;
                 </blockquote>
-                <figcaption className="mt-auto pt-6 text-[13px] leading-[1.5]">
-                  <div className="font-medium text-atx-ink">
-                    {displayName(h)}
-                  </div>
-                  {subline ? (
-                    <div className="text-atx-ink-mid">{subline}</div>
-                  ) : null}
-                  <div className="mt-3 font-mono-atx text-[10.5px] uppercase tracking-[0.12em] text-atx-ink-faint">
-                    {h.venue}
-                  </div>
+                <figcaption className="mt-auto border-t border-atx-line-soft pt-5 text-[14px] leading-[1.5]">
+                  <div className="mt-1 font-medium text-atx-ink">{displayName(h)}</div>
+                  {subline ? <div className="text-atx-ink-mid">{subline}</div> : null}
+                  <div className="mt-2 text-[13px] text-atx-ink-dim">{h.venue}</div>
                 </figcaption>
               </figure>
             );

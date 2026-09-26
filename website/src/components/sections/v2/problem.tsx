@@ -1,4 +1,6 @@
-import { AtxEyebrow } from "@/components/atx/atx-eyebrow";
+const WRAP = "mx-auto w-full max-w-[1200px] px-6";
+const H2 = "text-[32px] font-medium leading-[1.15] tracking-[-0.8px] text-atx-ink [text-wrap:balance]";
+const LEAD = "text-[17.5px] leading-[1.6] text-atx-ink-mid";
 
 interface Column {
   tag: string;
@@ -36,39 +38,24 @@ const AFTER: Column = {
   ],
 };
 
+const TONE = {
+  bad: { card: "border-atx-err/30 bg-atx-err/[0.05]", tag: "text-atx-err", dot: "bg-atx-err" },
+  good: { card: "border-atx-accent/30 bg-atx-accent/[0.05]", tag: "text-atx-accent", dot: "bg-atx-accent" },
+} as const;
+
 function Col({ col }: { col: Column }) {
-  const border =
-    col.tone === "bad"
-      ? "border-atx-err/35 bg-atx-err/[0.04]"
-      : "border-atx-accent/35 bg-atx-accent-soft";
-  const tagColor =
-    col.tone === "bad" ? "text-atx-err" : "text-atx-accent";
+  const t = TONE[col.tone];
   return (
-    <div className={`rounded-atx-md border p-8 ${border}`}>
-      <div
-        className={`font-mono-atx text-[11px] uppercase tracking-[0.14em] ${tagColor}`}
-      >
-        {col.tag}
-      </div>
-      <h3 className="mt-4 font-serif text-[28px] leading-tight text-atx-ink">
+    <div className={`rounded-2xl border p-7 text-left ${t.card}`}>
+      <p className={`text-[14px] font-medium ${t.tag}`}>{col.tag}</p>
+      <h3 className="mt-3 text-[21px] font-semibold leading-[1.25] tracking-[-0.48px] text-atx-ink">
         {col.title}
       </h3>
-      <p className="mt-3 text-[14.5px] leading-[1.6] text-atx-ink-mid">
-        {col.lead}
-      </p>
+      <p className="mt-3 text-[15px] leading-[1.6] text-atx-ink-mid">{col.lead}</p>
       <ul className="mt-6 space-y-2.5">
         {col.bullets.map((b) => (
-          <li
-            key={b}
-            className="flex gap-3 text-[13.5px] leading-[1.55] text-atx-ink-mid"
-          >
-            <span
-              className={
-                col.tone === "bad"
-                  ? "mt-2 block h-1 w-1 shrink-0 rounded-full bg-atx-err"
-                  : "mt-2 block h-1 w-1 shrink-0 rounded-full bg-atx-accent"
-              }
-            />
+          <li key={b} className="flex gap-3 text-[14px] leading-[1.55] text-atx-ink-mid">
+            <span className={`mt-2 block h-1.5 w-1.5 shrink-0 rounded-full ${t.dot}`} />
             {b}
           </li>
         ))}
@@ -79,18 +66,15 @@ function Col({ col }: { col: Column }) {
 
 export function ProblemSection() {
   return (
-    <section id="problem" className="border-t border-atx-line-soft py-24">
-      <div className="mx-auto max-w-[1200px] px-7">
-        <div className="grid items-start gap-10 lg:grid-cols-[1fr_1.2fr]">
-          <div>
-            <AtxEyebrow number="01">The gap</AtxEyebrow>
-            <h2 className="mt-3 font-serif text-[clamp(28px,3.2vw,40px)] leading-[1.15] tracking-[-0.01em] text-atx-ink">
-              Every AI agent will need an audit trail.
-              <br />
-              None of the existing tools produce one.
-            </h2>
-          </div>
-          <p className="text-[15px] leading-[1.65] text-atx-ink-mid">
+    <section id="problem" className="scroll-mt-20 bg-atx-bg py-20">
+      <div className={WRAP}>
+        <div className="text-center">
+          <h2 className={H2}>
+            Every AI agent will need an audit trail.
+            <br />
+            None of the existing tools produce one.
+          </h2>
+          <p className={`mx-auto mt-4 max-w-[760px] ${LEAD}`}>
             Existing compliance platforms produce organisational dashboards,
             not machine-readable, cryptographically verifiable evidence that a
             specific agent can present to a regulator, an auditor, or another
@@ -99,7 +83,7 @@ export function ProblemSection() {
           </p>
         </div>
 
-        <div className="mt-14 grid gap-6 md:grid-cols-2">
+        <div className="mx-auto mt-12 grid max-w-[1040px] gap-5 md:grid-cols-2">
           <Col col={BEFORE} />
           <Col col={AFTER} />
         </div>

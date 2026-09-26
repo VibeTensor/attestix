@@ -10,7 +10,7 @@ export function HeroCert() {
           <span>
             <strong>Declaration of Conformity</strong> &middot; Annex V
           </span>
-          <span style={{ marginLeft: "auto" }}>{c.uuid}</span>
+          <span className="atx-cert-uuid">{c.uuid}</span>
         </div>
 
         <div className="atx-cert-seal">
@@ -58,7 +58,7 @@ export function HeroCert() {
           <div className="v">{c.issued}</div>
         </div>
         <div className="atx-cert-row">
-          <div className="k">Valid thru</div>
+          <div className="k">Valid through</div>
           <div className="v">{c.validThru}</div>
         </div>
 
@@ -70,8 +70,8 @@ export function HeroCert() {
         </div>
 
         <div className="atx-cert-foot">
-          <span>&#9673; anchored &middot; base-l2 testnet</span>
-          <span>verified &#10003;</span>
+          <span>&#9673; Anchored &middot; <span className="mono">base-l2</span> testnet</span>
+          <span className="ok">Verified &#10003;</span>
         </div>
       </div>
 
@@ -80,8 +80,8 @@ export function HeroCert() {
           position: relative;
           background: var(--atx-panel);
           border: 1px solid var(--atx-line);
-          border-radius: var(--atx-r-md);
-          padding: 28px;
+          border-radius: 16px;
+          padding: 24px;
           font-family: var(--font-mono-atx);
           font-size: 12px;
           line-height: 1.65;
@@ -97,10 +97,15 @@ export function HeroCert() {
           padding-bottom: 14px;
           padding-right: 64px; /* clear the 56px absolute seal */
           margin-bottom: 16px;
-          font-size: 10px;
-          letter-spacing: 0.18em;
-          text-transform: uppercase;
+          font-family: var(--font-sans);
+          font-size: 13px;
           color: var(--atx-ink-dim);
+        }
+        .atx-cert-uuid {
+          margin-left: auto;
+          font-family: var(--font-mono-atx);
+          font-size: 11px;
+          overflow-wrap: anywhere;
         }
         .atx-cert-head strong {
           color: var(--atx-accent);
@@ -117,10 +122,9 @@ export function HeroCert() {
           display: grid;
           place-items: center;
           color: var(--atx-accent);
-          font-family: var(--font-serif);
-          font-size: 13px;
-          letter-spacing: 0.06em;
-          text-transform: uppercase;
+          font-family: var(--font-sans);
+          font-size: 15px;
+          font-weight: 500;
         }
         .atx-cert-seal::before {
           content: "";
@@ -131,10 +135,7 @@ export function HeroCert() {
           opacity: 0.55;
         }
         .atx-cert-seal span {
-          font-family: var(--font-serif);
-          font-size: 13px;
           line-height: 1;
-          letter-spacing: 0.06em;
         }
         .atx-cert-row {
           display: flex;
@@ -142,11 +143,9 @@ export function HeroCert() {
         }
         .atx-cert-row .k {
           color: var(--atx-ink-dim);
-          min-width: 78px;
-          text-transform: uppercase;
-          font-size: 10px;
-          letter-spacing: 0.1em;
-          padding-top: 1px;
+          min-width: 92px;
+          font-family: var(--font-sans);
+          font-size: 13px;
         }
         .atx-cert-row .v {
           color: var(--atx-ink);
@@ -166,7 +165,7 @@ export function HeroCert() {
           padding: 12px;
           background: var(--atx-bg-sunken);
           border: 1px solid var(--atx-line-soft);
-          border-radius: var(--atx-r-sm);
+          border-radius: 12px;
           color: var(--atx-ok);
           font-size: 11px;
           word-break: break-all;
@@ -174,11 +173,19 @@ export function HeroCert() {
         .atx-cert-foot {
           display: flex;
           justify-content: space-between;
+          flex-wrap: wrap;
+          gap: 8px;
           margin-top: 16px;
-          font-size: 10px;
+          font-family: var(--font-sans);
+          font-size: 13px;
           color: var(--atx-ink-dim);
-          letter-spacing: 0.1em;
-          text-transform: uppercase;
+        }
+        .atx-cert-foot .mono {
+          font-family: var(--font-mono-atx);
+          font-size: 12px;
+        }
+        .atx-cert-foot .ok {
+          color: var(--atx-ok);
         }
       `}</style>
     </>

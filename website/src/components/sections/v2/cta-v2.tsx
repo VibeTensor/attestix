@@ -1,45 +1,44 @@
 import Link from "next/link";
-import { AtxEyebrow } from "@/components/atx/atx-eyebrow";
+import { ArrowRight } from "lucide-react";
 
+// Also rendered at the foot of blog posts.
 export function CtaV2() {
   return (
-    <section className="border-t border-atx-line-soft bg-atx-bg-sunken py-24">
-      <div className="mx-auto flex max-w-[1200px] flex-col items-start gap-10 px-7 lg:flex-row lg:items-center lg:justify-between">
-        <div>
-          <AtxEyebrow number="10" className="mb-5">
-            Next
-          </AtxEyebrow>
-          <h2 className="font-serif text-[clamp(36px,4.8vw,60px)] leading-[1.05] tracking-[-0.012em] text-atx-ink">
-            Compliance{" "}
-            <em className="italic text-atx-accent">by construction,</em>
-            <br />
-            not by hope.
-          </h2>
-          <p className="mt-5 max-w-[560px] text-[15px] leading-[1.65] text-atx-ink-mid">
-            Install Attestix, create your first identity, and issue your first
-            Verifiable Credential in under sixty seconds. Open source under
-            Apache 2.0.
-          </p>
-        </div>
-        <div className="flex flex-col gap-3 sm:flex-row">
+    <section className="relative overflow-hidden border-t border-atx-line-soft bg-atx-bg-elev py-20">
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0"
+        style={{
+          background:
+            "radial-gradient(720px 100% at 50% 100%, color-mix(in oklch, var(--color-atx-accent) 11%, transparent), transparent 100%)",
+        }}
+      />
+      <div className="relative mx-auto w-full max-w-[1200px] px-6 text-center">
+        <h2 className="text-[clamp(32px,4.4vw,44px)] font-medium leading-[1.12] tracking-[-1.1px] text-atx-ink [text-wrap:balance]">
+          Compliance <span className="text-atx-accent">by construction,</span> not by hope.
+        </h2>
+        <p className="mx-auto mt-5 max-w-[560px] text-[17.5px] leading-[1.6] text-atx-ink-mid">
+          Install Attestix, create your first identity, and issue your first
+          Verifiable Credential in under sixty seconds. Open source under
+          Apache 2.0.
+        </p>
+        <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
           <Link
             href="/console"
-            className="group inline-flex h-10 items-center gap-2 rounded-atx-md bg-atx-accent px-5 text-[13px] font-medium text-[oklch(0.14_0.01_180)] transition-colors hover:bg-atx-accent-deep"
+            className="group inline-flex items-center gap-2 rounded-full bg-atx-accent px-6 py-3 text-[15px] font-medium text-[oklch(0.14_0.01_180)] transition-colors duration-200 hover:bg-atx-accent-deep"
           >
             Open console
-            <span className="font-mono-atx transition-transform group-hover:translate-x-0.5">
-              &rarr;
-            </span>
+            <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5" />
           </Link>
           <Link
             href="/research"
-            className="inline-flex h-10 items-center rounded-atx-md border border-atx-line px-5 text-[13px] font-medium text-atx-ink transition-colors hover:border-atx-ink-dim hover:bg-atx-panel"
+            className="inline-flex items-center rounded-full border border-atx-line px-6 py-3 text-[15px] font-medium text-atx-ink-mid transition-colors duration-200 hover:border-atx-ink-dim hover:text-atx-ink"
           >
             Read the paper
           </Link>
           <Link
             href="/demo-call"
-            className="inline-flex h-10 items-center rounded-atx-md border border-atx-line px-5 text-[13px] font-medium text-atx-ink transition-colors hover:border-atx-ink-dim hover:bg-atx-panel"
+            className="inline-flex items-center rounded-full border border-atx-line px-6 py-3 text-[15px] font-medium text-atx-ink-mid transition-colors duration-200 hover:border-atx-ink-dim hover:text-atx-ink"
           >
             Book a demo
           </Link>

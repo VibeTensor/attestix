@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { AtxEyebrow } from "@/components/atx/atx-eyebrow";
 
 type Status = "shipped" | "partial" | "roadmap";
 type Audience = "all" | "provider" | "deployer" | "high";
@@ -123,14 +122,14 @@ const ROWS: Row[] = [
 ];
 
 const STATUS_STYLE: Record<Status, string> = {
-  shipped: "border-atx-ok/40 bg-atx-ok/[0.08] text-atx-ok",
-  partial: "border-atx-warn/40 bg-atx-warn/[0.08] text-atx-warn",
-  roadmap: "border-atx-info/40 bg-atx-info/[0.08] text-atx-info",
+  shipped: "bg-atx-ok/15 text-atx-ok",
+  partial: "bg-atx-warn/15 text-atx-warn",
+  roadmap: "bg-atx-info/15 text-atx-info",
 };
 const STATUS_LABEL: Record<Status, string> = {
-  shipped: "shipped",
-  partial: "partial",
-  roadmap: "roadmap",
+  shipped: "Shipped",
+  partial: "Partial",
+  roadmap: "Roadmap",
 };
 
 const FILTERS: { slug: Audience; label: string }[] = [
@@ -139,6 +138,11 @@ const FILTERS: { slug: Audience; label: string }[] = [
   { slug: "provider", label: "Provider" },
   { slug: "deployer", label: "Deployer" },
 ];
+
+const WRAP = "mx-auto w-full max-w-[1200px] px-6";
+const H2 = "text-[32px] font-medium leading-[1.15] tracking-[-0.8px] text-atx-ink";
+const LEAD = "text-[17.5px] leading-[1.6] text-atx-ink-mid";
+const TH = "border-b border-atx-line-soft px-5 py-3.5 text-[13px] font-medium text-atx-ink-mid";
 
 export function ComplianceMatrixSection() {
   const [filter, setFilter] = useState<Audience>("all");
@@ -150,20 +154,13 @@ export function ComplianceMatrixSection() {
   );
 
   return (
-    <section id="compliance-matrix" className="border-t border-atx-line-soft py-24">
-      <div className="mx-auto max-w-[1200px] px-7">
-        <div className="grid items-start gap-10 lg:grid-cols-[1fr_1.2fr]">
-          <div>
-            <AtxEyebrow number="09">Compliance matrix</AtxEyebrow>
-            <h2 className="mt-3 font-serif text-[clamp(28px,3.2vw,40px)] leading-[1.15] tracking-[-0.01em] text-atx-ink">
-              Every article,
-              <br />
-              mapped to a
-              <br />
-              <em className="italic text-atx-accent">tool call.</em>
-            </h2>
-          </div>
-          <p className="text-[15px] leading-[1.65] text-atx-ink-mid">
+    <section id="compliance-matrix" className="scroll-mt-20 bg-atx-bg py-20">
+      <div className={WRAP}>
+        <div className="text-center">
+          <h2 className={H2}>
+            Every article, mapped to a <span className="text-atx-accent">tool call</span>
+          </h2>
+          <p className={`mx-auto mt-4 max-w-[760px] ${LEAD}`}>
             Thirteen EU AI Act articles and annexes. Each row names the
             evidence Attestix produces and the exact MCP tool that emits it.
             Filter by audience (provider, deployer) or risk tier (high-risk
@@ -171,18 +168,19 @@ export function ComplianceMatrixSection() {
           </p>
         </div>
 
-        <div className="mt-10 flex flex-wrap gap-2">
+        <div className="mt-10 flex flex-wrap justify-center gap-2" role="group" aria-label="Filter obligations">
           {FILTERS.map((f) => {
             const active = filter === f.slug;
             return (
               <button
                 key={f.slug}
                 type="button"
+                aria-pressed={active}
                 onClick={() => setFilter(f.slug)}
-                className={`inline-flex h-8 items-center rounded-atx-sm border px-3 font-mono-atx text-[11px] uppercase tracking-[0.14em] transition-colors ${
+                className={`inline-flex h-9 items-center rounded-full border px-4 text-[13px] font-medium transition-colors duration-200 ${
                   active
-                    ? "border-atx-accent/60 bg-atx-accent-soft text-atx-accent"
-                    : "border-atx-line bg-atx-panel text-atx-ink-dim hover:border-atx-ink-dim hover:text-atx-ink"
+                    ? "border-atx-accent/60 bg-atx-accent/[0.08] text-atx-accent"
+                    : "border-atx-line text-atx-ink-mid hover:border-atx-ink-dim hover:text-atx-ink"
                 }`}
               >
                 {f.label}
@@ -191,46 +189,34 @@ export function ComplianceMatrixSection() {
           })}
         </div>
 
-        <div className="mt-6 overflow-hidden rounded-atx-md border border-atx-line-soft">
-          <table className="w-full border-collapse text-left text-[13px]">
+        <div className="mt-6 overflow-x-auto rounded-2xl border border-atx-line">
+          <table className="w-full min-w-[720px] border-collapse text-left text-[14px]">
             <thead className="bg-atx-bg-sunken">
               <tr>
-                <th className="border-b border-atx-line-soft px-5 py-3 font-mono-atx text-[10.5px] uppercase tracking-[0.14em] text-atx-ink-faint">
-                  Article
-                </th>
-                <th className="border-b border-atx-line-soft px-5 py-3 font-mono-atx text-[10.5px] uppercase tracking-[0.14em] text-atx-ink-faint">
-                  Obligation
-                </th>
-                <th className="hidden border-b border-atx-line-soft px-5 py-3 font-mono-atx text-[10.5px] uppercase tracking-[0.14em] text-atx-ink-faint md:table-cell">
-                  Attestix tool
-                </th>
-                <th className="border-b border-atx-line-soft px-5 py-3 text-right font-mono-atx text-[10.5px] uppercase tracking-[0.14em] text-atx-ink-faint">
-                  Status
-                </th>
+                <th scope="col" className={TH}>Article</th>
+                <th scope="col" className={TH}>Obligation</th>
+                <th scope="col" className={TH}>Attestix tool</th>
+                <th scope="col" className={`${TH} text-right`}>Status</th>
               </tr>
             </thead>
             <tbody>
               {rows.map((r, i) => (
                 <tr
                   key={`${r.article}-${i}`}
-                  className="bg-atx-panel transition-colors hover:bg-atx-panel-hi"
+                  className="bg-atx-panel/60 align-top transition-colors duration-200 hover:bg-atx-panel-hi"
                 >
-                  <td className="border-b border-atx-line-soft px-5 py-4 font-mono-atx text-[12px] text-atx-accent">
+                  <td className="whitespace-nowrap border-b border-atx-line-soft px-5 py-4 font-medium text-atx-accent">
                     {r.article}
                   </td>
                   <td className="border-b border-atx-line-soft px-5 py-4">
                     <div className="text-atx-ink">{r.title}</div>
-                    <div className="mt-1 text-[12.5px] text-atx-ink-mid">
-                      {r.evidence}
-                    </div>
+                    <div className="mt-1 text-[13.5px] leading-[1.5] text-atx-ink-mid">{r.evidence}</div>
                   </td>
-                  <td className="hidden border-b border-atx-line-soft px-5 py-4 font-mono-atx text-[11.5px] text-atx-ink-dim md:table-cell">
+                  <td className="border-b border-atx-line-soft px-5 py-4 font-mono-atx text-[12px] text-atx-ink-dim">
                     {r.tool}
                   </td>
                   <td className="border-b border-atx-line-soft px-5 py-4 text-right">
-                    <span
-                      className={`inline-block rounded-atx-xs border px-2 py-0.5 font-mono-atx text-[10.5px] uppercase tracking-[0.12em] ${STATUS_STYLE[r.status]}`}
-                    >
+                    <span className={`inline-block rounded-full px-2.5 py-0.5 text-[12.5px] font-medium ${STATUS_STYLE[r.status]}`}>
                       {STATUS_LABEL[r.status]}
                     </span>
                   </td>
@@ -239,6 +225,7 @@ export function ComplianceMatrixSection() {
             </tbody>
           </table>
         </div>
+        <p className="mt-3 text-center text-[13px] text-atx-ink-dim md:hidden">Scroll the table sideways to see every column.</p>
       </div>
     </section>
   );

@@ -18,22 +18,26 @@ export const metadata = constructMetadata({
     "The full Attestix platform: nine modules, the seven-step compliance workflow, framework integrations, benchmarks, and the EU AI Act compliance matrix.",
 });
 
-// The long-form story that used to be the homepage, in its original order.
+// Section bands alternate bg-atx-bg / bg-atx-bg-elev, starting with bg-atx-bg
+// after the standards strip; each section sets its own band.
 export default function PlatformPage() {
   return (
     <>
-      <section className="mx-auto grid max-w-[1200px] items-center gap-14 px-7 pb-16 pt-16 lg:grid-cols-[1.1fr_1fr]">
-        <div>
-          <h1 className="text-[clamp(34px,4.6vw,52px)] font-normal leading-[1.09] tracking-[-0.03em] text-atx-ink">
+      <section className="px-6 pb-16 pt-16 text-center md:pt-20">
+        <div className="mx-auto max-w-[860px]">
+          <p className="text-[14px] font-medium text-atx-accent">Platform</p>
+          <h1 className="mt-3 text-[clamp(34px,5vw,52px)] font-normal leading-[1.09] tracking-[-0.03em] text-atx-ink [text-wrap:balance]">
             The <span className="text-atx-accent">Attestix</span> platform
           </h1>
-          <p className="mt-5 max-w-[540px] text-[17.5px] leading-[1.6] text-atx-ink-mid">
+          <p className="mx-auto mt-5 max-w-[640px] text-[17.5px] leading-[1.6] text-atx-ink-mid [text-wrap:balance]">
             Nine modules and forty-seven MCP tools for agent identity,
             credentials, delegation, compliance records, provenance, and
             reputation, with evidence anyone can verify offline.
           </p>
         </div>
-        <HeroCert />
+        <div className="mx-auto mt-12 max-w-[560px] text-left">
+          <HeroCert />
+        </div>
       </section>
       <StandardsStrip />
       <ProblemSection />
