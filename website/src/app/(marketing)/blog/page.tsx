@@ -1,64 +1,78 @@
-import BlogCard from "@/components/blog-card";
-import { AtxEyebrow } from "@/components/atx/atx-eyebrow";
+import Link from "next/link";
+import { RssIcon } from "lucide-react";
 import { AtxSubstackSubscribe } from "@/components/atx/atx-substack-subscribe";
+import { PostList } from "@/components/post-list";
 import { getBlogPosts } from "@/lib/blog";
 import { siteConfig } from "@/lib/config";
 import { constructMetadata } from "@/lib/utils";
-import { RssIcon } from "lucide-react";
 
 export const metadata = constructMetadata({
   title: "Blog",
-  description: `Latest news and updates from ${siteConfig.name}.`,
+  description: `Product notes, research, releases, and guides from ${siteConfig.name}.`,
 });
 
+const fmt = (d: string) =>
+  new Date(d).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
+
 export default async function Blog() {
-  const allPosts = await getBlogPosts();
-  const articles = allPosts.sort((a, b) =>
-    b.publishedAt.localeCompare(a.publishedAt)
-  );
+  const posts = (await getBlogPosts()).sort((a, b) => b.publishedAt.localeCompare(a.publishedAt));
+  const latest = posts.slice(0, 4);
 
   return (
     <>
-      <section className="px-6 pb-12 pt-16 text-center md:pt-20">
+      <section className="px-6 pb-14 pt-16 text-center">
         <div className="mx-auto max-w-[860px]">
-          <AtxEyebrow>Writing</AtxEyebrow>
+          <p className="text-[14px] font-medium text-atx-accent">From research to product</p>
           <h1 className="mt-3 text-[clamp(34px,5vw,52px)] font-normal leading-[1.09] tracking-[-0.03em] text-atx-ink [text-wrap:balance]">
-            Notes, releases, <span className="text-atx-accent">field reports.</span>
+            Attestix <span className="text-atx-accent">writing</span>
           </h1>
           <p className="mx-auto mt-5 max-w-[640px] text-[17.5px] leading-[1.6] text-atx-ink-mid [text-wrap:balance]">
-            Release notes, research summaries, and updates from building
-            attestation infrastructure for AI agents. Subscribe via RSS or JSON
-            Feed.
+            Product notes, research, release announcements, and guides from
+            building verifiable evidence for AI agents.
           </p>
-          <div className="mt-6 flex flex-wrap items-center justify-center gap-4 text-[14px] font-medium text-atx-ink-mid">
+          <div className="mt-7 flex flex-wrap items-center justify-center gap-3">
+            <Link
+              href="/research"
+              className="rounded-full bg-atx-accent px-6 py-3 text-[15px] font-medium text-[oklch(0.14_0.01_180)] transition-colors duration-200 hover:bg-atx-accent-deep"
+            >
+              Research and vision
+            </Link>
             <a
               href="/feed.xml"
-              className="inline-flex items-center gap-1.5 underline decoration-atx-line underline-offset-4 transition-colors duration-200 hover:text-atx-ink hover:decoration-atx-ink-dim"
-              title="RSS Feed"
+              className="inline-flex items-center gap-2 rounded-full border border-atx-line px-6 py-3 text-[15px] font-medium text-atx-ink-mid transition-colors duration-200 hover:border-atx-ink-dim hover:text-atx-ink"
             >
-              <RssIcon className="h-3.5 w-3.5" />
-              RSS
-            </a>
-            <span aria-hidden className="text-atx-ink-faint">/</span>
-            <a
-              href="/feed.json"
-              className="inline-flex items-center gap-1.5 underline decoration-atx-line underline-offset-4 transition-colors duration-200 hover:text-atx-ink hover:decoration-atx-ink-dim"
-              title="JSON Feed"
-            >
-              JSON feed
+              <RssIcon className="h-4 w-4" /> RSS feed
             </a>
           </div>
         </div>
       </section>
 
-      <section className="bg-atx-bg pb-20">
-        <div className="mx-auto w-full max-w-[1200px] px-6">
-          <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
-            {articles.map((data, idx) => (
-              <BlogCard key={data.slug} data={data} priority={idx <= 1} />
+      <section className="px-6 pb-16">
+        <div className="mx-auto max-w-[1200px]">
+          <p className="text-[14px] font-medium text-atx-accent">Highlights</p>
+          <h2 className="mt-2 text-[32px] font-medium tracking-[-0.8px] text-atx-ink">Latest updates</h2>
+          <div className="mt-6 grid gap-3 md:grid-cols-2 lg:grid-cols-4">
+            {latest.map((p) => (
+              <Link
+                key={p.slug}
+                href={`/blog/${p.slug}`}
+                className="group flex min-h-[230px] flex-col rounded-2xl border border-atx-accent/25 bg-atx-accent/[0.05] p-5 transition-colors duration-200 hover:border-atx-accent/60"
+              >
+                <span className="text-[13px] text-atx-accent">{fmt(p.publishedAt)}</span>
+                <span className="mt-2 text-[18px] font-medium leading-[1.3] tracking-[-0.4px] text-atx-ink">{p.title}</span>
+                <span className="mt-2 line-clamp-2 text-[14px] leading-[1.5] text-atx-ink-mid">{p.summary}</span>
+                <span className="mt-auto pt-4 text-[14px] font-medium text-atx-ink-mid group-hover:text-atx-ink">Read more &rarr;</span>
+              </Link>
             ))}
           </div>
+        </div>
+      </section>
 
+      <section className="px-6 pb-20">
+        <div className="mx-auto max-w-[1200px]">
+          <PostList
+            rows={posts.map((p) => ({ slug: p.slug, title: p.title, category: p.category, date: fmt(p.publishedAt) }))}
+          />
           <div className="mt-16">
             <AtxSubstackSubscribe />
           </div>

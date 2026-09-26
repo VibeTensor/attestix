@@ -46,7 +46,7 @@ export function AtxSubstackSubscribe() {
     >
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <div className="font-mono-atx text-[10.5px] uppercase tracking-[0.14em] text-atx-ink-dim">
+          <div className="text-[14px] font-medium text-atx-accent">
             Newsletter
           </div>
           <h2 className="mt-1 font-serif text-[22px] leading-tight text-atx-ink">
@@ -61,7 +61,7 @@ export function AtxSubstackSubscribe() {
           href={DEFAULT_PUBLICATION}
           target="_blank"
           rel="noopener noreferrer"
-          className="font-mono-atx text-[11px] uppercase tracking-[0.14em] text-atx-accent hover:underline"
+          className="text-[14px] font-medium text-atx-ink-mid underline decoration-atx-line underline-offset-4 hover:text-atx-ink"
         >
           View on Substack &rarr;
         </a>
@@ -78,24 +78,24 @@ export function AtxSubstackSubscribe() {
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           placeholder="you@company.com"
-          className="h-10 flex-1 rounded-atx-sm border border-atx-line bg-atx-bg-sunken px-3 font-mono-atx text-[13px] text-atx-ink outline-none focus:border-atx-accent"
+          className="h-10 flex-1 rounded-full border border-atx-line bg-atx-bg-sunken px-4 text-[14px] text-atx-ink outline-none focus:border-atx-accent"
         />
         <button
           type="submit"
           disabled={status === "submitting"}
-          className="inline-flex h-10 items-center justify-center rounded-atx-sm bg-atx-accent px-5 font-mono-atx text-[12px] font-medium text-[oklch(0.14_0.01_180)] hover:bg-atx-accent-deep disabled:opacity-60"
+          className="inline-flex h-10 items-center justify-center rounded-full bg-atx-accent px-6 text-[14px] font-medium text-[oklch(0.14_0.01_180)] hover:bg-atx-accent-deep disabled:opacity-60"
         >
           {status === "submitting" ? "Opening..." : "Subscribe \u2192"}
         </button>
       </div>
 
       {status === "ok" && (
-        <div className="mt-3 font-mono-atx text-[11.5px] text-atx-ok">
+        <div className="mt-3 text-[13px] text-atx-ok">
           &#10003; {message}
         </div>
       )}
       {status === "err" && (
-        <div className="mt-3 font-mono-atx text-[11.5px] text-atx-err">
+        <div className="mt-3 text-[13px] text-atx-err">
           &#x2717; {message}
         </div>
       )}
