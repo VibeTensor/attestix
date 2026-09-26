@@ -123,6 +123,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     // Public marketing/demo pages that were live but never listed.
     // /cross-post is an internal guide and is intentionally excluded.
     ...[
+      "/platform",
       "/console",
       "/demo",
       "/demo/compliance-checker",

@@ -346,12 +346,12 @@ export const ATX_CERT_SAMPLE: AtxCertSample = {
     "z3Ap6K8mNwQr5bVz2Yh4jLfE1cXnPdRt9sBuGvHjKi7AxDoSnUwM4pRvTyZ8XqLbFgH2NvQrWsEd",
 };
 
-// Durable, verifiable facts only; each carries its qualifier. No test counts
+// Durable, verifiable facts only (qualified on the homepage). No test counts
 // (they drift per commit) and no crypto-library benchmarks (they measure the
 // library, not Attestix).
 export const ATX_HERO_STATS = [
-  { v: "47", k: "MCP Tools \u00B7 9 Modules", n: "counted in source" },
-  { v: "6", k: "Languages Verify Offline", n: "Python, Go, Rust, Java, JS, R \u00B7 shared test vectors" },
-  { v: "0", k: "Bytes Uploaded to Verify", n: "credentials check in your browser" },
-  { v: "Apache 2.0", k: "Open Source", n: "self-host free, forever" },
+  { v: "47", k: "MCP tools across 9 modules" },
+  { v: "6", k: "languages verify credentials offline" },
+  { v: "0", k: "bytes uploaded to verify a credential" },
+  { v: "Apache 2.0", k: "open source, self-host free" },
 ];

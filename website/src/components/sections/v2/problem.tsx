@@ -83,7 +83,7 @@ export function ProblemSection() {
       <div className="mx-auto max-w-[1320px] px-7">
         <div className="grid items-start gap-10 lg:grid-cols-[1fr_1.2fr]">
           <div>
-            <AtxEyebrow number="02">The gap</AtxEyebrow>
+            <AtxEyebrow number="01">The gap</AtxEyebrow>
             <h2 className="mt-3 font-serif text-[clamp(28px,3.2vw,40px)] leading-[1.15] tracking-[-0.01em] text-atx-ink">
               Every AI agent will need an audit trail.
               <br />

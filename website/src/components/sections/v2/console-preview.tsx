@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { AtxEyebrow } from "@/components/atx/atx-eyebrow";
 
-function PreviewCard() {
+export function PreviewCard() {
   return (
     <div className="overflow-hidden rounded-atx-md border border-atx-line-soft bg-atx-panel shadow-[var(--atx-shadow-md)]">
       <div className="flex items-center gap-3 border-b border-atx-line-soft px-4 py-2.5 font-mono-atx text-[11px] text-atx-ink-dim">
@@ -127,7 +127,7 @@ export function ConsolePreviewSection() {
       <div className="mx-auto max-w-[1320px] px-7">
         <div className="grid items-start gap-10 lg:grid-cols-[1fr_1.2fr]">
           <div>
-            <AtxEyebrow number="01">The product</AtxEyebrow>
+            <AtxEyebrow number="04">The product</AtxEyebrow>
             <h2 className="mt-3 font-serif text-[clamp(28px,3.2vw,40px)] leading-[1.15] tracking-[-0.01em] text-atx-ink">
               A console that
               <br />
