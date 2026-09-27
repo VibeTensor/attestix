@@ -1,16 +1,14 @@
 import { Header } from "@/components/sections/header";
-import { HeroV2 } from "@/components/sections/v2/hero-v2";
-import { StandardsStrip } from "@/components/sections/v2/standards-strip";
-import { ProblemSection } from "@/components/sections/v2/problem";
-import { ModulesSection } from "@/components/sections/v2/modules";
-import { WorkflowSection } from "@/components/sections/v2/workflow";
-import { ConsolePreviewSection } from "@/components/sections/v2/console-preview";
-import { ValidationSection } from "@/components/sections/v2/validation";
-import { FrameworksSection } from "@/components/sections/v2/frameworks";
-import { UseCasesSection } from "@/components/sections/v2/use-cases";
-import { BenchmarksSection } from "@/components/sections/v2/benchmarks";
-import { ComplianceMatrixSection } from "@/components/sections/v2/compliance-matrix";
-import { CtaV2 } from "@/components/sections/v2/cta-v2";
+import { HomeDemo } from "@/components/sections/home/home-demo";
+import {
+  HomeFaq,
+  HomeHero,
+  HomeHow,
+  HomeInstall,
+  HomeResults,
+  HomeStandards,
+  HomeTalk,
+} from "@/components/sections/home/sections";
 import { FooterV2 } from "@/components/sections/v2/footer-v2";
 import { siteConfig } from "@/lib/config";
 
@@ -48,19 +46,27 @@ export default function Home() {
       />
       <div className="bg-atx-bg text-atx-ink">
         <Header />
-        <main id="main-content" tabIndex={-1}>
-          <HeroV2 />
-          <StandardsStrip />
-          <ProblemSection />
-          <ModulesSection />
-          <WorkflowSection />
-          <ConsolePreviewSection />
-          <ValidationSection />
-          <FrameworksSection />
-          <UseCasesSection />
-          <BenchmarksSection />
-          <ComplianceMatrixSection />
-          <CtaV2 />
+        {/* Seal-ring texture behind the top of the page, faded out by 88%;
+            the full story (modules, workflow, matrix) lives on /platform. */}
+        <main
+          id="main-content"
+          tabIndex={-1}
+          style={{
+            backgroundImage:
+              "linear-gradient(to bottom, transparent 42%, var(--color-atx-bg) 88%), url(/seal-rings.svg)",
+            backgroundRepeat: "no-repeat",
+            backgroundPosition: "center top",
+            backgroundSize: "max(100vw, 1000px) calc(max(100vw, 1000px) * 1530 / 2560)",
+          }}
+        >
+          <HomeHero />
+          <HomeDemo />
+          <HomeHow />
+          <HomeResults />
+          <HomeStandards />
+          <HomeInstall />
+          <HomeFaq />
+          <HomeTalk />
         </main>
         <FooterV2 />
       </div>

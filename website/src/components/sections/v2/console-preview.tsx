@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { AtxEyebrow } from "@/components/atx/atx-eyebrow";
 
-function PreviewCard() {
+export function PreviewCard() {
   return (
     <div className="overflow-hidden rounded-atx-md border border-atx-line-soft bg-atx-panel shadow-[var(--atx-shadow-md)]">
       <div className="flex items-center gap-3 border-b border-atx-line-soft px-4 py-2.5 font-mono-atx text-[11px] text-atx-ink-dim">

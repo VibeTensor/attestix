@@ -33,8 +33,8 @@ const ROUTES: Entry[] = [
 
 const ANCHORS: Entry[] = [
   { label: "Problem", section: "Landing sections", href: "/#problem" },
-  { label: "Modules", section: "Landing sections", href: "/#modules" },
-  { label: "Workflow", section: "Landing sections", href: "/#workflow" },
+  { label: "Modules", section: "Landing sections", href: "/platform#modules" },
+  { label: "Workflow", section: "Landing sections", href: "/platform#workflow" },
   { label: "Validation quotes", section: "Landing sections", href: "/#validation" },
   { label: "Framework integrations", section: "Landing sections", href: "/#frameworks" },
   { label: "Use cases", section: "Landing sections", href: "/#use-cases" },
@@ -53,12 +53,12 @@ export function AtxCommandPalette() {
     const modules: Entry[] = ATX_MODULES.map((m) => ({
       label: `Module / ${m.name} (${m.tools} tools)`,
       section: "Modules",
-      href: "/#modules",
+      href: "/platform#modules",
     }));
     const workflow: Entry[] = ATX_WORKFLOW.map((w) => ({
       label: `Workflow / Step ${w.n} / ${w.title}`,
       section: "Workflow",
-      href: "/#workflow",
+      href: "/platform#workflow",
     }));
     return [...ROUTES, ...ANCHORS, ...modules, ...workflow];
   }, []);
