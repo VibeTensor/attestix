@@ -23,10 +23,8 @@ export function constructMetadata({
   [key: string]: Metadata[keyof Metadata];
 }): Metadata {
   return {
-    title: {
-      template: "%s | " + siteConfig.name,
-      default: siteConfig.name,
-    },
+    // Plain string: the root layout's "%s | Attestix" template adds the suffix.
+    title,
     description: description || siteConfig.description,
     keywords: siteConfig.keywords,
     openGraph: {
@@ -52,9 +50,8 @@ export function constructMetadata({
       images: [image],
       creator: "@vibetensor",
     },
-    alternates: {
-      canonical: siteConfig.url,
-    },
+    // No canonical here: a shared homepage canonical told crawlers every page
+    // duplicated "/". Without one, each page self-canonicalizes.
     icons: "/favicon.ico",
     metadataBase: new URL(siteConfig.url),
     authors: [

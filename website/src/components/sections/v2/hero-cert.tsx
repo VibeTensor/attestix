@@ -51,7 +51,7 @@ export function HeroCert() {
         </div>
         <div className="atx-cert-row">
           <div className="k">Sample</div>
-          <div className="v">illustrative \u00B7 not a real certificate</div>
+          <div className="v">illustrative &middot; not a real certificate</div>
         </div>
         <div className="atx-cert-row">
           <div className="k">Issued</div>
@@ -90,10 +90,12 @@ export function HeroCert() {
         }
         .atx-cert-head {
           display: flex;
+          flex-wrap: wrap; /* the seal padding must not widen the hero on phones */
           align-items: center;
           gap: 10px;
           border-bottom: 1px dashed var(--atx-line);
           padding-bottom: 14px;
+          padding-right: 64px; /* clear the 56px absolute seal */
           margin-bottom: 16px;
           font-size: 10px;
           letter-spacing: 0.18em;
@@ -148,7 +150,8 @@ export function HeroCert() {
         }
         .atx-cert-row .v {
           color: var(--atx-ink);
-          word-break: break-all;
+          /* break long DIDs only when they overflow; prose wraps at spaces */
+          overflow-wrap: anywhere;
         }
         .atx-cert-row .v .hl {
           color: var(--atx-accent);

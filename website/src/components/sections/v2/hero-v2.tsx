@@ -1,19 +1,22 @@
 import Link from "next/link";
 import { HeroCert } from "./hero-cert";
 import { HeroStats } from "./hero-stats";
-import { AtxCountdown } from "@/components/atx/atx-countdown";
 import { siteConfig } from "@/lib/config";
 
 export function HeroV2() {
   return (
     <section className="relative mx-auto max-w-[1320px] px-7 pt-12 pb-24">
-      <div className="mb-10 inline-flex flex-wrap items-center gap-3 rounded-atx-sm border border-atx-line-soft bg-atx-bg-sunken px-3.5 py-2 font-mono-atx text-[11.5px] text-atx-ink-mid">
+      <Link
+        href="/demo/fine-calculator"
+        className="mb-10 inline-flex flex-wrap items-center gap-3 rounded-atx-sm border border-atx-line-soft bg-atx-bg-sunken px-3.5 py-2 font-mono-atx text-[11.5px] text-atx-ink-mid transition-colors hover:border-atx-line"
+      >
         <span className="inline-block h-1.5 w-1.5 rounded-full bg-atx-err" />
         <span>
-          Main enforcement wave in <AtxCountdown /> (high-risk systems, Aug 2,
-          2026) &middot; Fines up to &euro;35M or 7% global revenue
+          EU AI Act Art. 99: up to &euro;35M / 7% for prohibited practices,
+          &euro;15M / 3% for high-risk obligations &middot;{" "}
+          <span className="text-atx-accent">estimate yours &rarr;</span>
         </span>
-      </div>
+      </Link>
       <div className="grid items-start gap-14 lg:grid-cols-[1.15fr_1fr]">
         <div>
           <h1 className="font-serif text-[clamp(44px,6.2vw,88px)] font-normal leading-[1.02] tracking-[-0.015em] text-atx-ink">
@@ -38,7 +41,7 @@ export function HeroV2() {
               href="/console"
               className="group inline-flex h-10 items-center gap-2 rounded-atx-md bg-atx-accent px-5 text-[13px] font-medium text-[oklch(0.14_0.01_180)] transition-colors hover:bg-atx-accent-deep"
             >
-              Launch console
+              Try the console demo
               <span className="font-mono-atx transition-transform group-hover:translate-x-0.5">
                 &rarr;
               </span>

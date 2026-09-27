@@ -33,7 +33,7 @@ export const siteConfig = {
   hero: {
     title: "Attestix",
     description:
-      "The EU AI Act takes effect August 2, 2026. Non-compliant organizations face fines up to EUR 35 million or 7% of global revenue. Attestix is like TurboTax for AI compliance: it automates the documentation, identity verification, and audit trails your AI agents need to stay legal. Install once, drop into LangChain, OpenAI Agents SDK, or CrewAI, and generate cryptographic proof of compliance on every run.",
+      "The EU AI Act (Regulation 2024/1689) is phasing in obligations through 2026-2027. Fines reach up to EUR 35 million or 7% of global revenue for prohibited practices, and EUR 15 million or 3% for high-risk and transparency obligations. Attestix is like TurboTax for AI compliance: it automates the documentation, identity verification, and audit trails your AI agents need to stay legal. Install once, drop into LangChain, OpenAI Agents SDK, or CrewAI, and generate cryptographic proof of compliance on every run.",
     cta: "pip install attestix",
     ctaDescription: "Stable 0.4.1 - 585 tests passing (494 functional + 91 RFC / W3C conformance benchmarks). Real LangChain, OpenAI Agents SDK, and CrewAI integrations. Apache 2.0. Single-maintainer project; no independent third-party security audit yet.",
   },
@@ -248,7 +248,7 @@ export const siteConfig = {
     {
       question: "Why does my organization need Attestix?",
       answer:
-        "The EU AI Act enforcement begins August 2, 2026 with fines up to EUR 35 million or 7% of global annual revenue for non-compliance. Most compliance tools only generate static PDF reports that cannot be independently verified. Attestix produces cryptographically signed, machine-verifiable proof of compliance that auditors and regulators can validate in seconds. Every credential, audit trail, and identity attestation is backed by digital signatures and optional blockchain anchoring.",
+        "EU AI Act fines reach up to EUR 35 million or 7% of global annual revenue for prohibited practices, and EUR 15 million or 3% for breaches of high-risk and transparency obligations. Most compliance tools only generate static PDF reports that cannot be independently verified. Attestix produces cryptographically signed, machine-verifiable proof of compliance that auditors and regulators can validate in seconds. Every credential, audit trail, and identity attestation is backed by digital signatures and optional blockchain anchoring.",
     },
     {
       question: "Who is Attestix for?",

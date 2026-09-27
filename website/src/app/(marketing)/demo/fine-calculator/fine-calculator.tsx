@@ -23,7 +23,7 @@ interface FineTier {
   name: string;
   article: string;
   description: string;
-  flatMinimumEur: number;
+  capEur: number;
   revenuePercentage: number;
   colorClass: string;
   bgClass: string;
@@ -34,9 +34,9 @@ interface FineTier {
 const FINE_TIERS: FineTier[] = [
   {
     name: "Tier 1",
-    article: "Article 5",
-    description: "Prohibited AI practices",
-    flatMinimumEur: 35_000_000,
+    article: "Article 99(3)",
+    description: "Prohibited AI practices (Article 5)",
+    capEur: 35_000_000,
     revenuePercentage: 7,
     colorClass: "text-red-400",
     bgClass: "bg-red-500/10",
@@ -45,9 +45,9 @@ const FINE_TIERS: FineTier[] = [
   },
   {
     name: "Tier 2",
-    article: "Articles 6-49",
-    description: "High-risk non-compliance",
-    flatMinimumEur: 15_000_000,
+    article: "Article 99(4)",
+    description: "High-risk, operator, and transparency obligations",
+    capEur: 15_000_000,
     revenuePercentage: 3,
     colorClass: "text-orange-400",
     bgClass: "bg-orange-500/10",
@@ -56,9 +56,9 @@ const FINE_TIERS: FineTier[] = [
   },
   {
     name: "Tier 3",
-    article: "Article 99(4)",
+    article: "Article 99(5)",
     description: "Incorrect information to authorities",
-    flatMinimumEur: 7_500_000,
+    capEur: 7_500_000,
     revenuePercentage: 1,
     colorClass: "text-yellow-400",
     bgClass: "bg-yellow-500/10",
@@ -108,9 +108,13 @@ function parseInputValue(value: string): number {
   return parseInt(digits, 10);
 }
 
+// Art. 99(3)-(5): the fixed amount and the revenue percentage are both
+// ceilings ("up to"); the higher applies. Art. 99(6): for SMEs and start-ups
+// the lower applies. These are maximums, not minimums.
 function calculateFine(
   revenueUsd: number,
-  tier: FineTier
+  tier: FineTier,
+  isSme: boolean
 ): {
   fineEur: number;
   isPercentageBased: boolean;
@@ -118,8 +122,10 @@ function calculateFine(
 } {
   const revenueEur = revenueUsd / EUR_USD_RATE;
   const percentageAmount = revenueEur * (tier.revenuePercentage / 100);
-  const isPercentageBased = percentageAmount > tier.flatMinimumEur;
-  const fineEur = Math.max(tier.flatMinimumEur, percentageAmount);
+  const fineEur = isSme
+    ? Math.min(tier.capEur, percentageAmount)
+    : Math.max(tier.capEur, percentageAmount);
+  const isPercentageBased = fineEur === percentageAmount;
 
   return { fineEur, isPercentageBased, percentageAmount };
 }
@@ -172,15 +178,19 @@ function FineCard({
   tier,
   revenueUsd,
   hasCalculated,
+  isSme,
 }: {
   tier: FineTier;
   revenueUsd: number;
   hasCalculated: boolean;
+  isSme: boolean;
 }) {
   const { fineEur, isPercentageBased, percentageAmount } = calculateFine(
     revenueUsd,
-    tier
+    tier,
+    isSme
   );
+  const rule = isSme ? "whichever is lower, Art. 99(6)" : "whichever is higher";
 
   return (
     <div
@@ -217,7 +227,7 @@ function FineCard({
 
       <div className="mb-3">
         <AnimatedFineAmount
-          value={hasCalculated ? fineEur : tier.flatMinimumEur}
+          value={hasCalculated ? fineEur : tier.capEur}
           className={cn("text-3xl font-bold tracking-tight", tier.colorClass)}
         />
       </div>
@@ -257,21 +267,21 @@ function FineCard({
                   !isPercentageBased ? "text-foreground font-medium" : ""
                 }
               >
-                Flat minimum = {formatCurrency(tier.flatMinimumEur, "EUR")}
+                Fixed cap = {formatCurrency(tier.capEur, "EUR")}
               </span>
             </p>
             <p className="mt-2 pt-2 border-t border-current/10 font-medium text-foreground">
-              Applying {isPercentageBased ? "percentage" : "flat minimum"}{" "}
-              (whichever is higher)
+              Maximum fine uses the {isPercentageBased ? "percentage" : "fixed cap"}{" "}
+              ({rule})
             </p>
           </>
         ) : (
           <>
             <p>
-              {formatCurrency(tier.flatMinimumEur, "EUR")} or{" "}
+              {formatCurrency(tier.capEur, "EUR")} or{" "}
               {tier.revenuePercentage}% of global annual revenue
             </p>
-            <p className="italic">Whichever is higher</p>
+            <p className="italic">Up to, {rule}</p>
           </>
         )}
       </div>
@@ -284,6 +294,7 @@ export function FineCalculator() {
   const [revenueUsd, setRevenueUsd] = useState(0);
   const [hasCalculated, setHasCalculated] = useState(false);
   const [activePreset, setActivePreset] = useState<number | null>(null);
+  const [isSme, setIsSme] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const handleCalculate = useCallback((value: number) => {
@@ -378,6 +389,16 @@ export function FineCalculator() {
             ))}
           </div>
 
+          <label className="mt-4 flex items-center gap-2 text-sm text-muted-foreground">
+            <input
+              type="checkbox"
+              checked={isSme}
+              onChange={(e) => setIsSme(e.target.checked)}
+              className="h-4 w-4 accent-primary"
+            />
+            SME or start-up (Art. 99(6): the lower amount applies)
+          </label>
+
           {hasCalculated && (
             <p className="mt-3 text-xs text-muted-foreground">
               Using approximate conversion rate: 1 EUR = {EUR_USD_RATE} USD.
@@ -394,6 +415,7 @@ export function FineCalculator() {
               tier={tier}
               revenueUsd={revenueUsd}
               hasCalculated={hasCalculated}
+              isSme={isSme}
             />
           ))}
         </div>
@@ -445,9 +467,10 @@ export function FineCalculator() {
                 </h3>
               </div>
               <p className="text-sm text-muted-foreground leading-relaxed">
-                SMEs and startups get proportionate fines, but the flat
-                minimums still apply. A company with EUR 5M revenue faces the
-                same EUR 35M Tier 1 minimum as a multinational.
+                For SMEs and start-ups, Art. 99(6) caps each fine at the lower
+                of the fixed amount and the revenue percentage. A company with
+                EUR 5M revenue faces at most EUR 350,000 for a Tier 1 breach
+                (7% of revenue), not EUR 35M.
               </p>
             </div>
           </div>
