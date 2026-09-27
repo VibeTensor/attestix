@@ -1,11 +1,13 @@
 ---
 title: "Verifiers: verify Attestix credentials in any language"
-description: Attestix credentials are issued once and verify anywhere. Six independent verifier implementations share one conformance suite, offline, with no Python runtime and zero trust in the issuer.
+description: Attestix credentials are issued once and verify offline with the Attestix verifiers. Verifiers in six languages share one conformance suite and need no Python runtime.
 ---
 
-An Attestix credential is issued once, by the Python core or Attestix Cloud, and verifies **anywhere**. Six independent verifier implementations all check the same canonical-JSON form ([RFC 8785](https://www.rfc-editor.org/rfc/rfc8785)) and the same Ed25519 signatures ([RFC 8032](https://www.rfc-editor.org/rfc/rfc8032)) against one shared conformance suite, [`spec/verify/v1`](https://github.com/VibeTensor/attestix/tree/main/spec/verify/v1).
+An Attestix credential is issued once, by the Python core or Attestix Cloud, and verifies **anywhere**. Verifiers in six languages check the same canonical-JSON form (Attestix's own [RFC 8785](https://www.rfc-editor.org/rfc/rfc8785)-style canonicalization, with Unicode NFC normalization) and the same Ed25519 signatures ([RFC 8032](https://www.rfc-editor.org/rfc/rfc8032)) against one shared conformance suite, [`spec/verify/v1`](https://github.com/VibeTensor/attestix/tree/main/spec/verify/v1). The Python and JS verifiers are documented as passing that suite; the Go, Rust, Java, and R ports implement it and share its vectors but are not yet documented as passing.
 
-The result: a regulator, an auditor, or a peer agent can confirm a Verifiable Credential offline, with no network access and no Python runtime, and **zero trust in the issuer**: the math either checks out or it does not.
+The proof is labelled `Ed25519Signature2020`, but because it signs Attestix's canonical JSON rather than the standard Data Integrity form, generic W3C VC verifiers will reject it. Use one of the Attestix verifiers below.
+
+The result: a regulator, an auditor, or a peer agent can confirm a Verifiable Credential offline, with no network access and no Python runtime, and without contacting the issuer: the signature either checks out or it does not. You still have to trust that the issuer's `did:key` really belongs to the issuer, and an offline check cannot see revocation status unless it is embedded in the credential.
 
 > **Verifier-only.** These language ports *verify* credentials and delegations; they do not *issue*. Issuance stays in the Python core (`pip install attestix`) or in Attestix Cloud. If you need to mint credentials, use Python.
 
@@ -19,14 +21,14 @@ Python is published to PyPI and the JS/TS verifier to npm as `attestix`. Go and 
 | **JS / TS** | `npm install attestix` | Live: [attestix-js](https://github.com/VibeTensor/attestix-js) |
 | **Go** | `go get github.com/VibeTensor/attestix-go` | Publishing soon: [attestix-go](https://github.com/VibeTensor/attestix-go) |
 | **Rust** | `cargo add attestix` | Publishing soon: [attestix-rs](https://github.com/VibeTensor/attestix-rs) |
-| **Java** | `com.vibetensor:attestix:0.4.0` | Publishing soon: [attestix-java](https://github.com/VibeTensor/attestix-java) |
+| **Java** | `com.vibetensor:attestix:0.4.1` | Publishing soon: [attestix-java](https://github.com/VibeTensor/attestix-java) |
 | **R** | `install.packages("attestix")` | Coming to CRAN: [attestix-r](https://github.com/VibeTensor/attestix-r) |
 
 Prefer not to install anything? Verify a credential in your browser at [attestix.io/verify](https://attestix.io/verify), or read the bundle wire-format at [attestix.io/spec/bundle/v1](https://attestix.io/spec/bundle/v1).
 
 ## Code examples
 
-Each verifier exposes a `verifyCredential` entry point that takes a credential JSON and the issuer's DID document (or embedded public key) and returns a structured pass/fail result. No network calls.
+Each verifier exposes a credential-verification entry point that takes the credential JSON, resolves the issuer key from the credential's `did:key`, and returns a structured pass/fail result. No network calls.
 
 ### Python
 
@@ -34,7 +36,8 @@ Each verifier exposes a `verifyCredential` entry point that takes a credential J
 from attestix.services.credential_service import CredentialService
 
 result = CredentialService().verify_credential_external(vc)  # the VC JSON
-# -> dict with result["valid"] and per-check breakdown
+# -> dict with result["valid"] and per-check breakdown in result["checks"]
+# Revocation is only checked if the credential is in this instance's local store.
 ```
 
 ### JavaScript / TypeScript
@@ -42,29 +45,30 @@ result = CredentialService().verify_credential_external(vc)  # the VC JSON
 ```ts
 import { verifyCredential } from "attestix";
 
-const result = await verifyCredential(vc, { didDocument });
+const result = verifyCredential(vc); // optional: { now, checkExpiry }
 if (!result.valid) {
-  console.error(result.reason);
+  console.error(result.reason, result.checks);
 }
-// result.valid: boolean — Ed25519 over RFC 8785 canonical JSON
+// result.valid: boolean - Ed25519 over Attestix's RFC 8785-style canonical JSON
 ```
 
 ### Go
 
 ```go
-import "github.com/VibeTensor/attestix-go/verify"
+import attestix "github.com/VibeTensor/attestix-go"
 
-result, err := verify.VerifyCredential(vc, didDocument)
+// vc is the credential JSON as []byte
+result, err := attestix.VerifyCredential(vc)
 if err != nil {
     log.Fatal(err)
 }
-fmt.Println(result.Valid) // true if the Ed25519 signature checks out
+fmt.Println(result.Verify()) // signature valid AND not expired AND not revoked
 ```
 
 ## One signature, six readers
 
-Every verifier is exercised against the shared [`spec/verify/v1`](https://github.com/VibeTensor/attestix/tree/main/spec/verify/v1) vectors before release, so a credential that passes in Python passes identically in Go, Rust, or the browser. That conformance suite, not any single implementation, is the source of truth for what "valid" means.
+The shared [`spec/verify/v1`](https://github.com/VibeTensor/attestix/tree/main/spec/verify/v1) vectors define what every port must reproduce, so a conformant port gives the same verdict as Python. Python and JS are documented as passing today; the other ports are being brought to the same bar. That conformance suite, not any single implementation, is the source of truth for what "valid" means.
 
 See the [Offline Verification Walkthrough](/docs/guides/offline-verify) for an end-to-end regulator scenario, and the [bundle wire-format spec](https://attestix.io/spec/bundle/v1) for the on-the-wire format.
 
-> Attestix produces cryptographically signed evidence; it is an evidence-tooling system, not a legal guarantor of compliance. Blockchain anchoring, where used, targets Base L2 (Sepolia testnet). Always consult qualified legal counsel for compliance decisions.
+> Attestix produces cryptographically signed evidence; it is an evidence-tooling system, not a legal guarantor of compliance. Blockchain anchoring, where used, targets Base L2 (Sepolia testnet by default). Always consult qualified legal counsel for compliance decisions.

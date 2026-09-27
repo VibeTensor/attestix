@@ -8,19 +8,19 @@ export const metadata: Metadata = {
 export default function CookiePolicy() {
   return (
     <>
-      <h1>Cookie Policy</h1>
-      <p className="text-muted-foreground">
+      <h1>Cookie policy</h1>
+      <p className="!mt-4 text-[14px] text-atx-ink-dim">
         Last updated: February 27, 2026
       </p>
 
-      <h2>1. What Are Cookies</h2>
+      <h2>1. What are cookies</h2>
       <p>
         Cookies are small text files stored on your device when you visit a
         website. They help the website remember your preferences and improve
         your experience.
       </p>
 
-      <h2>2. Cookies We Use</h2>
+      <h2>2. Cookies we use</h2>
       <p>
         Attestix uses a minimal set of cookies, limited to strictly necessary
         functionality:
@@ -28,7 +28,7 @@ export default function CookiePolicy() {
       <table>
         <thead>
           <tr>
-            <th>Cookie Name</th>
+            <th>Cookie name</th>
             <th>Purpose</th>
             <th>Type</th>
             <th>Duration</th>
@@ -46,7 +46,7 @@ export default function CookiePolicy() {
         </tbody>
       </table>
 
-      <h2>3. Cookies We Do NOT Use</h2>
+      <h2>3. Cookies we do NOT use</h2>
       <ul>
         <li>
           <strong>Analytics cookies:</strong> We do not use Google Analytics,
@@ -69,7 +69,7 @@ export default function CookiePolicy() {
         necessary security cookie that expires within 30 minutes.
       </p>
 
-      <h2>5. Managing Cookies</h2>
+      <h2>5. Managing cookies</h2>
       <p>
         You can control cookies through your browser settings. Most browsers
         allow you to:
@@ -85,7 +85,7 @@ export default function CookiePolicy() {
         toggle on our website.
       </p>
 
-      <h2>6. Changes to This Policy</h2>
+      <h2>6. Changes to this policy</h2>
       <p>
         If we introduce any new cookies (for example, analytics), we will update
         this page and implement a consent mechanism before they are set.

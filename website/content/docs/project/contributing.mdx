@@ -3,8 +3,6 @@ title: Contributing to Attestix
 description: How to get started contributing to Attestix, including development workflow, code conventions, and project architecture rules.
 ---
 
-# Contributing to Attestix
-
 Thank you for your interest in contributing to Attestix. This guide covers how to get started, the development workflow, and project conventions.
 
 ## Getting Started
@@ -21,13 +19,13 @@ git clone https://github.com/VibeTensor/attestix.git
 cd attestix
 python -m venv .venv
 source .venv/bin/activate  # On Windows: .venv\Scripts\activate
-pip install -r requirements.txt
+pip install -e ".[dev]"
 ```
 
 ### Verify Setup
 
 ```bash
-python main.py
+python -m attestix.main
 # Should print "Attestix MCP server loaded: 47 tools registered" to stderr
 # Then wait for MCP client connections on stdio
 ```
@@ -36,16 +34,30 @@ Press Ctrl+C to stop.
 
 ## Project Structure
 
+The installable package lives in `attestix/`; tests, docs, and examples are at the repository root. Top-level `.py` files and directories outside `attestix/` (such as the root `main.py`) are deprecated back-compat shims.
+
 ```
-attestix/
-  auth/           # Cryptography and token parsing
-  services/       # Business logic (one service per module)
-  tools/          # MCP tool definitions (thin wrappers around services)
-  docs/           # Documentation
-  examples/       # Runnable example scripts
-  config.py       # Storage paths and helpers
-  errors.py       # Error handling and logging
-  main.py         # Entry point
+attestix/                 # repository root
+  attestix/               # the package
+    api/                  # REST API (FastAPI, [api] extra)
+    audit/                # Structured, hash-chained audit events + verify_chain
+    auth/                 # Cryptography (crypto.py), post-quantum (pqc.py), token parsing, SSRF guard
+    blockchain/           # EAS / Merkle helpers
+    idempotency/          # Idempotency-key store and middleware
+    integrations/         # LangChain, OpenAI Agents SDK, CrewAI
+    portability/          # Bundle export / import
+    services/             # Business logic (one service per module)
+    signing/              # Pluggable Signer seam (in-process Ed25519 default)
+    storage/              # Pluggable Repository seam (file, memory)
+    tenancy/              # Tenant context
+    tools/                # MCP tool definitions (thin wrappers around services)
+    cli.py                # `attestix` command-line interface
+    config.py             # Data directory, storage paths, load_*/save_* helpers
+    errors.py             # Error handling and logging
+    main.py               # MCP server entry point (python -m attestix.main)
+  tests/                  # unit, e2e, integration, benchmarks, ...
+  docs/                   # Documentation
+  examples/               # Runnable example scripts
 ```
 
 ### Architecture Rules
@@ -53,8 +65,8 @@ attestix/
 1. **Services contain all logic.** Tool files are thin wrappers that call service methods.
 2. **Services never import from tools.** Dependencies flow: tools -> services -> config/auth.
 3. **All output to stderr.** `builtins.print` is redirected to stderr to protect MCP JSON-RPC on stdout.
-4. **JSON storage with file locking.** Use `_safe_load` / `_safe_save` from `config.py` for all file I/O.
-5. **Ed25519 signatures.** All persistent records (UAITs, VCs, audit entries) must be signed.
+4. **Storage goes through the Repository seam.** Use the `load_*` / `save_*` helpers in `config.py` (thin shims over the default file `Repository`, with file locking and atomic writes) or `attestix.storage`, not direct file I/O.
+5. **Signing and audit.** Sign persistent records through the `Signer` seam (UAITs, VCs, compliance and provenance records are server-signed), and emit one structured audit event per committed state change via `safe_emit`. Audit events are hash-chained, not signed.
 
 ## How to Contribute
 
@@ -73,7 +85,7 @@ Open an issue on GitHub with:
 3. Make your changes
 4. Run the test suite to verify nothing is broken:
    ```bash
-   # Run all 585 tests (unit, e2e, conformance benchmarks; 7 skipped)
+   # Run the full suite (unit, e2e, integration, conformance benchmarks)
    pytest tests/ -v -m "not live_blockchain"
 
    # Or run in Docker for a clean environment
@@ -93,7 +105,7 @@ Open an issue on GitHub with:
 
 ### Style
 
-- Python standard library style (no external formatter enforced)
+- `ruff check` runs in CI and must pass; `ruff format --check` also runs but is advisory
 - Use type hints for function signatures
 - Docstrings on all public methods and classes
 - Keep imports sorted: stdlib, third-party, local
@@ -107,30 +119,34 @@ Open an issue on GitHub with:
 
 ### Error Handling
 
-Return error dicts instead of raising exceptions in service methods:
+Most service methods return error dicts instead of raising. Expected failures return `{"error": "..."}` directly; unexpected exceptions go through `log_and_format_error`, which logs the details and returns a sanitized message (exception type only, no paths or internals):
 
 ```python
+from attestix.errors import ErrorCategory, log_and_format_error
+
 def my_method(self, agent_id: str) -> dict:
-    agent = self._find_agent(agent_id)
-    if not agent:
-        return format_error(
-            "Agent not found",
-            ErrorCategory.IDENTITY,
-            "AGENT_NOT_FOUND",
+    try:
+        agent = self._find_agent(agent_id)
+        if not agent:
+            return {"error": f"Agent {agent_id} not found"}
+        # ... do work
+        return {"result": "success"}
+    except Exception as e:
+        msg = log_and_format_error(
+            "my_method", e, ErrorCategory.IDENTITY, agent_id=agent_id,
         )
-    # ... do work
-    return {"result": "success"}
+        return {"error": msg}
 ```
 
 ### Adding a New Module
 
-1. Create `services/your_service.py` with a service class
-2. Create `tools/your_tools.py` with a `register(mcp)` function
-3. Add storage helpers to `config.py` if needed
-4. Add error category to `errors.py` if needed
-5. Import and register in `main.py`
-6. Update tool count in `main.py` docstring
-7. Add documentation to `docs/api-reference.md`
+1. Create `attestix/services/your_service.py` with a service class
+2. Create `attestix/tools/your_tools.py` with a `register(mcp)` function
+3. Add storage helpers to `attestix/config.py` if needed
+4. Add an error category to `attestix/errors.py` if needed
+5. Import and register in `attestix/main.py`
+6. Update the tool count in the `attestix/main.py` docstring and startup message
+7. Add documentation to `docs/api-reference.md` and the website API reference
 8. Create an example in `examples/`
 
 ## Security

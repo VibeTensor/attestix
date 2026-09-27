@@ -3,146 +3,171 @@ title: Base L2 Testnet Anchor Walkthrough
 description: Anchor an Attestix artefact hash to Base L2 testnet via the Ethereum Attestation Service. End-to-end guide with Sepolia faucets, gas estimates, and verification.
 ---
 
-This guide walks through anchoring an Attestix identity or credential to Base L2 testnet (Sepolia). Mainnet schema registration is planned for a future release; testnet is the default target today.
+This guide walks through anchoring an Attestix identity, credential, or audit batch to Base L2 testnet (Base Sepolia). Base Sepolia is the default network. Base mainnet is also supported via `BASE_NETWORK=mainnet`, with real gas cost.
 
 ## Why anchor?
 
-An Attestix artefact (identity, credential, audit batch) is already Ed25519-signed and hash-chained. Anchoring commits the hash to a public ledger so any third party can:
+An Attestix identity or credential is already Ed25519-signed with the Attestix server key, and the Article 12 action log is hash-chained. Anchoring commits a hash to a public ledger so a third party can:
 
 - Confirm the artefact existed at a specific block height.
-- Detect silent mutation of the local store.
-- Link an Attestix issuer DID to an on-chain provenance record.
+- Detect later changes to the anchored record in the local store.
+- Link the Attestix issuer DID (recorded in the attestation data) to an on-chain record.
 
 Anchoring is optional. Attestix works fully offline without it.
 
 ## Prerequisites
 
 ```bash
-# v0.4.0-rc.2 release candidate (canonical attestix.* namespace):
-pip install --pre attestix
-
-# Stable 0.3.0 still works (legacy flat layout, deprecation shims):
-pip install attestix
+pip install "attestix[blockchain]"
 ```
+
+The `[blockchain]` extra installs `web3` (`>=7,<8`), which anchoring requires. The current release is 0.4.1.
 
 You will need:
 
-1. A Base Sepolia RPC endpoint.
-2. A funded wallet on Base Sepolia (0.001 ETH is plenty, free from public faucets).
-3. The EAS schema UID for Attestix. This ships with the package.
+1. A funded wallet on Base Sepolia (a small amount of test ETH from a public faucet is enough).
+2. Optionally, your own Base Sepolia RPC endpoint (the default is `https://sepolia.base.org`).
 
-## Step 1 / Configure the testnet RPC
+You do not need to look up an EAS schema UID. Attestix registers its schema (`bytes32 artifactHash, string artifactType, string artifactId, string issuerDid`) on the first anchor if it is not already registered, and caches the UID in `~/.attestix/.blockchain_config.json` as `schema_uid_<network>`.
+
+## Step 1 / Configure the wallet and network
 
 ```bash
-export BASE_RPC_URL=https://sepolia.base.org
 export EVM_PRIVATE_KEY=0xyour_private_key_hex_here
-```
-
-Or via `.env`:
-
-```
-BASE_RPC_URL=https://sepolia.base.org
-EVM_PRIVATE_KEY=0x0000000000000000000000000000000000000000000000000000000000000000
+export BASE_NETWORK=sepolia                    # default; "mainnet" for Base mainnet
+export BASE_RPC_URL=https://sepolia.base.org   # optional; defaults to the network's public RPC
 ```
 
 `EVM_PRIVATE_KEY` is the full hex private key with the `0x` prefix. **Treat it as a secret. Never commit it. Never share it.** Use a dedicated test wallet for testnet work; do not reuse mainnet keys.
 
+Set these as environment variables of the process that runs Attestix (for the MCP server, in the client's `env` block). Attestix only reads a `.env` file from inside its own package directory, not from your working directory.
+
 ## Step 2 / Fund the wallet
 
-Use any Base Sepolia faucet. Recommended:
+Use any Base Sepolia faucet, for example:
 
 - Coinbase Developer Platform faucet for Base Sepolia: https://portal.cdp.coinbase.com/products/faucet
 - Alchemy Base Sepolia faucet: https://www.alchemy.com/faucets/base-sepolia
 
-Send around 0.001 ETH to the address derived from `EVM_PRIVATE_KEY`.
-
-Check balance via the Attestix CLI:
-
-```bash
-attestix blockchain balance
-```
-
-Or programmatically in Python:
+Send test ETH to the address derived from `EVM_PRIVATE_KEY`. There is no CLI command for the balance; use `estimate_anchor_cost` (next step), which reports the wallet address and balance:
 
 ```python
 from attestix.services.blockchain_service import BlockchainService
 
 svc = BlockchainService()
-print(svc.balance())  # e.g. 0.0012 ETH on Base Sepolia
+print(svc.is_configured, svc.wallet_address)
 ```
+
+If `is_configured` is `False`, any anchoring call returns `{"error": ...}` explaining what is missing (no `EVM_PRIVATE_KEY`, `web3` not installed, or RPC unreachable).
 
 ## Step 3 / Estimate cost
 
 ```python
-svc.estimate_anchor_cost(artifact_id="attestix:f9bdb7a94ccb40f1")
+cost = svc.estimate_anchor_cost(artifact_type="identity")
+print(cost["balance_eth"], cost["estimated_cost_eth"], cost["can_afford"])
 ```
 
-Typical numbers on Base Sepolia:
+The result includes `network`, `chain_id`, `wallet`, `balance_eth`, `estimated_gas`, `gas_price_gwei`, `max_priority_fee_gwei`, `estimated_cost_eth`, `can_afford`, and `explorer`.
 
-| Field | Value |
-|-------|-------|
-| Gas | ~48,000 |
-| Gas price | ~1 gwei |
-| Total | under $0.01 (testnet ETH has no market value) |
+`estimated_gas` is a fixed 300,000 (the gas limit Attestix sets on each anchor transaction), and `estimated_cost_eth` uses twice the current gas price, so it is a conservative upper bound rather than the actual cost. Actual gas used is reported as `gas_used` in the anchor record. Testnet ETH has no market value.
 
 ## Step 4 / Anchor an identity
 
+The service method is `anchor_artifact(artifact_hash, artifact_type, artifact_id)`. Hash the record with `hash_artifact` first (this is exactly what the `anchor_identity` MCP tool does):
+
 ```python
-tx_hash = svc.anchor_identity(agent_id="attestix:f9bdb7a94ccb40f1")
-print(tx_hash)  # -> 0x8f2e4c9b...
+from attestix.services.identity_service import IdentityService
+
+agent_id = "attestix:f9bdb7a94ccb40f1"
+identity = IdentityService().get_identity(agent_id)
+
+anchor = svc.anchor_artifact(
+    artifact_hash=svc.hash_artifact(identity),
+    artifact_type="identity",
+    artifact_id=agent_id,
+)
+print(anchor["tx_hash"], anchor["explorer_url"])
 ```
+
+The anchor record (also saved to `~/.attestix/anchors.json`) contains `anchor_id`, `artifact_type`, `artifact_id`, `artifact_hash`, `network`, `chain_id`, `tx_hash`, `attestation_uid`, `schema_uid`, `attester`, `block_number`, `gas_used`, `explorer_url`, `anchored_at`, and `issuer_did`.
+
+Over MCP, use the `anchor_identity` tool with `agent_id`.
 
 ## Step 5 / Anchor a credential
 
 ```python
-tx_hash = svc.anchor_credential(credential_id="urn:uuid:9e2f7a3c-...")
-```
+from attestix.services.credential_service import CredentialService
 
-## Step 6 / Anchor a batch
+cred_id = "urn:uuid:9e2f7a3c-..."
+credential = CredentialService().get_credential(cred_id)
 
-Merkle-batch 100 artefacts into a single on-chain write:
-
-```python
-tx_hash = svc.anchor_audit_batch(
-    artifact_ids=[...],  # up to 10,000 per batch
+anchor = svc.anchor_artifact(
+    artifact_hash=svc.hash_artifact(credential),
+    artifact_type="credential",
+    artifact_id=cred_id,
 )
 ```
 
-Gas cost stays ~48k regardless of batch size. The proof size grows as `O(log n)` per artefact.
+Over MCP, use the `anchor_credential` tool with `credential_id`. Valid `artifact_type` values are `identity`, `credential`, `declaration`, and `audit_batch`.
+
+## Step 6 / Anchor an audit batch
+
+`anchor_audit_batch` computes a Merkle root over an agent's Article 12 action-log entries (from `provenance.json`) in an optional date range and anchors the root in one transaction:
+
+```python
+batch = svc.anchor_audit_batch(
+    agent_id="attestix:f9bdb7a94ccb40f1",
+    start_date="2026-01-01T00:00:00",  # optional
+    end_date="2026-03-31T23:59:59",    # optional
+)
+print(batch["tx_hash"], batch["batch_metadata"]["entry_count"])
+```
+
+It returns the anchor record plus `batch_metadata` (`agent_id`, `entry_count`, `merkle_root`, `start_date`, `end_date`). There is no fixed cap on batch size. The on-chain transaction is the same size regardless of how many entries are batched.
 
 ## Step 7 / Verify an anchor
 
+The service method takes the artifact hash:
+
 ```python
-status = svc.verify_anchor(artifact_id="attestix:f9bdb7a94ccb40f1")
-# -> { "confirmed": True, "block": 23047881, "tx": "0x8f2e...", "schema": "AttestixAgentIdentityV1" }
+status = svc.verify_anchor(svc.hash_artifact(identity))
+print(status["verified"])
 ```
 
-Run this on a different machine to prove the local store has not been tampered with.
+`verify_anchor` looks the hash up in the local `anchors.json` first, then checks each matching attestation on-chain with EAS. The result contains `verified` (`True` only if every matching attestation is valid on-chain), `artifact_hash`, `anchor_count`, and `anchors` (each with `on_chain_valid`, `on_chain_time`, `on_chain_revoked`, `on_chain_attester`). If the wallet is not configured but a local record exists, `verified` is `"local_only"`. If there is no local record for the hash, `verified` is `False`.
+
+The `verify_anchor` MCP tool also accepts an `artifact_id` (agent ID or credential URN); it re-hashes the current stored record. Note that identity records change when they are revoked or when compliance or reputation data is attached, so a record updated after anchoring will no longer match its original anchor.
+
+To verify on a different machine, that machine needs the artefact, a copy of the relevant `anchors.json` entries, and a configured wallet or RPC; alternatively, check the attestation directly on the explorer (next step).
 
 ## Step 8 / Inspect on a block explorer
 
-Paste the tx hash into Base Sepolia block explorer. You will see:
+Open the `explorer_url` from the anchor record (Base Sepolia: `https://sepolia.basescan.org`). You will see:
 
-- The EAS attestation call
-- The Attestix schema reference
-- The artefact hash as a bytes32 field
+- The EAS `attest` call
+- The Attestix schema UID
+- The encoded attestation data: artefact hash (bytes32), artefact type, artefact ID, and issuer DID
 
-Anyone can run the same verification without contacting Attestix or VibeTensor.
+A third party can compare that hash with their own SHA-256 of the artefact without contacting Attestix or VibeTensor, provided they hash it the same way Attestix does (`hash_artifact`: SHA-256 over Attestix's normalised, sorted-key compact JSON).
 
 ## Troubleshooting
 
-### `Error: BASE_RPC_URL not set`
+### `Blockchain anchoring not configured. Set EVM_PRIVATE_KEY ...`
 
-See [configuration](/docs/reference/configuration) for all environment variables.
+`EVM_PRIVATE_KEY` is not set in the environment of the Attestix process. See [configuration](/docs/reference/configuration) for all environment variables.
 
-### `Error: insufficient funds`
+### `web3 package not installed`
 
-Top up the wallet at a Base Sepolia faucet.
+Install the extra: `pip install "attestix[blockchain]"`.
 
-### `Error: schema UID mismatch`
+### `Cannot connect to <rpc>`
 
-Upgrade to the latest Attestix package: `pip install --upgrade attestix`.
+Check `BASE_RPC_URL` and network connectivity.
 
-## Mainnet status
+### `Attestation transaction reverted. Check gas and balance.`
 
-Mainnet schema registration is on the [roadmap](/docs/project/roadmap). Once the mainnet schema is registered and validated, `BASE_RPC_URL` can be pointed at `https://mainnet.base.org` and the same flow applies with real gas cost. Until then, use testnet.
+Top up the wallet at a Base Sepolia faucet and retry.
+
+## Mainnet
+
+Set `BASE_NETWORK=mainnet` to anchor on Base mainnet (chain ID 8453; default RPC `https://mainnet.base.org`). The schema is registered on first use on that network, and every anchor costs real ETH. Test the full flow on Sepolia first.

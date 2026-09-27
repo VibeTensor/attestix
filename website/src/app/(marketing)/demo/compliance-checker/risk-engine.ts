@@ -34,7 +34,7 @@ const RISK_METADATA: Record<RiskLevel, Omit<RiskAssessment, "articles" | "obliga
     description:
       "Your AI system is classified as high risk under the EU AI Act. It must meet strict requirements before being placed on the EU market or put into service.",
     timeline:
-      "High-risk AI systems must comply by August 2, 2026. You should begin conformity assessment, documentation, and risk management now to meet the deadline.",
+      "Requirements for Annex III high-risk AI systems apply from 2 December 2027, and for Annex I product-safety systems from 2 August 2028 (Regulation (EU) 2026/1744). Begin conformity assessment, documentation, and risk management now.",
     fineRange: "Up to 15 million EUR or 3% of global annual turnover, whichever is higher",
     color: "text-orange-400",
     bgColor: "bg-orange-500/10",
@@ -47,7 +47,7 @@ const RISK_METADATA: Record<RiskLevel, Omit<RiskAssessment, "articles" | "obliga
     description:
       "Your AI system has limited risk and is subject to transparency obligations. Users must be informed that they are interacting with AI.",
     timeline:
-      "Transparency obligations apply from August 2, 2026. Implement disclosure mechanisms and content labeling ahead of the deadline.",
+      "Article 50 transparency obligations have applied since 2 August 2026. Generative AI systems placed on the market before that date must meet the Article 50(2) marking obligation by 2 December 2026.",
     fineRange: "Up to 7.5 million EUR or 1.5% of global annual turnover, whichever is higher",
     color: "text-yellow-400",
     bgColor: "bg-yellow-500/10",

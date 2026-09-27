@@ -38,3 +38,9 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+audit/
+
+# generated at build time by scripts/generate-llms.mjs
+public/llms.txt
+public/docs/
+public/docs.md

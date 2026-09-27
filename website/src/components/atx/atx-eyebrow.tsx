@@ -1,27 +1,23 @@
 import { cn } from "@/lib/utils";
 
 interface AtxEyebrowProps {
+  /** Accepted for compatibility; sections are no longer numbered. */
   number?: string;
   children: React.ReactNode;
   accent?: boolean;
   className?: string;
 }
 
-export function AtxEyebrow({
-  number,
-  children,
-  accent,
-  className,
-}: AtxEyebrowProps) {
+// Small sentence-case label above a heading, in the accent colour.
+export function AtxEyebrow({ children, accent = true, className }: AtxEyebrowProps) {
   return (
     <div
       className={cn(
-        "font-mono-atx text-[11px] font-medium tracking-[0.14em] uppercase",
-        accent ? "text-atx-accent" : "text-atx-ink-dim",
+        "text-[14px] font-medium",
+        accent ? "text-atx-accent" : "text-atx-ink-mid",
         className
       )}
     >
-      {number ? `\u00A7 ${number} / ` : null}
       {children}
     </div>
   );

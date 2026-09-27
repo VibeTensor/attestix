@@ -1,95 +1,73 @@
 import Link from "next/link";
-import type { Metadata } from "next";
-import { AtxEyebrow } from "@/components/atx/atx-eyebrow";
+import { ArrowRight } from "lucide-react";
+import { constructMetadata } from "@/lib/utils";
 
-export const metadata: Metadata = {
-  title: "Demos moved / Attestix Console",
-  description: "The Attestix demos have moved to the interactive console.",
-  alternates: {
-    canonical: "/console",
+export const metadata = constructMetadata({
+  title: "Demos",
+  description:
+    "Try Attestix in the browser: the interactive console, an EU AI Act fine calculator, a risk classifier, an agent identity explorer, and a reputation dashboard. Data is simulated.",
+});
+
+const DEMOS = [
+  {
+    href: "/console",
+    name: "Console",
+    body: "The full Attestix workspace: agents, credentials, delegations, and the hash-chained audit trail.",
   },
-};
+  {
+    href: "/demo/fine-calculator",
+    name: "EU AI Act fine calculator",
+    body: "Article 99 maximum fines for your turnover and company size, including the SME and small mid-cap rules.",
+  },
+  {
+    href: "/demo/compliance-checker",
+    name: "Risk classifier",
+    body: "Answer a few questions to see which EU AI Act risk tier an AI system likely falls into.",
+  },
+  {
+    href: "/demo/identity-explorer",
+    name: "Agent identity explorer",
+    body: "Create a simulated agent identity and inspect every field, from the DID to the trust score.",
+  },
+  {
+    href: "/demo/reputation-dashboard",
+    name: "Reputation dashboard",
+    body: "How Attestix scores agent reputation from interactions and compliance records.",
+  },
+];
 
-export default function DemoRedirectPage() {
+export default function DemosPage() {
   return (
-    <section className="mx-auto max-w-[1080px] px-7 py-24">
-      <noscript>
-        <meta httpEquiv="refresh" content="0;url=/console" />
-      </noscript>
-      <AtxEyebrow>Demos moved</AtxEyebrow>
-      <h1 className="mt-3 font-serif text-[clamp(36px,4.8vw,60px)] leading-[1.05] tracking-[-0.012em] text-atx-ink">
-        The playground is now
-        <br />
-        the <em className="italic text-atx-accent">full console.</em>
-      </h1>
-      <p className="mt-6 max-w-[640px] text-[15px] leading-[1.65] text-atx-ink-mid">
-        The individual demo widgets have been rolled into the interactive
-        Attestix console at <code className="rounded-atx-xs border border-atx-line-soft bg-atx-bg-sunken px-1.5 py-0.5 font-mono-atx text-[12px] text-atx-accent">/console</code>. You are being redirected now. If the
-        redirect does not fire, use the link below.
-      </p>
-      <div className="mt-8 flex flex-wrap gap-3">
-        <Link
-          href="/console"
-          className="inline-flex h-10 items-center gap-2 rounded-atx-md bg-atx-accent px-5 text-[13px] font-medium text-[oklch(0.14_0.01_180)] transition-colors hover:bg-atx-accent-deep"
-        >
-          Go to the console &rarr;
-        </Link>
-        <Link
-          href="/"
-          className="inline-flex h-10 items-center rounded-atx-md border border-atx-line px-5 text-[13px] font-medium text-atx-ink transition-colors hover:border-atx-ink-dim hover:bg-atx-panel"
-        >
-          Home
-        </Link>
+    <section className="mx-auto max-w-[1200px] px-6 pb-20 pt-16">
+      <div className="text-center">
+        <p className="text-[14px] font-medium text-atx-accent">Demos</p>
+        <h1 className="mt-3 text-[clamp(34px,5vw,52px)] font-normal leading-[1.09] tracking-[-0.03em] text-atx-ink [text-wrap:balance]">
+          Try Attestix in your browser
+        </h1>
+        <p className="mx-auto mt-5 max-w-[620px] text-[17.5px] leading-[1.6] text-atx-ink-mid [text-wrap:balance]">
+          Interactive previews. Nothing to install and nothing uploaded; data is
+          simulated. <code className="font-mono-atx text-[15px] text-atx-accent">pip install attestix</code> for the real thing.
+        </p>
       </div>
-
-      <div className="mt-16 rounded-atx-md border border-atx-line-soft bg-atx-panel p-6">
-        <div className="font-mono-atx text-[10.5px] uppercase tracking-[0.14em] text-atx-ink-dim">
-          Single-purpose widgets still live at
-        </div>
-        <ul className="mt-3 grid gap-2 font-mono-atx text-[12.5px]">
-          <li>
-            <Link
-              href="/demo/compliance-checker"
-              className="text-atx-accent hover:underline"
-            >
-              /demo/compliance-checker
-            </Link>
-            <span className="text-atx-ink-dim"> / EU AI Act risk classifier</span>
-          </li>
-          <li>
-            <Link
-              href="/demo/fine-calculator"
-              className="text-atx-accent hover:underline"
-            >
-              /demo/fine-calculator
-            </Link>
-            <span className="text-atx-ink-dim"> / potential fine by revenue</span>
-          </li>
-          <li>
-            <Link
-              href="/demo/identity-explorer"
-              className="text-atx-accent hover:underline"
-            >
-              /demo/identity-explorer
-            </Link>
-            <span className="text-atx-ink-dim"> / sample agent identity</span>
-          </li>
-          <li>
-            <Link
-              href="/demo/reputation-dashboard"
-              className="text-atx-accent hover:underline"
-            >
-              /demo/reputation-dashboard
-            </Link>
-            <span className="text-atx-ink-dim"> / reputation scoring demo</span>
-          </li>
-        </ul>
+      <div className="mt-14 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        {DEMOS.map((d, i) => (
+          <Link
+            key={d.href}
+            href={d.href}
+            className={`group rounded-2xl border p-6 transition-colors duration-200 ${
+              i === 0
+                ? "border-atx-accent/30 bg-atx-accent/[0.05] hover:border-atx-accent/60"
+                : "border-atx-line bg-atx-panel/60 hover:border-atx-ink-dim"
+            }`}
+          >
+            <h2 className="text-[19px] font-semibold tracking-[-0.48px] text-atx-ink">{d.name}</h2>
+            <p className="mt-2 text-[15px] leading-[1.55] text-atx-ink-mid">{d.body}</p>
+            <span className="mt-5 inline-flex items-center gap-1.5 text-[14px] font-medium text-atx-ink-mid transition-colors group-hover:text-atx-ink">
+              Open <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
+            </span>
+          </Link>
+        ))}
       </div>
-      <script
-        dangerouslySetInnerHTML={{
-          __html: `setTimeout(function(){ window.location.replace('/console'); }, 50);`,
-        }}
-      />
     </section>
   );
 }

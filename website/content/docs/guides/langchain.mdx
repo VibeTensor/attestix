@@ -1,91 +1,108 @@
 ---
 title: LangChain Integration
-description: Drop Attestix into a LangChain agent with the BaseCallbackHandler. Real (not example) integration shipped in v0.3.0; v0.4.0-rc.2 release candidate. Every tool call, LLM call, and chain step gets hash-chained and signed.
+description: Drop Attestix into a LangChain agent with the AttestixCallback BaseCallbackHandler (shipped in the attestix wheel since v0.4.0; current release 0.4.1). LLM, tool, and chain events are written to the hash-chained, server-signed Attestix audit log.
 ---
 
-Attestix ships with a first-party `BaseCallbackHandler` implementation that writes every LangChain event into the Attestix audit trail and auto-issues a Verifiable Credential for each chain completion.
+Attestix ships a first-party LangChain `BaseCallbackHandler`, `AttestixCallback` (in `attestix.integrations.langchain`). It maps LangChain callback events onto `ProvenanceService.log_action(...)` calls, so each event becomes an entry in the Attestix Article 12 audit log (SHA-256 hash-chained per agent and signed with the Attestix server key). Optionally it issues a Verifiable Credential each time a chain completes.
 
 ## Install
 
 ```bash
-pip install attestix[langchain]
+pip install "attestix[langchain]"
+```
+
+The `[langchain]` extra installs only `langchain-core` (`>=0.3,<0.5`), which is all the callback needs. To run an agent you also need LangChain itself and a model provider package, for example:
+
+```bash
+pip install langchain langchain-openai
 ```
 
 ## Minimal wiring
 
 ```python
-from langchain.agents import AgentExecutor
-from langchain_openai import ChatOpenAI
 from attestix.integrations.langchain import AttestixCallback
+from attestix.services.identity_service import IdentityService
 
-callback = AttestixCallback(
-    agent_id="attestix:f9bdb7a94ccb40f1",
-    record_llm_tokens=True,
+# Use an existing Attestix identity, or omit agent_id to auto-create one.
+agent = IdentityService().create_identity(
+    display_name="q4-analyst", source_protocol="manual",
+)
+callback = AttestixCallback(agent_id=agent["agent_id"])
+
+# my_agent_executor is any LangChain Runnable / AgentExecutor you already have.
+result = my_agent_executor.invoke(
+    {"input": "Run Q4 analysis"},
+    config={"callbacks": [callback]},
 )
 
-executor = AgentExecutor(
-    agent=my_agent,
-    tools=tools,
-    callbacks=[callback],
-)
-
-result = executor.invoke({"input": "Run Q4 analysis"})
+print(callback.get_audit_summary()["audit_entries"])
 ```
 
-Every tool call, LLM call, and chain step is captured with the SHA-256 hash chain advancing each step.
+### Constructor
+
+```python
+AttestixCallback(
+    agent_id=None,               # existing Attestix agent_id; None = auto-create
+    *,
+    display_name="LangChainAgent",  # only used when auto-creating an identity
+    issuer_name="self",             # only used when auto-creating; also the VC issuer name
+    record_llm_tokens=True,         # include total_tokens from llm_output in on_llm_end rows
+    issue_vc_on_success=True,       # issue a ChainExecutionCredential on on_chain_end
+)
+```
+
+When `agent_id` is `None`, the callback creates a new identity (`source_protocol="manual"`, `capabilities=["langchain_agent"]`) every time it is constructed. Pass a stable `agent_id` if you want all runs attributed to one agent.
 
 ## What the callback records
 
-| Event | Captured |
-|-------|----------|
-| `on_chain_start` | agent id, chain name, input hash |
-| `on_tool_start` | tool name, args hash, parent chain id |
-| `on_tool_end` | output hash, duration, prev hash |
-| `on_llm_start` | model name, prompt hash, token count |
-| `on_llm_end` | completion hash, tokens used, cost estimate |
-| `on_chain_end` | final output hash, total tokens, VC issuance |
-| `on_chain_error` | exception type, stack hash |
+Each row is a `log_action` entry with `action_type`, `input_summary`, `output_summary`, and `decision_rationale`, plus `prev_hash`, `chain_hash`, and `signature`.
+
+| Event | `action_type` | What is stored |
+|-------|---------------|----------------|
+| `on_llm_start` | `inference` | prompt count and total character count; LLM class name in `decision_rationale` |
+| `on_llm_end` | `inference` | number of generations and `total_tokens` (if `record_llm_tokens` and the provider reports it) |
+| `on_tool_start` | `external_call` | tool name and the first 200 characters of the tool input |
+| `on_tool_end` | `external_call` | the first 200 characters of the tool output |
+| `on_chain_start` | `data_access` | chain name |
+| `on_chain_end` | `data_access` | output keys; triggers VC issuance if enabled |
+
+Notes:
+
+- Tool inputs and outputs are stored as truncated plaintext, not hashes. Do not pass secrets or personal data through tools you log this way unless your data handling allows it.
+- `on_chain_error`, `on_tool_error`, and `on_llm_error` are not handled; errors are not logged by the callback.
+- LangChain fires chain events for nested runnables too, so one `invoke` usually produces several `data_access` rows.
 
 ## Auto-issued credentials
 
-Set `issue_vc_on_success=True` (default) and Attestix issues a `ChainExecutionCredential` with:
+With `issue_vc_on_success=True` (the default), every `on_chain_end` issues a `ChainExecutionCredential` for the agent. Because nested runnables also end chains, expect more than one credential per top-level `invoke`. Issuance is best-effort: failures are swallowed so they never break your chain.
 
-- Claim: input hash, output hash, tool chain, duration.
-- Proof: `Ed25519Signature2020` over the canonicalised JSON.
+- Claims: `{"events_logged": <count of start events so far>, "framework": "LangChain"}`. No input/output hashes, tool list, or duration are included.
+- Proof: Ed25519 over Attestix's RFC 8785-style canonical JSON, labelled `Ed25519Signature2020`, signed with the Attestix server key.
 - Subject: the agent ID.
 
-Verify it offline with any W3C VC verifier, or via:
+Verify it with the Attestix verifiers (generic W3C VC verifiers will not accept this proof format):
 
 ```python
 from attestix.services.credential_service import CredentialService
 
 credential_svc = CredentialService()
-credential_svc.verify_credential(credential_id)
+creds = credential_svc.list_credentials(
+    agent_id=callback.agent_id, credential_type="ChainExecutionCredential",
+)
+result = credential_svc.verify_credential(creds[-1]["id"])
+print(result["valid"], result["checks"])
 ```
 
 ## Delegating to sub-agents
 
-If the chain spawns a sub-chain with its own agent, Attestix issues a UCAN delegation with capability attenuation:
-
-```python
-callback = AttestixCallback(
-    agent_id=parent_id,
-    child_agent_id=child_id,
-    delegate_capabilities=["summarize", "redact"],
-)
-```
+`AttestixCallback` does not create delegations. If a sub-agent should act with a subset of capabilities, create a UCAN-style delegation token (a server-signed JWT) yourself with `DelegationService.create_delegation(...)` or the `create_delegation` MCP tool, and give the sub-agent its own `AttestixCallback(agent_id=child_id)`.
 
 ## Verify offline
 
-```python
-from attestix.services.credential_service import CredentialService
-
-credential_svc = CredentialService()
-ok = credential_svc.verify_credential(credential_id)
-```
+`verify_credential(credential_id)` checks the credential in the local Attestix store (signature, expiry, revocation) without any network call. To verify a credential JSON exported to another machine, use `verify_credential_external(credential_dict)`; note that it can only check revocation if the credential is also present in that machine's local store.
 
 See the [offline verify guide](/docs/guides/offline-verify) for a full walkthrough.
 
-## Sample repository
+## Sample code
 
-The [examples directory](https://github.com/VibeTensor/attestix/tree/main/examples) contains a complete LangChain agent with Attestix wired end-to-end.
+[`integrations/examples/langchain_real_integration.py`](https://github.com/VibeTensor/attestix/blob/main/integrations/examples/langchain_real_integration.py) is a runnable script that uses real LangChain classes with Attestix services (it defines its own handler rather than importing `AttestixCallback`, but follows the same pattern).

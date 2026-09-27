@@ -9,15 +9,7 @@ export const metadata = constructMetadata({
 
 export default function CommunityPage() {
   return (
-    <div className="mt-24">
-      <div className="text-center py-16">
-        <h1 className="text-3xl font-bold text-foreground sm:text-4xl">
-          Community
-        </h1>
-        <p className="mt-4 text-xl text-muted-foreground">
-          Built in the open. Join us.
-        </p>
-      </div>
+    <div className="pt-8">
       <Community />
     </div>
   );

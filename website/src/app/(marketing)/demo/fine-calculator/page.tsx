@@ -4,7 +4,7 @@ import { FineCalculator } from "./fine-calculator";
 export const metadata = constructMetadata({
   title: "EU AI Act Fine Calculator",
   description:
-    "Calculate your potential EU AI Act fines based on company revenue. Three tiers of penalties for prohibited practices, high-risk non-compliance, and incorrect reporting.",
+    "Estimate the maximum EU AI Act fines under Article 99 for your worldwide turnover and company size, including the SME and small mid-cap rules. Three tiers: prohibited practices, other obligations, and incorrect information.",
 });
 
 export default function FineCalculatorPage() {

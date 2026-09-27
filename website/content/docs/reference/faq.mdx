@@ -3,8 +3,6 @@ title: Frequently Asked Questions
 description: Common questions about Attestix covering identity, EU AI Act compliance, credentials, provenance, and technical details.
 ---
 
-# Frequently Asked Questions
-
 ## General
 
 ### What is Attestix?
@@ -14,7 +12,7 @@ Attestix (Attestation Infrastructure for AI Agents) is an open-source tool that 
 ### Who is Attestix for?
 
 - **AI/ML engineers** building multi-agent systems who need agent-to-agent identity verification
-- **Compliance teams** preparing for EU AI Act enforcement (August 2, 2026)
+- **Compliance teams** preparing for EU AI Act obligations (Annex III high-risk requirements from 2 December 2027)
 - **Platform builders** who need to prove their AI agents meet regulatory requirements
 - **Researchers** exploring decentralized identity, verifiable credentials, and agent trust
 
@@ -24,7 +22,7 @@ No. Attestix produces machine-readable, cryptographically signed compliance docu
 
 ### Does Attestix require a blockchain?
 
-No. Attestix works entirely offline with local JSON storage. Blockchain anchoring (6 tools) is available as an optional feature for tamper-proof on-chain verification via Base L2 testnet and Ethereum Attestation Service, but it is not required for any core functionality. Mainnet anchoring is planned for a future release once the mainnet schema is registered.
+No. Attestix works entirely offline with local JSON storage. Blockchain anchoring (6 tools) is available as an optional feature for tamper-evident on-chain anchoring via Base L2 and the Ethereum Attestation Service (Base Sepolia by default, Base mainnet with `BASE_NETWORK=mainnet`; requires the `[blockchain]` extra and `EVM_PRIVATE_KEY`), but it is not required for any core functionality.
 
 ### Does Attestix require cloud services?
 
@@ -39,7 +37,7 @@ No. All core operations (identity creation, credential issuance, compliance prof
 
 ### What is a UAIT?
 
-A Unified Agent Identity Token. It is a digital passport for your AI agent containing its name, capabilities, description, issuer information, creation/expiry dates, and an Ed25519 cryptographic signature. See [Concepts](/docs/reference/concepts#uait-unified-agent-identity-token) for details.
+A Unified Agent Identity Token. It is a digital passport for your AI agent containing its name, capabilities, description, issuer information, creation/expiry dates, and an Ed25519 signature made with the Attestix server key (agents do not get their own keypair). See [Concepts](/docs/reference/concepts#uait-unified-agent-identity-token) for details.
 
 ### Can I use Attestix identities with Google A2A?
 
@@ -47,12 +45,12 @@ Yes. Use `translate_identity(agent_id, target_format="a2a_agent_card")` to conve
 
 ### What happens if I lose my signing key?
 
-The signing key in `.signing_key.json` is used to sign all UAITs, credentials, and audit entries. If you lose it:
-- Existing signed artifacts remain valid (signatures can be verified by anyone with the public key)
-- You will not be able to create new artifacts that chain to the same DID
-- Generate a new key by deleting `.signing_key.json` and restarting Attestix
+The server signing key in `.signing_key.json` signs UAITs, credentials, presentations, delegation tokens, compliance records, and legacy provenance log entries (structured audit events are hash-chained, not signed). If you lose it:
+- Existing signatures can still be checked against the old public key, which is embedded in the old server DID recorded in each artifact. However, Attestix's own verify tools check against the current key, so after a new key is minted they will report `signature_valid: false` for older artifacts
+- You will not be able to create new artifacts under the same server DID
+- If the key file is missing, Attestix generates a new one on next start. Do not delete a working key to force this: doing so orphans every artifact signed with the old key
 
-Keep `.signing_key.json` backed up securely. It is excluded from git by default.
+Keep `.signing_key.json` backed up securely. It lives in the data directory (`~/.attestix` by default), outside your project tree. Set `ATTESTIX_KEY_PASSWORD` to encrypt it at rest.
 
 ### Can multiple Attestix instances share identities?
 
@@ -64,26 +62,34 @@ Yes, if they share the same `.signing_key.json` and JSON data files. Point multi
 
 ### When does the EU AI Act take effect?
 
-- **August 2, 2026** - Enforcement begins for high-risk systems (Annex III) and Article 50 transparency obligations
-- **August 2, 2027** - Obligations for AI in regulated products (Annex I: medical devices, machinery)
+- **1 August 2024** - Entry into force
+- **2 February 2025** - Prohibitions (Article 5) and AI literacy (Article 4) apply
+- **2 August 2025** - General-purpose AI model obligations and the penalties chapter apply
+- **2 August 2026** - General application, including Article 50 transparency obligations
+- **2 December 2027** - Requirements for Annex III high-risk systems (Regulation (EU) 2026/1744)
+- **2 August 2028** - Requirements for Annex I high-risk systems (medical devices, machinery)
 
 ### How do I determine my risk category?
 
 See the [Risk Classification Guide](/docs/guides/risk-classification). In short:
 - **Unacceptable** - Banned (social scoring, manipulation, etc.)
-- **High** - Annex III categories (biometrics, employment, credit scoring, etc.)
-- **Limited** - Interacts with people, generates synthetic content, or performs emotion recognition
+- **High** - Annex III use cases (biometrics, employment, credit scoring, etc.) or safety components of products under Annex I legislation
+- **Limited** - Interacts with people or generates synthetic content (Article 50 transparency obligations)
 - **Minimal** - Everything else (spam filters, code completion, etc.)
+
+Emotion recognition is not a limited-risk use. It is prohibited in workplaces and education institutions (Article 5(1)(f), except for medical or safety reasons) and is high-risk elsewhere (Annex III point 1(c)), with Article 50(3) disclosure duties for deployers on top.
 
 ### Can high-risk systems use self-assessment?
 
-It depends on the Annex III category, per EU AI Act Article 43. Set the `annex_iii_category` field on the compliance profile (1 through 8):
+It depends on the category, per EU AI Act Article 43:
 
-- **Point 1 (biometrics):** third-party assessment required (Annex VII procedure). Self-assessment is blocked.
-- **Points 2-8:** self-assessment via internal control is permitted (Annex VI procedure).
-- **Unspecified category:** Attestix fails safe and blocks self-assessment until you declare the Annex III point.
+- **Annex III point 1 (biometrics):** a notified body (Annex VII procedure) is required when the provider has not applied harmonised standards (or common specifications) in full; where they have, the provider may choose internal control.
+- **Annex III points 2-8:** internal control (Annex VI procedure, self-assessment).
+- **Annex I products** (for example medical devices, machinery): follow the conformity assessment procedure of the relevant sectoral legislation (Article 43(3)).
 
-Three documented carve-outs within Points 2-8 still require third-party assessment even if you set the Annex III point: biometric identification for law enforcement, financial fraud detection, and political campaign organization. Set `annex_iii_exception` to the appropriate flag to force third-party.
+In Attestix, set the `annex_iii_category` field on the compliance profile (1 through 8). Point 1 always blocks self-assessment (Attestix does not model the harmonised-standards route); points 2-8 allow it; if the category is unspecified, Attestix fails safe and blocks self-assessment.
+
+Note on `annex_iii_exception`: the code offers three flags that force third-party assessment, but two of them are legally inverted. Financial fraud detection and political campaign organisation are exclusions from Annex III (point 5(b) excludes AI systems used to detect financial fraud from the creditworthiness use case, and point 8(b) excludes tools used to organise, optimise, or structure political campaigns from an administrative or logistical point of view). They are not grounds for notified-body assessment. This is a known code issue; do not rely on those two flags for legal classification.
 
 ### What is an Annex V declaration?
 
@@ -99,15 +105,15 @@ Yes. Use `update_compliance_profile` to modify an existing compliance profile's 
 
 ### What standard do Attestix credentials follow?
 
-W3C Verifiable Credentials Data Model 1.1. Credentials use the `https://www.w3.org/2018/credentials/v1` context and `Ed25519Signature2020` proof type.
+The W3C Verifiable Credentials Data Model 1.1 structure. Credentials use the `https://www.w3.org/2018/credentials/v1` context and a proof labelled `Ed25519Signature2020`. The proof value is an Ed25519 signature over Attestix's own RFC 8785-style canonical JSON, not the standard Linked Data proof procedure.
 
 ### Can Attestix credentials be verified by other systems?
 
-Yes, if the verifying system supports Ed25519Signature2020 proofs. The public key is embedded in the credential's `verificationMethod` field as a DID. Any system that resolves the DID can verify the signature without contacting Attestix.
+Yes, with the Attestix verifiers (see [Verifiers](/docs/verifiers)), which run offline without contacting the issuing Attestix instance. Generic W3C VC verifiers will reject the proofs because Attestix signs its own canonical JSON form rather than following the Ed25519Signature2020 suite exactly. The public key is embedded in the issuer's `did:key` in the credential's `verificationMethod`. Offline verification cannot check revocation.
 
 ### What is a Verifiable Presentation?
 
-A bundle of Verifiable Credentials presented to a specific verifier, with audience binding and replay protection. Use `create_verifiable_presentation` to bundle credentials for a regulator, partner, or auditor. See [Concepts](/docs/reference/concepts#verifiable-presentation-vp) for details.
+A bundle of Verifiable Credentials presented to a specific verifier, with an optional audience DID and challenge to help prevent replay. The presentation is signed by the Attestix server key. Use `create_verifiable_presentation` to bundle credentials for a regulator, partner, or auditor. See [Concepts](/docs/reference/concepts#verifiable-presentation-vp) for details.
 
 ### Can I issue custom credential types?
 
@@ -140,32 +146,34 @@ For high-risk systems, Article 12 requires automatic logging of all events durin
 
 ## Technical
 
-### How are the standards claims validated?
+### How are the standards claims tested?
 
-Attestix includes 91 conformance benchmark tests that run alongside the main test suite. These validate every standards claim against official specifications:
+Attestix includes conformance benchmark tests that run alongside the main test suite. They check Attestix's output against selected requirements of each specification; they are not an official certification or a full conformance suite:
 
-- **RFC 8032**: Ed25519 signatures verified against 4 IETF canonical test vectors (exact byte-level match)
-- **W3C VC Data Model 1.1**: credential structure, Ed25519Signature2020 proof fields, mutable field exclusion, Verifiable Presentations with replay protection
+- **RFC 8032**: Ed25519 signatures checked against 4 of the 5 RFC 8032 Section 7.1 test vectors (exact byte-level match)
+- **W3C VC Data Model 1.1**: credential structure, proof fields, mutable field exclusion, Verifiable Presentations with challenge
 - **W3C DID Core 1.0**: `did:key` and `did:web` document structure, roundtrip resolution, Ed25519VerificationKey2020 verification method
-- **UCAN v0.9.0**: JWT header fields (alg=EdDSA, typ=JWT, ucv=0.9.0), capability attenuation, expiry enforcement, revocation
+- **UCAN-style delegation tokens**: JWT header fields (alg=EdDSA, typ=JWT, ucv=0.9.0), capability attenuation, expiry enforcement, revocation
 - **MCP**: all 47 tools registered, 9 modules, async interface, snake\_case naming
 
 Run them yourself: `docker build -f Dockerfile.test -t attestix-bench . && docker run --rm attestix-bench`
 
 ### What cryptographic algorithm does Attestix use?
 
-Ed25519 (EdDSA with Curve25519). The signing key is auto-generated on first run and stored in `.signing_key.json`. See [Concepts](/docs/reference/concepts#ed25519) for why Ed25519 was chosen. The Ed25519 implementation is validated against all RFC 8032 Section 7.1 canonical test vectors.
+Ed25519 (EdDSA with Curve25519). The signing key is auto-generated on first run and stored in `.signing_key.json`. See [Concepts](/docs/reference/concepts#ed25519) for why Ed25519 was chosen. Ed25519 signing is tested against 4 of the 5 RFC 8032 Section 7.1 test vectors (the 1023-byte message vector is not included).
 
 ### Where is data stored?
 
-Six JSON files in the Attestix directory, plus two key files:
+JSON files in the data directory (`~/.attestix` by default, or `ATTESTIX_DATA_DIR`), plus key files:
 
 | File | Contents |
 |------|----------|
 | `identities.json` | Agent UAITs |
 | `credentials.json` | Verifiable Credentials |
 | `compliance.json` | Compliance profiles, assessments, declarations |
-| `provenance.json` | Training data, model lineage, audit log |
+| `provenance.json` | Training data, model lineage, legacy audit log |
+| `audit.json` | Structured, hash-chained audit events |
+| `anchors.json` | Local record of blockchain anchors |
 | `reputation.json` | Interaction history and scores |
 | `delegations.json` | Delegation tokens |
 | `.signing_key.json` | Server Ed25519 signing key |
@@ -184,7 +192,7 @@ Yes. Import the service classes directly in Python:
 ```python
 from attestix.services.identity_service import IdentityService
 svc = IdentityService()
-agent = svc.create_identity(display_name="MyAgent")
+agent = svc.create_identity(display_name="MyAgent", source_protocol="manual")
 ```
 
 ### What Python version is required?

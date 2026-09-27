@@ -1,40 +1,36 @@
 ---
-title: Migrating to the canonical attestix.* namespace (v0.4.0-rc.2)
-description: Move existing Attestix integrations from the legacy flat top-level packages (services/, auth/, ...) to the canonical attestix.* namespace before the deprecation shims are removed in v0.5.0.
+title: Migrating to the canonical attestix.* namespace (v0.4.0)
+description: "Move existing Attestix integrations from the legacy flat top-level packages (services/, auth/, ...) to the canonical attestix.* namespace before the deprecation shims are removed in v0.5.0."
 ---
 
-# Migrating to the canonical `attestix.*` namespace
-
-`attestix` v0.4.0-rc.2 promotes every module into a proper `attestix.*`
-namespace. The legacy flat top-level packages (`services/`, `auth/`,
-`storage/`, ...) keep working as deprecation shims, but they emit a
-`DeprecationWarning` on first import and are scheduled for **removal in v0.5.0**.
+`attestix` v0.4.0 (current release: 0.4.1) promotes every module into a proper `attestix.*`
+namespace. The change first shipped in the v0.4.0-rc.2 release candidate. The legacy flat
+top-level packages (`services/`, `auth/`, `storage/`, ...) keep working as deprecation shims,
+but they emit a `DeprecationWarning` on first import and are scheduled for **removal in v0.5.0**.
 
 This guide covers why we changed the layout, what works today, the mechanical
 substitutions you need to apply, and how to verify the migration.
 
 ## Why
 
-The ICP funnel evaluation that gated the v0.4.0 release found that pre-rc.2
-wheels were dropping flat top-level packages (`services/`, `auth/`,
+Before v0.4.0-rc.2, the wheel installed flat top-level packages (`services/`, `auth/`,
 `storage/`, `signing/`, `audit/`, `tenancy/`, `idempotency/`, `blockchain/`,
 `api/`, `tools/`, plus `config.py`, `errors.py`, `main.py`, `cli.py`) directly
-into `site-packages` on every install. That polluted every consumer's
-namespace and forced the documented import to be `from services.X import Y`
-instead of the more conventional `from attestix.services.X import Y`. The
-evaluation reported that 9 of 12 ICP personas dropped at the Integrate step
-because of this.
+into `site-packages`. That polluted every consumer's namespace (generic names such as
+`services` and `api` can collide with your own packages) and forced the documented
+import to be `from services.X import Y` instead of the more conventional
+`from attestix.services.X import Y`. In release-candidate testing this was the most
+common point where new users got stuck while integrating.
 
-v0.4.0-rc.2 fixes the packaging without changing service behavior, the REST
-API, the MCP tools, or any on-disk format. It is byte-identical to rc.1 at
-runtime. Only the import paths change.
+The namespace change does not change service behavior, the REST API, the MCP tools,
+or any on-disk format. Only the import paths change.
 
 ## What works today
 
-Both import paths resolve successfully in v0.4.0-rc.2:
+Both import paths resolve in v0.4.x:
 
-| Import path | Status in v0.4.0-rc.2 |
-|-------------|-----------------------|
+| Import path | Status in v0.4.x |
+|-------------|------------------|
 | `from attestix.services.identity_service import IdentityService` | Canonical. Recommended. |
 | `from services.identity_service import IdentityService` | Works. Emits `DeprecationWarning`. Removed in v0.5.0. |
 
@@ -47,8 +43,8 @@ path in the message.
 
 | Version | Behavior |
 |---------|----------|
-| v0.4.0-rc.2 (current) | Both paths work. Legacy paths warn. |
-| v0.4.0 GA | Both paths work. Legacy paths warn. |
+| v0.4.0-rc.2 to rc.5 (release candidates) | Both paths work. Legacy paths warn. |
+| v0.4.0 and v0.4.1 (current) | Both paths work. Legacy paths warn. |
 | v0.5.0 | **Legacy paths removed.** Only `attestix.*` resolves. |
 
 Migrate before v0.5.0 to avoid `ImportError` on upgrade.
@@ -59,8 +55,8 @@ The substitution is one-to-one: prefix every flat import with `attestix.`.
 
 ### Before / after table
 
-| Legacy (pre-rc.2) | Canonical (v0.4.0-rc.2 and later) |
-|-------------------|-----------------------------------|
+| Legacy (pre-rc.2) | Canonical (v0.4.0 and later) |
+|-------------------|------------------------------|
 | `from services.X import Y` | `from attestix.services.X import Y` |
 | `from auth.crypto import Y` | `from attestix.auth.crypto import Y` |
 | `from auth.ssrf import Y` | `from attestix.auth.ssrf import Y` |
@@ -75,12 +71,12 @@ The substitution is one-to-one: prefix every flat import with `attestix.`.
 | `from api.X import Y` | `from attestix.api.X import Y` |
 | `from api.routers.X import Y` | `from attestix.api.routers.X import Y` |
 | `import services` (etc.) | `from attestix import services` |
-| `from config import …` | `from attestix.config import …` |
-| `from errors import …` | `from attestix.errors import …` |
+| `from config import ...` | `from attestix.config import ...` |
+| `from errors import ...` | `from attestix.errors import ...` |
 
 ### One-liner for a whole codebase
 
-If your project already passes its tests against rc.2 (i.e. only the
+If your project already passes its tests against v0.4.x (i.e. only the
 deprecation warnings remain), you can apply the migration mechanically with
 `ripgrep` + `sed`. Run from your project root:
 
@@ -89,12 +85,15 @@ rg -l --type py 'from (services|auth|storage|signing|audit|tenancy|idempotency|b
   | xargs sed -i -E 's/^from (services|auth|storage|signing|audit|tenancy|idempotency|blockchain|tools|api|config|errors)(\.|\b)/from attestix.\1\2/'
 ```
 
-Then re-run your test suite. Anything still emitting a `DeprecationWarning`
-about the `attestix` namespace is something the regex missed (typically
-multi-line imports inside parentheses); fix those by hand.
+Check the result before committing: if your own project also has top-level packages
+with any of these names (for example your own `api` or `config`), the regex will
+rewrite those imports too. Then re-run your test suite. Anything still emitting a
+`DeprecationWarning` about the `attestix` namespace is something the regex missed
+(typically multi-line imports inside parentheses, or `import services` style
+imports); fix those by hand.
 
 For a dry-run preview without writing changes, drop the `-i` flag from `sed`
-and pipe to a paginer.
+and pipe to a pager.
 
 ### Deployment strings (uvicorn, gunicorn, Docker)
 
@@ -108,7 +107,10 @@ Update the FastAPI app reference in every deployment config:
 | `systemd` unit file | `ExecStart=... uvicorn api.main:app ...` | `ExecStart=... uvicorn attestix.api.main:app ...` |
 | MCP server config | `python /path/to/attestix/main.py` | `python -m attestix.main` |
 
-The `attestix` console script entry-point now resolves to `attestix.cli:cli`,
+The REST API needs the `[api]` extra (`pip install "attestix[api]"`) and, unless you set
+`ATTESTIX_ALLOW_NO_AUTH=1` for local development, an `ATTESTIX_API_KEY`.
+
+The `attestix` console script entry-point resolves to `attestix.cli:cli`,
 so the `attestix ...` CLI commands continue to work unchanged.
 
 ## Verification
@@ -126,35 +128,34 @@ in your application's import graph, this command will raise instead:
 
 ```bash
 python -W error::DeprecationWarning -c "from services.identity_service import IdentityService"
-# -> DeprecationWarning: 'services' is a legacy alias for 'attestix.services';
-#    import from 'attestix.services' (legacy package will be removed in v0.5.0)
+# -> DeprecationWarning: Importing from the top-level `services` package is deprecated and
+#    will be removed in Attestix v0.5.0. Update your imports to `from attestix.services...`
+#    (canonical namespace).
 ```
 
 Run your own test suite under the same `-W error::DeprecationWarning` flag
 to catch every remaining legacy import in one pass.
 
-## Pin to rc.2 explicitly
+## Pin the version
 
-If you want to pin the exact version (recommended for any environment that
-isn't tracking the release-candidate line):
-
-```bash
-pip install --pre attestix==0.4.0rc2
-```
-
-For the rolling rc:
+v0.4.x is a stable release, so no `--pre` flag is needed:
 
 ```bash
-pip install --pre attestix
+pip install attestix==0.4.1
 ```
 
-Stable 0.3.0 (still on the pre-rc.2 flat layout, no namespace) remains
-available via `pip install attestix` without `--pre` until v0.4.0 GA promotes
-the canonical wheel to default.
+Or allow patch releases within the 0.4 line (the shims stay until v0.5.0):
+
+```bash
+pip install "attestix>=0.4.1,<0.5"
+```
+
+Pinning below v0.5.0 gives you time to finish the migration; once your code imports only
+from `attestix.*`, you can move to v0.5.0.
 
 ## See also
 
-- [v0.4.0-rc.2 entry in `CHANGELOG.md`](https://github.com/VibeTensor/attestix/blob/main/CHANGELOG.md#040-rc2---2026-05-28)
-- [Getting Started](/docs/getting-started): updated install command + canonical imports
-- [Examples](/docs/examples): all snippets now use `attestix.*`
+- [v0.4.0 entry in `CHANGELOG.md`](https://github.com/VibeTensor/attestix/blob/main/CHANGELOG.md#040---2026-05-30)
+- [Getting Started](/docs/getting-started): install command + canonical imports
+- [Examples](/docs/examples): all snippets use `attestix.*`
 - [Integration Guide](/docs/guides/integration-guide): LangChain / OpenAI Agents SDK / CrewAI wiring on the canonical namespace

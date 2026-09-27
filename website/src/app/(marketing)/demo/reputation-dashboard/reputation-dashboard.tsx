@@ -50,7 +50,7 @@ function ToastContainer({ toasts }: { toasts: Toast[] }) {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -10, scale: 0.95 }}
             transition={{ duration: 0.3 }}
-            className="rounded-lg border border-border bg-card px-4 py-3 text-sm text-foreground shadow-lg max-w-sm"
+            className="max-w-sm rounded-xl border border-atx-line bg-atx-panel px-4 py-3 text-[14px] text-atx-ink shadow-lg"
           >
             {toast.message}
           </motion.div>
@@ -93,20 +93,20 @@ function AgentCard({
     <button
       onClick={onSelect}
       className={cn(
-        "flex-shrink-0 rounded-lg border p-4 text-left transition-all duration-200 min-w-[180px] cursor-pointer",
+        "min-w-[180px] flex-shrink-0 cursor-pointer rounded-2xl border p-4 text-left transition-colors duration-200",
         isSelected
-          ? "border-primary bg-primary/10 ring-1 ring-primary/30"
-          : "border-border bg-card hover:border-primary/40 hover:bg-muted/50"
+          ? "border-atx-accent/50 bg-atx-accent/[0.05]"
+          : "border-atx-line bg-atx-panel/60 hover:border-atx-ink-dim"
       )}
     >
       <div className="flex items-center justify-between mb-1">
-        <span className="text-sm font-semibold text-foreground truncate">
+        <span className="truncate text-[15px] font-semibold tracking-[-0.2px] text-atx-ink">
           {agent.name}
         </span>
         <TrendIcon trend={agent.trend} />
       </div>
-      <p className="text-xs text-muted-foreground mb-2 truncate">{agent.role}</p>
-      <span className={cn("text-2xl font-bold tabular-nums", getTrustColor(agent.trustScore))}>
+      <p className="mb-2 truncate text-[13px] text-atx-ink-dim">{agent.role}</p>
+      <span className={cn("font-mono-atx text-[24px] font-medium tabular-nums", getTrustColor(agent.trustScore))}>
         {agent.trustScore.toFixed(2)}
       </span>
     </button>
@@ -142,7 +142,7 @@ function TrustGauge({
             r={radius}
             fill="none"
             stroke="currentColor"
-            className="text-muted/30"
+            className="text-atx-line-soft"
             strokeWidth={strokeWidth}
           />
           {/* Progress arc */}
@@ -168,7 +168,7 @@ function TrustGauge({
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.4 }}
-            className={cn("text-4xl font-bold tabular-nums", getTrustColor(score))}
+            className={cn("font-mono-atx text-[36px] font-medium tabular-nums", getTrustColor(score))}
           >
             {score.toFixed(2)}
           </motion.span>
@@ -177,7 +177,7 @@ function TrustGauge({
           </span>
         </div>
       </div>
-      <p className="text-xs text-muted-foreground mt-3">
+      <p className="mt-3 text-[13px] text-atx-ink-dim">
         Based on {totalInteractions} verified interactions
       </p>
     </div>
@@ -202,15 +202,15 @@ function CategoryBar({ label, value, icon, delay }: CategoryBarProps) {
   return (
     <div className="space-y-1.5">
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2 text-sm text-foreground">
+        <div className="flex items-center gap-2 text-[14px] text-atx-ink-mid">
           {icon}
           {label}
         </div>
-        <span className="text-sm font-medium tabular-nums text-foreground">
+        <span className="font-mono-atx text-[13px] tabular-nums text-atx-ink">
           {percentage}%
         </span>
       </div>
-      <div className="h-2.5 w-full rounded-full bg-muted/40">
+      <div className="h-2.5 w-full rounded-full bg-atx-bg-sunken">
         <motion.div
           className="h-full rounded-full"
           style={{ backgroundColor: color }}
@@ -230,27 +230,27 @@ function CategoryBreakdown({
 }) {
   return (
     <div className="space-y-5">
-      <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
-        <Activity className="h-4 w-4 text-muted-foreground" />
-        Category Breakdown
+      <h3 className="flex items-center gap-2 text-[19px] font-semibold tracking-[-0.48px] text-atx-ink">
+        <Activity className="h-4 w-4 text-atx-ink-dim" />
+        Category breakdown
       </h3>
       <div className="space-y-4">
         <CategoryBar
           label="Compliance"
           value={categories.compliance}
-          icon={<Shield className="h-3.5 w-3.5 text-muted-foreground" />}
+          icon={<Shield className="h-3.5 w-3.5 text-atx-ink-dim" />}
           delay={0}
         />
         <CategoryBar
           label="Accuracy"
           value={categories.accuracy}
-          icon={<Target className="h-3.5 w-3.5 text-muted-foreground" />}
+          icon={<Target className="h-3.5 w-3.5 text-atx-ink-dim" />}
           delay={0.1}
         />
         <CategoryBar
           label="Safety"
           value={categories.safety}
-          icon={<ShieldCheck className="h-3.5 w-3.5 text-muted-foreground" />}
+          icon={<ShieldCheck className="h-3.5 w-3.5 text-atx-ink-dim" />}
           delay={0.2}
         />
       </div>
@@ -286,9 +286,9 @@ function InteractionDonut({
 
   return (
     <div className="space-y-4">
-      <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
-        <Activity className="h-4 w-4 text-muted-foreground" />
-        Interaction History
+      <h3 className="flex items-center gap-2 text-[19px] font-semibold tracking-[-0.48px] text-atx-ink">
+        <Activity className="h-4 w-4 text-atx-ink-dim" />
+        Interaction history
       </h3>
       <div className="flex items-center gap-6">
         <svg width="130" height="130" viewBox="0 0 130 130">
@@ -333,7 +333,7 @@ function InteractionDonut({
             x="65"
             y="62"
             textAnchor="middle"
-            className="fill-foreground text-xl font-bold"
+            className="fill-atx-ink font-mono-atx text-xl font-medium"
             dominantBaseline="central"
           >
             {total}
@@ -342,26 +342,26 @@ function InteractionDonut({
             x="65"
             y="80"
             textAnchor="middle"
-            className="fill-muted-foreground text-[10px]"
+            className="fill-atx-ink-dim text-[10px]"
           >
             total
           </text>
         </svg>
-        <div className="space-y-2 text-sm">
+        <div className="space-y-2 text-[14px]">
           <div className="flex items-center gap-2">
             <span className="inline-block h-3 w-3 rounded-full bg-emerald-400" />
-            <span className="text-muted-foreground">Success</span>
-            <span className="font-medium text-foreground ml-auto tabular-nums">{success}</span>
+            <span className="text-atx-ink-mid">Success</span>
+            <span className="ml-auto font-mono-atx text-[13px] tabular-nums text-atx-ink">{success}</span>
           </div>
           <div className="flex items-center gap-2">
             <span className="inline-block h-3 w-3 rounded-full bg-yellow-400" />
-            <span className="text-muted-foreground">Partial</span>
-            <span className="font-medium text-foreground ml-auto tabular-nums">{partial}</span>
+            <span className="text-atx-ink-mid">Partial</span>
+            <span className="ml-auto font-mono-atx text-[13px] tabular-nums text-atx-ink">{partial}</span>
           </div>
           <div className="flex items-center gap-2">
             <span className="inline-block h-3 w-3 rounded-full bg-red-400" />
-            <span className="text-muted-foreground">Failure</span>
-            <span className="font-medium text-foreground ml-auto tabular-nums">{failure}</span>
+            <span className="text-atx-ink-mid">Failure</span>
+            <span className="ml-auto font-mono-atx text-[13px] tabular-nums text-atx-ink">{failure}</span>
           </div>
         </div>
       </div>
@@ -414,9 +414,9 @@ function TimelineChart({
 
   return (
     <div className="space-y-3">
-      <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
-        <TrendingUp className="h-4 w-4 text-muted-foreground" />
-        Trust Score Timeline (90 days)
+      <h3 className="flex items-center gap-2 text-[19px] font-semibold tracking-[-0.48px] text-atx-ink">
+        <TrendingUp className="h-4 w-4 text-atx-ink-dim" />
+        Trust score timeline (90 days)
       </h3>
       <div className="w-full overflow-x-auto">
         <svg
@@ -435,14 +435,14 @@ function TimelineChart({
                   x2={paddingX + plotWidth}
                   y2={y}
                   stroke="currentColor"
-                  className="text-muted/20"
+                  className="text-atx-line-soft"
                   strokeDasharray="4 4"
                 />
                 <text
                   x={paddingX - 6}
                   y={y + 4}
                   textAnchor="end"
-                  className="fill-muted-foreground text-[10px]"
+                  className="fill-atx-ink-dim text-[10px]"
                 >
                   {val.toFixed(1)}
                 </text>
@@ -459,7 +459,7 @@ function TimelineChart({
                 x={x}
                 y={chartHeight - 5}
                 textAnchor="middle"
-                className="fill-muted-foreground text-[10px]"
+                className="fill-atx-ink-dim text-[10px]"
               >
                 {day === 0 ? "90d ago" : day === 89 ? "Today" : `${90 - day}d ago`}
               </text>
@@ -542,11 +542,11 @@ function SimulateControls({
   onSimulate: (outcome: "success" | "partial" | "failure") => void;
 }) {
   return (
-    <div className="rounded-lg border border-border bg-card p-6">
-      <h3 className="text-sm font-semibold text-foreground mb-1">
-        Simulate an Event
+    <div className="rounded-2xl border border-atx-line bg-atx-panel/60 p-6">
+      <h3 className="mb-1 text-[19px] font-semibold tracking-[-0.48px] text-atx-ink">
+        Simulate an event
       </h3>
-      <p className="text-xs text-muted-foreground mb-4">
+      <p className="mb-4 text-[14px] leading-[1.55] text-atx-ink-mid">
         Record a simulated interaction and watch the trust score update in real time.
       </p>
       <div className="flex flex-wrap gap-3">
@@ -554,28 +554,28 @@ function SimulateControls({
           variant="outline"
           size="sm"
           onClick={() => onSimulate("success")}
-          className="border-emerald-500/30 hover:bg-emerald-500/10 hover:text-emerald-400 hover:border-emerald-500/50"
+          className="rounded-full bg-transparent transition-colors duration-200 border-emerald-500/30 hover:bg-emerald-500/10 hover:text-emerald-400 hover:border-emerald-500/50"
         >
           <CheckCircle2 className="h-4 w-4 text-emerald-400" />
-          Record Success
+          Record success
         </Button>
         <Button
           variant="outline"
           size="sm"
           onClick={() => onSimulate("partial")}
-          className="border-yellow-500/30 hover:bg-yellow-500/10 hover:text-yellow-400 hover:border-yellow-500/50"
+          className="rounded-full bg-transparent transition-colors duration-200 border-yellow-500/30 hover:bg-yellow-500/10 hover:text-yellow-400 hover:border-yellow-500/50"
         >
           <AlertCircle className="h-4 w-4 text-yellow-400" />
-          Record Partial
+          Record partial
         </Button>
         <Button
           variant="outline"
           size="sm"
           onClick={() => onSimulate("failure")}
-          className="border-red-500/30 hover:bg-red-500/10 hover:text-red-400 hover:border-red-500/50"
+          className="rounded-full bg-transparent transition-colors duration-200 border-red-500/30 hover:bg-red-500/10 hover:text-red-400 hover:border-red-500/50"
         >
           <XCircle className="h-4 w-4 text-red-400" />
-          Record Failure
+          Record failure
         </Button>
       </div>
     </div>
@@ -594,15 +594,15 @@ function Explainer() {
   ];
 
   return (
-    <div className="rounded-lg border border-border bg-card p-6">
-      <h3 className="text-sm font-semibold text-foreground flex items-center gap-2 mb-3">
-        <Info className="h-4 w-4 text-muted-foreground" />
+    <div className="rounded-2xl border border-atx-line bg-atx-panel/60 p-6">
+      <h3 className="mb-3 flex items-center gap-2 text-[19px] font-semibold tracking-[-0.48px] text-atx-ink">
+        <Info className="h-4 w-4 text-atx-ink-dim" />
         What does this mean?
       </h3>
       <ul className="space-y-2">
         {items.map((item, i) => (
-          <li key={i} className="flex items-start gap-2 text-sm text-muted-foreground">
-            <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-primary flex-shrink-0" />
+          <li key={i} className="flex items-start gap-2 text-[14px] leading-[1.55] text-atx-ink-mid">
+            <span className="mt-2 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-atx-accent" />
             {item}
           </li>
         ))}
@@ -704,17 +704,16 @@ export function ReputationDashboard() {
     selectedId in scoreOverrides || selectedId in interactionOverrides;
 
   return (
-    <div className="mx-auto max-w-6xl px-4 sm:px-6">
+    <div className="mx-auto w-full max-w-[1200px] px-6">
       {/* Header */}
-      <div className="text-center py-12">
-        <div className="inline-flex items-center gap-2 rounded-full border border-border bg-muted/50 px-4 py-1.5 text-sm text-muted-foreground mb-6">
-          <Shield className="h-4 w-4" />
-          <span>AI Agent Reputation Dashboard</span>
-        </div>
-        <h1 className="text-3xl font-bold text-foreground sm:text-4xl lg:text-5xl tracking-tight">
+      <div className="pb-12 pt-16 text-center">
+        <p className="text-[14px] font-medium text-atx-accent">
+          AI agent reputation dashboard
+        </p>
+        <h1 className="mx-auto mt-3 max-w-[860px] text-[clamp(34px,5vw,52px)] font-normal leading-[1.09] tracking-[-0.03em] text-atx-ink [text-wrap:balance]">
           Verifiable reputation for AI agents
         </h1>
-        <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto">
+        <p className="mx-auto mt-5 max-w-[640px] text-[17.5px] leading-[1.6] text-atx-ink-mid [text-wrap:balance]">
           Trust scores update dynamically based on verified behavior. Select an
           agent below to explore its reputation profile, or simulate new
           interactions to see scores change in real time.
@@ -750,10 +749,10 @@ export function ReputationDashboard() {
           {/* Agent name and reset */}
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h2 className="text-xl font-semibold text-foreground">
+              <h2 className="text-[24px] font-medium tracking-[-0.5px] text-atx-ink">
                 {selectedAgent.name}
               </h2>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-[14px] text-atx-ink-dim">
                 {selectedAgent.role}
               </p>
             </div>
@@ -762,7 +761,7 @@ export function ReputationDashboard() {
                 variant="outline"
                 size="sm"
                 onClick={handleReset}
-                className="text-muted-foreground"
+                className="rounded-full border-atx-line bg-transparent text-atx-ink-mid transition-colors duration-200 hover:border-atx-ink-dim hover:bg-transparent hover:text-atx-ink"
               >
                 <RotateCcw className="h-3.5 w-3.5" />
                 Reset
@@ -773,26 +772,26 @@ export function ReputationDashboard() {
           {/* Three column layout */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
             {/* Column 1: Trust Score */}
-            <div className="rounded-lg border border-border bg-card p-6 flex items-center justify-center">
+            <div className="flex items-center justify-center rounded-2xl border border-atx-line bg-atx-panel/60 p-6">
               <TrustGauge
                 score={currentScore}
                 totalInteractions={currentInteractions.total}
               />
             </div>
 
-            {/* Column 2: Category Breakdown */}
-            <div className="rounded-lg border border-border bg-card p-6">
+            {/* Column 2: Category breakdown */}
+            <div className="rounded-2xl border border-atx-line bg-atx-panel/60 p-6">
               <CategoryBreakdown categories={selectedAgent.categories} />
             </div>
 
-            {/* Column 3: Interaction History */}
-            <div className="rounded-lg border border-border bg-card p-6">
+            {/* Column 3: Interaction history */}
+            <div className="rounded-2xl border border-atx-line bg-atx-panel/60 p-6">
               <InteractionDonut interactions={currentInteractions} />
             </div>
           </div>
 
           {/* Timeline chart */}
-          <div className="rounded-lg border border-border bg-card p-6 mb-6">
+          <div className="mb-6 rounded-2xl border border-atx-line bg-atx-panel/60 p-6">
             <TimelineChart
               agentId={selectedId}
               timeline={adjustedTimeline}
@@ -809,26 +808,28 @@ export function ReputationDashboard() {
       </AnimatePresence>
 
       {/* CTA section */}
-      <div className="rounded-xl border border-primary/20 bg-primary/5 p-8 text-center">
-        <h2 className="text-2xl font-bold text-foreground mb-3">
+      <div className="rounded-2xl border border-atx-accent/30 bg-atx-accent/[0.05] px-6 py-12 text-center">
+        <h2 className="text-[32px] font-medium leading-[1.15] tracking-[-0.8px] text-atx-ink [text-wrap:balance]">
           Build real reputation tracking for your AI agents
         </h2>
-        <p className="text-muted-foreground mb-6 max-w-xl mx-auto">
+        <p className="mx-auto mb-8 mt-4 max-w-[640px] text-[17.5px] leading-[1.6] text-atx-ink-mid">
           Attestix provides cryptographically verifiable reputation scores,
           interaction logging, and trust attestations for any AI agent. Start
           building trust infrastructure in minutes.
         </p>
         <div className="flex flex-wrap justify-center gap-3">
-          <Link href="/docs/getting-started">
-            <Button size="lg">
-              Get started
-              <ArrowRight className="h-4 w-4" />
-            </Button>
+          <Link
+            href="/docs/getting-started"
+            className="inline-flex items-center gap-2 rounded-full bg-atx-accent px-6 py-3 text-[15px] font-medium text-[oklch(0.14_0.01_180)] transition-colors duration-200 hover:bg-atx-accent-deep"
+          >
+            Get started
+            <ArrowRight className="h-4 w-4" />
           </Link>
-          <Link href="/docs/guides/reputation">
-            <Button variant="outline" size="lg">
-              Reputation guide
-            </Button>
+          <Link
+            href="/docs/guides/reputation"
+            className="inline-flex items-center gap-2 rounded-full border border-atx-line px-6 py-3 text-[15px] font-medium text-atx-ink-mid transition-colors duration-200 hover:border-atx-ink-dim hover:text-atx-ink"
+          >
+            Reputation guide
           </Link>
         </div>
       </div>

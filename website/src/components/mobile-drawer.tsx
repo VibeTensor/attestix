@@ -13,8 +13,8 @@ import Link from "next/link";
 
 const mobileLinks = [
   { label: "Overview", href: "/" },
+  { label: "Platform", href: "/platform" },
   { label: "Modules", href: "/platform#modules" },
-  { label: "Workflow", href: "/platform#workflow" },
   { label: "Docs", href: "/docs" },
   { label: "Blog", href: "/blog" },
   { label: "Pricing", href: "/pricing" },

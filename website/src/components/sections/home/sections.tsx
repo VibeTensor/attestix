@@ -8,12 +8,24 @@ const WRAP = "mx-auto w-full max-w-[1200px] px-6";
 const H2 = "text-[32px] font-medium leading-[1.15] tracking-[-0.8px] text-atx-ink";
 const LEAD = "text-[17.5px] leading-[1.6] text-atx-ink-mid";
 
-// Only integrations that ship in the package or are independently verifiable.
-const WORKS_WITH = [
-  { name: "LangChain", href: "/docs/guides/langchain" },
-  { name: "CrewAI", href: "/docs/guides/crewai" },
-  { name: "OpenAI Agents SDK", href: "/docs/guides/openai-agents-sdk" },
-  { name: "Claude Code (MCP)", href: "/docs/getting-started" },
+// Only integrations that ship in the package, the MCP server, or Pro capture.
+const WORKS_WITH: { group: string; items: { name: string; href?: string }[] }[] = [
+  {
+    group: "Agent frameworks",
+    items: [
+      { name: "LangChain", href: "/docs/guides/langchain" },
+      { name: "OpenAI Agents SDK", href: "/docs/guides/openai-agents-sdk" },
+      { name: "CrewAI", href: "/docs/guides/crewai" },
+    ],
+  },
+  { group: "Protocol", items: [{ name: "Any MCP client", href: "/docs/guides/integration-guide" }] },
+  {
+    group: "Coding agents",
+    items: [
+      { name: "Claude Code (Pro)", href: "/platform#coding-agents" },
+      { name: "Others coming" },
+    ],
+  },
 ];
 
 function TextLink({ href, children }: { href: string; children: React.ReactNode }) {
@@ -33,13 +45,13 @@ export function HomeHero() {
     <section className="relative px-6 pb-10 pt-16 text-center md:pt-20">
       <div className="relative mx-auto max-w-[860px]">
         <h1 className="text-[clamp(34px,5vw,52px)] font-normal leading-[1.09] tracking-[-0.03em] text-atx-ink [text-wrap:balance]">
-          <span className="text-atx-accent">Cryptographic proof</span> your AI agents
-          are compliant
+          <span className="text-atx-accent">Cryptographic evidence</span> for every AI
+          agent you run
         </h1>
         <p className={`mx-auto mt-5 max-w-[640px] [text-wrap:balance] ${LEAD}`}>
-          Attestix gives every AI agent a verifiable identity and a tamper-evident
-          audit trail: open-source evidence a regulator, auditor, or another agent
-          can check for itself.
+          Framework agents, MCP clients, coding agents, or your own code: Attestix
+          gives each one a verifiable identity and a tamper-evident audit trail that
+          a regulator, auditor, or another agent can check for itself.
         </p>
         <Link
           href="/console"
@@ -50,16 +62,28 @@ export function HomeHero() {
       </div>
 
       <div className="mx-auto mt-12 max-w-[860px] border-t border-atx-line-soft pt-7">
-        <p className="text-[15px] text-atx-ink-mid">Works with the agent stack you already use</p>
-        <div className="mt-4 flex flex-wrap items-center justify-center gap-x-9 gap-y-3">
-          {WORKS_WITH.map((w) => (
-            <Link
-              key={w.name}
-              href={w.href}
-              className="text-[17px] font-medium tracking-[-0.01em] text-atx-ink-dim transition-colors duration-200 hover:text-atx-ink"
-            >
-              {w.name}
-            </Link>
+        <p className="text-[15px] text-atx-ink-mid">Works with the agents you already run</p>
+        <div className="mt-5 flex flex-wrap items-start justify-center gap-x-12 gap-y-6">
+          {WORKS_WITH.map((g) => (
+            <div key={g.group}>
+              <p className="text-[13px] text-atx-ink-mid">{g.group}</p>
+              <ul className="mt-2 flex flex-wrap items-center justify-center gap-x-6 gap-y-2">
+                {g.items.map((w) => (
+                  <li key={w.name}>
+                    {w.href ? (
+                      <Link
+                        href={w.href}
+                        className="text-[17px] font-medium tracking-[-0.01em] text-atx-ink-dim transition-colors duration-200 hover:text-atx-ink"
+                      >
+                        {w.name}
+                      </Link>
+                    ) : (
+                      <span className="text-[15px] text-atx-ink-dim">{w.name}</span>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            </div>
           ))}
         </div>
       </div>
@@ -113,39 +137,56 @@ export function HomeHow() {
               tint="gold"
               icon={<KeyRound className="h-5 w-5" />}
               title="Issue an identity"
-              body="Give each agent a DID and a signed identity before it takes its first action."
+              body="Each agent gets a DID and a signed identity record before its first action."
             >
-              <div className="text-atx-ink-dim">$ attestix init --name quarterly-analyst</div>
-              <div className="truncate text-atx-accent">did:key:z6Mkfz1de3keHmij4P5B...</div>
+              <div className="text-atx-ink-dim">$ attestix init --name loan-screener</div>
+              <div className="truncate text-atx-ink">created attestix:3bc98bdc57e34279</div>
+              <div className="truncate text-atx-accent">did:key:z6MkqfYpFxHNGSdtfoJpom...</div>
             </FlowCard>
           </div>
 
-          <div aria-hidden className="mx-auto hidden h-10 w-px bg-atx-line lg:col-start-2 lg:block" />
+          {/* identity flows down into the agents: solid line + arrowhead */}
+          <div aria-hidden className="relative mx-auto hidden h-12 w-[2px] bg-atx-accent/60 lg:col-start-2 lg:block">
+            <span className="absolute -bottom-[1px] left-1/2 -translate-x-1/2 border-x-[6px] border-t-[8px] border-x-transparent border-t-atx-accent/80" />
+          </div>
 
           <div className="lg:col-start-1 lg:row-start-3 lg:pr-6">
             <FlowCard
               tint="info"
               icon={<ListOrdered className="h-5 w-5" />}
               title="Record every action"
-              body="Tool calls land in a hash-chained audit trail that shows exactly where it was altered."
+              body="Actions append to a hash-chained trail signed by your Attestix instance. Any edit breaks the chain."
             >
-              <div className="text-atx-ink-dim">#9c1e &rarr; #4a7b &rarr; #e03d</div>
-              <div className="text-atx-ok">chain intact &middot; 3 of 3 linked</div>
+              <div className="text-atx-ink-dim">data_access&nbsp;&nbsp; 3f39525c &larr; 00000000</div>
+              <div className="text-atx-ink-dim">inference&nbsp;&nbsp;&nbsp;&nbsp; e5f7013f &larr; 3f39525c</div>
+              <div className="text-atx-ink-dim">external_call 7328e467 &larr; e5f7013f</div>
+              <div className="text-atx-ok">Chain integrity: VERIFIED</div>
             </FlowCard>
           </div>
 
           <div className="relative lg:col-start-2 lg:row-start-3">
-            <span aria-hidden className="absolute -left-6 top-1/2 hidden w-6 border-t border-dashed border-atx-line lg:block" />
-            <span aria-hidden className="absolute -right-6 top-1/2 hidden w-6 border-t border-dashed border-atx-line lg:block" />
+            {/* actions flow out to the record, credentials out to verifiers */}
+            <span aria-hidden className="absolute -left-6 top-1/2 hidden w-6 border-t-2 border-dashed border-atx-info/60 lg:block">
+              <span className="absolute -left-[2px] -top-[7px] border-y-[6px] border-r-[8px] border-y-transparent border-r-atx-info/80" />
+            </span>
+            <span aria-hidden className="absolute -right-6 top-1/2 hidden w-6 border-t-2 border-dashed border-atx-ok/60 lg:block">
+              <span className="absolute -right-[2px] -top-[7px] border-y-[6px] border-l-[8px] border-y-transparent border-l-atx-ok/80" />
+            </span>
             <div className="rounded-2xl border border-atx-line bg-atx-panel p-4 text-left">
-              <p className="text-[13px] font-medium text-atx-ink">Your AI agents</p>
+              <p className="text-[13px] font-medium text-atx-ink">Your agents, connected through</p>
               <div className="mt-3 grid grid-cols-2 gap-2">
-                {["LangChain", "CrewAI", "OpenAI Agents", "Claude Code"].map((a) => (
+                {[
+                  ["LangChain", "callback"],
+                  ["CrewAI", "MCP"],
+                  ["OpenAI Agents", "MCP"],
+                  ["Claude Code", "MCP"],
+                ].map(([name, via]) => (
                   <div
-                    key={a}
-                    className="rounded-lg border border-atx-line-soft bg-atx-bg-sunken px-2 py-3 text-center text-[12px] font-medium text-atx-ink-mid"
+                    key={name}
+                    className="rounded-lg border border-atx-line-soft bg-atx-bg-sunken px-2 py-2.5 text-center"
                   >
-                    {a}
+                    <div className="text-[12px] font-medium text-atx-ink-mid">{name}</div>
+                    <div className="mt-0.5 font-mono-atx text-[10px] text-atx-ink-dim">{via}</div>
                   </div>
                 ))}
               </div>
@@ -157,15 +198,21 @@ export function HomeHow() {
               tint="ok"
               icon={<ShieldCheck className="h-5 w-5" />}
               title="Verify anywhere"
-              body="Check credentials offline in Python, Go, Rust, Java, JavaScript, or R. Nothing is uploaded."
+              body="A credential issued in Python verifies offline in JavaScript; SDKs for Go, Rust, Java, and R share the same test vectors. Live revocation still needs the issuer."
             >
-              <div className="text-atx-ink">attestix:addc20ca69bc4c93 is VALID</div>
-              <div className="text-atx-ok">signature_valid: PASS</div>
+              <div className="text-atx-ink-dim">verifyCredential(vc) &nbsp;// JavaScript</div>
+              <div className="text-atx-ok">valid: true</div>
+              <div className="text-atx-ok">signature_valid: true</div>
             </FlowCard>
           </div>
         </div>
 
-        <div className="mt-10">
+        <p className="mx-auto mt-8 max-w-[640px] text-[13px] leading-[1.6] text-atx-ink-dim">
+          Output from a real run of attestix {siteConfig.version} (CLI and Python API),
+          with the credential verified by the JavaScript SDK. Hashes shortened to 8
+          characters.
+        </p>
+        <div className="mt-6">
           <TextLink href="/platform">See the full platform</TextLink>
         </div>
       </div>
@@ -196,8 +243,9 @@ export function HomeResults() {
           ))}
         </div>
         <p className="mx-auto mt-6 max-w-[720px] text-center text-[13px] leading-[1.6] text-atx-ink-dim">
-          Tool count read from source. Verifiers in six languages share one set of
-          test vectors. The browser verifier at /verify uploads nothing. Apache 2.0:
+          Tool count read from source. Verifier SDKs in six languages share one set
+          of test vectors; Python and JavaScript are documented as passing it. The
+          browser verifier at /verify uploads nothing. Apache 2.0:
           self-host free, forever.
         </p>
 

@@ -5,12 +5,12 @@ description: 5-minute build-vs-buy proof of what Attestix gives you that you wou
 
 ## You're here because…
 
-You're a startup CTO doing a build-vs-buy on agent governance. The funnel evaluation flagged that this persona moved past install but dropped at integration: there was no path that quantified "what would I build in-house" vs "what is already here." This page is that comparison, as runnable code. Skim it as a buy-side proof-of-concept, then make the call.
+You're a startup CTO doing a build-vs-buy on agent governance. What is usually missing is a clear picture of "what would I build in-house" vs "what is already here." This page is that comparison, as runnable code. Skim it as a buy-side proof-of-concept, then make the call.
 
 ## 60-second install
 
 ```bash
-pip install --pre attestix
+pip install attestix
 ```
 
 ## First 30 lines that actually do something
@@ -39,7 +39,9 @@ worker = IdentityService().create_identity(
     issuer_name="VibeTensor",
 )["agent_id"]
 
-# Capability-attenuated UCAN: orchestrator delegates a subset to worker.
+# UCAN-style delegation token (a JWT signed by the Attestix server key).
+# Attenuation is enforced only when you chain from a parent_token; this root
+# delegation is not checked against the orchestrator's own capabilities.
 deleg = DelegationService().create_delegation(
     issuer_agent_id=orchestrator,
     audience_agent_id=worker,
@@ -77,22 +79,22 @@ ProvenanceService().log_action(
 
 | Capability you'd otherwise build | What Attestix shipped above |
 |---|---|
-| Ed25519 keypair gen + signing layer | `IdentityService` + `.signing_key.json` (plaintext default; passphrase-encrypted via `ATTESTIX_KEY_PASSPHRASE`) |
+| Ed25519 keypair gen + signing layer | One server signing key in `~/.attestix/.signing_key.json` (unencrypted by default; encrypted at rest if `ATTESTIX_KEY_PASSWORD` is set). Agents do not get their own keys. |
 | Append-only, hash-chained audit log | `ProvenanceService.log_action` |
-| W3C VC issuance + offline verification | `CredentialService.issue_credential` / `verify_credential` |
-| UCAN-style capability delegation w/ attenuation | `DelegationService.create_delegation` (parent token check is enforced) |
+| VC issuance (W3C data model) + verification | `CredentialService.issue_credential` / `verify_credential` (local store); offline, from JSON only: `verify_credential_external` or the [Attestix verifiers](/docs/verifiers) |
+| UCAN-style capability delegation w/ attenuation | `DelegationService.create_delegation` (attenuation enforced when `parent_token` is passed) |
 | EU AI Act risk profile + Annex V declaration | `ComplianceService.create_compliance_profile` + `generate_declaration_of_conformity` |
-| MCP server exposing all of the above as tools | `attestix mcp` (47 tools, stdio or HTTP) |
-| REST surface for an internal service | `uvicorn attestix.api.main:app` (44 endpoints) |
+| MCP server exposing all of the above as tools | `python -m attestix.main` (47 tools, stdio only) |
+| REST surface for an internal service | `uvicorn attestix.api.main:app` (44 endpoints; needs the `[api]` extra and `ATTESTIX_API_KEY`) |
 
-That's roughly 5 services and 3-5 engineer-months of work to get to the same surface area.
+That's several separate components you would otherwise design, build, and maintain yourself; estimate the effort against your own team.
 
 ## Honest things to weigh before you decide to buy
 
-- **Maturity:** beta, single maintainer, ~15 GitHub stars, no third-party security audit. The trade-off is "buy a primitive, audit it yourself" vs. "build it yourself and own the audit anyway."
-- **Storage:** flat JSON files. Production multi-tenant deployment needs the pluggable Postgres/S3 backend (planned, not in v0.4.0).
-- **Key management:** `.signing_key.json` plaintext by default. KMS / HSM / Vault integration is on the [roadmap](/docs/project/roadmap).
-- **Anchoring:** Base L2 **testnet** only in v0.4.0. Mainnet schema registration planned.
+- **Maturity:** beta, single maintainer, no third-party security audit. The trade-off is "buy a primitive, audit it yourself" vs. "build it yourself and own the audit anyway."
+- **Storage:** flat JSON files. Production multi-tenant deployment needs the pluggable Postgres/S3 backend (planned, not in v0.4.1).
+- **Key management:** `~/.attestix/.signing_key.json`, unencrypted unless `ATTESTIX_KEY_PASSWORD` is set. KMS / HSM / Vault integration is on the [roadmap](/docs/project/roadmap).
+- **Anchoring:** Base L2 via EAS, Sepolia testnet by default; mainnet via `BASE_NETWORK=mainnet`. Needs the `[blockchain]` extra and a funded wallet.
 - **License:** Apache 2.0. Source is on GitHub; fork-and-harden is a supported path.
 
 ## Next step (5 minutes)
@@ -100,6 +102,6 @@ That's roughly 5 services and 3-5 engineer-months of work to get to the same sur
 If you want to see Attestix wired into a framework your team already uses, jump to the matching quickstart:
 
 - [LangChain](/docs/guides/langchain) (real callback handler)
-- [OpenAI Agents SDK](/docs/guides/openai-agents-sdk) (real MCPServerStdio)
-- [CrewAI](/docs/guides/crewai) (real MCPServerAdapter)
+- [OpenAI Agents SDK](/docs/guides/openai-agents-sdk) (`AttestixAuditHook`, plus MCP via `MCPServerStdio`)
+- [CrewAI](/docs/guides/crewai) (`AttestixCrewAdapter`, plus MCP via `MCPServerAdapter`)
 - [Architecture deep-dive](/docs/guides/architecture) (service decomposition, on-disk layout)

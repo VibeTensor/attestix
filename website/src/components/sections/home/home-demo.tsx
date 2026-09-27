@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { ConsoleWorkspace } from "@/app/(marketing)/console/console-workspace";
+import { ConsoleWithTour } from "@/app/(marketing)/console/console-with-tour";
 import { PreviewCard } from "@/components/sections/v2/console-preview";
 
 // Blurred product preview that expands in place into the live (simulated)
@@ -18,7 +18,7 @@ export function HomeDemo() {
       >
         {open ? (
           <div className="max-h-[78vh] overflow-auto px-4 pb-4 pt-14 md:px-6 md:pb-6">
-            <ConsoleWorkspace />
+            <ConsoleWithTour autoStart />
           </div>
         ) : (
           <>

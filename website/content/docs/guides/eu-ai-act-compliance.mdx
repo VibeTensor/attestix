@@ -3,8 +3,6 @@ title: EU AI Act Compliance with Attestix
 description: Step-by-step guide to achieving EU AI Act compliance for your AI agent using Attestix.
 ---
 
-# EU AI Act Compliance with Attestix
-
 Step-by-step guide to achieving EU AI Act compliance for your AI agent using Attestix.
 
 ## Important Disclaimer
@@ -36,7 +34,7 @@ You will need the following information gathered from different teams:
 ### From Your Business Team
 
 - **Provider company legal name** - The entity responsible for the AI system
-- **Notified body** - For high-risk: which organization will assess you? (TUV Rheinland, BSI, Bureau Veritas, etc.)
+- **Notified body** - For high-risk systems that need third-party assessment (Annex III point 1 without harmonised standards, or products under Annex I sectoral law such as medical devices): which notified body will assess you?
 
 ## Step-by-Step Workflow
 
@@ -70,7 +68,7 @@ record_training_data(
 )
 ```
 
-Repeat for each training dataset. Attestix signs each record with Ed25519 to create tamper-proof evidence.
+Repeat for each training dataset. Attestix signs each record with its Ed25519 server key, so later edits to a stored record are detectable (tamper-evident, not tamper-proof).
 
 ### Step 3: Record Model Lineage (Article 11)
 
@@ -88,7 +86,7 @@ record_model_lineage(
 
 ### Step 4: Create Compliance Profile
 
-This is where you declare your risk category and document your compliance posture:
+This is where you declare your risk category and document your compliance posture. The example system (AI-assisted diagnosis in radiology) is high-risk because it is, or is a safety component of, a medical device under the MDR/IVDR (Article 6(1) and Annex I), not because of an Annex III use case. For Annex III systems, also pass `annex_iii_category` (1 to 8); it determines which conformity assessment route Attestix accepts in Step 6.
 
 ```
 create_compliance_profile(
@@ -111,31 +109,41 @@ See what's done and what's missing:
 get_compliance_status(agent_id="attestix:f9bdb7a94ccb40f1")
 ```
 
-**Output:**
+**Output** (after Steps 1-4):
 ```json
 {
   "agent_id": "attestix:f9bdb7a94ccb40f1",
   "risk_category": "high",
   "compliant": false,
-  "completion_pct": 71.4,
   "completed": [
     "compliance_profile_created",
     "intended_purpose_documented",
     "transparency_obligations_declared",
     "human_oversight_measures",
-    "training_data_provenance"
+    "training_data_provenance",
+    "model_lineage_recorded",
+    "data_governance",
+    "technical_documentation",
+    "transparency_to_users",
+    "accuracy_robustness_cybersecurity"
   ],
   "missing": [
     "conformity_assessment_passed",
     "declaration_of_conformity_issued",
-    "model_lineage_recorded"
-  ]
+    "risk_management_system",
+    "record_keeping",
+    "post_market_monitoring",
+    "serious_incident_reporting"
+  ],
+  "completion_pct": 62.5
 }
 ```
 
+For high-risk profiles the gap analysis checks 16 items: eight general items plus eight high-risk items (Articles 9-15, 72, and 73). `record_keeping` is met once at least one `log_action` entry exists for the agent.
+
 ### Step 6: Record Conformity Assessment (Article 43)
 
-For high-risk systems, you need a third-party assessment from a notified body:
+The conformity assessment route depends on why the system is high-risk (Article 43). Products under Annex I sectoral law, like this medical-device example, follow the sectoral procedure with that law's notified body (Article 43(3)). Annex III point 1 (biometrics) needs a notified body when harmonised standards or common specifications are not applied. Annex III points 2-8 use internal control (Annex VI). Record a third-party assessment like this:
 
 ```
 record_conformity_assessment(
@@ -143,12 +151,12 @@ record_conformity_assessment(
   assessment_type="third_party",
   assessor_name="TUV Rheinland AG",
   result="pass",
-  findings="System meets all Annex III requirements for medical AI. Minor recommendation: increase test coverage for rare conditions.",
+  findings="System meets the Chapter III Section 2 requirements assessed under the MDR procedure. Minor recommendation: increase test coverage for rare conditions.",
   ce_marking_eligible=true
 )
 ```
 
-**Note:** High-risk systems cannot use self-assessment. Attestix will block this:
+**Note:** Attestix accepts `assessment_type="self"` for a high-risk profile only when `annex_iii_category` is 2 to 8 (and no `annex_iii_exception` is set). For point 1, or when no category is set (as for this Annex I example), it blocks self-assessment:
 
 ```
 record_conformity_assessment(
@@ -156,8 +164,10 @@ record_conformity_assessment(
   assessment_type="self",
   ...
 )
---> ERROR: "High-risk AI systems require third_party conformity assessment (Article 43)."
+--> ERROR: "Self-assessment not permitted: Annex III category not specified for high-risk system; defaulting to third-party assessment per Article 43 (fail-safe). Use assessment_type='third_party' with a notified body."
 ```
+
+Attestix does not model the Annex III point 1 harmonised-standards route, so it always requires third-party assessment for point 1. Known issue: the `annex_iii_exception` values `financial_fraud_detection` and `political_campaign_organization` force third-party assessment in the current code, but in the Act these are exclusions from Annex III points 5(b) and 8(b), not triggers for a notified body. Do not set them to mean "third-party required".
 
 ### Step 7: Generate Declaration of Conformity (Annex V)
 
@@ -169,9 +179,9 @@ generate_declaration_of_conformity(agent_id="attestix:f9bdb7a94ccb40f1")
 
 This does two things:
 1. Creates an Annex V declaration with all required fields
-2. Auto-issues a W3C Verifiable Credential (`EUAIActComplianceCredential`) as cryptographic proof
+2. Auto-issues an `EUAIActComplianceCredential` (W3C VC data model, signed with the Attestix server key); its ID is returned as `credential_id`
 
-### Step 8: Verify Full Compliance
+### Step 8: Re-check Compliance Status
 
 ```
 get_compliance_status(agent_id="attestix:f9bdb7a94ccb40f1")
@@ -179,12 +189,18 @@ get_compliance_status(agent_id="attestix:f9bdb7a94ccb40f1")
 
 ```json
 {
-  "compliant": true,
-  "completion_pct": 100.0,
-  "completed": ["all 7 items"],
-  "missing": []
+  "compliant": false,
+  "completion_pct": 75.0,
+  "missing": [
+    "risk_management_system",
+    "record_keeping",
+    "post_market_monitoring",
+    "serious_incident_reporting"
+  ]
 }
 ```
+
+In the current release a high-risk profile cannot reach `compliant: true`. `record_keeping` clears once you log actions with `log_action`, but no tool or API sets the risk management, post-market monitoring, or incident reporting fields that the last three checks read. Treat these as open items to document outside Attestix, and treat `completion_pct` as a documentation checklist, not a compliance verdict. Minimal- and limited-risk profiles can reach `compliant: true`.
 
 ### Step 9: Present Compliance to a Verifier
 
@@ -199,7 +215,7 @@ create_verifiable_presentation(
 )
 ```
 
-The output is a signed VP that any party can cryptographically verify without contacting Attestix.
+The output is a VP signed with the Attestix server key (Ed25519 over Attestix's RFC 8785-style canonical JSON). A verifier can check it offline with the Attestix verifiers (`verify_presentation`), without contacting Attestix; generic W3C VC verifiers will not accept this proof format.
 
 ## What Attestix Produces
 
@@ -211,20 +227,21 @@ At the end of this workflow, you have:
 | Training data records | Per-dataset provenance entries | Ed25519 |
 | Model lineage record | Base model, fine-tuning, metrics | Ed25519 |
 | Compliance profile | Risk category + obligations | Ed25519 |
-| Conformity assessment | Third-party assessment result | Ed25519 |
+| Conformity assessment | Assessment result (self or third-party) | Ed25519 |
 | Annex V declaration | Declaration of conformity | Ed25519 |
-| Verifiable Credential | W3C VC proving compliance | Ed25519Signature2020 |
-| Verifiable Presentation | Bundle for a specific verifier | Ed25519Signature2020 |
+| Verifiable Credential | Credential recording the declaration | Ed25519 (labelled Ed25519Signature2020) |
+| Verifiable Presentation | Bundle for a specific verifier | Ed25519 (labelled Ed25519Signature2020) |
 
-All artifacts are stored locally in JSON files and can be exported, shared, or anchored on-chain (Phase 3).
+All artifacts are signed with the single Attestix server key, stored locally in JSON files under `~/.attestix`, and can be exported (`attestix export`), shared, or anchored on Base L2 (requires the `[blockchain]` extra and `EVM_PRIVATE_KEY`; see the [anchoring guide](/docs/guides/base-l2-anchor)).
 
 ## Key Dates
 
 | Date | What Happens |
 |------|-------------|
-| August 2, 2026 | EU AI Act enforcement begins for high-risk systems (Annex III) |
-| August 2, 2026 | Article 50 transparency obligations take effect |
-| August 2, 2027 | Obligations for AI in regulated products (Annex I: medical devices, machinery) |
+| 2 August 2026 | General application, including Article 50 transparency obligations |
+| 2 December 2026 | Article 50(2) marking deadline for generative systems placed on the market before 2 August 2026; new prohibitions on non-consensual intimate imagery and CSAM |
+| 2 December 2027 | Requirements for high-risk systems listed in Annex III |
+| 2 August 2028 | Requirements for high-risk systems covered by Annex I product-safety law (medical devices, machinery) |
 
 ## FAQ
 
@@ -235,7 +252,7 @@ No. Attestix documents and signs the results of assessments. The actual assessme
 Attestix's declaration is a structured, signed documentation aid. It captures the required Annex V information in machine-readable form. Whether it satisfies your specific regulatory obligations depends on your jurisdiction and should be confirmed with legal counsel.
 
 **Q: What if my system is minimal or limited risk?**
-You can still use Attestix for documentation best practice. Minimal-risk systems can self-assess and the workflow is simpler (fewer required fields). Limited-risk systems primarily need transparency disclosure.
+You can still use Attestix for documentation best practice. Minimal-risk systems can self-assess and the workflow is simpler (fewer required fields). Limited-risk systems primarily need the Article 50 transparency disclosures. The Article 4 AI literacy obligation applies to providers and deployers at every risk level.
 
 **Q: Can I update my compliance profile later?**
 Yes. Use `update_compliance_profile` to modify fields like intended purpose, transparency obligations, and human oversight measures without recreating the agent identity.

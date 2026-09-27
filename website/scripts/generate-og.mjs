@@ -199,7 +199,7 @@ const svg = await satori(
                     {
                       type: "span",
                       props: {
-                        children: "W3C Compliant",
+                        children: "W3C VC data model",
                         style: { display: "flex" },
                       },
                     },

@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
-import { Button } from "@/components/ui/button";
 import { assessRiskLevel, type RiskAssessment } from "./risk-engine";
 import { StepSystemType } from "./step-system-type";
 import { StepDeploymentContext } from "./step-deployment-context";
@@ -92,13 +91,14 @@ export function ComplianceChecker() {
   };
 
   return (
-    <div className="mx-auto max-w-3xl px-4 sm:px-6">
+    <div className="mx-auto w-full max-w-[760px] px-6">
       {/* Header */}
-      <div className="text-center py-12">
-        <h1 className="text-3xl font-bold text-foreground sm:text-4xl tracking-tight">
-          EU AI Act Compliance Checker
+      <div className="pb-12 text-center">
+        <p className="text-[14px] font-medium text-atx-accent">Interactive demo</p>
+        <h1 className="mt-3 text-[clamp(34px,5vw,52px)] font-normal leading-[1.09] tracking-[-0.03em] text-atx-ink [text-wrap:balance]">
+          EU AI Act compliance checker
         </h1>
-        <p className="mt-4 text-lg text-muted-foreground">
+        <p className="mx-auto mt-5 max-w-[640px] text-[17.5px] leading-[1.6] text-atx-ink-mid [text-wrap:balance]">
           Find out your AI system&apos;s risk level in 60 seconds
         </p>
       </div>
@@ -160,20 +160,22 @@ export function ComplianceChecker() {
         <div className="mt-8 flex items-center justify-between">
           <div>
             {currentStep > 1 && (
-              <Button variant="outline" onClick={handleBack}>
+              <button type="button" onClick={handleBack} className="rounded-full border border-atx-line px-6 py-3 text-[15px] font-medium text-atx-ink-mid transition-colors duration-200 hover:border-atx-ink-dim hover:text-atx-ink">
                 Back
-              </Button>
+              </button>
             )}
           </div>
-          <Button
+          <button
+            type="button"
             onClick={handleNext}
+            className="rounded-full bg-atx-accent px-6 py-3 text-[15px] font-medium text-[oklch(0.14_0.01_180)] transition-colors duration-200 hover:bg-atx-accent-deep disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-atx-accent"
             disabled={
               (currentStep === 1 && !canProceedStep1) ||
               (currentStep === 2 && !canProceedStep2)
             }
           >
-            {currentStep === 2 ? "Get Results" : "Next"}
-          </Button>
+            {currentStep === 2 ? "Get results" : "Next"}
+          </button>
         </div>
       )}
     </div>
@@ -187,7 +189,7 @@ function ProgressBar({
   currentStep: number;
   totalSteps: number;
 }) {
-  const stepLabels = ["System Type", "Deployment", "Results"];
+  const stepLabels = ["System type", "Deployment", "Results"];
 
   return (
     <div className="mx-auto max-w-lg">
@@ -200,12 +202,12 @@ function ProgressBar({
           return (
             <div key={label} className="flex items-center gap-2">
               <div
-                className={`flex h-8 w-8 items-center justify-center rounded-full text-sm font-medium transition-colors duration-300 ${
+                className={`flex h-8 w-8 items-center justify-center rounded-full text-[13px] font-medium transition-colors duration-200 ${
                   isComplete
-                    ? "bg-primary text-primary-foreground"
+                    ? "bg-atx-accent text-[oklch(0.14_0.01_180)]"
                     : isActive
-                      ? "bg-primary text-primary-foreground"
-                      : "bg-muted text-muted-foreground"
+                      ? "bg-atx-accent text-[oklch(0.14_0.01_180)]"
+                      : "border border-atx-line bg-atx-panel text-atx-ink-dim"
                 }`}
               >
                 {isComplete ? (
@@ -227,10 +229,10 @@ function ProgressBar({
                 )}
               </div>
               <span
-                className={`hidden text-sm sm:block ${
+                className={`hidden text-[14px] sm:block ${
                   isActive || isComplete
-                    ? "font-medium text-foreground"
-                    : "text-muted-foreground"
+                    ? "font-medium text-atx-ink"
+                    : "text-atx-ink-dim"
                 }`}
               >
                 {label}
@@ -240,9 +242,9 @@ function ProgressBar({
         })}
       </div>
       {/* Progress track */}
-      <div className="mt-3 h-1.5 w-full rounded-full bg-muted">
+      <div className="mt-3 h-1 w-full rounded-full bg-atx-line-soft">
         <motion.div
-          className="h-full rounded-full bg-primary"
+          className="h-full rounded-full bg-atx-accent"
           initial={{ width: "0%" }}
           animate={{
             width: `${((currentStep - 1) / (totalSteps - 1)) * 100}%`,

@@ -133,6 +133,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       "/security",
       "/sbom",
       "/research",
+      "/research/paper",
       "/changelog",
       "/india",
       "/uk",

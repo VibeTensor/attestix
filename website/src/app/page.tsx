@@ -47,7 +47,7 @@ export default function Home() {
       <div className="bg-atx-bg text-atx-ink">
         <Header />
         {/* Seal-ring texture behind the top of the page, faded out by 88%;
-            the full story (modules, workflow, matrix) lives on /platform. */}
+            editions, modules, and limits live on /platform. */}
         <main
           id="main-content"
           tabIndex={-1}

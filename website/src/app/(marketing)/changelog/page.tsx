@@ -96,65 +96,65 @@ const RELEASES: Release[] = [
 
 export default function ChangelogPage() {
   return (
-    <section className="mx-auto max-w-[1320px] px-7 py-24">
-      <div className="grid items-start gap-10 lg:grid-cols-[1fr_1.2fr]">
-        <div>
+    <>
+      <section className="bg-atx-bg px-6 pb-16 pt-16 text-center md:pt-20">
+        <div className="mx-auto max-w-[860px]">
           <AtxEyebrow>Changelog</AtxEyebrow>
-          <h1 className="mt-3 font-serif text-[clamp(36px,4.8vw,60px)] leading-[1.05] tracking-[-0.012em] text-atx-ink">
-            Release
-            <br />
-            <em className="italic text-atx-accent">history.</em>
+          <h1 className="mt-3 text-[clamp(34px,5vw,52px)] font-normal leading-[1.09] tracking-[-0.03em] text-atx-ink [text-wrap:balance]">
+            Release <span className="text-atx-accent">history.</span>
           </h1>
+          <p className="mx-auto mt-5 max-w-[640px] text-[17.5px] leading-[1.6] text-atx-ink-mid [text-wrap:balance]">
+            Attestix is in active development. Every release is tagged on GitHub,
+            published to PyPI, and accompanied by a full changelog. For detailed
+            technical notes see the repository{" "}
+            <Link
+              href="https://github.com/VibeTensor/attestix/releases"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-atx-ink underline decoration-atx-line underline-offset-4 transition-colors duration-200 hover:decoration-atx-ink-dim"
+            >
+              releases page
+            </Link>
+            .
+          </p>
         </div>
-        <p className="text-[15px] leading-[1.65] text-atx-ink-mid">
-          Attestix is in active development. Every release is tagged on GitHub,
-          published to PyPI, and accompanied by a full changelog. For detailed
-          technical notes see the repository{" "}
-          <Link
-            href="https://github.com/VibeTensor/attestix/releases"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-atx-accent hover:underline"
-          >
-            releases page
-          </Link>
-          .
-        </p>
-      </div>
+      </section>
 
-      <ol className="mt-14 space-y-10">
-        {RELEASES.map((r) => (
-          <li
-            key={r.version}
-            className="relative grid gap-6 rounded-atx-md border border-atx-line-soft bg-atx-panel p-7 md:grid-cols-[200px_1fr]"
-          >
-            <div>
-              <div className="font-mono-atx text-[10.5px] uppercase tracking-[0.14em] text-atx-ink-dim">
-                {r.date}
+      <section className="bg-atx-bg-elev py-20">
+        <ol className="mx-auto w-full max-w-[1000px] space-y-5 px-6">
+          {RELEASES.map((r) => (
+            <li
+              key={r.version}
+              className="relative grid gap-6 rounded-2xl border border-atx-line bg-atx-panel/60 p-6 transition-colors duration-200 hover:border-atx-ink-dim md:grid-cols-[180px_1fr] md:p-7"
+            >
+              <div>
+                <div className="text-[32px] font-normal leading-none tracking-[-0.03em] text-atx-accent">
+                  v{r.version}
+                </div>
+                <div className="mt-2 text-[13px] text-atx-ink-dim">
+                  <time dateTime={r.date}>{r.date}</time>
+                </div>
               </div>
-              <div className="mt-2 font-serif text-[32px] leading-none text-atx-accent">
-                v{r.version}
+              <div>
+                <h2 className="text-[19px] font-semibold leading-[1.3] tracking-[-0.48px] text-atx-ink">
+                  {r.headline}
+                </h2>
+                <ul className="mt-4 space-y-2">
+                  {r.items.map((it) => (
+                    <li
+                      key={it}
+                      className="flex gap-3 text-[15px] leading-[1.6] text-atx-ink-mid"
+                    >
+                      <span className="mt-2.5 block h-1 w-1 shrink-0 rounded-full bg-atx-accent" />
+                      {it}
+                    </li>
+                  ))}
+                </ul>
               </div>
-            </div>
-            <div>
-              <h2 className="font-serif text-[22px] leading-tight text-atx-ink">
-                {r.headline}
-              </h2>
-              <ul className="mt-4 space-y-2">
-                {r.items.map((it) => (
-                  <li
-                    key={it}
-                    className="flex gap-3 text-[13.5px] leading-[1.55] text-atx-ink-mid"
-                  >
-                    <span className="mt-2 block h-1 w-1 shrink-0 rounded-full bg-atx-accent" />
-                    {it}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </li>
-        ))}
-      </ol>
-    </section>
+            </li>
+          ))}
+        </ol>
+      </section>
+    </>
   );
 }

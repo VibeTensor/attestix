@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import {
   AlertTriangle,
@@ -25,6 +24,8 @@ interface FineTier {
   description: string;
   capEur: number;
   revenuePercentage: number;
+  /** Art. 99(6a): small mid-caps get the lower-of rule for this tier. */
+  smcLowerOf: boolean;
   colorClass: string;
   bgClass: string;
   borderClass: string;
@@ -38,6 +39,7 @@ const FINE_TIERS: FineTier[] = [
     description: "Prohibited AI practices (Article 5)",
     capEur: 35_000_000,
     revenuePercentage: 7,
+    smcLowerOf: false,
     colorClass: "text-red-400",
     bgClass: "bg-red-500/10",
     borderClass: "border-red-500/30",
@@ -49,6 +51,7 @@ const FINE_TIERS: FineTier[] = [
     description: "High-risk, operator, and transparency obligations",
     capEur: 15_000_000,
     revenuePercentage: 3,
+    smcLowerOf: true,
     colorClass: "text-orange-400",
     bgClass: "bg-orange-500/10",
     borderClass: "border-orange-500/30",
@@ -60,11 +63,18 @@ const FINE_TIERS: FineTier[] = [
     description: "Incorrect information to authorities",
     capEur: 7_500_000,
     revenuePercentage: 1,
+    smcLowerOf: true,
     colorClass: "text-yellow-400",
     bgClass: "bg-yellow-500/10",
     borderClass: "border-yellow-500/30",
     iconBgClass: "bg-yellow-500/20",
   },
+];
+
+const SIZES: { value: CompanySize; label: string; note: string }[] = [
+  { value: "large", label: "Large enterprise", note: "The higher of the fixed amount and the turnover percentage applies to every tier." },
+  { value: "smc", label: "Small mid-cap", note: "Art. 99(6a): the lower amount applies to tiers 2 and 3; tier 1 (prohibited practices) stays higher-of." },
+  { value: "sme", label: "SME or start-up", note: "Art. 99(6): the lower amount applies to every tier." },
 ];
 
 interface PresetOption {
@@ -108,13 +118,20 @@ function parseInputValue(value: string): number {
   return parseInt(digits, 10);
 }
 
-// Art. 99(3)-(5): the fixed amount and the revenue percentage are both
-// ceilings ("up to"); the higher applies. Art. 99(6): for SMEs and start-ups
-// the lower applies. These are maximums, not minimums.
+type CompanySize = "large" | "smc" | "sme";
+
+// Art. 99(3)-(5): the fixed amount and the turnover percentage are both
+// ceilings ("up to"); the higher applies. Art. 99(6): SMEs and start-ups get
+// the lower, for every tier. Art. 99(6a), added by Regulation (EU) 2026/1744:
+// small mid-caps get the lower for 99(4) and 99(5) only, not 99(3).
+function usesLowerOf(size: CompanySize, tier: FineTier): boolean {
+  return size === "sme" || (size === "smc" && tier.smcLowerOf);
+}
+
 function calculateFine(
   revenueUsd: number,
   tier: FineTier,
-  isSme: boolean
+  size: CompanySize
 ): {
   fineEur: number;
   isPercentageBased: boolean;
@@ -122,7 +139,7 @@ function calculateFine(
 } {
   const revenueEur = revenueUsd / EUR_USD_RATE;
   const percentageAmount = revenueEur * (tier.revenuePercentage / 100);
-  const fineEur = isSme
+  const fineEur = usesLowerOf(size, tier)
     ? Math.min(tier.capEur, percentageAmount)
     : Math.max(tier.capEur, percentageAmount);
   const isPercentageBased = fineEur === percentageAmount;
@@ -178,19 +195,23 @@ function FineCard({
   tier,
   revenueUsd,
   hasCalculated,
-  isSme,
+  size,
 }: {
   tier: FineTier;
   revenueUsd: number;
   hasCalculated: boolean;
-  isSme: boolean;
+  size: CompanySize;
 }) {
   const { fineEur, isPercentageBased, percentageAmount } = calculateFine(
     revenueUsd,
     tier,
-    isSme
+    size
   );
-  const rule = isSme ? "whichever is lower, Art. 99(6)" : "whichever is higher";
+  const rule = !usesLowerOf(size, tier)
+    ? "whichever is higher"
+    : size === "sme"
+      ? "whichever is lower, Art. 99(6)"
+      : "whichever is lower, Art. 99(6a)";
 
   return (
     <div
@@ -249,7 +270,7 @@ function FineCard({
                   isPercentageBased ? "text-foreground font-medium" : ""
                 }
               >
-                {tier.revenuePercentage}% of revenue ={" "}
+                {tier.revenuePercentage}% of turnover ={" "}
                 {formatCurrency(percentageAmount, "EUR")}
               </span>
             </p>
@@ -294,7 +315,7 @@ export function FineCalculator() {
   const [revenueUsd, setRevenueUsd] = useState(0);
   const [hasCalculated, setHasCalculated] = useState(false);
   const [activePreset, setActivePreset] = useState<number | null>(null);
-  const [isSme, setIsSme] = useState(false);
+  const [size, setSize] = useState<CompanySize>("large");
   const inputRef = useRef<HTMLInputElement>(null);
 
   const handleCalculate = useCallback((value: number) => {
@@ -326,31 +347,27 @@ export function FineCalculator() {
   };
 
   return (
-    <div className="mt-24 pb-16">
+    <div className="pb-20 pt-16">
       {/* Header */}
-      <div className="text-center py-12 px-4">
-        <div className="inline-flex items-center gap-2 rounded-full border border-border bg-muted/50 px-4 py-1.5 text-sm text-muted-foreground mb-6">
-          <Scale className="h-4 w-4" />
-          <span>EU AI Act Fine Calculator</span>
-        </div>
-        <h1 className="text-3xl font-bold text-foreground sm:text-4xl lg:text-5xl tracking-tight">
+      <div className="px-6 pb-12 text-center">
+        <p className="text-[14px] font-medium text-atx-accent">EU AI Act fine calculator</p>
+        <h1 className="mt-3 text-[clamp(34px,5vw,52px)] font-normal leading-[1.09] tracking-[-0.03em] text-atx-ink [text-wrap:balance]">
           What could non-compliance cost you?
         </h1>
-        <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto">
-          The EU AI Act introduces three tiers of fines based on the severity
-          of the violation. Enter your company&apos;s revenue to see your
-          potential financial exposure.
+        <p className="mx-auto mt-5 max-w-[640px] text-[17.5px] leading-[1.6] text-atx-ink-mid [text-wrap:balance]">
+          Article 99 sets three tiers of maximum fines. Enter your worldwide
+          annual turnover and company size to see the ceiling for each tier.
         </p>
       </div>
 
       {/* Calculator */}
-      <div className="mx-auto max-w-5xl px-4">
-        <div className="rounded-xl border border-border bg-card p-6 sm:p-8 mb-8">
+      <div className="mx-auto max-w-[1080px] px-6">
+        <div className="mb-8 rounded-2xl border border-atx-line bg-atx-panel/60 p-6 sm:p-8">
           <label
             htmlFor="revenue-input"
             className="block text-sm font-medium text-foreground mb-2"
           >
-            Annual global revenue (USD)
+            Worldwide annual turnover (USD)
           </label>
 
           <div className="relative mb-4">
@@ -366,8 +383,8 @@ export function FineCalculator() {
               onChange={handleInputChange}
               onKeyDown={handleKeyDown}
               placeholder="Enter revenue or select a preset below"
-              className="w-full rounded-lg border border-input bg-background pl-8 pr-4 py-3 text-lg font-mono text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background transition-colors"
-              aria-label="Annual global revenue in USD"
+              className="w-full rounded-xl border border-atx-line bg-atx-bg-sunken py-3.5 pl-8 pr-4 text-[18px] text-atx-ink transition-colors placeholder:text-atx-ink-faint focus:border-atx-accent focus:outline-none"
+              aria-label="Worldwide annual turnover in USD"
             />
           </div>
 
@@ -378,10 +395,10 @@ export function FineCalculator() {
                 key={preset.value}
                 onClick={() => handlePresetClick(preset)}
                 className={cn(
-                  "rounded-md border px-3 py-1.5 text-sm font-medium transition-all",
+                  "rounded-full border px-4 py-1.5 text-[14px] font-medium transition-colors duration-200",
                   activePreset === preset.value
-                    ? "border-primary bg-primary text-primary-foreground"
-                    : "border-border bg-muted/50 text-muted-foreground hover:border-primary/50 hover:text-foreground"
+                    ? "border-atx-accent bg-atx-accent text-[oklch(0.14_0.01_180)]"
+                    : "border-atx-line text-atx-ink-mid hover:border-atx-ink-dim hover:text-atx-ink"
                 )}
               >
                 {preset.label}
@@ -389,20 +406,36 @@ export function FineCalculator() {
             ))}
           </div>
 
-          <label className="mt-4 flex items-center gap-2 text-sm text-muted-foreground">
-            <input
-              type="checkbox"
-              checked={isSme}
-              onChange={(e) => setIsSme(e.target.checked)}
-              className="h-4 w-4 accent-primary"
-            />
-            SME or start-up (Art. 99(6): the lower amount applies)
-          </label>
+          <fieldset className="mt-6">
+            <legend className="mb-2 text-[14px] font-medium text-atx-ink">Company size</legend>
+            <div className="flex flex-wrap gap-2">
+              {SIZES.map((o) => (
+                <button
+                  key={o.value}
+                  type="button"
+                  aria-pressed={size === o.value}
+                  onClick={() => setSize(o.value)}
+                  className={cn(
+                    "rounded-full border px-4 py-1.5 text-[14px] font-medium transition-colors duration-200",
+                    size === o.value
+                      ? "border-atx-accent bg-atx-accent/15 text-atx-accent"
+                      : "border-atx-line text-atx-ink-mid hover:border-atx-ink-dim hover:text-atx-ink"
+                  )}
+                >
+                  {o.label}
+                </button>
+              ))}
+            </div>
+            <p className="mt-2 text-[13px] text-atx-ink-dim">
+              {SIZES.find((o) => o.value === size)?.note}
+            </p>
+          </fieldset>
 
           {hasCalculated && (
-            <p className="mt-3 text-xs text-muted-foreground">
-              Using approximate conversion rate: 1 EUR = {EUR_USD_RATE} USD.
-              Fines are assessed in euros.
+            <p className="mt-4 text-[13px] text-atx-ink-dim">
+              Using an approximate rate of 1 EUR = {EUR_USD_RATE} USD; fines are
+              set in euros. These are the Article 99 maximums: authorities set
+              actual fines case by case under Article 99(7). Not legal advice.
             </p>
           )}
         </div>
@@ -415,7 +448,7 @@ export function FineCalculator() {
               tier={tier}
               revenueUsd={revenueUsd}
               hasCalculated={hasCalculated}
-              isSme={isSme}
+              size={size}
             />
           ))}
         </div>
@@ -448,13 +481,14 @@ export function FineCalculator() {
               <div className="flex items-center gap-2 mb-3">
                 <CalendarClock className="h-4 w-4 text-primary" />
                 <h3 className="text-sm font-semibold text-foreground">
-                  Enforcement begins
+                  Key dates
                 </h3>
               </div>
               <p className="text-sm text-muted-foreground leading-relaxed">
-                August 2, 2026. Prohibited AI practice provisions already
-                apply since February 2025. Full enforcement for high-risk
-                systems follows.
+                Prohibitions since 2 Feb 2025; penalties chapter since 2 Aug
+                2025; general application and Article 50 transparency since
+                2 Aug 2026. High-risk requirements: Annex III from 2 Dec 2027,
+                Annex I from 2 Aug 2028 (Regulation (EU) 2026/1744).
               </p>
             </div>
 
@@ -463,40 +497,42 @@ export function FineCalculator() {
               <div className="flex items-center gap-2 mb-3">
                 <Calculator className="h-4 w-4 text-primary" />
                 <h3 className="text-sm font-semibold text-foreground">
-                  SMEs and startups
+                  SMEs, start-ups, and small mid-caps
                 </h3>
               </div>
               <p className="text-sm text-muted-foreground leading-relaxed">
-                For SMEs and start-ups, Art. 99(6) caps each fine at the lower
-                of the fixed amount and the revenue percentage. A company with
-                EUR 5M revenue faces at most EUR 350,000 for a Tier 1 breach
-                (7% of revenue), not EUR 35M.
+                SMEs and start-ups face the lower of the fixed amount and the
+                turnover percentage for every tier (Art. 99(6)): with EUR 5M
+                turnover, at most EUR 350,000 for a tier 1 breach, not EUR 35M.
+                Small mid-caps get the same lower-of rule for tiers 2 and 3 only
+                (Art. 99(6a), Regulation (EU) 2026/1744).
               </p>
             </div>
           </div>
         </div>
 
         {/* CTA section */}
-        <div className="rounded-xl border border-primary/20 bg-primary/5 p-8 text-center">
-          <h2 className="text-2xl font-bold text-foreground mb-3">
-            Reduce your exposure
+        <div className="rounded-2xl border border-atx-accent/30 bg-atx-accent/[0.05] p-8 text-center">
+          <h2 className="text-[32px] font-medium leading-[1.15] tracking-[-0.8px] text-atx-ink">
+            Keep the evidence before anyone asks
           </h2>
-          <p className="text-muted-foreground mb-6 max-w-xl mx-auto">
-            Attestix automates EU AI Act compliance documentation, risk
-            classification, and audit trails. Start building your compliance
-            posture before enforcement begins.
+          <p className="mx-auto mb-6 mt-3 max-w-xl text-[15.5px] leading-[1.6] text-atx-ink-mid">
+            Attestix records the identity, risk classification, and audit
+            evidence your EU AI Act documentation needs, so it exists before
+            anyone asks for it.
           </p>
           <div className="flex flex-wrap justify-center gap-3">
-            <Link href="/docs/getting-started">
-              <Button size="lg">
-                Start automating compliance
-                <ArrowRight className="h-4 w-4" />
-              </Button>
+            <Link
+              href="/docs/getting-started"
+              className="inline-flex items-center gap-2 rounded-full bg-atx-accent px-6 py-3 text-[15px] font-medium text-[oklch(0.14_0.01_180)] transition-colors duration-200 hover:bg-atx-accent-deep"
+            >
+              Get started <ArrowRight className="h-4 w-4" />
             </Link>
-            <Link href="/docs/guides/eu-ai-act-compliance">
-              <Button variant="outline" size="lg">
-                EU compliance walkthrough
-              </Button>
+            <Link
+              href="/docs/guides/eu-ai-act-compliance"
+              className="inline-flex items-center rounded-full border border-atx-line px-6 py-3 text-[15px] font-medium text-atx-ink-mid transition-colors duration-200 hover:border-atx-ink-dim hover:text-atx-ink"
+            >
+              EU AI Act guide
             </Link>
           </div>
         </div>

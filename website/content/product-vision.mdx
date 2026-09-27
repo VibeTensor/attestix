@@ -1,0 +1,51 @@
+---
+title: "Attestix product vision"
+publishedAt: "2026-09-26"
+summary: "Where Attestix is going: open, verifiable evidence of who an AI agent is and what it did, that holds up for someone who does not trust the operator."
+author: "Pavan Kumar Dubasi"
+category: Product
+---
+
+## Summary
+
+- We build open infrastructure that lets anyone check who an AI agent is and what it did, without taking the operator's word for it.
+- We are starting with verifiable agent identity and hash-chained action records, with credential verifiers in six languages that share one set of test vectors.
+- If you run agents in a regulated setting, build governance tooling, or audit AI systems, and want to pilot this with us, [get in touch](mailto:info@vibetensor.com).
+
+## The problem
+
+AI agents now act with real access: they call tools, move data, and change systems. When something goes wrong, or when an auditor or regulator asks what happened, the answer today is usually the operator's own logs. Those logs may be complete and honest, but nobody outside the organisation can check that. The evidence is self-attested.
+
+That gap grows with every agent. One team reviewing one agent can rely on trust. Hundreds of agents acting across teams, vendors, and companies cannot.
+
+## High-level vision
+
+We want evidence about agents to work the way signed software releases do: portable, machine-checkable, and verifiable by anyone with the public record, not only by the party that produced it. That breaks down into three layers, each harder than the last.
+
+**1. A single agent.** Every agent gets a verifiable identity before its first action, and every action it takes lands in a tamper-evident record tied to that identity. This is where Attestix is today.
+
+**2. Chains of delegation.** Agents act on behalf of people and of other agents. The record should show who authorised what, with each step granting no more than the one before it, so responsibility can be traced back to a person.
+
+**3. Across organisations.** Agents from different companies will increasingly transact with each other. They need to check each other's identity and history without shared infrastructure or a central registry. That requires open formats and independent verifiers, which is why Attestix is open source and built on published standards.
+
+## Where we are today
+
+What ships in the open-source package:
+
+- Agent identities based on W3C Decentralized Identifiers, and credentials in the W3C Verifiable Credentials data model, signed with Ed25519.
+- A hash-chained audit trail, with integrations for LangChain, CrewAI, the OpenAI Agents SDK, and MCP clients such as Claude Code.
+- EU AI Act records: risk profiles, the Article 43 conformity route, and Annex V declarations.
+- Verifier SDKs in Python, JavaScript, Go, Rust, Java, and R that share one conformance suite.
+
+What is not there yet, stated plainly: today your Attestix instance signs records on the agents' behalf, so the evidence is only as independent as the server that holds the key. Closing that gap is the next phase of work.
+
+## What comes next
+
+- **Independent witnessing.** Commit the head of every audit trail to a trusted timestamp service and a public transparency log, so history cannot be rewritten after the fact without detection.
+- **Agent-held keys.** Let agents sign their own actions, so a record can prove which agent acted, not just which server wrote it down.
+- **Per-action receipts.** Hash the full inputs and outputs of each tool call and link calls within a run, so an auditor can check completeness and accuracy, not only integrity.
+- **Hardware-backed custody.** Keep signing keys in a KMS or HSM, with separate keys per purpose.
+
+## Work with us
+
+We are looking for design partners: teams deploying agents under audit or regulatory scrutiny, governance and GRC platforms that want to verify agent evidence, and auditors who want to tell us what they would need to rely on it. Write to [info@vibetensor.com](mailto:info@vibetensor.com).

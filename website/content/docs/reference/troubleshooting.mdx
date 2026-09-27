@@ -40,14 +40,14 @@ Error: MCP server "attestix" failed to start
 
 **Possible causes:**
 
-1. **Wrong Python path** - Use the full path to your Python executable:
+1. **Wrong Python path** - Use the full path to the Python executable where Attestix is installed:
    ```json
    {
      "mcpServers": {
        "attestix": {
          "type": "stdio",
          "command": "/usr/bin/python3",
-         "args": ["/full/path/to/attestix/main.py"]
+         "args": ["-m", "attestix.main"]
        }
      }
    }
@@ -60,7 +60,7 @@ Error: MCP server "attestix" failed to start
    }
    ```
 
-3. **Missing dependencies** - Run `pip install -r requirements.txt` in the Attestix directory.
+3. **Attestix not installed in that interpreter** - Run `/path/to/python -m pip install attestix` with the same interpreter your MCP config points to. The MCP server runs over stdio only; there is no HTTP transport.
 
 ### Tools not showing up in Claude Code
 
@@ -80,11 +80,11 @@ Error: MCP server "attestix" failed to start
 ```
 
 **Cause:** The agent ID does not exist in `identities.json`. This can happen if:
-- The identity was created in a different working directory (Attestix uses local JSON files)
-- The identity was revoked or erased (GDPR Article 17)
+- The identity was created with a different `ATTESTIX_DATA_DIR` (Attestix uses local JSON files, by default under `~/.attestix`)
+- The identity was erased with `purge_agent_data` (GDPR Article 17). A revoked identity still exists; it fails the `not_revoked` check instead
 - You're using a different Attestix instance
 
-**Solution:** Check `identities.json` in your working directory. Create a new identity if needed.
+**Solution:** Check `identities.json` in your data directory (`~/.attestix` unless `ATTESTIX_DATA_DIR` is set). Create a new identity if needed.
 
 ### Signature verification fails
 
@@ -100,7 +100,7 @@ Error: MCP server "attestix" failed to start
 - You moved the Attestix data files to a different machine
 - The identity was created by a different Attestix instance
 
-**Solution:** Identities are bound to the signing key that created them. If you need to verify identities across machines, you must use the same `.signing_key.json` file.
+**Solution:** Identities are bound to the signing key that created them. If you need to verify identities across machines, you must use the same `.signing_key.json` file (and the same `ATTESTIX_KEY_PASSWORD`, if the key is encrypted).
 
 ---
 
@@ -121,12 +121,9 @@ Error: MCP server "attestix" failed to start
 
 ### Ed25519Signature2020 verification fails externally
 
-**Cause:** External verifiers may expect different canonicalization. Attestix uses JCS (RFC 8785) for JSON canonicalization before signing.
+**Cause:** This is expected. Attestix proofs are labelled `Ed25519Signature2020` but are an Ed25519 signature over Attestix's own RFC 8785-style canonical JSON (with a base64url signature value), not the Linked Data proof procedure that standard W3C VC verifiers implement. Generic verifiers will reject them regardless of configuration.
 
-**Solution:** Ensure your external verifier supports:
-- Ed25519Signature2020 proof type
-- JCS (JSON Canonicalization Scheme) per RFC 8785
-- Multibase-encoded public keys (base58btc, `z` prefix)
+**Solution:** Verify with the Attestix verifiers instead: the `verify_credential_external` MCP tool, `attestix credential --verify-cred <id>` for stored credentials, or the standalone verifiers (see [Verifiers](/docs/verifiers)).
 
 ---
 
@@ -136,11 +133,13 @@ Error: MCP server "attestix" failed to start
 
 ```json
 {
-  "error": "High-risk systems in Annex III categories require third-party assessment"
+  "error": "Self-assessment not permitted: Annex III category not specified for high-risk system; defaulting to third-party assessment per Article 43 (fail-safe). Use assessment_type='third_party' with a notified body."
 }
 ```
 
-**This is intentional.** EU AI Act Article 43 prohibits self-assessment for most high-risk AI systems. You must use a third-party notified body:
+**Cause:** Under Article 43, Annex III point 1 (biometrics) needs a notified body when harmonised standards are not applied, while Annex III points 2-8 use internal control (Annex VI, self-assessment). Annex I products follow their sectoral procedures. Attestix only allows self-assessment for a high-risk profile when `annex_iii_category` is set to 2-8; if it is unset, it fails safe and requires third-party assessment.
+
+**Solution:** If your system falls under Annex III points 2-8, create the profile with `annex_iii_category` set to that point. Otherwise record a third-party assessment:
 
 ```python
 compliance_svc.record_conformity_assessment(
@@ -157,7 +156,7 @@ compliance_svc.record_conformity_assessment(
 {
   "compliant": false,
   "completion_pct": 60.0,
-  "missing": ["conformity_assessment", "declaration_of_conformity"]
+  "missing": ["conformity_assessment_passed", "declaration_of_conformity_issued"]
 }
 ```
 
@@ -170,26 +169,29 @@ compliance_svc.record_conformity_assessment(
 5. Record conformity assessment
 6. Generate declaration of conformity
 
+Note: in 0.4.1, some high-risk items (for example risk management, post-market monitoring, and incident reporting) are never marked complete by any tool, so a high-risk profile cannot currently reach `compliant: true`. Treat `completion_pct` as a checklist aid, not a legal determination.
+
 ---
 
 ## Blockchain Issues
 
-### "No RPC URL configured"
+### "Blockchain anchoring not configured"
 
 ```
-Error: ATTESTIX_BASE_RPC_URL environment variable not set
+Blockchain anchoring not configured. Set EVM_PRIVATE_KEY in .env to enable on-chain anchoring. ...
 ```
 
-**Solution:** Set the Base L2 testnet RPC URL in your environment. Attestix anchors to Base Sepolia today; mainnet support ships once the mainnet schema is registered.
+**Solution:** Install the blockchain extra and set the wallet key in your environment. Attestix anchors to Base Sepolia by default; set `BASE_NETWORK=mainnet` for Base mainnet. The RPC URL defaults to the network's public endpoint.
 
 ```bash
-export ATTESTIX_BASE_RPC_URL="https://sepolia.base.org"
+pip install "attestix[blockchain]"
+export EVM_PRIVATE_KEY="your_wallet_private_key"
 ```
 
-Or use a provider like Alchemy:
+To use a provider like Alchemy instead of the public RPC:
 
 ```bash
-export ATTESTIX_BASE_RPC_URL="https://base-sepolia.g.alchemy.com/v2/YOUR_KEY"
+export BASE_RPC_URL="https://base-sepolia.g.alchemy.com/v2/YOUR_KEY"
 ```
 
 See the [Configuration](/docs/reference/configuration) page for all environment variables.
@@ -198,25 +200,25 @@ See the [Configuration](/docs/reference/configuration) page for all environment 
 
 **Cause:** Blockchain anchoring requires a small amount of testnet ETH on Base Sepolia for gas fees (free from public faucets).
 
-**Solution:** Fund the wallet associated with `ATTESTIX_WALLET_PRIVATE_KEY` with testnet ETH on Base Sepolia. Public faucets include the Coinbase Base faucet and the Alchemy Sepolia faucet.
+**Solution:** Fund the wallet associated with `EVM_PRIVATE_KEY` with testnet ETH on Base Sepolia (or real ETH on Base mainnet if `BASE_NETWORK=mainnet`). Run `estimate_anchor_cost` to see `balance_eth` and `can_afford`. Public faucets include the Coinbase Base faucet and the Alchemy Sepolia faucet.
 
 ### Anchoring is optional
 
-All core Attestix features work without blockchain. If you don't need on-chain proof, skip the blockchain configuration entirely. Identity, credentials, compliance, and provenance all work fully offline.
+All core Attestix features work without blockchain. If you don't need on-chain proof, skip the blockchain configuration entirely. Identity, credentials, compliance, and provenance all work offline (resolving `did:web` or other remote DID methods still needs network access).
 
 ---
 
 ## Delegation Issues
 
-### "Capability not in parent scope"
+### "Capability escalation denied"
 
 ```json
 {
-  "error": "Cannot delegate capabilities not held by issuer"
+  "error": "Capability escalation denied: requested capabilities ['admin'] are not held by parent delegation"
 }
 ```
 
-**Cause:** When chaining delegations, the child delegation cannot grant capabilities that the parent delegation does not have.
+**Cause:** When chaining delegations through the Python service (`parent_token=...`), the child delegation cannot grant capabilities that the parent delegation does not have. The `create_delegation` MCP tool does not accept a parent token, so this check does not run there.
 
 **Solution:** Only delegate capabilities that are a subset of what the issuing agent has been granted:
 
@@ -231,11 +233,11 @@ All core Attestix features work without blockchain. If you don't need on-chain p
 ```json
 {
   "valid": false,
-  "checks": { "not_expired": false }
+  "reason": "Token has expired"
 }
 ```
 
-**Cause:** UCAN delegations are time-bounded. The `expiry_hours` parameter sets the lifetime.
+**Cause:** Delegation tokens (UCAN-style, server-signed JWTs) are time-bounded. The `expiry_hours` parameter sets the lifetime.
 
 **Solution:** Create a new delegation with `create_delegation`. Consider using longer expiry times if appropriate for your use case.
 
@@ -245,17 +247,20 @@ All core Attestix features work without blockchain. If you don't need on-chain p
 
 ### Where does Attestix store data?
 
-By default, Attestix creates JSON files in the current working directory:
+By default, Attestix creates JSON files in `~/.attestix` (override with `ATTESTIX_DATA_DIR`):
 - `identities.json` - Agent identity tokens
 - `credentials.json` - Verifiable credentials
-- `delegations.json` - UCAN delegation tokens
-- `provenance.json` - Audit trail entries
+- `compliance.json` - Compliance profiles, assessments, declarations
+- `delegations.json` - Delegation tokens
+- `provenance.json` - Training data, model lineage, and the legacy audit log
+- `audit.json` - Structured, hash-chained audit events
+- `anchors.json` - Local record of blockchain anchors
 - `reputation.json` - Interaction records
-- `.signing_key.json` - Ed25519 keypair (keep this safe)
+- `.signing_key.json` - Ed25519 server keypair (keep this safe)
 
 ### How do I back up my data?
 
-Back up these files and especially `.signing_key.json`. Without the signing key, you cannot verify any previously created identities or credentials.
+Back up the whole data directory, especially `.signing_key.json`. Without the signing key you cannot issue new artifacts under the same server DID. Existing artifacts can still be verified against the public key in the server DID, but only if you have kept that DID. You can also use `attestix export <file>` to write a portable bundle.
 
 ### How do I reset everything?
 

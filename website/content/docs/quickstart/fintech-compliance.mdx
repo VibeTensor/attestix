@@ -5,20 +5,23 @@ description: Wire a trading or credit-scoring agent with hash-chained audit, sig
 
 ## You're here because…
 
-You're a compliance engineer on a fintech / trading-agent stack. The funnel evaluation flagged that fintech evaluators dropped at install because the legacy package needed a `sys.path` hack and because Base L2 anchoring is **testnet only**, not legally binding for trading audit yet. v0.4.0 (stable) fixes the import problem (`pip install attestix` gives you the canonical `attestix.*` namespace). The testnet caveat still applies and is called out below.
+You're a compliance engineer on a fintech / trading-agent stack. Two things used to block fintech teams at install: the legacy package needed a `sys.path` hack, and Base L2 anchoring was treated as if it were a legal record. Since v0.4.0 the import problem is fixed (`pip install attestix` gives you the canonical `attestix.*` namespace; current release 0.4.1). The anchoring caveat still applies and is called out below.
 
 ## 60-second install
 
 ```bash
-pip install --pre attestix
+pip install attestix
 ```
 
-If you want the FastAPI surface for an internal service:
+If you want the REST API (FastAPI) for an internal service:
 
 ```bash
-pip install --pre 'attestix[api]'
-attestix mcp --transport http --port 8501
+pip install 'attestix[api]'
+export ATTESTIX_API_KEY=change-me   # clients send it as the X-API-Key header
+uvicorn attestix.api.main:app --host 127.0.0.1 --port 8000
 ```
+
+Without `ATTESTIX_API_KEY` the API refuses requests unless you set `ATTESTIX_ALLOW_NO_AUTH=1` (local development only). The MCP server itself is stdio-only (`python -m attestix.main`).
 
 ## First 30 lines that actually do something
 
@@ -49,22 +52,24 @@ ProvenanceService().record_training_data(
 # Compliance profile + risk classification
 ComplianceService().create_compliance_profile(
     agent_id=agent_id,
-    risk_category="high",  # credit scoring -> Annex III high-risk
+    risk_category="high",  # credit scoring -> Annex III point 5(b) high-risk
     provider_name="VibeTensor",
     intended_purpose="Automated credit scoring for consumer loans",
     human_oversight_measures="Loan officer reviews every AI recommendation before approval.",
-    # Article 50 transparency: required to issue an Annex V declaration.
-    # Omitting this used to silently make generate_declaration_of_conformity
-    # return an error dict instead of raising; v0.4.0-rc.5 raises early on
-    # every prerequisite and missing-field path.
-    transparency_obligations="Borrowers are informed in writing that an AI system contributed to the credit decision per Article 50.",
-    # Annex III Point 5: access to essential private services (credit) is
-    # high-risk via Point 5. Without this the service defaults to requiring
-    # third-party assessment, which is what we record below.
+    # Attestix requires transparency_obligations before it will generate the
+    # Annex V declaration (it raises InvalidComplianceProfileError otherwise).
+    # For credit decisions the relevant duties are Article 26(11) (inform the
+    # people affected) and Article 86 (right to an explanation), not Article 50.
+    transparency_obligations="Borrowers are informed in writing that a high-risk AI system contributed to the credit decision (Art. 26(11)) and can request an explanation (Art. 86).",
+    # Annex III point 5(b): creditworthiness assessment / credit scoring of
+    # natural persons (AI used to detect financial fraud is excluded).
+    # Without this the service fails safe and requires a third-party assessment.
     annex_iii_category=5,
 )
 
-# Article 43: high-risk systems CANNOT self-assess; record third-party result.
+# Article 43: Annex III point 5 uses internal control (Annex VI), so
+# assessment_type="self" is also accepted for this profile. This example
+# records a voluntary external review instead.
 ComplianceService().record_conformity_assessment(
     agent_id=agent_id,
     assessment_type="third_party",
@@ -79,8 +84,8 @@ print(declaration["declaration_id"])
 
 ## What you just got
 
-- Article 10 training-data record + Article 11 model-lineage record (call `record_model_lineage` for the latter), both Ed25519-signed.
-- An Article 43 third-party assessment row. The service **refuses** to record a `self`-assessment for high-risk; that gate is in the code.
+- An Article 10 training-data record, signed with the server's Ed25519 key. The snippet does not create an Article 11 model-lineage record; call `ProvenanceService().record_model_lineage(...)` for that.
+- An Article 43 conformity assessment row. The service refuses a `self`-assessment only where it requires a notified body: Annex III point 1 (biometrics), or a high-risk profile with no `annex_iii_category` set (fail-safe). For point 5, as here, internal control is accepted.
 - An Annex V Declaration of Conformity. Bundle it with the compliance VCs into a Verifiable Presentation for a regulator (see [EU AI Act compliance guide](/docs/guides/eu-ai-act-compliance)).
 
 Every inference your trading agent makes should be logged through `ProvenanceService().log_action(...)`. That's the hash-chained Article 12 trail you'll show an auditor.
@@ -99,4 +104,4 @@ ProvenanceService().log_action(
 )
 ```
 
-**Open caveats for fintech production:** there is no SOC 2 / ISO 27001 today, no DPA template, the signing key is plaintext-by-default (`.signing_key.json`), and Base L2 anchoring is testnet, so the cryptographic chain proves integrity locally, but is not yet a legally non-repudiable anchor. Track these on the [roadmap](/docs/project/roadmap).
+**Open caveats for fintech production:** there is no SOC 2 / ISO 27001 today, no DPA template, the signing key is stored unencrypted by default (`~/.attestix/.signing_key.json`; set `ATTESTIX_KEY_PASSWORD` to encrypt it), and Base L2 anchoring defaults to Sepolia testnet (mainnet via `BASE_NETWORK=mainnet`). The cryptographic chain proves integrity, but an anchor is not a legally non-repudiable record. In v0.4.1 a high-risk profile also cannot reach `compliant: true`, because no API yet records the risk-management, post-market-monitoring, and incident-reporting items. Track these on the [roadmap](/docs/project/roadmap).

@@ -3,8 +3,6 @@ title: Roadmap
 description: Attestix project roadmap from identity and trust foundations through blockchain anchoring and future ecosystem bridges.
 ---
 
-# Roadmap
-
 The project vision: every AI agent gets a verifiable identity, proves its compliance, and anchors its trust on-chain.
 
 ## Phase 1 - Identity & Trust (Complete)
@@ -16,17 +14,17 @@ The project vision: every AI agent gets a verifiable identity, proves its compli
 | Identity | 8 | Unified Agent Identity Tokens (UAITs) bridging MCP OAuth, A2A Agent Cards, DIDs, and API keys. GDPR Article 17 erasure |
 | Agent Cards | 3 | Parse, generate, and discover Google A2A-compatible agent cards |
 | DID | 3 | Create and resolve W3C Decentralized Identifiers (did:key, did:web, Universal Resolver) |
-| Delegation | 4 | UCAN-style capability delegation with EdDSA-signed JWT tokens, revocation |
+| Delegation | 4 | UCAN-style capability delegation with server-signed EdDSA JWT tokens (not spec-conformant UCANs), revocation |
 | Reputation | 3 | Recency-weighted trust scoring (0.0-1.0) with category breakdown and 30-day half-life decay |
 
 **Key decisions:**
 - Ed25519 for all cryptographic operations (same as SSH, Signal, Solana, Cosmos)
 - JSON file storage with file locking - no database dependency
-- All records cryptographically signed at creation time
-- Server signing key auto-generated on first run
+- Identities, credentials, presentations, delegation tokens, compliance records, and provenance entries signed by the server key at creation time (structured audit events are hash-chained but not signed; agent cards and reputation interactions are not signed)
+- Server signing key auto-generated on first run (no per-agent keys)
 - SSRF protection on all URL-fetching operations
 - Hash-chained audit trail with SHA-256 for tamper-evident logging
-- 91 conformance benchmark tests validating RFC 8032, W3C VC, W3C DID, UCAN, and MCP standards
+- Conformance benchmark tests covering RFC 8032 test vectors, W3C VC and DID structure, UCAN-style delegation tokens, and MCP tool registration
 
 ## Phase 2 - EU AI Act Compliance (Complete)
 
@@ -35,23 +33,24 @@ The project vision: every AI agent gets a verifiable identity, proves its compli
 | Module | Tools | What it does |
 |--------|-------|-------------|
 | Compliance | 7 | Risk categorization (minimal/limited/high), conformity assessments (Article 43), Annex V declarations, profile updates |
-| Credentials | 8 | W3C Verifiable Credentials (VC Data Model 1.1) with Ed25519Signature2020 proofs, external verification, Verifiable Presentations |
+| Credentials | 8 | W3C Verifiable Credentials (VC Data Model 1.1) with Ed25519 proofs over Attestix's RFC 8785-style canonical JSON (labelled `Ed25519Signature2020`; verify with the Attestix verifiers), external verification, Verifiable Presentations |
 | Provenance | 5 | Training data provenance (Article 10), model lineage (Article 11), hash-chained audit trail (Article 12) |
 
 **Key decisions:**
 - VC Data Model 1.1 (widely supported, stable specification)
-- High-risk systems blocked from self-assessment (requires third-party per Article 43)
+- Article 43 conformity routes: self-assessment (Annex VI internal control) allowed for high-risk profiles tagged Annex III points 2-8; blocked for Annex III point 1 (biometrics, where a notified body is needed when harmonised standards are not applied) and when the Annex III point is unspecified. Annex I products follow their sectoral procedures
 - Declaration generation auto-issues a W3C Verifiable Credential
 - Mutable fields excluded from signature payloads (revocation doesn't break signatures)
 - External VP and credential verification for third-party auditors
 
 **EU AI Act timeline:**
-- August 2, 2026 - Enforcement begins for high-risk systems and transparency obligations
-- August 2, 2027 - Obligations for AI in regulated products (medical devices, machinery)
+- 2 August 2026 - General application, including Article 50 transparency obligations
+- 2 December 2027 - Requirements for Annex III high-risk systems (Regulation (EU) 2026/1744)
+- 2 August 2028 - Requirements for Annex I high-risk systems (medical devices, machinery)
 
 ## Phase 3 - Blockchain Anchoring (Complete)
 
-6 MCP tools for on-chain tamper-proof verification. Everything still works offline - blockchain adds public verifiability.
+6 MCP tools for tamper-evident on-chain anchoring. Everything still works offline - blockchain adds public verifiability. Requires the `[blockchain]` extra and `EVM_PRIVATE_KEY`; Base Sepolia by default, Base mainnet with `BASE_NETWORK=mainnet`.
 
 | Module | Tools | What it does |
 |--------|-------|-------------|
@@ -94,6 +93,20 @@ Connect to existing agent identity ecosystems for interoperability.
 
 **Estimated tools: 8-12**
 
+## Shipped since Phase 3 (0.3.0 - 0.4.1)
+
+These items were previously listed under future phases and have shipped:
+
+- REST API server mode (`pip install "attestix[api]"`, `uvicorn attestix.api.main:app`), with fail-closed API-key auth and idempotency keys
+- Pluggable `Repository` / `Signer` seams (file and in-memory storage and the in-process signer ship; Postgres and KMS adapters do not)
+- Multi-tenancy for resources and per-tenant hash-chained audit events
+- Portability bundle export and import (`attestix export` / `attestix import`)
+- LangChain (`AttestixCallbackHandler`), OpenAI Agents SDK (`AttestixAuditHook`), and CrewAI (`AttestixCrewAdapter`) integrations in the Attestix package
+- Offline JavaScript/TypeScript credential verifier on npm (`attestix`)
+- MCP Registry listing (`io.github.VibeTensor/attestix`)
+- NIST AI RMF and ISO/IEC 42001 mapping pages (documentation, not automated checks)
+- Optional ML-DSA-65 / hybrid post-quantum signing module (`[pqc]` extra, not used by the default services)
+
 ## Phase 5 - Multi-Chain & Enterprise (Future)
 
 ### Multi-Chain Identity
@@ -104,26 +117,23 @@ Connect to existing agent identity ecosystems for interoperability.
 
 ### Enterprise Features
 - Role-based access control for multi-user Attestix instances
-- PostgreSQL/MongoDB storage backend (replace JSON for scale)
-- REST API server mode (in addition to MCP stdio)
+- PostgreSQL/MongoDB storage adapters for the shipped `Repository` seam (replace JSON for scale)
 - Webhook notifications for identity/compliance events
 - Batch operations for fleet management (100s of agents)
-- Audit log export (CSV, SIEM integration)
+- Audit log export to CSV and SIEM integrations (bundle export already ships)
 
 ### Global Regulatory Expansion
-- US: NIST AI RMF mapping, Colorado AI Act (SB 24-205), Texas RAIGA
+- US: Colorado AI Act (SB 24-205), Texas Responsible AI Governance Act (TRAIGA)
 - India: Digital India Act AI provisions
 - South Korea: AI Basic Act compliance profiles
 - China: Algorithm Registration compliance
-- ISO/IEC 42001 AI Management System mapping
+- Automated checks tagged to NIST AI RMF and ISO/IEC 42001 controls (the mapping pages already ship)
 - Regulatory framework plugin system (add new regulations without code changes)
 
 ### SDK & Integrations
 - Python SDK (`pip install attestix-sdk`) with typed client
-- TypeScript/JavaScript SDK for Node.js and browser
-- LangChain native integration (published to langchain-community)
-- CrewAI plugin
-- Official MCP tool catalog listing
+- Full TypeScript/JavaScript SDK for Node.js and browser (an offline verifier already ships as `attestix` on npm)
+- LangChain integration published to langchain-community (an integration already ships inside the Attestix package)
 
 ## Version Plan
 
@@ -131,7 +141,8 @@ Connect to existing agent identity ecosystems for interoperability.
 |---------|-------|--------|
 | 0.1.0 | Phase 1 + 2 | Initial release (36 tools) |
 | 0.2.0 | Phase 3 | Blockchain anchoring + security audit + conformance benchmarks (47 tools, 284 tests) |
-| 0.3.0 | Phase 3 hardening | Real framework integrations (LangChain, OpenAI Agents SDK, CrewAI), security hardening, 358 tests, GitHub Actions CI/CD |
-| 0.4.0 | Phase 4 | ERC-8004, A2A sync, ANS, Polygon ID / ZK credentials |
-| 0.5.0 | Phase 5 | Multi-chain + enterprise storage |
+| 0.3.0 | Phase 3 hardening | Framework integrations (LangChain, OpenAI Agents SDK, CrewAI), security hardening, GitHub Actions CI/CD (released 2026-04-17) |
+| 0.4.0 | Extensibility | Pluggable storage/signer seams, multi-tenancy, portability bundles, REST idempotency, shipped integrations, JS verifier (released 2026-05-30) |
+| 0.4.1 | Security | Credential key-binding, fail-closed API auth, optional post-quantum signing (released 2026-06-24) |
+| 0.5.0 | Planned | Framework-tagged security checks (`security_check_id`), FRIA tooling, further Phase 4/5 items; scope not final |
 | 1.0.0 | Stable | Production-ready with full test suite and third-party audit |

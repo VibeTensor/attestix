@@ -5,21 +5,23 @@ description: Wire Attestix into a CI/CD pipeline so every model promotion produc
 
 ## You're here because…
 
-You're an MLOps engineer and the funnel evaluation flagged that your peers dropped at integration because the tool felt CLI-first / single-user, with no idempotent declarative API, no Terraform / Ansible module, and file-based state. This page accepts that gap and shows the realistic CI path today: a deterministic CLI plus the idempotency-aware REST surface for a CI runner. The pluggable storage backend and IaC modules are on the [roadmap](/docs/project/roadmap); what's below works against v0.4.0 (stable) unchanged.
+You're an MLOps engineer and the usual objection is that the tool feels CLI-first / single-user, with no idempotent declarative API, no Terraform / Ansible module, and file-based state. This page accepts that gap and shows the realistic CI path today: a deterministic CLI plus the idempotency-aware REST surface for a CI runner. The pluggable storage backend and IaC modules are on the [roadmap](/docs/project/roadmap); what's below works against v0.4.1 (stable) unchanged.
 
 ## 60-second install
 
 Pin the version in `requirements-attestix.txt` so the CI run is reproducible:
 
 ```text
-attestix==0.4.0
+attestix==0.4.1
 ```
 
 Then in the CI step:
 
 ```bash
-pip install --pre -r requirements-attestix.txt
+pip install -r requirements-attestix.txt
 ```
+
+CI runners are usually ephemeral. Attestix keeps its signing key and data in `~/.attestix` (or `ATTESTIX_DATA_DIR`), so a fresh runner generates a **new** signing key on first use and credentials from different runs end up signed by different keys. Restore a persistent `ATTESTIX_DATA_DIR` (for example from a secured cache or volume) or use the REST mode below so one service holds the key.
 
 ## First 30 lines that actually do something
 
@@ -28,7 +30,8 @@ A GitHub Actions step that, on every model promotion, registers the model lineag
 ```yaml
 - name: Record model lineage and issue VC
   env:
-    ATTESTIX_KEY_PASSPHRASE: ${{ secrets.ATTESTIX_KEY_PASSPHRASE }}
+    ATTESTIX_KEY_PASSWORD: ${{ secrets.ATTESTIX_KEY_PASSWORD }}
+    ATTESTIX_DATA_DIR: ${{ github.workspace }}/.attestix-state  # restore/persist this between runs
   run: |
     python - <<'PY'
     import json, os, sys
@@ -74,24 +77,25 @@ The CLI equivalent for a tighter, side-effect-only step:
 
 ```bash
 attestix init --name "$MODEL_NAME" --capabilities "$MODEL_TASK" --issuer "VibeTensor"
-attestix verify "$AGENT_ID"          # exit 0 on success, non-zero otherwise
+attestix verify "$AGENT_ID" --json   # exit 0 if valid, 1 otherwise
 attestix audit "$AGENT_ID" --limit 5  # prints the latest hash-chained rows
 ```
 
 ## What you just got
 
-- A signed `ModelPromotionCredential` per CI run, pinning the git SHA, run id, and the model-artefact hash. The credential is verifiable offline (`attestix credential --verify <id>`).
-- A model-lineage row under the same agent DID; every promotion is a new row, not a destructive update.
-- Encrypted-at-rest signing key when `ATTESTIX_KEY_PASSPHRASE` is set (otherwise plaintext `.signing_key.json`; see the [security page](/security) for the disclosure / CVE process).
+- A signed `ModelPromotionCredential` per CI run, pinning the git SHA, run id, and the model-artefact hash. Check it against the local store with `attestix credential --verify-cred <id> --json` (exits 1 if invalid), or verify the JSON offline with the [Attestix verifiers](/docs/verifiers).
+- A model-lineage row under the same agent id; every promotion is a new row, not a destructive update.
+- Encrypted-at-rest signing key when `ATTESTIX_KEY_PASSWORD` is set (otherwise the key in `.signing_key.json` under the data dir is unencrypted; see the [security page](/security) for the disclosure / CVE process).
 
 ## REST mode for a CI runner with idempotency
 
-If you don't want to share the `.signing_key.json` between runners, run Attestix as a service and call it over HTTP. The REST surface honours `Idempotency-Key` so retried CI runs don't duplicate identities:
+If you don't want to share the `.signing_key.json` between runners, run Attestix as a service (`pip install 'attestix[api]'`) and call it over HTTP. Set `ATTESTIX_API_KEY` on the server and send it as `X-API-Key` (without it, protected endpoints return 503 unless `ATTESTIX_ALLOW_NO_AUTH=1`). The REST surface honours `Idempotency-Key` so retried CI runs don't duplicate identities:
 
 ```bash
 # Start the FastAPI REST surface (the MCP stdio server is `python -m attestix.main`).
 uvicorn attestix.api.main:app --host 127.0.0.1 --port 8501 &
 curl -sX POST http://localhost:8501/v1/identities \
+  -H "X-API-Key: $ATTESTIX_API_KEY" \
   -H "Idempotency-Key: gha-${GITHUB_RUN_ID}-promote" \
   -H "Content-Type: application/json" \
   -d '{"display_name":"'"$MODEL_NAME"'","source_protocol":"manual","capabilities":["'$MODEL_TASK'"],"issuer_name":"VibeTensor"}'
@@ -99,19 +103,19 @@ curl -sX POST http://localhost:8501/v1/identities \
 
 ## Open caveats for production MLOps
 
-The funnel evaluation specifically called these out for this persona; tracking them on the roadmap:
+Tracked on the roadmap:
 
-| Concern | v0.4.0 reality |
+| Concern | v0.4.1 reality |
 |---|---|
 | Declarative IaC | No Terraform / Ansible / Pulumi module today. Pinned `pip install` + a script step is the current path. |
 | Storage backend | Flat JSON files. Postgres / S3 backend is planned. |
 | Multi-runner state sharing | Run Attestix as a service (above) with persistent storage volume; sharing JSON files across runners is not supported. |
-| Secret management | `ATTESTIX_KEY_PASSPHRASE` envvar; KMS / Vault adapters planned. |
-| Anchoring | Base L2 **testnet** only. Mainnet schema registration planned. |
+| Secret management | `ATTESTIX_KEY_PASSWORD` env var encrypts the local key file; KMS / Vault adapters planned. |
+| Anchoring | Base L2 via EAS; Sepolia testnet by default, mainnet via `BASE_NETWORK=mainnet`. |
 
 ## Next step (5 minutes)
 
-Anchor the model-promotion VC's hash to **Base Sepolia testnet** so a downstream auditor can prove the promotion existed at a block height:
+Anchor the model-promotion VC's hash to **Base Sepolia testnet** so a downstream auditor can prove the promotion existed at a block height. This needs `pip install 'attestix[blockchain]'` and a funded wallet key in `EVM_PRIVATE_KEY`:
 
 ```python
 from attestix.services.blockchain_service import BlockchainService

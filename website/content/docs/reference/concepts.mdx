@@ -3,8 +3,6 @@ title: Attestix Concepts Explained
 description: Plain-English explanations of the key concepts used in Attestix, including UAITs, DIDs, Verifiable Credentials, and more.
 ---
 
-# Attestix Concepts Explained
-
 Plain-English explanations of the key concepts used in Attestix.
 
 ## UAIT (Unified Agent Identity Token)
@@ -20,7 +18,7 @@ A UAIT contains everything that identifies an agent:
 
 **Real-world analogy:** Like a passport that combines your photo, nationality, and visa stamps into one document that border agents can verify.
 
-**How it's used:** When your agent needs to prove who it is to another system, agent, or regulator, it presents its UAIT. The recipient can verify the Ed25519 signature without calling any external service.
+**How it's used:** When your agent needs to prove who it is to another system, agent, or regulator, it presents its UAIT. The UAIT is signed by the Attestix server's key (it carries the server DID; agents do not get their own keypair), so a verifier who trusts that server DID can check the Ed25519 signature without calling any external service.
 
 ## DID (Decentralized Identifier)
 
@@ -31,14 +29,14 @@ A DID looks like this:
 did:key:z6Mkija7eQS9kNrvh1kAp7PJFgPEznFpBdDm825vugSQxdW7
 ```
 
-**Why it matters:** Traditional identifiers (usernames, API keys) are controlled by a single company. If that company goes down, your identity disappears. A DID is cryptographically self-sovereign - your agent owns its identity.
+**Why it matters:** Traditional identifiers (usernames, API keys) are controlled by a single company. A DID is tied to a key pair rather than a registry, so whoever holds the private key controls the identifier. In Attestix the server holds the signing key and issues identities on the agent's behalf, so this is custodial, not self-sovereign: the operator of the Attestix instance controls the keys.
 
 **Types Attestix supports:**
 - `did:key` - Derived from a public key. No network needed. Instant.
 - `did:web` - Hosted on your domain. Resolvable via HTTPS.
 - Any other DID method via Universal Resolver.
 
-**Real-world analogy:** Like a phone number that works across all carriers and countries, except no carrier can revoke it.
+**Real-world analogy:** Like a phone number that works across all carriers and countries, controlled by whoever holds the SIM (here, the key).
 
 ## Verifiable Credential (VC)
 
@@ -53,8 +51,8 @@ A VC contains:
 **How it differs from a PDF certificate:**
 - Machine-readable (any system can parse and verify it)
 - Cryptographically signed (tampering is detectable)
-- Follows W3C international standard (interoperable)
-- Can be selectively disclosed (show only what's needed)
+- Follows the W3C VC data model (proofs are Ed25519 over Attestix's RFC 8785-style canonical JSON, so verify them with the Attestix verifiers rather than generic W3C VC tooling)
+- Not selectively disclosable: Attestix does not implement SD-JWT or BBS, so a credential is shown in full
 
 **Real-world analogy:** Like a university diploma, but instead of being a piece of paper that could be forged, it's a digital document signed by the university's private key that anyone can verify.
 
@@ -72,21 +70,21 @@ A VC contains:
 **Why not just send the VCs directly?** A VP adds:
 - **Audience binding** - This presentation is for TUV Rheinland, not anyone else
 - **Challenge/nonce** - Prevents replay attacks (someone can't reuse your presentation)
-- **Holder signature** - Proves the presenter authorized this disclosure
+- **Signature** - The VP is signed by the Attestix server key (not a separate holder key)
 
 **Real-world analogy:** Like bringing your passport + visa + vaccination card to an embassy. You show specific documents to a specific party for a specific purpose.
 
-## UCAN (User Controlled Authorization Network)
+## UCAN-style delegation
 
-**What it is:** A way to delegate capabilities from one agent to another, creating verifiable chains of authority.
+**What it is:** A way to delegate capabilities from one agent to another, creating verifiable chains of authority. Attestix issues UCAN-style delegation tokens: server-signed EdDSA JWTs with a UCAN-like payload. They are not spec-conformant UCANs and agents do not sign them with their own keys.
 
 **How it works:**
 1. Agent A has capability "read_financials"
-2. Agent A delegates "read_financials" to Agent B (creates a signed token)
-3. Agent B can prove it has this capability by showing the token chain
-4. Anyone can verify the chain traces back to Agent A's original authority
+2. Agent A delegates "read_financials" to Agent B (the Attestix server creates and signs a token)
+3. Agent B can prove it has this capability by showing the token (and any parent tokens in its proof chain)
+4. A verifier that trusts the Attestix server DID can check the chain back to the original grant. Attenuation (a child cannot exceed its parent) is checked only when a parent token is supplied, which the MCP tool does not support
 
-**Why this matters:** In multi-agent systems, agents need to act on behalf of other agents. UCAN creates auditable chains of authority, unlike simple API keys that can be shared without accountability.
+**Why this matters:** In multi-agent systems, agents need to act on behalf of other agents. Delegation tokens create auditable chains of authority, unlike simple API keys that can be shared without accountability.
 
 **Real-world analogy:** Like a power of attorney. Your lawyer can act on your behalf, and anyone can verify the chain of authorization back to you.
 
@@ -95,42 +93,44 @@ A VC contains:
 **What it is:** The cryptographic algorithm Attestix uses for all signatures.
 
 **Why Ed25519:**
-- Fast (64K signatures per second)
+- Fast
 - Small signatures (64 bytes)
 - Small keys (32 bytes)
 - Deterministic (same input = same signature)
 - Widely used (SSH, Signal, Solana, Cosmos, TLS)
-- No known vulnerabilities
+- Well studied, with no practical attacks known against the algorithm itself (it is not quantum-resistant)
 
 **How Attestix uses it:**
 - Server signing key generated on first run (stored in `.signing_key.json`)
-- Every UAIT, VC, compliance record, and audit log entry is signed
-- Anyone with the public key (embedded in the DID) can verify signatures
+- UAITs, VCs, VPs, delegation tokens, compliance records, and legacy provenance log entries are signed. Structured audit events (`audit.json`) are hash-chained but not signed; agent cards and reputation interactions are not signed
+- Anyone with the public key (embedded in the server's `did:key`) can verify signatures
 
 ## Reputation Score
 
 **What it is:** A trust score (0.0 to 1.0) for an agent based on its interaction history.
 
 **How it works:**
-- Each interaction is recorded with an outcome (success/failure/partial)
+- Each interaction is recorded with an outcome (success/failure/partial/timeout)
 - Recent interactions count more (30-day half-life exponential decay)
-- Score is computed across categories (e.g., data_quality: 0.95, response_time: 0.80)
-- New agents start with no score (not 0.0 - absence of data, not distrust)
+- The result includes a `category_breakdown` of interaction counts per category (e.g., `task`, `delegation`, `general`)
+- New agents start with no score (`trust_score` is `null`, not 0.0 - absence of data, not distrust)
 
 **Why recency-weighted:** An agent that was great 6 months ago but has been failing recently should not ride on its old reputation. The decay function ensures the score reflects current behavior.
 
 ## JSON File Storage
 
-Attestix stores all data in local JSON files:
+Attestix stores all data in local JSON files under `~/.attestix` (or `ATTESTIX_DATA_DIR`):
 
 | File | Contains |
 |------|---------|
 | `identities.json` | All UAITs |
 | `credentials.json` | All Verifiable Credentials |
 | `compliance.json` | Compliance profiles, assessments, declarations |
-| `provenance.json` | Training data records, model lineage, audit logs |
+| `provenance.json` | Training data records, model lineage, legacy (signed, hash-chained) audit log |
 | `reputation.json` | Interaction history and scores |
 | `delegations.json` | Delegation tokens |
+| `audit.json` | Structured audit events (hash-chained, unsigned), one per state change |
+| `anchors.json` | Local record of blockchain anchors |
 
 All files use file locking (cross-platform) and atomic writes to prevent corruption. Backups are created automatically before each write.
 
@@ -141,7 +141,7 @@ All files use file locking (cross-platform) and atomic writes to prevent corrupt
 | **Agent** | An AI system with an identity in Attestix |
 | **Annex III** | EU AI Act appendix listing high-risk AI categories |
 | **Annex V** | EU AI Act appendix defining declaration of conformity format |
-| **Article 43** | EU AI Act section on conformity assessments |
+| **Article 43** | EU AI Act article on conformity assessment procedures (Annex III point 1 needs a notified body when harmonised standards are not applied; points 2-8 use internal control) |
 | **Conformity assessment** | Process of verifying an AI system meets requirements |
 | **Declaration of conformity** | Official statement that an AI system complies |
 | **Multibase** | Encoding format for keys (prefix `z` = base58btc) |

@@ -7,17 +7,12 @@ import { RootProvider } from "fumadocs-ui/provider";
 import SearchDialog from "@/components/search";
 import { GeistMono } from "geist/font/mono";
 import { GeistSans } from "geist/font/sans";
-import { Instrument_Serif, JetBrains_Mono } from "next/font/google";
+import { JetBrains_Mono } from "next/font/google";
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 
-const instrumentSerif = Instrument_Serif({
-  subsets: ["latin"],
-  weight: ["400"],
-  style: ["normal", "italic"],
-  variable: "--font-serif",
-  display: "swap",
-});
+// No display serif: headings site-wide use Geist sans; the --font-serif token
+// is mapped to it in globals.css so existing `font-serif` classes follow.
 
 const jetbrainsMono = JetBrains_Mono({
   subsets: ["latin"],
@@ -26,13 +21,13 @@ const jetbrainsMono = JetBrains_Mono({
   display: "swap",
 });
 
-const homeTitle = `${siteConfig.name} - Cryptographic proof your AI agents are compliant`;
+const homeTitle = `${siteConfig.name} - Signed, verifiable evidence for every AI agent`;
 
 export const metadata: Metadata = {
   ...constructMetadata({
     title: homeTitle,
     description:
-      "Verifiable identity, W3C credentials, delegation chains, and reputation scoring for every AI agent. 47 MCP tools, 9 modules, EU AI Act ready. Open source, Apache 2.0.",
+      "Signed, tamper-evident evidence of who an AI agent is and what it did: identity, credentials, delegation, and a hash-chained audit trail. 47 MCP tools, open source, Apache 2.0.",
     alternates: {
       // No canonical at the root: it is inherited by every route.
       types: {
@@ -61,7 +56,7 @@ export default function RootLayout({
     <html
       lang="en"
       suppressHydrationWarning
-      className={`dark ${GeistSans.variable} ${GeistMono.variable} ${instrumentSerif.variable} ${jetbrainsMono.variable}`}
+      className={`dark ${GeistSans.variable} ${GeistMono.variable} ${jetbrainsMono.variable}`}
     >
       <body
         className={cn(

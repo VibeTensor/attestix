@@ -12,6 +12,11 @@ export default async function Page(props: {
   if (!page) notFound();
 
   const MDX = page.data.body;
+  // Raw markdown twin written at build time by scripts/generate-llms.mjs
+  const mdHref = `/${["docs", ...(params.slug ?? [])].join("/")}.md`;
+  const issueHref = `https://github.com/VibeTensor/attestix/issues/new?title=${encodeURIComponent(
+    `Docs feedback: ${page.data.title}`,
+  )}&body=${encodeURIComponent(`Page: https://attestix.io${page.url}\n\n`)}`;
 
   return (
     <DocsPage
@@ -29,6 +34,17 @@ export default async function Page(props: {
       <DocsBody>
         <MDX components={{ ...defaultMdxComponents, Mermaid }} />
       </DocsBody>
+      <div className="mt-10 flex flex-wrap gap-x-6 gap-y-2 border-t border-fd-border pt-5 text-[13px] text-fd-muted-foreground">
+        <a href={mdHref} className="hover:text-fd-foreground">
+          View as Markdown (for AI agents)
+        </a>
+        <a href="/llms.txt" className="hover:text-fd-foreground">
+          llms.txt index
+        </a>
+        <a href={issueHref} target="_blank" rel="noopener noreferrer" className="hover:text-fd-foreground">
+          Found an issue with this page? Report it &#8599;
+        </a>
+      </div>
     </DocsPage>
   );
 }
