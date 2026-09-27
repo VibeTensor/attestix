@@ -8,7 +8,7 @@ export const ATTESTIX_VERSION =
 export const siteConfig = {
   name: "Attestix",
   version: ATTESTIX_VERSION,
-  description: "Make your AI agents EU AI Act compliant with cryptographically verifiable proof. Open-source compliance automation, identity, and trust scoring.",
+  description: "Signed, tamper-evident EU AI Act compliance evidence for your AI agents. Open-source identity, credentials, audit trails, and trust scoring.",
   cta: "Get Started",
   url: process.env.NEXT_PUBLIC_APP_URL || "https://attestix.io",
   keywords: [
@@ -17,7 +17,7 @@ export const siteConfig = {
     "EU AI Act Compliance",
     "MCP Tools",
     "Decentralized Identity",
-    "UCAN Delegation",
+    "UCAN-style Delegation",
     "Blockchain Anchoring",
     "AI Attestation",
   ],
@@ -33,9 +33,9 @@ export const siteConfig = {
   hero: {
     title: "Attestix",
     description:
-      "The EU AI Act (Regulation 2024/1689) is phasing in obligations through 2026-2027. Fines reach up to EUR 35 million or 7% of global revenue for prohibited practices, and EUR 15 million or 3% for high-risk and transparency obligations. Attestix is like TurboTax for AI compliance: it automates the documentation, identity verification, and audit trails your AI agents need to stay legal. Install once, drop into LangChain, OpenAI Agents SDK, or CrewAI, and generate cryptographic proof of compliance on every run.",
+      "The EU AI Act (Regulation 2024/1689) is phasing in obligations through 2028. Fines reach up to EUR 35 million or 7% of global revenue for prohibited practices, and EUR 15 million or 3% for high-risk and transparency obligations. Attestix is like TurboTax for AI compliance paperwork: it automates the documentation, identity records, and audit trails that EU AI Act record-keeping asks of your AI agents. Install once, drop into LangChain, OpenAI Agents SDK, or CrewAI, and produce signed, tamper-evident compliance evidence on every run.",
     cta: "pip install attestix",
-    ctaDescription: "Stable 0.4.1 - 585 tests passing (494 functional + 91 RFC / W3C conformance benchmarks). Real LangChain, OpenAI Agents SDK, and CrewAI integrations. Apache 2.0. Single-maintainer project; no independent third-party security audit yet.",
+    ctaDescription: "Stable 0.4.1 - 600 committed tests, including RFC / W3C conformance benchmarks. Real LangChain, OpenAI Agents SDK, and CrewAI integrations. Apache 2.0. Single-maintainer project; no independent third-party security audit yet.",
   },
   // 4-tier model. Single source of truth: attestix-cloud-plan/18-TIER-MATRIX.md
   // (OSS free, self-host / Cloud Free / Cloud Pro / Cloud Enterprise).
@@ -52,8 +52,8 @@ export const siteConfig = {
         "The complete attestation toolkit. Every cryptographic primitive and standards-conformance claim is here, reproducible offline. Run it on your own infrastructure.",
       features: [
         "47 MCP tools, full Python core + npm verifier (attestix)",
-        "Ed25519 / JCS / RFC 6962 Merkle, W3C VC + DID, UCAN",
-        "Local SQLite storage",
+        "Ed25519, RFC 8785-style canonical JSON, RFC 6962 Merkle, W3C VC + DID data models, UCAN-style delegation",
+        "Local JSON-file storage (~/.attestix)",
         "Base L2 Sepolia testnet anchoring (BYO testnet ETH)",
         "Compliance MCP tools + GDPR Article 17 erasure",
         "Bundle import + export, CLI",
@@ -114,7 +114,7 @@ export const siteConfig = {
         "Everything in Pro, unlimited",
         "SSO / SAML / SCIM + custom roles",
         "Custom residency (India, Middle East, country-specific)",
-        "BYOK: HSM / KMS signing keys",
+        "BYOK: HSM / KMS signing keys (planned)",
         "Cold archive (R2/S3, 7-year), dedicated workers, SLA",
         "DPA / BAA + customer-funded SOC 2 / ISO 42001 packs",
       ],
@@ -168,12 +168,12 @@ export const siteConfig = {
   problem: {
     title: "The Problem",
     stats: [
-      "EUR 35M maximum fine",
-      "7% of global annual revenue",
+      "EUR 35M or 7%: prohibited practices",
+      "EUR 15M or 3%: other obligations",
       "2 Dec 2027: Annex III high-risk rules apply",
     ],
     description:
-      "Every organization deploying AI in the European Union will need to prove their systems are compliant with the EU AI Act. Today, most teams rely on manual documentation, static PDFs, and spreadsheets that cannot be independently verified. There is no standard way for AI agents to carry proof of identity, authorization, or regulatory compliance. Attestix closes that gap with open-source tooling that generates cryptographic proof of compliance, identity, and trust for every AI agent in your stack.",
+      "Organizations offering AI in the European Union will need to document and evidence how their systems meet the EU AI Act. Today, most teams rely on manual documentation, static PDFs, and spreadsheets that cannot be independently verified. There is no standard way for AI agents to carry verifiable records of identity, authorization, or compliance work. Attestix closes that gap with open-source tooling that produces signed, tamper-evident identity, compliance, and audit evidence for every AI agent in your stack.",
   },
 
   // Named testimonials are quoted with the reviewer's explicit permission,
@@ -248,7 +248,7 @@ export const siteConfig = {
     {
       question: "Why does my organization need Attestix?",
       answer:
-        "EU AI Act fines reach up to EUR 35 million or 7% of global annual revenue for prohibited practices, and EUR 15 million or 3% for breaches of high-risk and transparency obligations. Most compliance tools only generate static PDF reports that cannot be independently verified. Attestix produces cryptographically signed, machine-verifiable proof of compliance that auditors and regulators can validate in seconds. Every credential, audit trail, and identity attestation is backed by digital signatures and optional blockchain anchoring.",
+        "EU AI Act fines reach up to EUR 35 million or 7% of global annual revenue for prohibited practices, and EUR 15 million or 3% for breaches of high-risk and transparency obligations. Most compliance tools only generate static PDF reports that cannot be independently verified. Attestix produces signed, tamper-evident, machine-readable compliance evidence that an auditor can check in seconds with the open-source Attestix verifiers. Credentials and identity records carry Ed25519 signatures, audit events are hash-chained, and blockchain anchoring is optional.",
     },
     {
       question: "Who is Attestix for?",
@@ -258,7 +258,7 @@ export const siteConfig = {
     {
       question: "What happens if an AI system is not EU AI Act compliant?",
       answer:
-        "Fines reach EUR 35 million or 7% of worldwide annual turnover for prohibited practices, and EUR 15 million or 3% for breaches of other obligations such as high-risk requirements and Article 50 transparency, whichever is higher; for SMEs and start-ups the lower amount applies. National market surveillance authorities can order non-compliant systems to be withdrawn from the market entirely. The regulation applies to any organization offering AI systems in the EU, regardless of where the organization is headquartered. Annex III high-risk requirements apply from 2 December 2027 (Regulation (EU) 2026/1744). Attestix helps you keep the identity, audit, and documentation records from day one rather than reconstructing them later.",
+        "Fines reach EUR 35 million or 7% of worldwide annual turnover for prohibited practices, and EUR 15 million or 3% for breaches of other obligations such as high-risk requirements and Article 50 transparency, whichever is higher; for SMEs and start-ups the lower amount applies. National market surveillance authorities can order non-compliant systems to be withdrawn from the market entirely. The regulation applies to any organization offering AI systems in the EU, regardless of where the organization is headquartered. Annex III high-risk requirements apply from 2 December 2027 and Annex I (product-safety) high-risk requirements from 2 August 2028 (Regulation (EU) 2026/1744); Article 50 transparency obligations apply from 2 August 2026. Attestix helps you keep the identity, audit, and documentation records from day one rather than reconstructing them later.",
     },
     {
       question: "What is Attestix?",
@@ -268,27 +268,27 @@ export const siteConfig = {
     {
       question: "How do I install Attestix?",
       answer:
-        'Install via pip: "pip install attestix". Then configure your MCP client to connect to the Attestix server. Full setup takes under 5 minutes.',
+        'Install via pip: "pip install attestix". Then point your MCP client at the Attestix MCP server, which runs over stdio with "python -m attestix.main". Full setup takes under 5 minutes.',
     },
     {
       question: "What standards does Attestix implement?",
       answer:
-        "Attestix implements W3C Verifiable Credentials (VC Data Model 1.1), W3C Decentralized Identifiers (DIDs), UCAN delegation (based on JWT), Ed25519 signatures (RFC 8032), and Ethereum Attestation Service (EAS) for blockchain anchoring.",
+        "Attestix builds on the W3C Verifiable Credentials Data Model 1.1, W3C Decentralized Identifiers (did:key, did:web), UCAN-style delegation tokens (server-signed JWTs), Ed25519 signatures (RFC 8032), and the Ethereum Attestation Service (EAS) for blockchain anchoring. Proofs are Ed25519 over Attestix's RFC 8785-style canonical JSON, so they are checked with the open-source Attestix verifiers rather than generic W3C VC verifiers.",
     },
     {
       question: "What is the current maturity level?",
       answer:
-        `Attestix v${ATTESTIX_VERSION} is the current stable release. It includes 585 tests across functional, end-to-end, and conformance benchmark suites (494 functional + 91 RFC / W3C conformance) covering all 9 modules, plus real integrations with LangChain, OpenAI Agents SDK, and CrewAI. GitHub Actions CI runs the full pytest matrix, lint, and security scans on every push. Single-maintainer project; no independent third-party security audit has been performed yet. Treat it as you would any pre-1.0 open-source crypto stack: pin the version, review the diff, and test thoroughly before relying on it in production.`,
+        `Attestix v${ATTESTIX_VERSION} is the current stable release. It includes 600 committed tests across unit, integration, end-to-end, and RFC / W3C conformance benchmark suites covering all 9 modules, plus real integrations with LangChain, OpenAI Agents SDK, and CrewAI. GitHub Actions CI runs the full pytest matrix, lint, and security scans on every push. Single-maintainer project; no independent third-party security audit has been performed yet. Treat it as you would any pre-1.0 open-source crypto stack: pin the version, review the diff, and test thoroughly before relying on it in production.`,
     },
     {
       question: "Does Attestix work with LangChain, OpenAI Agents SDK, or CrewAI?",
       answer:
-        "Yes, all three are real integrations rather than examples or shims. LangChain uses a BaseCallbackHandler that writes every tool call, LLM call, and chain step to the Attestix audit trail with hash chaining. OpenAI Agents SDK uses MCPServerStdio so Attestix tools appear as native MCP tools. CrewAI attaches Attestix to the mcps field on every agent, giving each crew member full attestation capabilities. You can also use Attestix via its MCP server from any MCP-compatible client (Claude Desktop, Cursor, Continue, Windsurf, VS Code).",
+        "Yes, all three ship in the attestix package. LangChain: AttestixCallback, a BaseCallbackHandler that logs chain, tool, and LLM events to the hash-chained Attestix audit trail. OpenAI Agents SDK: AttestixAuditHook, a helper you call to log guardrail and tool decisions. CrewAI: AttestixCrewAdapter, which you call from your Task callbacks to log task start and finish. Any MCP-compatible client (for example Claude Desktop or Cursor) can also run the Attestix MCP server over stdio with python -m attestix.main.",
     },
     {
       question: "How does blockchain anchoring work?",
       answer:
-        "Attestix anchors identity and credential hashes to Base L2 testnet via the Ethereum Attestation Service (EAS). It supports both individual anchoring and Merkle batch anchoring for cost efficiency. Anchored records are tamper-proof and independently verifiable on Base Sepolia testnet. Mainnet schema registration is planned for a future release.",
+        "Attestix anchors identity, credential, and audit-batch hashes to Base L2 via the Ethereum Attestation Service (EAS), on Base Sepolia testnet by default. It supports both individual anchoring and Merkle batch anchoring of audit logs for cost efficiency. Once a hash is anchored, later tampering with the record is detectable and anyone can check the attestation on-chain. Anchoring needs the [blockchain] extra and a funded wallet (EVM_PRIVATE_KEY); mainnet is selected with BASE_NETWORK.",
     },
     {
       question: "Can I use Attestix without blockchain?",

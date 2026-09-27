@@ -12,16 +12,24 @@ Attestix v0.3.0 ships with three production-ready framework integrations, a secu
 
 Before v0.3.0, Attestix was a standalone MCP server. Agents could use its tools, but the integrations were shallow and developers had to wire up callbacks by hand. v0.3.0 changes that with three first-party integrations covering the frameworks our target users actually ship on.
 
-**LangChain BaseCallbackHandler.** Drop Attestix into any LangChain agent with a single callback. Every tool call, LLM call, and chain step is hash-chained into the Attestix audit trail. On chain completion, Attestix auto-issues a `ChainExecutionCredential` with the input hash, output hash, tool sequence, and duration. The credential is Ed25519-signed and verifiable offline.
+**LangChain BaseCallbackHandler.** Drop Attestix into any LangChain agent with a single callback. Every tool call, LLM call, and chain step is hash-chained into the Attestix audit trail. On chain completion, Attestix can auto-issue a `ChainExecutionCredential` recording how many events were logged and the framework name. The credential is Ed25519-signed and verifiable offline.
 
 ```python
-from langchain.agents import AgentExecutor
-from attestix.integrations.langchain import AttestixCallback
+from langchain.agents import (
+    AgentExecutor,
+)
+from attestix.integrations import (
+    langchain as ax,
+)
+
+AGENT = "attestix:f9bdb7a94ccb40f1"
 
 executor = AgentExecutor(
     agent=my_agent,
     tools=tools,
-    callbacks=[AttestixCallback(agent_id="attestix:f9bdb7a94ccb40f1")],
+    callbacks=[ax.AttestixCallback(
+        agent_id=AGENT,
+    )],
 )
 ```
 
@@ -30,19 +38,35 @@ executor = AgentExecutor(
 ```python
 async with MCPServerStdio(
     name="Attestix",
-    params={"command": "attestix", "args": ["mcp"]},
+    params={
+        "command": "python",
+        "args": ["-m",
+                 "attestix.main"],
+    },
 ) as attestix:
-    agent = Agent(mcp_servers=[attestix])
-    result = await Runner.run(agent, input="Analyse Q4 data")
+    agent = Agent(
+        mcp_servers=[attestix],
+    )
+    result = await Runner.run(
+        agent, "Analyse Q4 data"
+    )
 ```
 
-**CrewAI MCPServerAdapter.** Every agent in a CrewAI crew gets the full Attestix tool surface via the `tools` field. Role hand-offs between crew members are recorded as UCAN delegations with capability attenuation, so the entire crew becomes attestable by default.
+**CrewAI MCPServerAdapter.** Every agent in a CrewAI crew gets the full Attestix tool surface via the `tools` field, so each crew member can call tools such as `log_action` and `issue_credential` against the same audit trail.
 
 ```python
-with MCPServerAdapter(server_params) as attestix_tools:
-    analyst = Agent(role="Financial analyst", tools=attestix_tools, ...)
+with MCPServerAdapter(
+    server_params
+) as attestix_tools:
+    analyst = Agent(
+        role="Financial analyst",
+        tools=attestix_tools, ...
+    )
     task = Task(agent=analyst, ...)
-    crew = Crew(agents=[analyst], tasks=[task])
+    crew = Crew(
+        agents=[analyst],
+        tasks=[task],
+    )
     result = crew.kickoff()
 ```
 

@@ -27,10 +27,10 @@ const BEFORE: Column = {
 const AFTER: Column = {
   tag: "With Attestix",
   title: "Signed. Anchored. Offline-verifiable.",
-  lead: "Every artefact signed Ed25519, chained SHA-256, optionally anchored to Base L2 testnet via the Ethereum Attestation Service.",
+  lead: "Records signed with Ed25519, audit events chained with SHA-256, hashes optionally anchored to Base L2 testnet via the Ethereum Attestation Service.",
   tone: "good",
   bullets: [
-    "W3C Verifiable Credentials with Ed25519Signature2020",
+    "Credentials in the W3C VC data model with Ed25519 proofs",
     "Unified Agent Identity Tokens bridge MCP, A2A, DIDs, OAuth",
     "Hash-chained audit trail, tamper-evident by construction",
     "Article 43 routes recorded; self-assessment refused where a notified body is required",
@@ -72,7 +72,7 @@ export function ProblemSection() {
           <h2 className={H2}>
             Every AI agent will need an audit trail.
             <br />
-            None of the existing tools produce one.
+            Few tools produce one anyone can verify.
           </h2>
           <p className={`mx-auto mt-4 max-w-[760px] ${LEAD}`}>
             Existing compliance platforms produce organisational dashboards,

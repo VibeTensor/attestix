@@ -23,24 +23,24 @@ const BENCHES: Bench[] = [
       "Measures the pyca/cryptography Ed25519 library called through a thin Attestix wrapper, not Attestix itself.",
   },
   {
-    label: "Merkle batch anchor",
-    value: "1000",
-    unit: "artifacts / tx",
-    detail: "Proof: 32 bytes per artifact. Depth log2(n).",
+    label: "Credential verification",
+    value: "0.37",
+    unit: "ms median",
+    detail: "Signature, expiry and revocation-status checks, 100 iterations",
     spark: [4, 6, 8, 10, 12, 14, 16, 20, 24, 30, 40, 64],
   },
   {
     label: "VC issuance end-to-end",
     value: "21",
     unit: "ms median",
-    detail: "Canonicalise (JCS) + sign (Ed25519) + persist JSON store",
+    detail: "Canonicalise (RFC 8785-style) + sign (Ed25519) + persist JSON store",
     spark: [23, 22, 21, 22, 21, 21, 20, 21, 20, 21, 20, 21],
   },
   {
-    label: "Audit chain verify",
-    value: "42",
-    unit: "ms / 10k entries",
-    detail: "SHA-256 re-chain + signature batch verify",
+    label: "UCAN-style token creation",
+    value: "12",
+    unit: "ms median",
+    detail: "Server-signed EdDSA delegation JWT, 100 iterations",
     spark: [30, 32, 34, 34, 36, 38, 38, 40, 40, 41, 41, 42],
   },
 ];
@@ -78,8 +78,8 @@ export function BenchmarksSection() {
             Representative medians from the conformance benchmark suite. The
             underlying Ed25519 library signs and verifies in under a
             millisecond; Attestix issues a credential end-to-end in around
-            21 ms and verifies a 10k-entry audit chain in under 50 ms on
-            commodity hardware. Run{" "}
+            20 ms and verifies one in under half a millisecond on commodity
+            hardware. Run{" "}
             <code className="rounded-md border border-atx-line-soft bg-atx-bg-sunken px-1.5 py-0.5 font-mono-atx text-[13px] text-atx-accent">
               pytest tests/benchmarks/
             </code>{" "}

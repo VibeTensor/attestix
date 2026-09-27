@@ -20,9 +20,10 @@ export function FrameworksSection() {
             Drop into your <span className="text-atx-accent">agent stack</span>
           </h2>
           <p className={`mx-auto mt-4 max-w-[760px] ${LEAD}`}>
-            Three production integrations shipped in v0.3.0: LangChain, OpenAI
-            Agents SDK, CrewAI. Four more documented as example integrations
-            via the MCP protocol: Dify, Google ADK, Semantic Kernel, Strands.
+            Three production integrations ship in the attestix package:
+            LangChain (AttestixCallback), OpenAI Agents SDK (AttestixAuditHook)
+            and CrewAI (AttestixCrewAdapter). Four more are example scripts
+            that use the MCP server: Dify, Google ADK, Semantic Kernel, Strands.
           </p>
         </div>
 

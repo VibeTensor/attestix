@@ -26,14 +26,15 @@ export function ValidationSection() {
       <div className={WRAP}>
         <div className="text-center">
           <h2 className={H2}>
-            Reviewed by the people who <span className="text-atx-accent">write the rules</span>
+            What early <span className="text-atx-accent">reviewers said</span>
           </h2>
           <p className={`mx-auto mt-4 max-w-[760px] ${LEAD}`}>
-            Attestix has been reviewed by senior engineers building public
-            attestation infrastructure, a European AI-privacy researcher, a
-            GenAI governance director, and engineers building adjacent
-            systems at enterprise scale. Names are kept on file. Their
-            exact words are preserved below.
+            Informal feedback from people working on attestation
+            infrastructure, AI-privacy research, GenAI governance, and
+            adjacent enterprise systems, each speaking in a personal
+            capacity. Names are kept on file and not published; none of this
+            is an endorsement by an employer, a regulator, or a standards
+            body. Their exact words are preserved below.
           </p>
         </div>
 

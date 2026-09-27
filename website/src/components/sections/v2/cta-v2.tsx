@@ -15,7 +15,7 @@ export function CtaV2() {
       />
       <div className="relative mx-auto w-full max-w-[1200px] px-6 text-center">
         <h2 className="text-[clamp(32px,4.4vw,44px)] font-medium leading-[1.12] tracking-[-1.1px] text-atx-ink [text-wrap:balance]">
-          Compliance <span className="text-atx-accent">by construction,</span> not by hope.
+          Compliance evidence <span className="text-atx-accent">built in,</span> not bolted on.
         </h2>
         <p className="mx-auto mt-5 max-w-[560px] text-[17.5px] leading-[1.6] text-atx-ink-mid">
           Install Attestix, create your first identity, and issue your first

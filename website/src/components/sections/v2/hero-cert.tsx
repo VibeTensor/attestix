@@ -29,7 +29,7 @@ export function HeroCert() {
           </div>
         </div>
         <div className="atx-cert-row">
-          <div className="k">DID</div>
+          <div className="k">Server DID</div>
           <div className="v">{c.did}</div>
         </div>
         <div className="atx-cert-row">

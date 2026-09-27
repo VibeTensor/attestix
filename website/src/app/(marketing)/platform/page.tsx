@@ -15,7 +15,7 @@ import { constructMetadata } from "@/lib/utils";
 export const metadata = constructMetadata({
   title: "Platform",
   description:
-    "The full Attestix platform: nine modules, the seven-step compliance workflow, framework integrations, benchmarks, and the EU AI Act compliance matrix.",
+    "The full Attestix platform: nine modules, the seven-step compliance workflow, framework integrations, benchmarks, and the EU AI Act evidence matrix.",
 });
 
 // Section bands alternate bg-atx-bg / bg-atx-bg-elev, starting with bg-atx-bg
@@ -32,7 +32,8 @@ export default function PlatformPage() {
           <p className="mx-auto mt-5 max-w-[640px] text-[17.5px] leading-[1.6] text-atx-ink-mid [text-wrap:balance]">
             Nine modules and forty-seven MCP tools for agent identity,
             credentials, delegation, compliance records, provenance, and
-            reputation, with evidence anyone can verify offline.
+            reputation, with signed evidence you can check offline using the
+            open-source Attestix verifiers.
           </p>
         </div>
         <div className="mx-auto mt-12 max-w-[560px] text-left">

@@ -16,9 +16,9 @@ As AI agents proliferate across enterprise workflows, the need for verifiable id
 
 1. **Universal Agent Identity Token (UAIT)** - A bridge format connecting MCP server names, A2A agent cards, and W3C DIDs into a single identity namespace
 
-2. **Ed25519Signature2020 Credentials** - Full W3C Verifiable Credentials implementation with JSON-LD context and revocation support
+2. **Ed25519-signed Credentials** - Credentials in the W3C Verifiable Credentials data model with JSON-LD context and revocation status, signed with Ed25519 over RFC 8785-style canonical JSON and checked with the Attestix verifiers
 
-3. **UCAN Delegation Chains** - Capability-based delegation using signed JWT tokens with scoped permissions and time bounds
+3. **UCAN-style Delegation Chains** - Capability-based delegation using server-signed JWT tokens with scoped permissions and time bounds
 
 4. **EU AI Act Conformity Declarations** - Machine-readable Annex V declarations that can be cryptographically signed and blockchain-anchored
 
@@ -32,9 +32,11 @@ If you find Attestix useful in your research, please cite us:
 
 ```bibtex
 @online{dubasi2026attestix,
-  title={Attestix: Attestation Infrastructure for AI Agents},
+  title={Attestix: Attestation
+    Infrastructure for AI Agents},
   author={Dubasi, Pavan Kumar},
-  organization={VibeTensor Private Limited},
+  organization={VibeTensor
+    Private Limited},
   year={2026},
   url={https://attestix.io/research}
 }

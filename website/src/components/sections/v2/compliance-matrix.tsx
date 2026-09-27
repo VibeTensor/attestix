@@ -18,7 +18,7 @@ const ROWS: Row[] = [
   {
     article: "Article 5",
     title: "Prohibited practices enforcement",
-    evidence: "Block self-assessment for prohibited-adjacent agents.",
+    evidence: "Refuses to create a profile for an unacceptable-risk (prohibited) system.",
     tool: "compliance.create_compliance_profile",
     status: "shipped",
     audience: ["all"],
@@ -26,15 +26,15 @@ const ROWS: Row[] = [
   {
     article: "Article 9",
     title: "Risk management system",
-    evidence: "Risk-tier profile with unfolded obligations.",
+    evidence: "Risk-tier profile listing required obligations; the risk-management system itself is not yet tracked.",
     tool: "compliance.create_compliance_profile",
-    status: "shipped",
+    status: "partial",
     audience: ["provider", "high"],
   },
   {
     article: "Article 10",
     title: "Data governance",
-    evidence: "Training data provenance, bias test attachments.",
+    evidence: "Signed training data records: source, licence, personal-data flag, governance measures.",
     tool: "provenance.record_training_data",
     status: "shipped",
     audience: ["provider", "high"],
@@ -58,25 +58,25 @@ const ROWS: Row[] = [
   {
     article: "Article 13",
     title: "Transparency",
-    evidence: "Agent card at /.well-known/agent.json.",
-    tool: "identity.generate_agent_card",
-    status: "shipped",
+    evidence: "Agent card at /.well-known/agent.json; not a full set of instructions for use.",
+    tool: "agent_card.generate_agent_card",
+    status: "partial",
     audience: ["provider", "deployer"],
   },
   {
     article: "Article 14",
     title: "Human oversight",
-    evidence: "Delegation with attenuation, revocation.",
+    evidence: "Oversight measures on the profile; scoped, revocable delegation tokens.",
     tool: "delegation.create_delegation",
-    status: "shipped",
+    status: "partial",
     audience: ["provider", "deployer", "high"],
   },
   {
     article: "Article 15",
     title: "Accuracy and robustness",
-    evidence: "Reputation scoring, performance baselines.",
+    evidence: "Eval metrics in model lineage; interaction-outcome reputation scoring.",
     tool: "reputation.record_interaction",
-    status: "shipped",
+    status: "partial",
     audience: ["provider", "high"],
   },
   {
@@ -90,7 +90,7 @@ const ROWS: Row[] = [
   {
     article: "Annex V",
     title: "Declaration of Conformity",
-    evidence: "Auto-issued W3C VC with Ed25519 proof.",
+    evidence: "Signed declaration plus an auto-issued credential with an Ed25519 proof.",
     tool: "compliance.generate_declaration_of_conformity",
     status: "shipped",
     audience: ["provider", "high"],
@@ -114,7 +114,7 @@ const ROWS: Row[] = [
   {
     article: "Annex III",
     title: "High-risk use-case list",
-    evidence: "Automatic classification from intended purpose.",
+    evidence: "Annex III point (1-8) recorded on the profile; sets the Article 43 route.",
     tool: "compliance.create_compliance_profile",
     status: "shipped",
     audience: ["provider"],
@@ -162,7 +162,8 @@ export function ComplianceMatrixSection() {
           </h2>
           <p className={`mx-auto mt-4 max-w-[760px] ${LEAD}`}>
             Thirteen EU AI Act articles and annexes. Each row names the
-            evidence Attestix produces and the exact MCP tool that emits it.
+            evidence Attestix records and the exact MCP tool that emits it;
+            &ldquo;Partial&rdquo; means Attestix covers part of the obligation.
             Filter by audience (provider, deployer) or risk tier (high-risk
             only) to see the obligations that apply to your role.
           </p>

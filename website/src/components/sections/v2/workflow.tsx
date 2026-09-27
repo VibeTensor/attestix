@@ -16,13 +16,13 @@ export function WorkflowSection() {
       <div className={WRAP}>
         <div className="text-center">
           <h2 className={H2}>
-            From zero to <span className="text-atx-accent">EU AI Act-compliant</span>
+            From zero to <span className="text-atx-accent">signed EU AI Act evidence</span>
           </h2>
           <p className={`mx-auto mt-4 max-w-[760px] ${LEAD}`}>
             A high-risk AI agent, walked through the seven-step pipeline that
-            produces a regulator-ready Declaration of Conformity. Each stage
-            below maps to the EU AI Act article it satisfies, and the exact
-            Attestix call that produces the artefact.
+            produces a signed Annex V Declaration of Conformity. Each stage
+            below names the EU AI Act article it records evidence for, and the
+            exact Attestix call that produces the artefact.
           </p>
         </div>
 

@@ -16,7 +16,7 @@ export function PreviewCard() {
           <span className="inline-block h-2 w-2 rounded-full bg-atx-ok/60" />
         </span>
         <span>
-          Attestix Console / <span className="font-mono-atx">localhost:8501</span>
+          Attestix Console / <span className="font-mono-atx">attestix.io/console</span>
         </span>
         <span className="ml-auto flex items-center gap-2 text-atx-ok">
           <span className="inline-block h-1.5 w-1.5 rounded-full bg-atx-ok" />
@@ -68,7 +68,7 @@ export function PreviewCard() {
                 { n: "quarterly-analyst-v2", r: "HIGH", s: "compl", t: 94 },
                 { n: "clinical-triage-bot", r: "HIGH", s: "gap", t: 78 },
                 { n: "supply-chain-optimizer", r: "LIM", s: "compl", t: 89 },
-                { n: "fraud-detector", r: "PRO", s: "compl", t: 96 },
+                { n: "fraud-detector", r: "MIN", s: "compl", t: 96 },
                 { n: "doc-summarizer", r: "MIN", s: "compl", t: 91 },
               ].map((a) => (
                 <tr key={a.n} className="border-t border-atx-line-soft/60 text-atx-ink">

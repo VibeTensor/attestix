@@ -38,7 +38,7 @@ const USE_CASES: UseCase[] = [
     summary:
       "Assesses creditworthiness and generates reports for board review. Credit scoring of natural persons is high-risk under Annex III point 5(b).",
     outcome:
-      "Internal-control conformity assessment (Annex VI) recorded, Annex V declaration issued as a W3C VC, every analysis call hash-chained into the audit trail.",
+      "Internal-control conformity assessment (Annex VI) recorded, signed Annex V declaration with a companion credential, every analysis call hash-chained into the audit trail.",
   },
   {
     id: "healthcare",
@@ -47,9 +47,9 @@ const USE_CASES: UseCase[] = [
     tier: "high",
     article: "Article 10",
     summary:
-      "First-line patient triage for non-emergency consultations. Flags high-acuity cases for human review. Article 10 mandates strict data governance and bias testing.",
+      "First-line patient triage for non-emergency consultations. Flags high-acuity cases for human review. Article 10 requires data governance, including examination for possible biases.",
     outcome:
-      "Training dataset checksums captured, demographic-parity and equal-opportunity bias tests attached, full provenance chain from data to model to action.",
+      "Training data sources, licences, personal-data flags and governance measures recorded, with signed provenance linking data to model to logged actions.",
   },
   {
     id: "hr",
@@ -60,7 +60,7 @@ const USE_CASES: UseCase[] = [
     summary:
       "CV pre-screening agent for shortlisting candidates. Recruitment and candidate filtering are high-risk under Annex III point 4(a), with human oversight required under Article 14.",
     outcome:
-      "Risk profile, bias-testing records, and human-override events captured; the credential can be revoked if an audit fails, and revocation is tamper-evident on the hash chain.",
+      "Risk profile, data-governance records, and human-override events captured; the credential can be revoked if an audit fails, and the revocation is recorded on the hash-chained audit trail.",
   },
   {
     id: "logistics",
@@ -69,9 +69,9 @@ const USE_CASES: UseCase[] = [
     tier: "limited",
     article: "Article 50",
     summary:
-      "Optimises supplier routing and inventory levels across warehouses. Limited-risk under the EU AI Act. Transparency obligations apply.",
+      "Optimises supplier routing and inventory levels, and answers supplier questions in a chat interface. Because it interacts directly with people, Article 50 transparency obligations apply.",
     outcome:
-      "Agent identity card published at /.well-known/agent.json, delegations to sub-agents tracked as UCAN, reputation score updated per interaction.",
+      "Agent card published at /.well-known/agent.json, delegations to sub-agents issued as UCAN-style tokens, reputation score updated per interaction.",
   },
 ];
 
@@ -85,7 +85,7 @@ export function UseCasesSection() {
           </h2>
           <p className={`mx-auto mt-4 max-w-[760px] ${LEAD}`}>
             Every EU AI Act risk tier maps to the same Attestix workflow, with
-            different obligations automatically unfolded. Examples below are
+            a different obligation list for each tier. Examples below are
             illustrative. Real deployments configure their own agent names,
             issuers, and notified bodies.
           </p>
