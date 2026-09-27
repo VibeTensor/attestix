@@ -24,15 +24,15 @@
 </p>
 
 <p align="center">
-  Make your AI agents EU AI Act compliant with cryptographically verifiable proof.<br/>
+  Signed, tamper-evident EU AI Act compliance evidence for your AI agents.<br/>
   Open-source identity, credentials, compliance automation, and trust scoring.<br/>
-  47 MCP tools across 9 modules, 44 REST API endpoints,
-  531-test suite (440 functional + 91 RFC / W3C conformance benchmarks).<br/>
+  47 MCP tools across 9 modules and 594 committed tests
+  (functional plus RFC / W3C conformance benchmarks).<br/>
   Real integrations with LangChain, OpenAI Agents SDK, and CrewAI.
 </p>
 
 <p align="center">
-  <em>Status: v0.4.0 stable (pre-release 0.4.1rc1 available via the --pre channel).
+  <em>Status: v0.4.1 stable (latest release on PyPI and GitHub).
   Single-maintainer project, community
   contributions welcome. No independent third-party security audit has been
   performed yet; deploy with the same diligence you would apply to any
@@ -44,14 +44,11 @@
 ## Install
 
 ```bash
-# Stable 0.4.0:
+# Stable 0.4.1:
 pip install attestix
-
-# Pre-release 0.4.1rc1 (opt in with --pre):
-pip install --pre attestix
 ```
 
-> Stable 0.4.0 ships only the canonical
+> Stable 0.4.1 ships only the canonical
 > `attestix.*` namespace. The older flat layout (`from services... import`,
 > `from auth... import`, ...) keeps working via thin deprecation shims that
 > emit a `DeprecationWarning` on first import and are scheduled for removal in
@@ -92,9 +89,9 @@ python examples/quickstart.py            # Full 9-module workflow in 0.1 seconds
 ## Verify in any language
 
 Attestix credentials are issued once (Python core or cloud) and verify
-**anywhere**. Six independent verifier implementations share one conformance
-suite (`spec/verify/v1`): verify offline, no Python runtime, zero trust in the
-issuer. The verifiers are verifier-only: issuance stays in the Python core.
+**anywhere**. Verify offline, no Python runtime, zero trust in the issuer.
+Only the Python and JavaScript verifiers are currently documented as passing
+the shared conformance vectors (`spec/verify/v1`). The verifiers are verifier-only: issuance stays in the Python core.
 
 | Language | Install | Status |
 |----------|---------|--------|
@@ -105,17 +102,16 @@ issuer. The verifiers are verifier-only: issuance stays in the Python core.
 | **Java** | `com.vibetensor:attestix:0.4.0` | publishing soon ([attestix-java](https://github.com/VibeTensor/attestix-java)) |
 | **R** | `install.packages("attestix")` | coming to CRAN ([attestix-r](https://github.com/VibeTensor/attestix-r)) |
 
-Every verifier checks the same canonical-JSON form ([RFC 8785](https://www.rfc-editor.org/rfc/rfc8785))
-and Ed25519 signatures ([RFC 8032](https://www.rfc-editor.org/rfc/rfc8032)) against
-the shared [`spec/verify/v1`](https://github.com/VibeTensor/attestix/tree/main/spec/verify/v1)
-vectors. Verify in the browser at <https://attestix.io/verify>, or read the
+The shared [`spec/verify/v1`](https://github.com/VibeTensor/attestix/tree/main/spec/verify/v1)
+vectors cover an [RFC 8785](https://www.rfc-editor.org/rfc/rfc8785)-style canonical-JSON form
+and Ed25519 signatures ([RFC 8032](https://www.rfc-editor.org/rfc/rfc8032)). Verify in the browser at <https://attestix.io/verify>, or read the
 bundle wire-format at <https://attestix.io/spec/bundle/v1>.
 
 ## Why Attestix
 
 On **August 2, 2026**, the EU AI Act enforcement begins. Fines reach EUR 35M or 7% of global revenue.
 
-Existing compliance tools (Credo AI, Holistic AI, Vanta) are organizational dashboards. None produce **machine-readable, cryptographically verifiable proof** that an AI agent can present to another agent, regulator, or system.
+Existing compliance tools (Credo AI, Holistic AI, Vanta) are organizational dashboards. None produce **machine-readable, signed, tamper-evident evidence** that an AI agent can present to another agent, regulator, or system.
 
 Agent identity is fragmenting across walled gardens (Microsoft Entra, AWS AgentCore, Google A2A, ERC-8004). No single tool combines **agent identity + EU AI Act compliance + verifiable credentials** in one protocol.
 
@@ -266,7 +262,7 @@ Every artifact Attestix produces is cryptographically signed with Ed25519:
 ## Architecture
 
 ```
-attestix/                  # Canonical Python package (v0.4.0)
+attestix/                  # Canonical Python package (v0.4.1)
   main.py                  # MCP server entry point (47 tools)
   cli.py                   # `attestix` console script
   config.py                # Environment-based configuration
@@ -281,7 +277,7 @@ attestix/                  # Canonical Python package (v0.4.0)
     identity_service.py    # UAIT lifecycle, GDPR erasure
     agent_card_service.py  # A2A agent card operations
     did_service.py         # DID creation and resolution
-    delegation_service.py  # UCAN delegation tokens
+    delegation_service.py  # UCAN-style delegation tokens
     reputation_service.py  # Trust scoring
     compliance_service.py  # EU AI Act profiles and assessments
     credential_service.py  # W3C VCs and VPs
@@ -430,8 +426,7 @@ import. The shims are scheduled for removal in v0.5.0.
 ## Standards Conformance
 
 Every standards claim is validated by 91 automated conformance benchmarks that
-run alongside the rest of the suite for a total of 531 tests passing (1 skipped
-on Windows). These benchmarks demonstrate cryptographic conformance with the
+run alongside the rest of the suite for a total of 594 committed tests. These benchmarks demonstrate cryptographic conformance with the
 listed standards; they are not a substitute for a legal compliance audit.
 Run them yourself:
 
@@ -444,7 +439,7 @@ docker build -f Dockerfile.test -t attestix-bench . && docker run --rm attestix-
 | **RFC 8032 (Ed25519)** | 4 IETF canonical vectors: key derivation, signature generation (exact match), verification, tamper rejection | 18 |
 | **W3C VC Data Model 1.1** | Credential structure, Ed25519Signature2020 proof, mutable field exclusion, VP structure, replay protection | 25 |
 | **W3C DID Core 1.0** | `did:key` and `did:web` document structure, roundtrip resolution, Ed25519VerificationKey2020 | 18 |
-| **UCAN v0.9.0** | JWT header (alg/typ/ucv), all payload fields, capability attenuation, expiry enforcement, revocation | 18 |
+| **UCAN-style (v0.9.0)** | JWT header (alg/typ/ucv), all payload fields, capability attenuation, expiry enforcement, revocation | 18 |
 | **MCP Protocol** | 47 tools registered, 9 modules, async convention, snake\_case naming | 5 |
 | **Performance** | Ed25519 key gen, JSON canonicalization, sign/verify, identity creation, credential ops | 7 |
 
