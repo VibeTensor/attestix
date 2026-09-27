@@ -8,12 +8,24 @@ const WRAP = "mx-auto w-full max-w-[1200px] px-6";
 const H2 = "text-[32px] font-medium leading-[1.15] tracking-[-0.8px] text-atx-ink";
 const LEAD = "text-[17.5px] leading-[1.6] text-atx-ink-mid";
 
-// Only integrations that ship in the package or are independently verifiable.
-const WORKS_WITH = [
-  { name: "LangChain", href: "/docs/guides/langchain" },
-  { name: "CrewAI", href: "/docs/guides/crewai" },
-  { name: "OpenAI Agents SDK", href: "/docs/guides/openai-agents-sdk" },
-  { name: "Claude Code (MCP)", href: "/docs/getting-started" },
+// Only integrations that ship in the package, the MCP server, or Pro capture.
+const WORKS_WITH: { group: string; items: { name: string; href?: string }[] }[] = [
+  {
+    group: "Agent frameworks",
+    items: [
+      { name: "LangChain", href: "/docs/guides/langchain" },
+      { name: "OpenAI Agents SDK", href: "/docs/guides/openai-agents-sdk" },
+      { name: "CrewAI", href: "/docs/guides/crewai" },
+    ],
+  },
+  { group: "Protocol", items: [{ name: "Any MCP client", href: "/docs/guides/integration-guide" }] },
+  {
+    group: "Coding agents",
+    items: [
+      { name: "Claude Code (Pro)", href: "/platform#coding-agents" },
+      { name: "Others coming" },
+    ],
+  },
 ];
 
 function TextLink({ href, children }: { href: string; children: React.ReactNode }) {
@@ -33,13 +45,13 @@ export function HomeHero() {
     <section className="relative px-6 pb-10 pt-16 text-center md:pt-20">
       <div className="relative mx-auto max-w-[860px]">
         <h1 className="text-[clamp(34px,5vw,52px)] font-normal leading-[1.09] tracking-[-0.03em] text-atx-ink [text-wrap:balance]">
-          <span className="text-atx-accent">Cryptographic proof</span> your AI agents
-          are compliant
+          <span className="text-atx-accent">Cryptographic evidence</span> for every AI
+          agent you run
         </h1>
         <p className={`mx-auto mt-5 max-w-[640px] [text-wrap:balance] ${LEAD}`}>
-          Attestix gives every AI agent a verifiable identity and a tamper-evident
-          audit trail: open-source evidence a regulator, auditor, or another agent
-          can check for itself.
+          Framework agents, MCP clients, coding agents, or your own code: Attestix
+          gives each one a verifiable identity and a tamper-evident audit trail that
+          a regulator, auditor, or another agent can check for itself.
         </p>
         <Link
           href="/console"
@@ -50,16 +62,28 @@ export function HomeHero() {
       </div>
 
       <div className="mx-auto mt-12 max-w-[860px] border-t border-atx-line-soft pt-7">
-        <p className="text-[15px] text-atx-ink-mid">Works with the agent stack you already use</p>
-        <div className="mt-4 flex flex-wrap items-center justify-center gap-x-9 gap-y-3">
-          {WORKS_WITH.map((w) => (
-            <Link
-              key={w.name}
-              href={w.href}
-              className="text-[17px] font-medium tracking-[-0.01em] text-atx-ink-dim transition-colors duration-200 hover:text-atx-ink"
-            >
-              {w.name}
-            </Link>
+        <p className="text-[15px] text-atx-ink-mid">Works with the agents you already run</p>
+        <div className="mt-5 flex flex-wrap items-start justify-center gap-x-12 gap-y-6">
+          {WORKS_WITH.map((g) => (
+            <div key={g.group}>
+              <p className="text-[13px] text-atx-ink-mid">{g.group}</p>
+              <ul className="mt-2 flex flex-wrap items-center justify-center gap-x-6 gap-y-2">
+                {g.items.map((w) => (
+                  <li key={w.name}>
+                    {w.href ? (
+                      <Link
+                        href={w.href}
+                        className="text-[17px] font-medium tracking-[-0.01em] text-atx-ink-dim transition-colors duration-200 hover:text-atx-ink"
+                      >
+                        {w.name}
+                      </Link>
+                    ) : (
+                      <span className="text-[15px] text-atx-ink-dim">{w.name}</span>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            </div>
           ))}
         </div>
       </div>
