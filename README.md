@@ -508,6 +508,7 @@ Full documentation at **[attestix.io/docs](https://attestix.io/docs)**
 | [Architecture](https://attestix.io/docs/guides/architecture) | System design and data flows |
 | [API Reference](https://attestix.io/docs/reference/api-reference) | All 47 tools with parameter tables |
 | [Integration Guide](https://attestix.io/docs/guides/integration-guide) | LangChain, OpenAI Agents SDK, CrewAI, MCP client |
+| [Claude Code Hooks](docs/claude-code.md) | Record Claude Code sessions and tool calls in the hash-chained audit log (`attestix hooks install --agent claude-code`) |
 | [Configuration](https://attestix.io/docs/reference/configuration) | Environment variables, storage, Docker |
 | [Research Paper](https://attestix.io/docs/project/research) | Paper, citation formats, evaluation highlights |
 | [Reputation Scoring](https://attestix.io/docs/guides/reputation) | Recency-weighted trust scoring and categories |

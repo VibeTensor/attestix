@@ -68,6 +68,7 @@ nav:
       - EU AI Act Compliance: eu-ai-act-compliance.md
       - Risk Classification: risk-classification.md
       - Integration Guide: integration-guide.md
+      - Claude Code Hooks: claude-code.md
       - Architecture: architecture.md
   - Reference:
       - API Reference: api-reference.md

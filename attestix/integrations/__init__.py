@@ -12,10 +12,14 @@ an opt-in extra):
   the OpenAI Agents SDK). Install: ``pip install 'attestix[openai-agents]'``.
 - ``attestix.integrations.crewai`` — ``AttestixCrewAdapter`` (helper for
   CrewAI). Install: ``pip install 'attestix[crewai]'``.
+- ``attestix.integrations.agent_hooks`` - coding-agent hooks core behind
+  ``attestix hooks run --agent <name>``; ``claude_code`` is the Claude Code
+  adapter (no extra). Install with
+  ``attestix hooks install --agent claude-code --write``.
 
 The integration modules import their respective framework lazily so that
 ``import attestix.integrations`` alone never requires the framework to be
 installed.
 """
 
-__all__ = ["langchain", "openai_agents", "crewai"]
+__all__ = ["langchain", "openai_agents", "crewai", "agent_hooks", "claude_code"]

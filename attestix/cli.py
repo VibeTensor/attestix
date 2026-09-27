@@ -806,5 +806,84 @@ def export_cmd(output_path, workspace, include_anchors, include_audit, force, no
     )
 
 
+# ---------------------------------------------------------------------------
+# attestix hooks (coding-agent audit hooks: install / uninstall / run)
+# ---------------------------------------------------------------------------
+
+@cli.group()
+def hooks():
+    """Record coding-agent sessions and tool calls in the Attestix audit chain."""
+
+
+def _hooks_apply(agent, user, write, remove):
+    import difflib
+
+    from attestix.integrations.agent_hooks import adapter
+
+    try:
+        mod = adapter(agent)
+    except ValueError as e:
+        _error(str(e))
+    path = mod.settings_path(user)
+    before = {}
+    if path.exists():
+        try:
+            before = json.loads(path.read_text(encoding="utf-8") or "{}")
+        except json.JSONDecodeError as e:
+            _error(f"{path} is not valid JSON ({e}); refusing to modify it.")
+        if not isinstance(before, dict):
+            _error(f"{path} does not contain a JSON object; refusing to modify it.")
+    after = (mod.remove_hooks if remove else mod.merge_hooks)(before)
+    old = json.dumps(before, indent=2).splitlines(keepends=True)
+    new = json.dumps(after, indent=2).splitlines(keepends=True)
+    diff = "".join(difflib.unified_diff(old, new, str(path), str(path)))
+    if not diff:
+        _success(f"No changes needed: {path}")
+        return
+    click.echo(diff)
+    if not write:
+        _warn("Dry run: nothing written. Re-run with --write to apply.")
+        return
+    path.parent.mkdir(parents=True, exist_ok=True)
+    if path.exists():
+        path.with_name(path.name + ".bak").write_bytes(path.read_bytes())
+    tmp = path.with_name(path.name + ".tmp")
+    tmp.write_text(json.dumps(after, indent=2) + "\n", encoding="utf-8")
+    tmp.replace(path)
+    _success(f"Wrote {path}")
+
+
+_agent_opt = click.option("--agent", required=True, help="Coding agent, e.g. claude-code.")
+_scope_opt = click.option("--user/--project", default=False, help="User-level settings (--user) or ./ project settings (--project, default).")
+_write_opt = click.option("--write/--dry-run", default=False, help="Write the file (default: --dry-run prints the diff only).")
+
+
+@hooks.command(name="install")
+@_agent_opt
+@_scope_opt
+@_write_opt
+def hooks_install(agent, user, write):
+    """Add the Attestix hook entries without touching existing hooks."""
+    _hooks_apply(agent, user, write, remove=False)
+
+
+@hooks.command(name="uninstall")
+@_agent_opt
+@_scope_opt
+@_write_opt
+def hooks_uninstall(agent, user, write):
+    """Remove only the Attestix hook entries."""
+    _hooks_apply(agent, user, write, remove=True)
+
+
+@hooks.command(name="run")
+@click.option("--agent", default="claude-code", show_default=True, help="Coding agent that sent the payload.")
+def hooks_run(agent):
+    """Hook command: read one event from stdin, append it to the chain. Always exits 0."""
+    from attestix.integrations.agent_hooks import run
+
+    run(agent)
+
+
 if __name__ == "__main__":
     cli()
