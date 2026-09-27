@@ -21,13 +21,13 @@ const jetbrainsMono = JetBrains_Mono({
   display: "swap",
 });
 
-const homeTitle = `${siteConfig.name} - Cryptographic proof your AI agents are compliant`;
+const homeTitle = `${siteConfig.name} - Signed, verifiable evidence for every AI agent`;
 
 export const metadata: Metadata = {
   ...constructMetadata({
     title: homeTitle,
     description:
-      "Verifiable identity, W3C credentials, delegation chains, and reputation scoring for every AI agent. 47 MCP tools, 9 modules, EU AI Act ready. Open source, Apache 2.0.",
+      "Signed, tamper-evident evidence of who an AI agent is and what it did: identity, credentials, delegation, and a hash-chained audit trail. 47 MCP tools, open source, Apache 2.0.",
     alternates: {
       // No canonical at the root: it is inherited by every route.
       types: {
