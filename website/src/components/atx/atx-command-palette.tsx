@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ATX_MODULES, ATX_WORKFLOW } from "@/lib/atx-data";
+import { ATX_MODULES } from "@/lib/atx-data";
 
 interface Entry {
   label: string;
@@ -32,14 +32,13 @@ const ROUTES: Entry[] = [
 ];
 
 const ANCHORS: Entry[] = [
-  { label: "Problem", section: "Landing sections", href: "/#problem" },
-  { label: "Modules", section: "Landing sections", href: "/platform#modules" },
-  { label: "Workflow", section: "Landing sections", href: "/platform#workflow" },
-  { label: "Validation quotes", section: "Landing sections", href: "/#validation" },
-  { label: "Framework integrations", section: "Landing sections", href: "/#frameworks" },
-  { label: "Use cases", section: "Landing sections", href: "/#use-cases" },
-  { label: "Benchmarks", section: "Landing sections", href: "/#benchmarks" },
-  { label: "Compliance matrix", section: "Landing sections", href: "/#compliance-matrix" },
+  { label: "How it works", section: "Landing sections", href: "/#how-it-works" },
+  { label: "Platform / How it works", section: "Platform", href: "/platform#workflow" },
+  { label: "Platform / Where Attestix runs", section: "Platform", href: "/platform#runs-on" },
+  { label: "Platform / Modules", section: "Platform", href: "/platform#modules" },
+  { label: "Platform / Editions", section: "Platform", href: "/platform#editions" },
+  { label: "Platform / Coding-agent capture", section: "Platform", href: "/platform#coding-agents" },
+  { label: "Platform / Honest limits", section: "Platform", href: "/platform#limits" },
 ];
 
 export function AtxCommandPalette() {
@@ -55,12 +54,7 @@ export function AtxCommandPalette() {
       section: "Modules",
       href: "/platform#modules",
     }));
-    const workflow: Entry[] = ATX_WORKFLOW.map((w) => ({
-      label: `Workflow / Step ${w.n} / ${w.title}`,
-      section: "Workflow",
-      href: "/platform#workflow",
-    }));
-    return [...ROUTES, ...ANCHORS, ...modules, ...workflow];
+    return [...ROUTES, ...ANCHORS, ...modules];
   }, []);
 
   const filtered = useMemo(() => {
