@@ -6,6 +6,8 @@ batches, compliance declarations) to Base L2 via Ethereum Attestation Service.
 Optional: works only when EVM_PRIVATE_KEY is set in .env.
 """
 
+from attestix.config import storage_transaction, storage_transactional
+
 import hashlib
 import json
 import threading
@@ -182,6 +184,7 @@ class BlockchainService:
             pass  # Config file missing or corrupt, return None
         return None
 
+    @storage_transactional
     def _save_schema_uid(self, schema_uid: str):
         """Cache schema UID to blockchain config file."""
         config = {}
@@ -504,21 +507,22 @@ class BlockchainService:
                 "issuer_did": self._server_did,
             }
 
-            data = load_anchors()
-            data["anchors"].append(anchor)
-            save_anchors(data)
+            with storage_transaction():
+                data = load_anchors()
+                data["anchors"].append(anchor)
+                save_anchors(data)
 
-            safe_emit(
-                self._emitter,
-                action="blockchain.anchor",
-                target_id=anchor_id,
-                target_collection="anchors",
-                actor=self._server_did,
-                tenant_id=self._tenant_id,
-                after={"anchor_id": anchor_id, "artifact_type": artifact_type,
-                       "artifact_id": artifact_id,
-                       "attestation_uid": attestation_uid},
-            )
+                safe_emit(
+                    self._emitter,
+                    action="blockchain.anchor",
+                    target_id=anchor_id,
+                    target_collection="anchors",
+                    actor=self._server_did,
+                    tenant_id=self._tenant_id,
+                    after={"anchor_id": anchor_id, "artifact_type": artifact_type,
+                           "artifact_id": artifact_id,
+                           "attestation_uid": attestation_uid},
+                )
 
             return anchor
 

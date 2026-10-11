@@ -5,6 +5,10 @@ import os
 import shutil
 import sys
 import time
+import tempfile
+from contextlib import contextmanager
+from functools import wraps
+from threading import RLock, local
 from pathlib import Path
 from typing import Optional
 
@@ -60,6 +64,66 @@ DEFAULT_EXPIRY_DAYS = int(_get_env("DEFAULT_EXPIRY_DAYS", default="365"))
 
 # --- Safe JSON storage helpers ---
 
+
+_STORAGE_THREAD_LOCK = RLock()
+_STORAGE_STATE = local()
+
+
+@contextmanager
+def storage_transaction():
+    """Serialize local storage operations across threads and processes.
+
+    This synchronous context must never span an asynchronous await.
+    It provides isolation, not rollback of writes to multiple collections.
+    """
+    lock_path = str(DATA_DIR.resolve() / ".storage.lock")
+    with _STORAGE_THREAD_LOCK:
+        held = getattr(_STORAGE_STATE, "held", {})
+        depth = held.get(lock_path, 0)
+        held[lock_path] = depth + 1
+        _STORAGE_STATE.held = held
+        try:
+            if depth:
+                yield
+            else:
+                DATA_DIR.mkdir(parents=True, exist_ok=True)
+                with FileLock(lock_path, timeout=30):
+                    yield
+        finally:
+            if depth:
+                held[lock_path] = depth
+            else:
+                held.pop(lock_path, None)
+
+
+def storage_transactional(method):
+    """Keep a synchronous read-modify-write operation under one storage lock."""
+    @wraps(method)
+    def wrapped(*args, **kwargs):
+        with storage_transaction():
+            return method(*args, **kwargs)
+    return wrapped
+
+
+def _atomic_write_json(filepath: Path, data: dict):
+    """Write without retaining a pre-erasure recovery copy."""
+    temp_path = None
+    try:
+        with tempfile.NamedTemporaryFile(
+            mode="w", encoding="utf-8", dir=filepath.parent,
+            prefix=filepath.name + ".", suffix=".tmp", delete=False,
+        ) as stream:
+            temp_path = Path(stream.name)
+            json.dump(data, stream, indent=2, ensure_ascii=False, allow_nan=False)
+            stream.flush()
+            os.fsync(stream.fileno())
+        os.replace(temp_path, filepath)
+    finally:
+        if temp_path is not None and temp_path.exists():
+            temp_path.unlink()
+
+
+@storage_transactional
 def _safe_load(filepath: Path, default: dict) -> dict:
     """Load JSON with file locking and corruption recovery."""
     lock = FileLock(str(filepath) + ".lock", timeout=5)
@@ -88,6 +152,7 @@ def _safe_load(filepath: Path, default: dict) -> dict:
             return default.copy()
 
 
+@storage_transactional
 def _safe_save(filepath: Path, data: dict):
     """Save JSON with file locking and atomic write."""
     lock = FileLock(str(filepath) + ".lock", timeout=5)

@@ -19,6 +19,8 @@ that never sets a tenant uses ``"default"`` throughout (FR-014).
 
 import atexit
 import os
+import json
+from weakref import WeakSet
 from copy import deepcopy
 from pathlib import Path
 from typing import Dict, List, Optional, Set, Tuple
@@ -30,6 +32,9 @@ from attestix.storage.repository import DEFAULT_TENANT, Repository
 #: legacy file layout: the ``config`` attribute holding the file path, the
 #: top-level JSON key holding the record list, and the default document written
 #: when the file does not yet exist (mirrors ``config.load_*`` defaults exactly).
+_FILE_REPOSITORIES = WeakSet()
+
+
 _COLLECTIONS = {
     "identities": ("IDENTITIES_FILE", "agents", {"agents": []}),
     "credentials": ("CREDENTIALS_FILE", "credentials", {"credentials": []}),
@@ -128,7 +133,8 @@ class FileRepository(Repository):
       deferred until :meth:`flush` or process exit (an ``atexit`` hook). This also
       amortizes the per-write ``json.dump``, at the cost of losing at most the
       un-flushed tail on a hard crash. Speed is therefore strictly opt-in; the
-      default stays crash-safe.
+      default stays crash-safe. Fast mode requires one writer instance; it must
+      not be used by REST servers or multiple processes/repository instances.
 
     Select ``"fast"`` per instance (``FileRepository(durability="fast")``) or
     process-wide via ``ATTESTIX_DURABILITY=fast``.
@@ -136,6 +142,7 @@ class FileRepository(Repository):
 
     def __init__(self, durability: Optional[str] = None) -> None:
         self._durability = _resolve_durability(durability)
+        _FILE_REPOSITORIES.add(self)
         # file_path(str) -> (document, stat_token). stat_token is
         # (st_mtime_ns, st_size) of the file the document was last read/written
         # from, or None when the file did not exist at read time.
@@ -196,6 +203,7 @@ class FileRepository(Repository):
         self._doc_cache[key] = (data, self._stat_token(file_path))
         self._dirty.discard(key)
 
+    @config.storage_transactional
     def flush(self) -> None:
         """Flush all pending in-memory writes to disk (no-op in ``safe`` mode).
 
@@ -213,6 +221,7 @@ class FileRepository(Repository):
 
     # --- document API (public shims back FR-002 load_*/save_* helpers) --------
 
+    @config.storage_transactional
     def load_document(self, collection: str) -> dict:
         """Load the entire JSON document for ``collection`` (whole-file load).
 
@@ -226,11 +235,13 @@ class FileRepository(Repository):
         file_path, _, default = _resolve(collection)
         return deepcopy(self._cached_document(file_path, default))
 
+    @config.storage_transactional
     def save_document(self, collection: str, data: dict) -> None:
         """Persist the entire JSON document for ``collection`` (whole-file save)."""
         file_path, _, _ = _resolve(collection)
         self._write_document(file_path, data)
 
+    @config.storage_transactional
     def append_to_document(self, collection: str, record: dict) -> dict:
         """Append ``record`` to ``collection``'s primary list and persist (O(1)).
 
@@ -251,6 +262,7 @@ class FileRepository(Repository):
         self._save(file_path, data)
         return record
 
+    @config.storage_transactional
     def last_record(
         self,
         collection: str,
@@ -281,6 +293,7 @@ class FileRepository(Repository):
     def _save(self, file_path, data) -> None:
         self._write_document(file_path, data)
 
+    @config.storage_transactional
     def create(
         self,
         collection: str,
@@ -303,6 +316,7 @@ class FileRepository(Repository):
         # The stored dict is now owned by the cache; return a copy.
         return deepcopy(stored)
 
+    @config.storage_transactional
     def get(
         self,
         collection: str,
@@ -318,6 +332,7 @@ class FileRepository(Repository):
                 return deepcopy(rec)
         return None
 
+    @config.storage_transactional
     def list(
         self,
         collection: str,
@@ -340,6 +355,7 @@ class FileRepository(Repository):
                 break
         return results
 
+    @config.storage_transactional
     def update(
         self,
         collection: str,
@@ -368,6 +384,7 @@ class FileRepository(Repository):
                 return deepcopy(stored)
         return None
 
+    @config.storage_transactional
     def delete(
         self,
         collection: str,
@@ -383,3 +400,44 @@ class FileRepository(Repository):
                 self._save(file_path, data)
                 return True
         return False
+
+    @config.storage_transactional
+    def recovery_documents(self, collection: str):
+        """Read recovery documents for erasure planning; refuse unreadable copies."""
+        file_path, _, _ = _resolve(collection)
+        recovery_paths = [file_path.with_suffix(".json.bak")]
+        recovery_paths.extend(file_path.parent.glob(file_path.stem + ".corrupted.*"))
+        documents = []
+        for recovery in recovery_paths:
+            if recovery.exists():
+                with recovery.open("r", encoding="utf-8") as stream:
+                    documents.append(json.load(stream))
+        return documents
+
+    @config.storage_transactional
+    def erase_from_document(self, collection: str, scrub):
+        """Apply erasure to the live document and local recovery copies.
+
+        A scrubber returns (sanitized document, live removal counts). Unreadable
+        recovery copies raise an error rather than silently claiming erasure.
+        """
+        file_path, _, default = _resolve(collection)
+        for repository in tuple(_FILE_REPOSITORIES):
+            repository.flush()
+        live = config._safe_load(file_path, default)
+        clean_live, counts = scrub(deepcopy(live))
+        recovery_paths = [file_path.with_suffix(".json.bak")]
+        recovery_paths.extend(file_path.parent.glob(file_path.stem + ".corrupted.*"))
+        try:
+            for recovery in recovery_paths:
+                if recovery.exists():
+                    with recovery.open("r", encoding="utf-8") as stream:
+                        recovered = json.load(stream)
+                    clean_recovery, _ = scrub(recovered)
+                    config._atomic_write_json(recovery, clean_recovery)
+            config._atomic_write_json(file_path, clean_live)
+        finally:
+            for repository in tuple(_FILE_REPOSITORIES):
+                repository._doc_cache.pop(str(file_path), None)
+                repository._dirty.discard(str(file_path))
+        return counts

@@ -25,6 +25,7 @@ import threading
 from typing import Callable, List, Optional
 
 from attestix.audit.events import GENESIS_HASH, AuditEvent
+from attestix.config import storage_transactional
 from attestix.storage import Repository, default_repository
 from attestix.storage.repository import DEFAULT_TENANT
 
@@ -78,6 +79,7 @@ class AuditEventEmitter:
         # Events are appended in order; the last persisted is the chain head.
         return last.get("chain_hash", GENESIS_HASH)
 
+    @storage_transactional
     def emit(
         self,
         *,

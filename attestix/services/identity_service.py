@@ -4,6 +4,8 @@ Manages Unified Agent Identity Tokens (UAITs): create, read, list,
 revoke, verify, and sign operations.
 """
 
+from attestix.config import storage_transactional
+
 import hashlib
 import uuid
 from datetime import datetime, timedelta, timezone
@@ -72,6 +74,7 @@ class IdentityService:
     def server_did(self) -> str:
         return self._server_did
 
+    @storage_transactional
     def create_identity(
         self,
         display_name: str,
@@ -259,6 +262,7 @@ class IdentityService:
                 break
         return results
 
+    @storage_transactional
     def revoke_identity(self, agent_id: str, reason: str = "") -> Optional[dict]:
         """Mark a UAIT as revoked."""
         data = load_identities()
@@ -353,137 +357,100 @@ class IdentityService:
         else:
             return {"error": f"Unknown target format: {target_format}"}
 
+    @storage_transactional
     def purge_agent_data(self, agent_id: str) -> dict:
-        """GDPR Article 17 - Right to erasure. Purges all data for an agent.
+        """Erase agent references from local live and recovery documents.
 
-        Removes or anonymizes the agent's identity, credentials, compliance
-        profiles, delegations, provenance entries, reputation data, and
-        audit logs. Blockchain anchors are retained (immutable) but the
-        local reference is noted as purged.
+        Includes related audit targets and cached idempotency responses.
+        On-chain anchors and operator-managed external copies require separate
+        retention policies. Failures propagate; multiple files have no rollback.
         """
-        from attestix.config import (
-            load_identities, save_identities,
-            load_credentials, save_credentials,
-            load_compliance, save_compliance,
-            load_delegations, save_delegations,
-            load_provenance, save_provenance,
-            load_reputation, save_reputation,
-        )
+        if not isinstance(agent_id, str) or not agent_id.strip():
+            raise ValueError("agent_id must be a non-empty string")
+        import json
+        from attestix import config
+        from attestix.storage.file_repository import _COLLECTIONS
 
+        repository = config._repo()
+        documents = {name: repository.load_document(name) for name in _COLLECTIONS}
+
+        def mentions(value, references):
+            if isinstance(value, str):
+                if value in references:
+                    return True
+                # Cached HTTP bodies store structured JSON as a string.
+                if value.lstrip().startswith(("{", "[")):
+                    try:
+                        return mentions(json.loads(value), references)
+                    except (ValueError, TypeError):
+                        pass
+                return False
+            if isinstance(value, dict):
+                return any(mentions(k, references) or mentions(v, references)
+                           for k, v in value.items())
+            if isinstance(value, list):
+                return any(mentions(item, references) for item in value)
+            return False
+
+        references = {agent_id}
+        id_fields = {"id", "profile_id", "assessment_id", "declaration_id",
+                     "entry_id", "jti", "delegation_id", "anchor_id"}
+        recovery_documents = [
+            document for collection in documents
+            for document in repository.recovery_documents(collection)
+        ]
+        for document in [*documents.values(), *recovery_documents]:
+            for rows in document.values():
+                if isinstance(rows, list):
+                    for row in rows:
+                        if isinstance(row, dict) and mentions(row, {agent_id}):
+                            for field in id_fields:
+                                identifier = row.get(field)
+                                if isinstance(identifier, str) and identifier:
+                                    references.add(identifier)
+
+        count_names = {
+            ("identities", "agents"): "identities",
+            ("credentials", "credentials"): "credentials",
+            ("compliance", "profiles"): "compliance_profiles",
+            ("compliance", "assessments"): "compliance_assessments",
+            ("compliance", "declarations"): "compliance_declarations",
+            ("delegations", "delegations"): "delegations",
+            ("provenance", "entries"): "provenance_entries",
+            ("provenance", "audit_log"): "audit_log_entries",
+            ("reputation", "interactions"): "reputation_interactions",
+            ("audit", "events"): "audit_events",
+            ("idempotency", "keys"): "idempotency_responses",
+            ("anchors", "anchors"): "local_anchor_references",
+        }
         purged = {
             "agent_id": agent_id,
             "purged_at": datetime.now(timezone.utc).isoformat(),
             "counts": {},
+            "external_copies": "Operator-managed exports and remote backups require separate erasure",
         }
+        for collection in documents:
+            def scrub(document, collection=collection):
+                counts = {}
+                for field, value in list(document.items()):
+                    if isinstance(value, list):
+                        retained = [row for row in value if not mentions(row, references)]
+                        document[field] = retained
+                        count_name = count_names.get((collection, field))
+                        if count_name:
+                            counts[count_name] = len(value) - len(retained)
+                    elif collection == "reputation" and field == "scores":
+                        document[field] = {
+                            key: score for key, score in value.items()
+                            if not mentions(key, references) and not mentions(score, references)
+                        }
+                return document, counts
 
-        # 1. Purge identity
-        id_data = load_identities()
-        before = len(id_data["agents"])
-        id_data["agents"] = [a for a in id_data["agents"] if a["agent_id"] != agent_id]
-        purged["counts"]["identities"] = before - len(id_data["agents"])
-        save_identities(id_data)
-
-        # 2. Purge credentials
-        cred_data = load_credentials()
-        before = len(cred_data["credentials"])
-        cred_data["credentials"] = [
-            c for c in cred_data["credentials"]
-            if c.get("credentialSubject", {}).get("id") != agent_id
-        ]
-        purged["counts"]["credentials"] = before - len(cred_data["credentials"])
-        save_credentials(cred_data)
-
-        # 3. Purge compliance profiles, assessments, declarations
-        comp_data = load_compliance()
-        before_p = len(comp_data["profiles"])
-        comp_data["profiles"] = [p for p in comp_data["profiles"] if p["agent_id"] != agent_id]
-        purged["counts"]["compliance_profiles"] = before_p - len(comp_data["profiles"])
-        before_a = len(comp_data["assessments"])
-        comp_data["assessments"] = [a for a in comp_data["assessments"] if a["agent_id"] != agent_id]
-        purged["counts"]["compliance_assessments"] = before_a - len(comp_data["assessments"])
-        before_d = len(comp_data["declarations"])
-        comp_data["declarations"] = [d for d in comp_data["declarations"] if d["agent_id"] != agent_id]
-        purged["counts"]["compliance_declarations"] = before_d - len(comp_data["declarations"])
-        save_compliance(comp_data)
-
-        # 4. Purge delegations (as issuer or audience)
-        del_data = load_delegations()
-        before = len(del_data["delegations"])
-        del_data["delegations"] = [
-            d for d in del_data["delegations"]
-            if d.get("issuer") != agent_id and d.get("audience") != agent_id
-        ]
-        purged["counts"]["delegations"] = before - len(del_data["delegations"])
-        save_delegations(del_data)
-
-        # 5. Purge provenance entries and audit logs
-        prov_data = load_provenance()
-        before_e = len(prov_data["entries"])
-        prov_data["entries"] = [e for e in prov_data["entries"] if e["agent_id"] != agent_id]
-        purged["counts"]["provenance_entries"] = before_e - len(prov_data["entries"])
-        before_l = len(prov_data["audit_log"])
-        prov_data["audit_log"] = [e for e in prov_data["audit_log"] if e["agent_id"] != agent_id]
-        purged["counts"]["audit_log_entries"] = before_l - len(prov_data["audit_log"])
-        save_provenance(prov_data)
-
-        # 6. Purge reputation data
-        rep_data = load_reputation()
-        before = len(rep_data["interactions"])
-        rep_data["interactions"] = [
-            i for i in rep_data["interactions"] if i["agent_id"] != agent_id
-        ]
-        purged["counts"]["reputation_interactions"] = before - len(rep_data["interactions"])
-        rep_data["scores"].pop(agent_id, None)
-        save_reputation(rep_data)
-
-        # 7. Emit the purge event FIRST so it lands in the audit chain
-        # before we sweep — the next step strips every event whose
-        # target_id matches the agent (including this one) so the GDPR
-        # Article 17 erasure is complete.
-        safe_emit(
-            self._emitter,
-            action="identity.purge",
-            target_id=agent_id,
-            target_collection="identities",
-            actor=self._server_did,
-            tenant_id=self._tenant_id,
-            before={"agent_id": agent_id},
-            after=None,
-        )
-
-        # 8. Purge structured audit events whose target_id matches this
-        # agent (v0.4.0-rc.3 (P0 #5)): the new audit chain in audit.json
-        # also carries personal data tied to this agent's identifier and
-        # must be purged for GDPR Article 17 parity. Events tied to other
-        # collections (compliance profile, credentials, etc.) are not
-        # purged here because their owning rows were already removed
-        # above. This intentionally does NOT recompute the chain hashes —
-        # the chain is best-effort tamper-evidence over the remaining
-        # events; full re-anchoring is an operator step.
-        try:
-            import json as _json
-            from attestix.config import AUDIT_FILE
-            if AUDIT_FILE.exists():
-                audit_doc = _json.loads(
-                    AUDIT_FILE.read_text(encoding="utf-8")
-                )
-                before_audit = len(audit_doc.get("events", []))
-                audit_doc["events"] = [
-                    ev for ev in audit_doc.get("events", [])
-                    if ev.get("target_id") != agent_id
-                ]
-                purged["counts"]["audit_events"] = (
-                    before_audit - len(audit_doc["events"])
-                )
-                AUDIT_FILE.write_text(
-                    _json.dumps(audit_doc, indent=2, ensure_ascii=False),
-                    encoding="utf-8",
-                )
-        except Exception:
-            purged["counts"]["audit_events"] = 0
-
+            # Propagate failures so partial erasure cannot look successful.
+            purged["counts"].update(repository.erase_from_document(collection, scrub))
         return purged
 
+    @storage_transactional
     def update_compliance_ref(self, agent_id: str, profile_id: str):
         """Link an EU AI Act compliance profile to a UAIT."""
         data = load_identities()
@@ -503,6 +470,7 @@ class IdentityService:
                 return
         return
 
+    @storage_transactional
     def update_reputation(self, agent_id: str, score: float):
         """Update the reputation score on a UAIT."""
         data = load_identities()

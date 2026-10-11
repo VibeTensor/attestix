@@ -1,19 +1,9 @@
-"""Tenant context + resolver hook (data-model.md §3, FR-011…FR-014).
+"""Tenant context and resolver hook for authenticated integrations.
 
-A :class:`TenantContext` is the ambient scope for an operation: which tenant new
-resources and audit events belong to, and the acting identity. It is deliberately
-tiny — the OSS provides the *slot* and a default; integrators (and the hosted
-cloud) plug in a richer resolver at the boundary.
-
-Resolution decision (T046 — "default REST tenant resolution"): the OSS ships a
-concrete default resolver that resolves to ``"default"`` so single-tenant
-self-host has zero behavior change. It also reads an optional ``X-Attestix-Tenant``
-header (case-insensitive) when present, giving multi-tenant operators a working
-default without forcing them to write a resolver; an integrator may still inject
-their own resolution upstream. A blank / missing tenant resolves to ``"default"``;
-a context that *requires* an explicit tenant validates via :meth:`require_tenant`
-(FR-012 acceptance scenario 3) rather than silently borrowing another tenant's
-scope.
+The header resolver extracts caller-provided context; it does not authenticate
+or authorize tenant access. The default REST installation is single-tenant and
+rejects non-default tenant headers. Integrators must bind tenant identity to
+verified credentials and use tenant-scoped repositories throughout operations.
 """
 
 from dataclasses import dataclass, field
@@ -69,12 +59,10 @@ def resolve_tenant(
     actor: Optional[str] = None,
     default: str = DEFAULT_TENANT,
 ) -> TenantContext:
-    """Resolve a :class:`TenantContext` from request headers (default resolver).
+    """Extract tenant context from headers; this is not authorization.
 
-    Reads ``X-Attestix-Tenant`` case-insensitively; a missing or blank value
-    resolves to ``default`` (``"default"``). This is the OSS-shipped default
-    (T046): it gives multi-tenant operators a working header-based mapping while
-    keeping single-tenant self-host on ``"default"`` with no configuration.
+    Missing or blank context resolves to the supplied default. Authenticated
+    integrations must validate access before trusting a caller-provided tenant.
     """
     tenant = default
     if headers:

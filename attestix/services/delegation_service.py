@@ -5,6 +5,8 @@ following the UCAN (User Controlled Authorization Networks) pattern
 with capability attenuation.
 """
 
+from attestix.config import storage_transactional
+
 import secrets
 import time
 from datetime import datetime, timezone
@@ -33,6 +35,7 @@ class DelegationService:
         self._emitter = resolve_emitter(emitter)
         self._tenant_id = tenant_id
 
+    @storage_transactional
     def create_delegation(
         self,
         issuer_agent_id: str,
@@ -278,6 +281,7 @@ class DelegationService:
                 ),
             }
 
+    @storage_transactional
     def revoke_delegation(self, jti: str, reason: str = "") -> dict:
         """Revoke a delegation by its JTI (JWT ID).
 

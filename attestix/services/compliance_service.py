@@ -4,6 +4,8 @@ EU AI Act compliance profiles, conformity assessments (Article 43),
 and declarations of conformity (Annex V).
 """
 
+from attestix.config import storage_transactional
+
 import uuid
 from datetime import datetime, timezone
 from typing import Dict, List, Optional
@@ -203,6 +205,7 @@ class ComplianceService:
             self._credential_svc = get_service(CredentialService)
         return self._credential_svc
 
+    @storage_transactional
     def create_compliance_profile(
         self,
         agent_id: str,
@@ -337,6 +340,7 @@ class ComplianceService:
             )
             return {"error": msg}
 
+    @storage_transactional
     def update_compliance_profile(
         self,
         agent_id: str,
@@ -391,6 +395,7 @@ class ComplianceService:
                 return p
         return None
 
+    @storage_transactional
     def record_conformity_assessment(
         self,
         agent_id: str,
@@ -485,6 +490,7 @@ class ComplianceService:
             )
             return {"error": msg}
 
+    @storage_transactional
     def generate_declaration_of_conformity(self, agent_id: str) -> dict:
         """Generate an EU AI Act Annex V declaration of conformity.
 

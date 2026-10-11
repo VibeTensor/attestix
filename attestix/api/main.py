@@ -233,6 +233,13 @@ class APIKeyMiddleware(BaseHTTPMiddleware):
         }
 
     async def dispatch(self, request: Request, call_next):
+        tenant = request.headers.get("X-Attestix-Tenant", "default").strip()
+        if request.url.path not in self.OPEN_PATHS and tenant not in {"", "default"}:
+            return JSONResponse(
+                status_code=400,
+                content={"error": "The default REST server is single-tenant; "
+                         "non-default tenant headers are not supported."},
+            )
         api_key = os.environ.get("ATTESTIX_API_KEY")
 
         # No key configured. Open paths are always served; everything else
@@ -322,6 +329,8 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    if os.environ.get("ATTESTIX_DURABILITY", "safe").strip().lower() == "fast":
+        raise RuntimeError("REST requires safe durability; fast mode is for single-writer batches")
     logger.info("Attestix API starting up")
     if not os.environ.get("ATTESTIX_API_KEY"):
         if APIKeyMiddleware._allow_no_auth():
