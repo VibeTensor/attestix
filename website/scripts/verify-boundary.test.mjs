@@ -3,7 +3,18 @@ import { generateKeyPairSync, sign } from "node:crypto";
 import { readFileSync } from "node:fs";
 import test from "node:test";
 import { canonicalize, verifyCredential } from "@vibetensor/attestix";
-import { credentialBoundary } from "../src/lib/credential-boundary.ts";
+import { ModuleKind, ScriptTarget, transpileModule } from "typescript";
+
+// Pages currently pins Node 20, which cannot strip TypeScript natively.
+// Compile the actual local implementation so these remain security regressions.
+const boundarySource = readFileSync(new URL("../src/lib/credential-boundary.ts", import.meta.url), "utf8");
+const { outputText, diagnostics } = transpileModule(boundarySource, {
+  fileName: "credential-boundary.ts",
+  compilerOptions: { module: ModuleKind.ESNext, target: ScriptTarget.ES2022 },
+  reportDiagnostics: true,
+});
+assert.equal(diagnostics?.length ?? 0, 0, "credential boundary must transpile without diagnostics");
+const { credentialBoundary } = await import(`data:text/javascript;base64,${Buffer.from(outputText).toString("base64")}`);
 
 const NOW = Date.parse("2026-10-11T00:00:00Z");
 const sample = JSON.parse(readFileSync(new URL("../src/lib/samples/sample-valid-vc.json", import.meta.url), "utf8"));
