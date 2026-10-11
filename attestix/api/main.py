@@ -368,12 +368,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Rate limiting (applied before auth so abusers get 429 before 401)
-app.add_middleware(RateLimitMiddleware)
-
-# API key auth
-app.add_middleware(APIKeyMiddleware)
-
 # ---------------------------------------------------------------------------
 # Idempotency (v0.4.0 US3 / P3) — mounted as a strict no-op without a key
 # ---------------------------------------------------------------------------
@@ -397,6 +391,11 @@ from attestix.idempotency.middleware import IdempotencyMiddleware as _Idempotenc
 
 if _IdempotencyMiddleware is not None:
     app.add_middleware(_IdempotencyMiddleware)
+
+# Starlette executes the last registered middleware first. Authentication and
+# rate limiting must run before a cached response can be read or reserved.
+app.add_middleware(APIKeyMiddleware)
+app.add_middleware(RateLimitMiddleware)
 
 
 # ---------------------------------------------------------------------------

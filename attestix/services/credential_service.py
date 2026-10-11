@@ -432,23 +432,9 @@ class CredentialService:
             checks["credentials_valid"] = True
 
             for i, cred in enumerate(credentials):
-                cred_proof = cred.get("proof", {})
-                cred_proof_value = cred_proof.get("proofValue")
-                if cred_proof_value:
-                    cred_payload = {
-                        k: v for k, v in cred.items() if k not in self.MUTABLE_FIELDS
-                    }
-                    try:
-                        # Each credential's key is bound to its own issuer.id
-                        # (the trust anchor), not to proof.verificationMethod.
-                        cred_valid = self._verify_proof_bound(
-                            self._issuer_did(cred), cred_proof, cred_payload
-                        )
-                        if not cred_valid:
-                            checks["credentials_valid"] = False
-                    except Exception:
-                        checks["credentials_valid"] = False
-                else:
+                # Reuse the complete verifier so bundling cannot bypass expiry
+                # or local revocation checks while retaining issuer key binding.
+                if not self.verify_credential_external(cred).get("valid", False):
                     checks["credentials_valid"] = False
 
                 # Check credential subject matches holder
