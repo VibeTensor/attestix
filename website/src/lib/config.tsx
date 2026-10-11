@@ -168,8 +168,8 @@ export const siteConfig = {
   problem: {
     title: "The Problem",
     stats: [
-      "EUR 35M maximum fine",
-      "7% of global annual revenue",
+      "Violation-specific penalty ceilings",
+      "Lower applicable caps for SMEs",
       "Role-specific application dates",
     ],
     description:
