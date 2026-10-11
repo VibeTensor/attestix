@@ -60,7 +60,7 @@ pip install attestix
 ```bash
 attestix status                          # System overview
 attestix init --name MyBot               # Create agent identity
-attestix compliance <agent-id>           # Check EU AI Act compliance
+attestix compliance <agent-id>           # Check recorded documentation gaps
 attestix verify <agent-id>               # Verify identity cryptographically
 attestix audit <agent-id>                # View hash-chained audit trail
 attestix credential --list               # List W3C Verifiable Credentials
@@ -124,7 +124,7 @@ for developers who need portable evidence in their applications. Broader governa
 platforms also offer APIs, SDKs, agent governance, and compliance workflows; evaluate
 their current capabilities against your requirements.
 
-Agent identity is fragmenting across walled gardens (Microsoft Entra, AWS AgentCore, Google A2A, ERC-8004). No single tool combines **agent identity + EU AI Act compliance + verifiable credentials** in one protocol.
+Agent identity is fragmenting across walled gardens (Microsoft Entra, AWS AgentCore, Google A2A, ERC-8004). Attestix combines **agent identity, AI governance evidence and verifiable credentials** in one toolkit.
 
 Attestix fills this gap.
 
@@ -229,7 +229,7 @@ python -m attestix.main
 
 ## EU AI Act Compliance Workflow
 
-Take a high-risk AI agent from zero to fully compliant:
+Record a high-risk AI agent documentation workflow for provider review:
 
 ```
 1. create_agent_identity        --> UAIT with DID (Ed25519 signed)
