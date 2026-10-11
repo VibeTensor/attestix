@@ -21,6 +21,7 @@ quadratic behavior trips them. A deterministic (non-timing) guard backs them up.
 """
 
 import time
+from statistics import median
 
 import pytest
 
@@ -83,23 +84,34 @@ def test_issuing_200_is_fast_in_fast_mode(tmp_attestix, repo_factory):
     )
 
 
-def test_issuance_scales_near_linearly(tmp_attestix, repo_factory):
+def test_issuance_scales_near_linearly(tmp_attestix, repo_factory, monkeypatch):
     """Total issuance time must grow ~linearly, not quadratically, with N.
 
     Quadratic growth would make the 4x-larger batch ~16x slower; linear ~4x. We
     allow a very loose ceiling (9x) to absorb CI jitter and fixed per-call crypto
     cost while still failing hard on a true O(N^2) regression.
     """
-    def _time_for(n: int) -> float:
-        repo = repo_factory("fast")
-        svc = CredentialService()
-        start = time.perf_counter()
-        _issue_n(svc, n)
-        repo.flush()
-        return time.perf_counter() - start
+    from attestix import config
 
-    small = max(_time_for(100), 1e-3)
-    large = _time_for(400)
+    def _time_for(n: int, sample: int) -> float:
+        # Every measurement starts with empty stores; earlier samples must not
+        # change the workload. Medians limit shared runner scheduling noise.
+        sample_dir = tmp_attestix / f"sample-{n}-{sample}"
+        sample_dir.mkdir()
+        with monkeypatch.context() as patch:
+            for attr in ("CREDENTIALS_FILE", "AUDIT_FILE", "LOG_FILE"):
+                patch.setattr(config, attr, sample_dir / getattr(config, attr).name)
+            repo = repo_factory("fast")
+            svc = CredentialService()
+            start = time.perf_counter()
+            _issue_n(svc, n)
+            repo.flush()
+            config._repo().flush()
+            return time.perf_counter() - start
+
+    samples = [(_time_for(100, i), _time_for(400, i)) for i in range(5)]
+    small = max(median(pair[0] for pair in samples), 1e-3)
+    large = median(pair[1] for pair in samples)
     ratio = large / small
 
     assert ratio < 9.0, (
