@@ -446,6 +446,9 @@ class ComplianceService:
                 "assessment_id": assessment_id,
                 "agent_id": agent_id,
                 "assessment_type": assessment_type,
+                "assessment_scope": "provider_recorded_assessment",
+                "legal_conformity": "not_assessed",
+                "assessor_authority_verified": False,
                 "assessor_name": assessor_name,
                 "result": result,
                 "findings": findings,
@@ -492,7 +495,10 @@ class ComplianceService:
 
     @storage_transactional
     def generate_declaration_of_conformity(self, agent_id: str) -> dict:
-        """Generate an EU AI Act Annex V declaration of conformity.
+        """Generate a draft Annex V document from recorded evidence.
+
+        The provider must review and adopt the declaration. Generating or
+        signing this draft does not establish legal conformity.
 
         Raises:
             InvalidComplianceProfileError: when the compliance profile is
@@ -596,6 +602,15 @@ class ComplianceService:
                 "declaration_id": declaration_id,
                 "agent_id": agent_id,
                 "regulation_reference": "Regulation (EU) 2024/1689 (EU AI Act) Annex V",
+                "document_status": "draft_for_provider_review",
+                "assessment_scope": "recorded_evidence_checklist",
+                "legal_conformity": "not_assessed",
+                "provider_assertion_verified": False,
+                "ce_marking_eligibility_source": "provider_recorded_unverified",
+                "reference_standards": [
+                    "ISO/IEC 42001:2023 (AI Management System)",
+                    "ISO/IEC 23894:2023 (AI Risk Management)",
+                ],
                 "annex_v_fields": {
                     # 1. Name, address of the provider
                     "1_provider_name": profile["provider"]["name"],
@@ -623,10 +638,8 @@ class ComplianceService:
                         assess_record["assessor_name"] if assess_record else ""
                     ),
                     # 7. Harmonized standards or common specifications applied
-                    "7_harmonized_standards": [
-                        "ISO/IEC 42001:2023 (AI Management System)",
-                        "ISO/IEC 23894:2023 (AI Risk Management)",
-                    ],
+                    # Reference standards are not evidence of standards applied.
+                    "7_harmonized_standards": [],
                     # 8. Transparency obligations
                     "8_transparency_obligations": profile["transparency"]["obligations"],
                     # 9. Human oversight measures
@@ -635,7 +648,8 @@ class ComplianceService:
                     "10_ce_marking_eligible": profile["conformity"]["ce_marking_eligible"],
                     # 11. Sole responsibility statement
                     "11_sole_responsibility": (
-                        f"The undersigned, {profile['provider']['name']}, declares under "
+                        f"Draft for review by {profile['provider']['name']}: the provider "
+                        f"would declare under "
                         f"sole responsibility that the AI system identified above is in "
                         f"conformity with the provisions of Regulation (EU) 2024/1689."
                     ),
@@ -678,7 +692,19 @@ class ComplianceService:
                     "risk_category": profile["risk_category"],
                     "conformity_assessment_id": profile["conformity"]["assessment_id"],
                     "ce_marking_eligible": profile["conformity"]["ce_marking_eligible"],
-                    "eu_ai_act_compliant": True,
+                    "compliance_claims_version": 2,
+                    "declaration_generated": True,
+                    "document_status": "draft_for_provider_review",
+                    "workflow_complete": self.get_compliance_status(agent_id).get(
+                        "workflow_complete", False
+                    ),
+                    "assessment_scope": "recorded_evidence_checklist",
+                    "legal_conformity": "not_assessed",
+                    "ce_marking_eligibility_source": "provider_recorded_unverified",
+                    "eu_ai_act_compliant": None,
+                    "deprecated_fields": {
+                        "eu_ai_act_compliant": "Deprecated: legal conformity is not assessed; use legal_conformity"
+                    },
                 },
                 expiry_days=365,
             )
@@ -709,10 +735,10 @@ class ComplianceService:
             return {"error": msg}
 
     def get_compliance_status(self, agent_id: str) -> dict:
-        """Gap analysis: what's done, what's still needed for full compliance.
+        """Check completeness of the recorded evidence workflow.
 
-        Checks all EU AI Act obligations based on risk category, including
-        all 12 high-risk requirements from Article 9-15.
+        Presence checks do not assess applicability, evidence quality, or legal
+        conformity. The deprecated compliant field aliases workflow_complete.
         """
         try:
             profile = self.get_compliance_profile(agent_id)
@@ -723,6 +749,12 @@ class ComplianceService:
                 "agent_id": agent_id,
                 "risk_category": profile["risk_category"],
                 "compliant": False,
+                "workflow_complete": False,
+                "assessment_scope": "recorded_evidence_checklist",
+                "legal_conformity": "not_assessed",
+                "deprecated_fields": {
+                    "compliant": "Deprecated alias for workflow_complete; not a legal conformity determination"
+                },
                 "completed": [],
                 "missing": [],
             }
@@ -795,8 +827,9 @@ class ComplianceService:
                     else:
                         status["missing"].append(obligation)
 
-            # Overall compliance
-            status["compliant"] = len(status["missing"]) == 0
+            # This is checklist completeness, not a legal determination.
+            status["workflow_complete"] = len(status["missing"]) == 0
+            status["compliant"] = status["workflow_complete"]
             total = len(status["completed"]) + len(status["missing"])
             status["completion_pct"] = round(
                 len(status["completed"]) / total * 100, 1
@@ -870,7 +903,11 @@ class ComplianceService:
         compliant_only: bool = False,
         limit: int = 50,
     ) -> List[dict]:
-        """List compliance profiles with optional filters."""
+        """List evidence profiles with optional filters.
+
+        The legacy compliant_only filter checks recorded declaration presence,
+        not legal conformity or full workflow completeness.
+        """
         try:
             data = load_compliance()
             results = []

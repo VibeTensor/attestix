@@ -295,7 +295,7 @@ class ReportService:
         -------
         dict
             ``{"generated_at", "agent_count", "summary", "agents", "errors"}``
-            where ``summary`` aggregates compliant/non-compliant counts, a
+            where ``summary`` aggregates complete/incomplete workflow counts, a
             risk-category breakdown, and the mean completion percentage, and
             ``agents`` is a list of per-agent records reusing the single-agent
             report shape (identity + compliance status). ``errors`` maps
@@ -333,7 +333,7 @@ class ReportService:
                 )
 
                 if status and "error" not in status:
-                    if status.get("compliant"):
+                    if status.get("workflow_complete", status.get("compliant", False)):
                         compliant_count += 1
                     else:
                         non_compliant_count += 1
@@ -363,6 +363,14 @@ class ReportService:
                 "generated_at": generated_at,
                 "agent_count": len(agent_ids),
                 "summary": {
+                    "workflow_complete": compliant_count,
+                    "workflow_incomplete": non_compliant_count,
+                    "assessment_scope": "recorded_evidence_checklist",
+                    "legal_conformity": "not_assessed",
+                    "deprecated_fields": {
+                        "compliant": "Deprecated count alias for workflow_complete",
+                        "non_compliant": "Deprecated count alias for workflow_incomplete",
+                    },
                     "compliant": compliant_count,
                     "non_compliant": non_compliant_count,
                     "no_compliance_profile": no_profile_count,
@@ -518,9 +526,9 @@ class ReportService:
 
     def _section_compliance_status(self, status: dict) -> str:
         pct = status.get("completion_pct", 0)
-        compliant = status.get("compliant", False)
-        status_label = "COMPLIANT" if compliant else "INCOMPLETE"
-        status_class = "status-pass" if compliant else "status-fail"
+        workflow_complete = status.get("workflow_complete", status.get("compliant", False))
+        status_label = "WORKFLOW COMPLETE" if workflow_complete else "WORKFLOW INCOMPLETE"
+        status_class = "status-pass" if workflow_complete else "status-fail"
 
         completed = status.get("completed", [])
         missing = status.get("missing", [])
@@ -535,8 +543,9 @@ class ReportService:
         )
 
         return f"""<section>
-  <h2>Compliance Status</h2>
-  <p>Overall: <span class="badge {status_class}">{status_label}</span></p>
+  <h2>Compliance Status - Evidence Workflow</h2>
+  <p>Legal conformity has not been assessed by Attestix.</p>
+  <p>Recorded checklist: <span class="badge {status_class}">{status_label}</span></p>
   <div class="progress-bar"><div class="progress-fill" style="width:{pct}%"></div></div>
   <p>{self._esc(pct)}% complete ({len(completed)} of {len(completed) + len(missing)} items)</p>
   <table>
@@ -556,7 +565,8 @@ class ReportService:
             rows += f"<tr><th>{self._esc(display_key)}</th><td>{self._esc(value)}</td></tr>\n"
 
         return f"""<section>
-  <h2>Declaration of Conformity (Annex V)</h2>
+  <h2>Draft Declaration of Conformity (Annex V)</h2>
+  <p>Draft for provider review. Legal conformity has not been assessed by Attestix.</p>
   <p class="mono">{self._esc(declaration.get("declaration_id", ""))}</p>
   <p>{self._esc(declaration.get("regulation_reference", ""))}</p>
   <table>

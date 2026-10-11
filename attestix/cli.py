@@ -173,11 +173,12 @@ def verify(agent_id, as_json):
 @click.option("--risk-category", type=click.Choice(["minimal", "limited", "high"], case_sensitive=False), help="EU AI Act risk category (for --create).")
 @click.option("--provider-name", default="", help="Provider name (for --create).")
 @click.option("--intended-purpose", default="", help="Intended purpose (for --create).")
-@click.option("--json", "as_json", is_flag=True, help="Emit machine-readable JSON (CI/CD). Exits non-zero if not compliant.")
+@click.option("--json", "as_json", is_flag=True, help="Emit machine-readable JSON (CI/CD). Exits non-zero if the evidence workflow is incomplete.")
 def compliance(agent_id, create_profile, risk_category, provider_name, intended_purpose, as_json):
     """Show compliance status for an agent, or create a new compliance profile.
 
-    Without --create, displays a gap analysis of EU AI Act obligations.
+    Without --create, displays the recorded evidence checklist.
+    Legal conformity is not assessed by this command.
     With --create, interactively creates a compliance profile.
     """
     svc = get_service(ComplianceService)
@@ -217,26 +218,28 @@ def compliance(agent_id, create_profile, risk_category, provider_name, intended_
 
     if as_json:
         _print_json(result)
-        # CI/CD gate: non-zero exit on error OR when the agent is not compliant.
-        if "error" in result or not result.get("compliant"):
+        # This gate checks evidence completeness, not legal approval.
+        if "error" in result or not result.get("workflow_complete", result.get("compliant", False)):
             sys.exit(1)
         return
 
     if "error" in result:
         _error(result["error"])
 
-    _header(f"Compliance Status for {agent_id}")
+    _header(f"Evidence Workflow Status for {agent_id}")
     click.echo(f"  Risk category : {result.get('risk_category', 'N/A')}")
-    click.echo(f"  Compliant     : {click.style('YES', fg='green') if result.get('compliant') else click.style('NO', fg='red')}")
+    complete = result.get("workflow_complete", result.get("compliant", False))
+    click.echo(f"  Workflow      : {click.style('COMPLETE', fg='green') if complete else click.style('INCOMPLETE', fg='red')}")
+    click.echo("  Legal conformity: NOT ASSESSED")
     click.echo(f"  Completion    : {result.get('completion_pct', 0)}%")
 
     if result.get("completed"):
-        _header("\nCompleted Obligations")
+        _header("\nRecorded Evidence Checks")
         for item in result["completed"]:
             click.echo(f"  {click.style('*', fg='green')} {item}")
 
     if result.get("missing"):
-        _header("\nMissing Obligations")
+        _header("\nMissing Evidence Checks")
         for item in result["missing"]:
             click.echo(f"  {click.style('*', fg='red')} {item}")
 

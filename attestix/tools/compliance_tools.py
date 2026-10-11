@@ -126,9 +126,10 @@ def register(mcp):
 
     @mcp.tool()
     async def get_compliance_status(agent_id: str) -> str:
-        """Get compliance gap analysis: what's done and what's still needed.
+        """Check completeness of the recorded evidence workflow.
 
-        Shows completion percentage and lists completed vs missing requirements.
+        Shows completed and missing evidence checks. Legal applicability,
+        evidence quality, and conformity are not assessed by this tool.
 
         Args:
             agent_id: The Attestix agent ID.
@@ -151,7 +152,9 @@ def register(mcp):
     ) -> str:
         """Record a conformity assessment for EU AI Act Article 43.
 
-        High-risk systems require third_party assessment. Limited/minimal can use self-assessment.
+        Stores the provider's assessment record; assessor authority and legal
+        conformity are not verified by Attestix. Assessment procedure rules
+        depend on the profile's recorded classification.
 
         Args:
             agent_id: The Attestix agent ID.
@@ -159,7 +162,7 @@ def register(mcp):
             assessor_name: Name of the assessor or notified body.
             result: Assessment result: pass, conditional, or fail.
             findings: Detailed findings or conditions.
-            ce_marking_eligible: Whether CE marking can be applied (only if result is pass).
+            ce_marking_eligible: Provider-recorded eligibility claim, not a legal determination.
         """
         from attestix.services.cache import get_service
         from attestix.services.compliance_service import ComplianceService
@@ -177,10 +180,11 @@ def register(mcp):
 
     @mcp.tool()
     async def generate_declaration_of_conformity(agent_id: str) -> str:
-        """Generate an EU AI Act Annex V Declaration of Conformity.
+        """Generate a draft Annex V document for provider review.
 
-        Requires a passing conformity assessment. Also issues a W3C Verifiable Credential
-        as cryptographic proof of compliance.
+        Requires the configured assessment prerequisites. Also issues a W3C
+        credential binding the recorded workflow evidence. Neither document
+        generation nor a valid signature establishes legal conformity.
 
         Args:
             agent_id: The Attestix agent ID.
@@ -215,7 +219,7 @@ def register(mcp):
 
         Args:
             risk_category: Filter by risk level (minimal, limited, high, unacceptable). Empty = all.
-            compliant_only: Only return profiles with completed declarations.
+            compliant_only: Deprecated filter for recorded declaration presence, not legal conformity.
             limit: Maximum number of results.
         """
         from attestix.services.cache import get_service

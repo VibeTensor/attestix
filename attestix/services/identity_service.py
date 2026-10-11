@@ -65,10 +65,8 @@ class IdentityService:
 
     @staticmethod
     def _mask_token(token: str) -> str:
-        """Mask sensitive tokens before storage. Keep first/last 4 chars for debugging."""
-        if not token or len(token) < 12:
-            return token
-        return token[:4] + "..." + token[-4:]
+        """Redact credentials before storage, including short or unknown tokens."""
+        return "***" if token else ""
 
     @property
     def server_did(self) -> str:
