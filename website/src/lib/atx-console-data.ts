@@ -272,7 +272,7 @@ export const RISK_LABEL: Record<Risk, string> = {
 };
 
 export const STATUS_LABEL: Record<AgentStatus, string> = {
-  compl: "Compliant",
+  compl: "Checklist recorded",
   gap: "Gaps",
   rev: "Revoked",
   pend: "Pending",

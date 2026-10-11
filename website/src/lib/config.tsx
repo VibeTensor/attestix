@@ -8,7 +8,7 @@ export const ATTESTIX_VERSION =
 export const siteConfig = {
   name: "Attestix",
   version: ATTESTIX_VERSION,
-  description: "Make your AI agents EU AI Act compliant with cryptographically verifiable proof. Open-source compliance automation, identity, and trust scoring.",
+  description: "Build verifiable identity and signed evidence for AI-agent governance. Open-source documentation tooling, audit trails, and trust scoring.",
   cta: "Get Started",
   url: process.env.NEXT_PUBLIC_APP_URL || "https://attestix.io",
   keywords: [
@@ -33,7 +33,7 @@ export const siteConfig = {
   hero: {
     title: "Attestix",
     description:
-      "The EU AI Act takes effect August 2, 2026. Non-compliant organizations face fines up to EUR 35 million or 7% of global revenue. Attestix is like TurboTax for AI compliance: it automates the documentation, identity verification, and audit trails your AI agents need to stay legal. Install once, drop into LangChain, OpenAI Agents SDK, or CrewAI, and generate cryptographic proof of compliance on every run.",
+      "The EU AI Act applies in stages, with obligations depending on your role and system classification. Attestix helps record identity, documentation, and signed audit evidence. Cryptographic integrity supports your assessment; it does not establish legal compliance.",
     cta: "pip install attestix",
     ctaDescription: "Stable 0.4.1 - 585 tests passing (494 functional + 91 RFC / W3C conformance benchmarks). Real LangChain, OpenAI Agents SDK, and CrewAI integrations. Apache 2.0. Single-maintainer project; no independent third-party security audit yet.",
   },
@@ -47,7 +47,7 @@ export const siteConfig = {
       name: "OSS",
       tagline: "Self-host, free forever",
       price: { monthly: "$0", yearly: "$0" },
-      frequency: { monthly: "forever · Apache 2.0", yearly: "forever · Apache 2.0" },
+      frequency: { monthly: "forever / Apache 2.0", yearly: "forever / Apache 2.0" },
       description:
         "The complete attestation toolkit. Every cryptographic primitive and standards-conformance claim is here, reproducible offline. Run it on your own infrastructure.",
       features: [
@@ -67,7 +67,7 @@ export const siteConfig = {
       name: "Cloud Free",
       tagline: "Hosted, no card",
       price: { monthly: "$0", yearly: "$0" },
-      frequency: { monthly: "hosted · capped usage", yearly: "hosted · capped usage" },
+      frequency: { monthly: "hosted / capped usage", yearly: "hosted / capped usage" },
       description:
         "The same OSS capabilities, run by us. One workspace, hosted Postgres, nothing to operate. The funnel step: start here, then move to Pro when you outgrow the caps.",
       features: [
@@ -95,7 +95,7 @@ export const siteConfig = {
         "Up to 10 team members + RBAC",
         "Webhooks: 5 endpoints, HMAC + dual-sign rotation",
         "Base mainnet anchoring (planned; testnet today)",
-        "EU or US data residency",
+        "EU or US residency requirements: subject to deployment review",
         "Email + Slack support",
       ],
       cta: "Notify me",
@@ -109,14 +109,14 @@ export const siteConfig = {
       price: { monthly: "Custom", yearly: "Custom" },
       frequency: { monthly: "contact sales", yearly: "contact sales" },
       description:
-        "For regulated operators with SSO, BYOK, residency, and SLA requirements. Custom legal and customer-funded compliance attestation packs.",
+        "For regulated operators with SSO, BYOK, residency, and SLA requirements. Custom legal and customer-funded audit-readiness evidence packs.",
       features: [
         "Everything in Pro, unlimited",
         "SSO / SAML / SCIM + custom roles",
         "Custom residency (India, Middle East, country-specific)",
-        "BYOK: HSM / KMS signing keys",
+        "BYOK / HSM / KMS requirements: subject to implementation review",
         "Cold archive (R2/S3, 7-year), dedicated workers, SLA",
-        "DPA / BAA + customer-funded SOC 2 / ISO 42001 packs",
+        "DPA / BAA + scoped SOC 2 / ISO 42001 readiness packs",
       ],
       cta: "Contact sales",
       ctaHref: "/demo-call?plan=enterprise",
@@ -170,10 +170,10 @@ export const siteConfig = {
     stats: [
       "EUR 35M maximum fine",
       "7% of global annual revenue",
-      "August 2, 2026 enforcement date",
+      "Role-specific application dates",
     ],
     description:
-      "Every organization deploying AI in the European Union will need to prove their systems are compliant with the EU AI Act. Today, most teams rely on manual documentation, static PDFs, and spreadsheets that cannot be independently verified. There is no standard way for AI agents to carry proof of identity, authorization, or regulatory compliance. Attestix closes that gap with open-source tooling that generates cryptographic proof of compliance, identity, and trust for every AI agent in your stack.",
+      "AI governance requires evidence that teams can inspect and verify. Attestix records signed identity claims, delegated authority, and audit trails. Determine applicable EU AI Act obligations through a role- and system-specific assessment; signed records alone do not establish conformity.",
   },
 
   // Named testimonials are quoted with the reviewer's explicit permission,
@@ -248,17 +248,17 @@ export const siteConfig = {
     {
       question: "Why does my organization need Attestix?",
       answer:
-        "The EU AI Act enforcement begins August 2, 2026 with fines up to EUR 35 million or 7% of global annual revenue for non-compliance. Most compliance tools only generate static PDF reports that cannot be independently verified. Attestix produces cryptographically signed, machine-verifiable proof of compliance that auditors and regulators can validate in seconds. Every credential, audit trail, and identity attestation is backed by digital signatures and optional blockchain anchoring.",
+        "Attestix provides signed, machine-verifiable records for your governance and audit workflows. Verify their integrity and evaluate the underlying claims separately. EU AI Act obligations and application dates depend on your role, system classification, and the amended legislation.",
     },
     {
       question: "Who is Attestix for?",
       answer:
-        "Attestix serves AI startups selling into the EU market, compliance teams preparing for EU AI Act enforcement, enterprises deploying AI agents at scale, and any developer building with the Model Context Protocol (MCP). If your AI systems need to demonstrate accountability, traceability, or regulatory compliance, Attestix provides the infrastructure to prove it.",
+        "Attestix serves AI startups selling into the EU market, compliance teams preparing for EU AI Act enforcement, enterprises deploying AI agents at scale, and any developer building with the Model Context Protocol (MCP). If your AI systems need to demonstrate accountability, traceability, or regulatory compliance, Attestix provides infrastructure to record supporting evidence.",
     },
     {
-      question: "What happens if I'm not EU AI Act compliant by August 2026?",
+      question: "How do I determine my EU AI Act obligations?",
       answer:
-        "Organizations deploying non-compliant AI systems face fines of up to EUR 35 million or 7% of global annual revenue, whichever is higher. National market surveillance authorities can order non-compliant systems to be withdrawn from the market entirely. The regulation applies to any organization offering AI systems in the EU, regardless of where the organization is headquartered. Attestix helps you build compliance into your AI agents from day one rather than retrofitting before the deadline.",
+        "Applicable duties and sanctions depend on the infringement, your role, and system classification, with specific treatment for SMEs. Attestix helps organize evidence for an assessment; it does not provide legal advice or guarantee compliance. Review Regulation (EU) 2024/1689 as amended, including Regulation (EU) 2026/1744.",
     },
     {
       question: "What is Attestix?",

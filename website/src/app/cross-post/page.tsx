@@ -187,12 +187,14 @@ Your content here (paste the markdown from the MDX file)`}</code>
           <ul>
             <li>
               <strong>RSS:</strong>{" "}
+              {/* oxlint-disable-next-line nextjs/no-html-link-for-pages -- Feed document is not a Next page. */}
               <a href="/feed.xml">
                 {baseUrl}/feed.xml
               </a>
             </li>
             <li>
               <strong>JSON Feed:</strong>{" "}
+              {/* oxlint-disable-next-line nextjs/no-html-link-for-pages -- Feed document is not a Next page. */}
               <a href="/feed.json">
                 {baseUrl}/feed.json
               </a>
@@ -228,6 +230,7 @@ Your content here (paste the markdown from the MDX file)`}</code>
                 <Link href="/blog">Blog</Link>
               </li>
               <li>
+                {/* oxlint-disable-next-line nextjs/no-html-link-for-pages -- Feed document is not a Next page. */}
                 <a href="/feed.xml">RSS Feed</a>
               </li>
               <li>

@@ -10,10 +10,10 @@ function PreviewCard() {
           <span className="inline-block h-2 w-2 rounded-full bg-atx-warn/60" />
           <span className="inline-block h-2 w-2 rounded-full bg-atx-ok/60" />
         </span>
-        <span>Attestix Console / localhost:8501</span>
+        <span>Attestix Console / illustrative fixture data</span>
         <span className="ml-auto flex items-center gap-2 text-atx-ok">
           <span className="inline-block h-1.5 w-1.5 rounded-full bg-atx-ok" />
-          connected
+          demo
         </span>
       </div>
 
@@ -80,7 +80,7 @@ function PreviewCard() {
                     <span
                       aria-label={
                         a.s === "compl"
-                          ? "compliant"
+                          ? "demo checklist recorded"
                           : a.s === "gap"
                             ? "gaps"
                             : "revoked"
@@ -129,17 +129,15 @@ export function ConsolePreviewSection() {
           <div>
             <AtxEyebrow number="04">The product</AtxEyebrow>
             <h2 className="mt-3 font-serif text-[clamp(28px,3.2vw,40px)] leading-[1.15] tracking-[-0.01em] text-atx-ink">
-              A console that
+              Explore the
               <br />
-              behaves like
-              <br />
-              <em className="italic text-atx-accent">compliance.</em>
+              <em className="italic text-atx-accent">evidence workflow.</em>
             </h2>
           </div>
           <p className="text-[15px] leading-[1.65] text-atx-ink-mid">
-            Every agent, every credential, every hash. The Attestix console is
-            a working surface across the full stack with the same primitives
-            the CLI, MCP server, and REST API expose.
+            This interactive preview uses illustrative agents, credentials, and
+            audit records. It demonstrates an evidence workflow without
+            connecting to your workspace or performing a conformity assessment.
           </p>
         </div>
 

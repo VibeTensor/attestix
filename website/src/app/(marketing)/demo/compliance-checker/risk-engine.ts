@@ -19,10 +19,10 @@ const RISK_METADATA: Record<RiskLevel, Omit<RiskAssessment, "articles" | "obliga
     level: "unacceptable",
     title: "Unacceptable Risk",
     description:
-      "Your AI system falls into a category that is prohibited under the EU AI Act. These systems pose a clear threat to safety, livelihoods, or fundamental rights.",
+      "Your answers suggest a potentially prohibited category under the EU AI Act. These systems pose a clear threat to safety, livelihoods, or fundamental rights.",
     timeline:
-      "Prohibited AI practices have been banned since February 2, 2025 (EU AI Act Article 5). Penalties for non-compliance are set under Article 99 and can reach EUR 35 million or 7 percent of global annual turnover, whichever is higher.",
-    fineRange: "Up to 35 million EUR or 7% of global annual turnover, whichever is higher",
+      "Prohibited AI practices have been banned since February 2, 2025 (EU AI Act Article 5). Penalties for non-compliance are set under Article 99 and can reach EUR 35 million or 7 percent of global annual turnover, subject to Article 99, including the lower applicable cap for SMEs.",
+    fineRange: "Up to 35 million EUR or 7% of global annual turnover, subject to Article 99, including the lower applicable cap for SMEs",
     color: "text-red-400",
     bgColor: "bg-red-500/10",
     borderColor: "border-red-500/30",
@@ -32,10 +32,10 @@ const RISK_METADATA: Record<RiskLevel, Omit<RiskAssessment, "articles" | "obliga
     level: "high",
     title: "High Risk",
     description:
-      "Your AI system is classified as high risk under the EU AI Act. It must meet strict requirements before being placed on the EU market or put into service.",
+      "Your answers suggest a potentially high-risk system under the EU AI Act. It must meet strict requirements before being placed on the EU market or put into service.",
     timeline:
-      "High-risk AI systems must comply by August 2, 2026. You should begin conformity assessment, documentation, and risk management now to meet the deadline.",
-    fineRange: "Up to 15 million EUR or 3% of global annual turnover, whichever is higher",
+      "Chapter III Sections 1-3 apply to Annex III high-risk systems from December 2, 2027 and Annex I high-risk products from August 2, 2028 under Regulation (EU) 2026/1744. Review operator role, classification, and transitional provisions.",
+    fineRange: "Up to 15 million EUR or 3% of global annual turnover, subject to Article 99, including the lower applicable cap for SMEs",
     color: "text-orange-400",
     bgColor: "bg-orange-500/10",
     borderColor: "border-orange-500/30",
@@ -45,10 +45,10 @@ const RISK_METADATA: Record<RiskLevel, Omit<RiskAssessment, "articles" | "obliga
     level: "limited",
     title: "Limited Risk",
     description:
-      "Your AI system has limited risk and is subject to transparency obligations. Users must be informed that they are interacting with AI.",
+      "Your answers suggest that transparency obligations may apply. Users must be informed that they are interacting with AI.",
     timeline:
-      "Transparency obligations apply from August 2, 2026. Implement disclosure mechanisms and content labeling ahead of the deadline.",
-    fineRange: "Up to 7.5 million EUR or 1.5% of global annual turnover, whichever is higher",
+      "Transparency obligations apply from August 2, 2026. Check applicable disclosure and content-labeling duties.",
+    fineRange: "Article 50 infringements: up to 15 million EUR or 3% of global annual turnover, subject to Article 99, including the lower applicable cap for SMEs",
     color: "text-yellow-400",
     bgColor: "bg-yellow-500/10",
     borderColor: "border-yellow-500/30",
@@ -58,10 +58,10 @@ const RISK_METADATA: Record<RiskLevel, Omit<RiskAssessment, "articles" | "obliga
     level: "minimal",
     title: "Minimal Risk",
     description:
-      "Your AI system is classified as minimal risk. No mandatory compliance obligations apply, though voluntary codes of practice are encouraged.",
+      "Your answers do not indicate a high-risk category in this simplified screening. Other AI Act, privacy, and sector-specific duties may still apply.",
     timeline:
       "No mandatory deadline, but voluntary codes of practice are available from August 2, 2025. Adopting them demonstrates responsible AI development.",
-    fineRange: "No mandatory fines, but general product safety laws still apply",
+    fineRange: "No category-specific fine is estimated by this screening; other legal duties may apply",
     color: "text-emerald-400",
     bgColor: "bg-emerald-500/10",
     borderColor: "border-emerald-500/30",

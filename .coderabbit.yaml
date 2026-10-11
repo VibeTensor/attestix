@@ -1,3 +1,4 @@
+# yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
 # CodeRabbit Configuration
 # https://docs.coderabbit.ai/guides/configure-coderabbit
 
@@ -6,20 +7,22 @@ language: en-US
 reviews:
   auto_review:
     enabled: true
-    drafts: false
+    drafts: true
     base_branches:
       - main
 
   profile: assertive
-  request_changes_workflow: true
+  request_changes_workflow: false
   high_level_summary: true
   poem: false
   review_status: true
   collapse_walkthrough: true
 
-  # Auto-approve PRs when no actionable issues found
-  auto_approve:
-    enabled: true
+  path_filters:
+    - "!**/__pycache__/**"
+    - "!**/dist/**"
+    - "!**/*.egg-info/**"
+    - "!**/htmlcov/**"
 
   path_instructions:
     - path: "attestix/**/*.py"
@@ -50,9 +53,3 @@ tone_instructions: |
   - Be constructive and helpful
   - Focus on code quality and security
   - Prioritize security issues in auth/crypto code
-
-ignore:
-  - "**/__pycache__/**"
-  - "**/dist/**"
-  - "**/*.egg-info/**"
-  - "**/htmlcov/**"

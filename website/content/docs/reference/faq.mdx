@@ -14,7 +14,7 @@ Attestix (Attestation Infrastructure for AI Agents) is an open-source tool that 
 ### Who is Attestix for?
 
 - **AI/ML engineers** building multi-agent systems who need agent-to-agent identity verification
-- **Compliance teams** preparing for EU AI Act enforcement (August 2, 2026)
+- **Compliance teams** assessing role-specific duties and application dates
 - **Platform builders** who need to prove their AI agents meet regulatory requirements
 - **Researchers** exploring decentralized identity, verifiable credentials, and agent trust
 
@@ -64,8 +64,9 @@ Yes, if they share the same `.signing_key.json` and JSON data files. Point multi
 
 ### When does the EU AI Act take effect?
 
-- **August 2, 2026** - Enforcement begins for high-risk systems (Annex III) and Article 50 transparency obligations
-- **August 2, 2027** - Obligations for AI in regulated products (Annex I: medical devices, machinery)
+- **August 2, 2026** - Article 50 transparency obligations apply, subject to applicability
+- December 2, 2027 - Chapter III Sections 1-3 apply to Annex III high-risk systems
+- **August 2, 2028** - Obligations for AI in regulated products (Annex I: medical devices, machinery)
 
 ### How do I determine my risk category?
 
@@ -194,3 +195,5 @@ Python 3.10 or later.
 ### Does Attestix support Windows?
 
 Yes. Attestix runs on Windows, macOS, and Linux. File locking uses the `filelock` library which is cross-platform.
+
+Timeline reviewed October 11, 2026 against [Regulation (EU) 2026/1744, Article 1(40)](https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=OJ:L_202601744). Chapter III Sections 1-3 apply to Annex III high-risk systems from December 2, 2027 and Annex I high-risk products from August 2, 2028. Article 50 transparency duties generally apply from August 2, 2026. Obligations depend on operator role, system classification, and transitional provisions. Signed evidence supports assessment; it does not establish legal conformity.

@@ -8,7 +8,7 @@ export function HeroCert() {
         <div className="atx-cert-head">
           <span>&#9670;</span>
           <span>
-            <strong>Declaration of Conformity</strong> &middot; Annex V
+            <strong>Illustrative declaration</strong> &middot; fixture data
           </span>
           <span style={{ marginLeft: "auto" }}>{c.uuid}</span>
         </div>
@@ -51,7 +51,7 @@ export function HeroCert() {
         </div>
         <div className="atx-cert-row">
           <div className="k">Sample</div>
-          <div className="v">illustrative \u00B7 not a real certificate</div>
+          <div className="v">illustrative / not a real certificate</div>
         </div>
         <div className="atx-cert-row">
           <div className="k">Issued</div>
@@ -71,7 +71,7 @@ export function HeroCert() {
 
         <div className="atx-cert-foot">
           <span>&#9673; anchored &middot; base-l2 testnet</span>
-          <span>verified &#10003;</span>
+          <span>fixture / verification not run</span>
         </div>
       </div>
 

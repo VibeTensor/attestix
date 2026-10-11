@@ -20,14 +20,15 @@ export function WorkflowSection() {
             <h2 className="mt-3 font-serif text-[clamp(28px,3.2vw,40px)] leading-[1.15] tracking-[-0.01em] text-atx-ink">
               From zero to
               <br />
-              EU AI Act-compliant.
+              documented evidence.
             </h2>
           </div>
           <p className="text-[15px] leading-[1.65] text-atx-ink-mid">
-            A high-risk AI agent, walked through the seven-step pipeline that
-            produces a regulator-ready Declaration of Conformity. Each stage
-            below maps to the EU AI Act article it satisfies, and the exact
-            Attestix call that produces the artefact.
+            An illustrative seven-step workflow for collecting AI governance
+            evidence and drafting a declaration for review. Article mappings
+            identify relevant obligations; they do not establish that those
+            obligations are satisfied. Providers and deployers must assess
+            applicability and complete any required conformity procedures.
           </p>
         </div>
 

@@ -10,27 +10,27 @@ export function HeroV2() {
       <div className="mb-10 inline-flex flex-wrap items-center gap-3 rounded-atx-sm border border-atx-line-soft bg-atx-bg-sunken px-3.5 py-2 font-mono-atx text-[11.5px] text-atx-ink-mid">
         <span className="inline-block h-1.5 w-1.5 rounded-full bg-atx-err" />
         <span>
-          Main enforcement wave in <AtxCountdown /> (high-risk systems, Aug 2,
-          2026) &middot; Fines up to &euro;35M or 7% global revenue
+          Annex III high-risk rules in <AtxCountdown /> (Dec 2, 2027).
+          Annex I product rules: Aug 2, 2028.
         </span>
       </div>
       <div className="grid items-start gap-14 lg:grid-cols-[1.15fr_1fr]">
         <div>
           <h1 className="font-serif text-[clamp(44px,6.2vw,88px)] font-normal leading-[1.02] tracking-[-0.015em] text-atx-ink">
-            Cryptographic{" "}
-            <em className="italic text-atx-accent">proof</em>
+            Verifiable{" "}
+            <em className="italic text-atx-accent">evidence</em>
             <br />
-            your AI agents
+            for your AI agents
             <br />
-            are compliant.
+            and their actions.
           </h1>
 
           <p className="mt-8 max-w-[560px] text-[16px] leading-[1.6] text-atx-ink-mid">
             Attestix is attestation infrastructure for autonomous AI agents.
             Open-source identity, W3C Verifiable Credentials, EU AI Act
-            compliance automation, and reputation scoring. Machine-readable
+            documentation support, and reputation scoring. Machine-readable
             evidence your agent can present to a regulator, another agent, or a
-            system.
+            system. Signed evidence supports an assessment; it does not establish legal compliance.
           </p>
 
           <div className="mt-8 flex flex-wrap items-center gap-3">

@@ -175,7 +175,7 @@ provenance_svc.record_training_data(
   },
   <span class="k">bias_tests</span>=[<span class="s">"demographic_parity"</span>, <span class="s">"equal_opportunity"</span>],
 )
-<span class="c"># Article 10 compliance recorded</span>`,
+<span class="c"># Article 10 supporting evidence recorded</span>`,
   },
   {
     n: "03",
@@ -227,10 +227,10 @@ profile = compliance_svc.create_compliance_profile(
   {
     n: "05",
     title: "Conformity assessment",
-    article: "Article 43 \u00B7 Third-party",
-    desc: "High-risk systems are blocked from self-assessment. Record the notified body third-party assessment.",
+    article: "Article 43 \u00B7 Procedure-specific",
+    desc: "Record an assessment for the applicable Article 43 route. This example uses a fictional notified body; many Annex III systems use internal control. Determine the route independently.",
     bullets: [
-      "Notified body (example): NB-XXXX \u00B7 Your certified auditor",
+      "Notified body (example): NB-XXXX \u00B7 Example notified body",
       "Assessment type: third_party",
       "Evidence attached",
     ],
@@ -238,19 +238,18 @@ profile = compliance_svc.create_compliance_profile(
 compliance_svc.record_conformity_assessment(
   <span class="k">agent_id</span>=<span class="s">"attestix:f9bdb7a94ccb40f1"</span>,
   <span class="k">assessment_type</span>=<span class="s">"third_party"</span>,
-  <span class="k">notified_body</span>={<span class="k">"id"</span>: <span class="s">"NB-XXXX"</span>, <span class="k">"name"</span>: <span class="s">"Your certified auditor"</span>},
+  <span class="k">notified_body</span>={<span class="k">"id"</span>: <span class="s">"NB-XXXX"</span>, <span class="k">"name"</span>: <span class="s">"Example notified body"</span>},
   <span class="k">evidence_urls</span>=[<span class="s">"ipfs://QmX4...fB2"</span>],
 )
 
-<span class="c"># blocked path</span>
-compliance_svc.record_conformity_assessment(<span class="k">assessment_type</span>=<span class="s">"self"</span>, ...)
-<span class="y">ERROR: high-risk AI systems require third_party conformity assessment</span>`,
+<span class="c"># Recording a claim is not validation of the legal procedure.</span>
+<span class="c"># Review classification, operator role, and applicable Article 43 route.</span>`,
   },
   {
     n: "06",
     title: "Declaration of conformity",
     article: "Annex V \u00B7 Auto-VC",
-    desc: "Generate the Annex V declaration. Attestix auto-issues a W3C Verifiable Credential with an Ed25519Signature2020 proof.",
+    desc: "Draft an Annex V-style declaration for independent review. Attestix issues a W3C Verifiable Credential with an Ed25519Signature2020 proof.",
     bullets: [
       "Annex V JSON rendered",
       "W3C VC issued automatically",
@@ -339,7 +338,7 @@ export const ATX_CERT_SAMPLE: AtxCertSample = {
   issuerName: "VibeTensor",
   issuerDid: "did:web:vibetensor.com",
   riskTier: "HIGH \u00B7 EU AI Act Article 6(2)",
-  basis: "Article 43 third-party conformity \u00B7 NB-XXXX Your certified auditor",
+  basis: "Article 43 third-party conformity \u00B7 NB-XXXX Example notified body",
   issued: "2026-04-18T14:02:41Z",
   validThru: "2027-04-18",
   proofValue:
