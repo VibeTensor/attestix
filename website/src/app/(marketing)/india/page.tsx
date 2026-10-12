@@ -47,7 +47,7 @@ const ICPS = [
   },
 ];
 
-const INSTALL_SNIPPET = `# Install the v0.4.1 stable
+const INSTALL_SNIPPET = `# Install Attestix
 pip install attestix
 
 # Issue an agent identity
