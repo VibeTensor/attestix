@@ -69,7 +69,7 @@ v0.3.0 ships with a GitHub Actions workflow that runs on every push and pull req
 - bandit SAST, pip-audit for transitive CVE scanning, safety as advisory second opinion
 - Automated PyPI publish on version tag
 
-Merges to main are gated on lint and pytest. The conformance benchmark suite is part of every run, validating W3C, IETF, and UCAN standards compliance on every change. Total automated test count: 358 (267 functional + 91 conformance), up from 284 in v0.2.4.
+Merges to main are gated on lint and pytest. The benchmark suite checks supported credential and delegation profiles against regression fixtures. These checks do not establish complete W3C, IETF or UCAN standards conformance, identical cross-language behavior or legal conformity. Total automated test count: 358 (267 functional + 91 conformance), up from 284 in v0.2.4.
 
 ## Dependency pins
 
@@ -84,7 +84,7 @@ See `pyproject.toml` and the changelog for the full dependency audit.
 
 ## EAS and conformity assessment corrections
 
-Two correctness fixes shipped with v0.3.0. `anchor_credential` and `verify_anchor` on Base L2 testnet now compute the EAS schema UID correctly, so anchored artefacts resolve to their on-chain attestation. The compliance service now differentiates Annex III categories: systems in Annex III Point 1 (biometric categorisation) still require third-party assessment, while systems in Annex III Points 2 through 8 permit the internal control procedure, with a fail-safe default to third-party for edge cases. This matches the EU AI Act text more faithfully than the earlier blanket rejection.
+Two correctness fixes shipped with v0.3.0. `anchor_credential` and `verify_anchor` on Base L2 testnet now compute the EAS schema UID correctly, so anchored artefacts resolve to their on-chain attestation. The governance service changed its category-based workflow restrictions from the earlier blanket rejection. These restrictions are evidence-workflow behavior, not a determination of the legally applicable assessment route. Providers and assessors must separately review classification, operator role and relevant requirements; recorded assessment assertions and declaration drafts do not establish legal conformity.
 
 ## What is next
 

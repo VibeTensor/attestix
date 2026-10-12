@@ -30,24 +30,24 @@ const ICPS = [
   {
     city: "London",
     sector: "Fintech",
-    pain: "Open-banking copilots and agent-driven KYC report to the FCA under SUP 16.3  -  proving which agent did what, on what data, with what authority is non-optional.",
-    wedge: "Attestix issues an Ed25519-signed DID per agent, UCAN delegations per action, hash-chained audit per call. Auditable in retrospect; no vendor lock-in.",
+    pain: "Fintech teams evaluating agent workflows need evidence of actions, data use and delegated authority. Applicable reporting and oversight requirements depend on the firm and activity.",
+    wedge: "Attestix provides signed identity records, delegated authority and hash-chained audit events. Review completeness, trusted keys and operating controls for the intended workflow.",
   },
   {
     city: "Cambridge",
     sector: "Biotech AI",
-    pain: "Agent-driven drug discovery is increasingly scoped under MHRA evidence requirements  -  model lineage, training-data provenance, and version control across pipeline steps.",
-    wedge: "Attestix records the model lineage credential and training-data provenance as W3C VCs, anchored to Base Sepolia testnet for tamper-evident retention.",
+    pain: "Biotech teams may need model lineage, training-data provenance and version records. Regulatory applicability and evidence requirements depend on the product and intended use.",
+    wedge: "Attestix records signed model-lineage and training-data evidence. Optional testnet anchoring has separate availability and trust requirements; it does not establish regulated retention.",
   },
   {
     city: "Edinburgh",
     sector: "Safety research",
     pain: "DeepMind-alumni and ARIA-funded safety teams need citable, reproducible provenance for monitor evaluations and red-team artifacts referenced in papers.",
-    wedge: "Attestix is Apache-2.0 with a published canonical-form spec and a JS verifier  -  a regulator or reviewer can verify our claims independently of our package.",
+    wedge: "Attestix is Apache-2.0 with a documented canonical profile and language-specific verifiers. Reviewers can verify supported signed records under an explicit trust policy; signatures do not establish claim truth.",
   },
 ];
 
-const INSTALL_SNIPPET = `# Install the v0.4.1 stable
+const INSTALL_SNIPPET = `# Install and verify the current package version
 pip install attestix
 
 # Issue an agent identity
@@ -56,7 +56,7 @@ attestix identity create --name research-bot --did-method key
 # Log a hash-chained audit event
 attestix audit log "tool_call planFlights"
 
-# Verify the chain (any tampering breaks here)
+# Check recorded chain continuity and signatures
 attestix audit verify-chain`;
 
 export default function UKPage() {
@@ -79,8 +79,8 @@ export default function UKPage() {
         <p>
           Attestix is the open-source identity, audit, and on-chain anchoring
           layer that gives AI agents the equivalent of a passport. The
-          cryptographic primitives are sector-neutral, so the same evidence
-          trail works under both regimes.
+          cryptographic primitives support evidence collection across sectors.
+          Suitability for a specific regulatory use requires separate review.
         </p>
       </div>
 
@@ -140,7 +140,7 @@ export default function UKPage() {
       </div>
 
       <h2 className="mt-20 font-mono-atx text-[11px] uppercase tracking-[0.14em] text-atx-ink-dim">
-        What you can do in 90 seconds
+        Evaluate the local workflow
       </h2>
       <p className="mt-3 max-w-[720px] text-[13.5px] leading-[1.6] text-atx-ink-mid">
         Clean Python venv, no other infrastructure. The chain verifies locally;
@@ -160,22 +160,21 @@ export default function UKPage() {
       </p>
 
       <h2 className="mt-20 font-mono-atx text-[11px] uppercase tracking-[0.14em] text-atx-ink-dim">
-        FCA evidence  -  honesty beat
+        Evidence and operating limits
       </h2>
       <div className="mt-4 rounded-atx-md border border-atx-line-soft bg-atx-panel p-6 text-[13.5px] leading-[1.65] text-atx-ink-mid">
         <p>
-          Attestix is a single-maintainer beta with 15 GitHub stars and no
-          independent third-party security audit as of v0.4.1. Open-source
-          signing keys live as filesystem-mode-0600 JSON; there is no HSM/KMS
-          backend in the OSS engine today.
+          Source checks and signed records support evaluation of the tested
+          workflow. They do not establish independent security assurance,
+          complete capture or production acceptance. Review signing-key
+          custody, authenticated access, restore procedures and incident
+          handling for the actual deployment.
         </p>
         <p className="mt-4">
-          That is enough for staging, internal copilots, and pre-production
-          governance pilots. For an FCA-regulated production-of-record
-          deployment, the Cloud Enterprise tier (BYOK against AWS KMS Frankfurt,
-          FIPS 140-2 L3) is the bridge. We name this gap because regulated UK
-          buyers will ask, and an evidence tool that hides its own threat model
-          fails the first audit it meets.
+          Test the exact installed release and its documented trust limits
+          before using production data. A provider or assessor must determine
+          applicable obligations and whether the evidence is sufficient for
+          the intended use. Hosted offerings remain planned.
         </p>
       </div>
 
@@ -245,10 +244,9 @@ export default function UKPage() {
         </div>
         <p className="mt-3 text-[12.5px] leading-[1.6] text-atx-ink-mid">
           Attestix is an evidence tool, not a guarantor of compliance  -
-          providers remain liable under EU AI Act Articles 16-22 regardless of
-          which evidence tool they use. We do not provide legal advice. Base L2
-          anchoring is Sepolia testnet only as of v0.4.1; mainnet schema
-          registration is on the roadmap.
+          applicable duties depend on the system, operator role and
+          jurisdiction. We do not provide legal advice. Testnet anchoring does
+          not establish production availability or regulatory acceptance.
         </p>
       </div>
     </section>
