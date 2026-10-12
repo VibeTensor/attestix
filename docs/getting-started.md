@@ -31,13 +31,13 @@ Add to your Claude Code config (`~/.claude.json` on macOS/Linux, `%USERPROFILE%\
     "attestix": {
       "type": "stdio",
       "command": "python",
-      "args": ["/path/to/attestix/main.py"]
+      "args": ["-m", "attestix.main"]
     }
   }
 }
 ```
 
-Restart Claude Code. You now have 47 Attestix tools available.
+Restart Claude Code. You now have MCP tools available.
 
 Then just ask Claude:
 
@@ -51,7 +51,7 @@ Claude will call `create_agent_identity` and return your agent's UAIT.
 import sys
 sys.path.insert(0, "/path/to/attestix")
 
-from services.identity_service import IdentityService
+from attestix.services.identity_service import IdentityService
 
 svc = IdentityService()
 agent = svc.create_identity(
@@ -71,7 +71,7 @@ print(f"Signed: {bool(agent['signature'])}")
 
 ```bash
 cd attestix
-python main.py
+python -m attestix.main
 ```
 
 This starts the MCP server on stdio, ready for any MCP client to connect.
@@ -112,5 +112,5 @@ print(result)
 
 - [EU AI Act Compliance Guide](eu-ai-act-compliance.md) - Full compliance workflow
 - [Concepts Explained](concepts.md) - What are UAITs, DIDs, VCs?
-- [API Reference](api-reference.md) - All 47 tools documented
+- [API Reference](api-reference.md) - MCP tools documented
 - [Integration Guide](integration-guide.md) - LangChain, OpenAI Agents SDK, CrewAI integrations

@@ -64,7 +64,7 @@ Error: MCP server "attestix" failed to start
 
 ### Tools not showing up in Claude Code
 
-**Solution:** Restart Claude Code after updating the MCP config. Run `/mcp` to verify the server is connected and showing 47 tools.
+**Solution:** Restart Claude Code after updating the MCP config. Run `/mcp` to verify the server is connected and showing MCP tools.
 
 ---
 
@@ -81,7 +81,7 @@ Error: MCP server "attestix" failed to start
 
 **Cause:** The agent ID does not exist in `identities.json`. This can happen if:
 - The identity was created in a different working directory (Attestix uses local JSON files)
-- The identity was revoked or erased (GDPR Article 17)
+- Its managed local records were erased; revocation alone retains the identity record
 - You're using a different Attestix instance
 
 **Solution:** Check `identities.json` in your working directory. Create a new identity if needed.
@@ -100,7 +100,7 @@ Error: MCP server "attestix" failed to start
 - You moved the Attestix data files to a different machine
 - The identity was created by a different Attestix instance
 
-**Solution:** Identities are bound to the signing key that created them. If you need to verify identities across machines, you must use the same `.signing_key.json` file.
+**Solution:** Verify supported signed records against the appropriate public key or DID under an explicit trusted-key policy. The private signing key is needed to create new signatures, not to verify existing signatures. Keep private signing keys protected rather than copying them to verifier machines.
 
 ---
 
@@ -121,12 +121,9 @@ Error: MCP server "attestix" failed to start
 
 ### Ed25519Signature2020 verification fails externally
 
-**Cause:** External verifiers may expect different canonicalization. Attestix uses JCS (RFC 8785) for JSON canonicalization before signing.
+**Cause:** External verifiers may expect different canonicalization or proof semantics. Attestix uses a constrained custom canonical JSON profile with NFC normalization; it does not claim strict RFC 8785 conformance or arbitrary numeric equivalence across languages.
 
-**Solution:** Ensure your external verifier supports:
-- Ed25519Signature2020 proof type
-- JCS (JSON Canonicalization Scheme) per RFC 8785
-- Multibase-encoded public keys (base58btc, `z` prefix)
+**Solution:** Use a verifier that supports the documented Attestix credential and canonicalization profile. Check the supported proof and key representation, trusted issuer policy and unsupported-input rejection. Shared fixtures do not establish identical trust or revocation policy across verifiers.
 
 ---
 
@@ -140,14 +137,14 @@ Error: MCP server "attestix" failed to start
 }
 ```
 
-**This is intentional.** EU AI Act Article 43 prohibits self-assessment for most high-risk AI systems. You must use a third-party notified body:
+This error reflects a configured workflow restriction, not a legal determination. Applicable assessment routes depend on the system, classification, operator role and relevant requirements. Recording an assessment does not establish that the assessor is authorized or that conformity has been achieved. Determine the applicable route separately before recording evidence:
 
 ```python
 compliance_svc.record_conformity_assessment(
     agent_id=agent_id,
-    assessment_type="third_party",  # not "self"
-    assessor_name="TUV Rheinland AG",
-    result="pass",
+    assessment_type="third_party",  # example only; separately determine the route
+    assessor_name="Example assessor - placeholder",
+    result="pass",  # example assertion; requires independently reviewed evidence
 )
 ```
 
@@ -168,7 +165,9 @@ compliance_svc.record_conformity_assessment(
 3. Record model lineage (Article 11)
 4. Create compliance profile
 5. Record conformity assessment
-6. Generate declaration of conformity
+6. Generate a provider-review declaration draft
+
+The `compliant` field and completion percentage describe workflow records, not legal conformity or certification. Review generated drafts with an accountable provider or assessor.
 
 ---
 
@@ -202,7 +201,7 @@ See the [Configuration](/docs/reference/configuration) page for all environment 
 
 ### Anchoring is optional
 
-All core Attestix features work without blockchain. If you don't need on-chain proof, skip the blockchain configuration entirely. Identity, credentials, compliance, and provenance all work fully offline.
+Local identity, credential, governance-evidence and provenance workflows can operate without blockchain anchoring. Network integrations and external status or trust checks have separate connectivity requirements. Omitting anchoring does not establish complete evidence capture or legal conformity.
 
 ---
 
@@ -255,7 +254,7 @@ By default, Attestix creates JSON files in the current working directory:
 
 ### How do I back up my data?
 
-Back up these files and especially `.signing_key.json`. Without the signing key, you cannot verify any previously created identities or credentials.
+Back up managed records and protect the signing key if continued signing and issuer continuity are required. Existing signatures can be checked using the corresponding public key under the verifier's trust policy; verification does not require the private signing key. Validate restore behavior separately.
 
 ### How do I reset everything?
 

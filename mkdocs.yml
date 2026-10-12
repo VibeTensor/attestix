@@ -1,5 +1,5 @@
 site_name: Attestix
-site_description: Attestix - Attestation Infrastructure for AI Agents. DID-based agent identity, W3C Verifiable Credentials, EU AI Act compliance, delegation chains, and reputation scoring. 47 MCP tools across 9 modules.
+site_description: Attestix - agent identity, signed credentials, delegation, provenance, and verification evidence.
 site_url: https://docs.attestix.io/
 repo_url: https://github.com/VibeTensor/attestix
 repo_name: VibeTensor/attestix
@@ -65,7 +65,7 @@ nav:
   - Getting Started: getting-started.md
   - Examples: examples.md
   - Guides:
-      - EU AI Act Compliance: eu-ai-act-compliance.md
+      - AI Governance Evidence: eu-ai-act-compliance.md
       - Risk Classification: risk-classification.md
       - Integration Guide: integration-guide.md
       - Architecture: architecture.md

@@ -5,7 +5,7 @@ Runnable examples for every Attestix module. All examples work standalone after 
 ## 1. Create and Verify an Agent Identity
 
 ```python
-from services.identity_service import IdentityService
+from attestix.services.identity_service import IdentityService
 
 svc = IdentityService()
 
@@ -39,7 +39,7 @@ print(f"Checks: {result['checks']}")
 Convert any Attestix identity to a Google A2A-compatible Agent Card for interoperability:
 
 ```python
-from services.identity_service import IdentityService
+from attestix.services.identity_service import IdentityService
 
 svc = IdentityService()
 
@@ -69,7 +69,7 @@ print(claims["scope"])    # customer_support order_tracking faq
 ## 3. Create DIDs
 
 ```python
-from services.did_service import DIDService
+from attestix.services.did_service import DIDService
 
 svc = DIDService()
 
@@ -98,8 +98,8 @@ print(f"Verification methods: {len(doc['verificationMethod'])}")
 Delegate capabilities from one agent to another with verifiable authority chains:
 
 ```python
-from services.identity_service import IdentityService
-from services.delegation_service import DelegationService
+from attestix.services.identity_service import IdentityService
+from attestix.services.delegation_service import DelegationService
 
 identity_svc = IdentityService()
 delegation_svc = DelegationService()
@@ -164,10 +164,10 @@ print(f"Analyst's delegations: {len(delegations)}")
 Complete workflow for a high-risk medical AI system:
 
 ```python
-from services.identity_service import IdentityService
-from services.compliance_service import ComplianceService
-from services.provenance_service import ProvenanceService
-from services.credential_service import CredentialService
+from attestix.services.identity_service import IdentityService
+from attestix.services.compliance_service import ComplianceService
+from attestix.services.provenance_service import ProvenanceService
+from attestix.services.credential_service import CredentialService
 
 identity_svc = IdentityService()
 compliance_svc = ComplianceService()
@@ -276,8 +276,8 @@ if creds:
 Issue, verify, revoke, and present credentials:
 
 ```python
-from services.identity_service import IdentityService
-from services.credential_service import CredentialService
+from attestix.services.identity_service import IdentityService
+from attestix.services.credential_service import CredentialService
 
 identity_svc = IdentityService()
 credential_svc = CredentialService()
@@ -343,8 +343,8 @@ print(f"Credentials in VP: {len(vp['verifiableCredential'])}")
 Track agent trustworthiness with recency-weighted scoring:
 
 ```python
-from services.identity_service import IdentityService
-from services.reputation_service import ReputationService
+from attestix.services.identity_service import IdentityService
+from attestix.services.reputation_service import ReputationService
 
 identity_svc = IdentityService()
 reputation_svc = ReputationService()
@@ -397,8 +397,8 @@ print(f"Agents above 0.8: {len(top_agents)}")
 Log every agent action with hash-chained tamper-evident entries:
 
 ```python
-from services.identity_service import IdentityService
-from services.provenance_service import ProvenanceService
+from attestix.services.identity_service import IdentityService
+from attestix.services.provenance_service import ProvenanceService
 
 identity_svc = IdentityService()
 provenance_svc = ProvenanceService()
@@ -459,7 +459,7 @@ for entry in trail:
 Discover and parse A2A agent cards from remote services:
 
 ```python
-from services.agent_card_service import AgentCardService
+from attestix.services.agent_card_service import AgentCardService
 
 svc = AgentCardService()
 
@@ -490,9 +490,9 @@ print(f"Capabilities: {parsed['capabilities']}")
 Wrap any agent with compliance checks and audit logging:
 
 ```python
-from services.identity_service import IdentityService
-from services.compliance_service import ComplianceService
-from services.provenance_service import ProvenanceService
+from attestix.services.identity_service import IdentityService
+from attestix.services.compliance_service import ComplianceService
+from attestix.services.provenance_service import ProvenanceService
 
 
 class AttestixMiddleware:
@@ -571,7 +571,7 @@ async def main():
         async with ClientSession(read, write) as session:
             await session.initialize()
 
-            # List all 47 tools
+            # List MCP tools
             tools = await session.list_tools()
             print(f"Tools available: {len(tools.tools)}")
 

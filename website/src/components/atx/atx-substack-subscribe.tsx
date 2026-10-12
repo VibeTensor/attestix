@@ -85,7 +85,7 @@ export function AtxSubstackSubscribe() {
           disabled={status === "submitting"}
           className="inline-flex h-10 items-center justify-center rounded-atx-sm bg-atx-accent px-5 font-mono-atx text-[12px] font-medium text-[oklch(0.14_0.01_180)] hover:bg-atx-accent-deep disabled:opacity-60"
         >
-          {status === "submitting" ? "Opening..." : "Subscribe \u2192"}
+          {status === "submitting" ? "Opening..." : "Subscribe  -> "}
         </button>
       </div>
 

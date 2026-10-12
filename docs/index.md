@@ -6,7 +6,7 @@
 
 **Attestation Infrastructure for AI Agents**
 
-The compliance identity layer for the EU AI Act era. Verifiable identity, W3C credentials, delegation chains, and reputation scoring for every AI agent.
+Identity and signed evidence for AI governance workflows. Verifiable identity, W3C credentials, delegation chains, and reputation scoring for every AI agent.
 
 [Get Started](getting-started.md){ .md-button .md-button--primary }
 [API Reference](api-reference.md){ .md-button }
@@ -17,29 +17,25 @@ The compliance identity layer for the EU AI Act era. Verifiable identity, W3C cr
 
 ## Why Attestix Exists
 
-On **August 2, 2026**, the EU AI Act's transparency enforcement begins. Fines reach up to EUR 35M or 7% of global revenue. Every high-risk AI system deployed in EU markets must demonstrate compliance.
+Attestix combines agent identity, credential issuance, delegation, provenance and offline verification. Signed records can be exchanged and independently checked within the documented profile; they do not establish the truth or legal status of their contents.
 
-Existing compliance tools (Credo AI, Holistic AI, Vanta) operate as organizational dashboards. None produce a **machine-readable, cryptographically verifiable proof** that an AI agent can present to another agent, regulator, or system.
-
-Meanwhile, agent identity is fragmenting across walled gardens (Microsoft Entra, AWS AgentCore, Google A2A, ERC-8004). No single tool combines **agent identity + EU AI Act compliance + verifiable credentials** in one protocol.
-
-Attestix solves this.
+The AI Act applies in stages. The current EU timeline includes 2 December 2027 for specified Annex III high-risk systems and 2 August 2028 for specified Annex I systems. Applicability depends on the operator's role and system. See the [European Commission timeline](https://digital-strategy.ec.europa.eu/en/policies/regulatory-framework-ai).
 
 ---
 
-## 47 MCP Tools Across 9 Modules
+## MCP tools Across 9 Modules
 
-| Module | Tools | Purpose |
-|--------|-------|---------|
-| **Identity** | 8 | Unified Agent Identity Tokens (UAITs) bridging MCP OAuth, A2A, DIDs, and API keys. GDPR Article 17 erasure |
-| **Agent Cards** | 3 | Parse, generate, and discover A2A-compatible agent cards |
-| **DID** | 3 | Create and resolve W3C Decentralized Identifiers (`did:key`, `did:web`) |
-| **Delegation** | 4 | UCAN-style capability delegation with signed JWT tokens, revocation |
-| **Reputation** | 3 | Recency-weighted trust scoring with category breakdown |
-| **Compliance** | 7 | EU AI Act risk profiles, conformity assessments, Annex V declarations |
-| **Credentials** | 8 | W3C Verifiable Credentials with Ed25519Signature2020, external verification |
-| **Provenance** | 5 | Training data provenance, model lineage, hash-chained audit trail |
-| **Blockchain** | 6 | Anchor artifact hashes to Base L2 via EAS, Merkle batch anchoring |
+| Module | Purpose |
+|--------|---------|
+| **Identity** | Unified Agent Identity Tokens (UAITs) bridging MCP OAuth, A2A, DIDs, and API keys. local data erasure tooling |
+| **Agent Cards** | Parse, generate, and discover A2A-compatible agent cards |
+| **DID** | Create and resolve W3C Decentralized Identifiers (`did:key`, `did:web`) |
+| **Delegation** | UCAN-style capability delegation with signed JWT tokens, revocation |
+| **Reputation** | Recency-weighted trust scoring with category breakdown |
+| **Compliance** | EU AI Act risk profiles, conformity assessments, Annex V declarations |
+| **Credentials** | W3C Verifiable Credentials with Ed25519Signature2020, external verification |
+| **Provenance** | Training data provenance, model lineage, hash-chained audit trail |
+| **Blockchain** | Anchor artifact hashes to Base L2 via EAS, Merkle batch anchoring |
 
 ---
 
@@ -55,7 +51,7 @@ Attestix solves this.
         "attestix": {
           "type": "stdio",
           "command": "python",
-          "args": ["/path/to/attestix/main.py"]
+          "args": ["-m", "attestix.main"]
         }
       }
     }
@@ -77,7 +73,7 @@ Attestix solves this.
     git clone https://github.com/VibeTensor/attestix.git
     cd attestix
     pip install -r requirements.txt
-    python main.py
+    python -m attestix.main
     ```
 
 See the [Getting Started guide](getting-started.md) for full setup instructions.
@@ -113,11 +109,11 @@ flowchart TD
 
 ## Key Properties
 
-- **Local-first** - No cloud dependency. All core operations work offline with JSON file storage
-- **Cryptographically signed** - Every artifact is signed with Ed25519. Anyone can verify without contacting Attestix
+- **Local-first** - Local identity and credential operations can use JSON storage; remote resolution, hosted signers and blockchain integrations require their configured services
+- **Cryptographically signed** - Credentials and presentations carry signatures; hash-chained records support integrity checks. Trust, freshness and completeness require separate policy
 - **Standards-based** - W3C Verifiable Credentials, W3C DIDs, UCAN delegation, A2A agent cards
 - **Vendor-neutral** - Works with any AI framework (LangChain, OpenAI Agents SDK, CrewAI, or plain Python)
-- **EU AI Act ready** - Risk classification, conformity assessments, Annex V declarations, Article 10/11/12 documentation
+- **AI governance evidence tooling** - Risk classification, conformity assessments, Annex V declarations, Article 10/11/12 documentation
 
 ---
 

@@ -580,7 +580,7 @@ async def main():
         async with ClientSession(read, write) as session:
             await session.initialize()
 
-            # List all 47 tools
+            # List MCP tools
             tools = await session.list_tools()
             print(f"Tools available: {len(tools.tools)}")
 

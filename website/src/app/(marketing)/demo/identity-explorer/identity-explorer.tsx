@@ -669,7 +669,7 @@ function ExploreSection({ identity }: { identity: AgentIdentity }) {
               <ActionCard
                 icon={<Award className="h-6 w-6" />}
                 title="Issue Credentials"
-                description="Attach verifiable claims to this agent, such as compliance certificates, audit results, or capability endorsements."
+                description="Attach verifiable claims to this agent, such as operator-recorded assessment evidence, audit results, or capability endorsements."
               />
               <ActionCard
                 icon={<TrendingUp className="h-6 w-6" />}

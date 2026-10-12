@@ -1,6 +1,6 @@
 # EU AI Act Compliance with Attestix
 
-Step-by-step guide to achieving EU AI Act compliance for your AI agent using Attestix.
+Step-by-step guide to recording AI governance evidence. Workflow completion is not a legal conformity determination.
 
 ## Important Disclaimer
 
@@ -65,7 +65,7 @@ record_training_data(
 )
 ```
 
-Repeat for each training dataset. Attestix signs each record with Ed25519 to create tamper-proof evidence.
+Repeat for each training dataset. Attestix signs each record with Ed25519 to create tamper-evident evidence.
 
 ### Step 3: Record Model Lineage (Article 11)
 
@@ -162,11 +162,9 @@ Once the assessment passes, generate the declaration:
 generate_declaration_of_conformity(agent_id="attestix:f9bdb7a94ccb40f1")
 ```
 
-This does two things:
-1. Creates an Annex V declaration with all required fields
-2. Auto-issues a W3C Verifiable Credential (`EUAIActComplianceCredential`) as cryptographic proof
+This creates a draft declaration for provider review and a signed evidence credential (`EUAIActComplianceCredential`). It does not authenticate an assessor, determine CE-marking eligibility, or assess legal conformity.
 
-### Step 8: Verify Full Compliance
+### Step 8: Check Recorded Workflow Completion
 
 ```
 get_compliance_status(agent_id="attestix:f9bdb7a94ccb40f1")
@@ -174,7 +172,9 @@ get_compliance_status(agent_id="attestix:f9bdb7a94ccb40f1")
 
 ```json
 {
-  "compliant": true,
+  "workflow_complete": true,
+  "legal_conformity": "not_assessed",
+  "assessment_scope": "recorded_evidence_checklist",
   "completion_pct": 100.0,
   "completed": ["all 7 items"],
   "missing": []
@@ -208,7 +208,7 @@ At the end of this workflow, you have:
 | Compliance profile | Risk category + obligations | Ed25519 |
 | Conformity assessment | Third-party assessment result | Ed25519 |
 | Annex V declaration | Declaration of conformity | Ed25519 |
-| Verifiable Credential | W3C VC proving compliance | Ed25519Signature2020 |
+| Verifiable Credential | VC carrying operator-recorded evidence | Ed25519Signature2020 |
 | Verifiable Presentation | Bundle for a specific verifier | Ed25519Signature2020 |
 
 All artifacts are stored locally in JSON files and can be exported, shared, or anchored on-chain (Phase 3).
@@ -217,9 +217,9 @@ All artifacts are stored locally in JSON files and can be exported, shared, or a
 
 | Date | What Happens |
 |------|-------------|
-| August 2, 2026 | EU AI Act enforcement begins for high-risk systems (Annex III) |
+| 2 December 2027 | Specified Annex III high-risk systems |
 | August 2, 2026 | Article 50 transparency obligations take effect |
-| August 2, 2027 | Obligations for AI in regulated products (Annex I: medical devices, machinery) |
+| 2 August 2028 | Specified Annex I high-risk systems embedded in regulated products |
 
 ## FAQ
 
@@ -234,3 +234,7 @@ You can still use Attestix for documentation best practice. Minimal-risk systems
 
 **Q: Can I update my compliance profile later?**
 Yes. Use `update_compliance_profile` to modify fields like intended purpose, transparency obligations, and human oversight measures without recreating the agent identity.
+
+See the [current EU AI Act application timeline](https://digital-strategy.ec.europa.eu/en/policies/regulatory-framework-ai). Applicability depends on the system, provision and operator role. No Attestix output determines legal conformity.
+
+`workflow_complete` checks recorded documentation presence. The deprecated `compliant` field aliases that workflow status, not legal conformity. Generated declarations carry `document_status: draft_for_provider_review`; assessor and CE-marking inputs remain operator-recorded and unverified.
