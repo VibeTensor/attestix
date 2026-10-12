@@ -3,7 +3,7 @@ title: Offline Verification Walkthrough
 description: How a regulator, auditor, or other agent verifies an Attestix Verifiable Credential without any network access.
 ---
 
-This guide walks through verifying an Attestix-issued Verifiable Credential with no internet connection. All that is required is the credential JSON itself: the issuer's public key is encoded directly in the `did:key` carried in the credential's `issuer.id`, so verification never has to fetch a DID document or call the issuer.
+This guide walks through verifying an Attestix-issued Verifiable Credential with no internet connection. For the supported `did:key` profile, the issuer public key is encoded in `issuer.id`, so signature checking does not fetch a DID document or call the issuer. Independently approve the issuer DID/key before treating the credential as trusted. Offline checks cannot establish current revocation, authorization, complete capture or legal conformity.
 
 ## Scenario
 
@@ -18,7 +18,7 @@ No network calls. Everything verifies from the JSON blob, because the issuer's E
 ## Prerequisites
 
 ```bash
-pip install attestix
+pip install attestix==0.4.2
 ```
 
 ## Step 1 / Fetch the artefacts
@@ -69,7 +69,7 @@ Internally this:
 
 1. Confirms the object is a `VerifiableCredential`.
 2. Strips the mutable fields (`proof` and `credentialStatus`) and canonicalises the rest with the Attestix canonical JSON form (a practical subset of [RFC 8785](https://www.rfc-editor.org/rfc/rfc8785) JCS, sorted keys, no whitespace, NFC normalized).
-3. Decodes the verifying key from `issuer.id` (the trust anchor), not from `proof.verificationMethod`. If `proof.verificationMethod` names a different DID, verification fails. This blocks issuer key substitution.
+3. Decodes the verifying key from `issuer.id` (the stated signing key; issuer trust must be established separately), not from `proof.verificationMethod`. If `proof.verificationMethod` names a different DID, verification fails. This blocks issuer key substitution.
 4. Verifies the Ed25519 signature in `proof.proofValue` per [RFC 8032](https://www.rfc-editor.org/rfc/rfc8032), and checks expiry and (when the revocation list is available locally) revocation.
 
 The credential is valid only when `signature_valid` AND `not_expired` AND `not_revoked` all hold. An external verifier with no revocation list assumes not revoked, so confirm revocation separately if that matters for your use case.
@@ -104,26 +104,26 @@ Each embedded credential is verified against its own `issuer.id`, and every cred
 
 ## Step 4 / Verify the audit chain
 
-The Article 12 audit trail is a SHA-256 hash chain: each entry links to the previous one, so tampering with any row invalidates every later row. Pull the entries with `get_audit_trail`, then recompute the chain offline.
+The provenance action log is a SHA-256 hash chain: each entry links to the previous one, so tampering with any row invalidates every later row. Request an exported `audit-trail.json` from the supplier, then recompute the chain offline. `get_audit_trail` reads your local workspace; it does not fetch another operator's records. The hash body includes `prev_hash` and excludes only `chain_hash` and `signature`. This action-log profile is separate from the structured audit-event profile.
 
 ```python
 import hashlib
 import json
-from attestix.services.provenance_service import ProvenanceService
 
-entries = ProvenanceService().get_audit_trail(agent_id="attestix:f9bdb7a94ccb40f1")
+with open("audit-trail.json", encoding="utf-8") as f:
+    entries = json.load(f)
 
 GENESIS = "0" * 64
 
 
 def chain_hash(previous_hash: str, entry: dict) -> str:
     # Same rule the recorder uses: SHA-256 over "{prev_hash}:{canonical_json}"
-    # where canonical_json excludes the prev_hash, chain_hash, and signature
+    # where canonical_json excludes the chain_hash and signature
     # fields and uses sorted keys with compact separators.
     body = {
         k: v
         for k, v in entry.items()
-        if k not in {"prev_hash", "chain_hash", "signature"}
+        if k not in {"chain_hash", "signature"}
     }
     canonical = json.dumps(body, sort_keys=True, separators=(",", ":"))
     return hashlib.sha256(f"{previous_hash}:{canonical}".encode("utf-8")).hexdigest()
@@ -137,10 +137,11 @@ for index, entry in enumerate(entries):
         break
     prev = entry["chain_hash"]
 
-print("chain consistent" if first_bad is None else f"tamper at entry {first_bad}")
+print("empty export - no evidence" if not entries else
+      "chain consistent" if first_bad is None else f"tamper at entry {first_bad}")
 ```
 
-Any change to any row, or any reordering, breaks the recomputed hash and surfaces the first bad index.
+A changed or reordered row is detected unless the hashes are recomputed. This helper does not verify entry signatures or complete capture. Pin an independently trusted final hash and expected count to detect truncation; a self-supplied checkpoint is not independent evidence.
 
 ## Full example script
 
@@ -153,7 +154,6 @@ import json
 import sys
 
 from attestix.services.credential_service import CredentialService
-from attestix.services.provenance_service import ProvenanceService
 
 GENESIS = "0" * 64
 
@@ -162,23 +162,32 @@ def chain_hash(previous_hash: str, entry: dict) -> str:
     body = {
         k: v
         for k, v in entry.items()
-        if k not in {"prev_hash", "chain_hash", "signature"}
+        if k not in {"chain_hash", "signature"}
     }
     canonical = json.dumps(body, sort_keys=True, separators=(",", ":"))
     return hashlib.sha256(f"{previous_hash}:{canonical}".encode("utf-8")).hexdigest()
 
 
-def main(vc_path: str, agent_id: str) -> int:
+def main(vc_path: str, audit_path: str, expected_issuer: str) -> int:
     with open(vc_path) as f:
         vc = json.load(f)
 
+    issuer = vc.get("issuer") if isinstance(vc, dict) else None
+    issuer_did = issuer.get("id") if isinstance(issuer, dict) else issuer
+    if issuer_did != expected_issuer or not expected_issuer.startswith("did:key:"):
+        print("[fail] issuer does not match the trusted did:key issuer")
+        return 1
     result = CredentialService().verify_credential_external(vc)
     if not result.get("valid"):
         print(f"[fail] credential not valid: {result.get('checks')}")
         return 1
-    print(f"[ok] signature verified (issuer {vc['issuer']['id']})")
+    print(f"[ok] signature verified (issuer {issuer_did})")
 
-    entries = ProvenanceService().get_audit_trail(agent_id=agent_id)
+    with open(audit_path, encoding="utf-8") as f:
+        entries = json.load(f)
+    if not isinstance(entries, list) or not entries:
+        print("[fail] empty or malformed audit export")
+        return 1
     prev = GENESIS
     for index, entry in enumerate(entries):
         if entry.get("prev_hash") != prev or chain_hash(prev, entry) != entry.get("chain_hash"):
@@ -187,18 +196,20 @@ def main(vc_path: str, agent_id: str) -> int:
         prev = entry["chain_hash"]
     print(f"[ok] audit chain consistent ({len(entries)} entries)")
 
-    print("VERIFY = PASS")
+    print("SIGNATURE AND SUPPLIED CHAIN CHECKS = PASS; trust/status/completeness require separate review")
     return 0
 
 
 if __name__ == "__main__":
-    raise SystemExit(main(sys.argv[1], sys.argv[2]))
+    if len(sys.argv) != 4:
+        raise SystemExit("Usage: offline_verify.py credential.json audit-trail.json trusted_issuer_did")
+    raise SystemExit(main(sys.argv[1], sys.argv[2], sys.argv[3]))
 ```
 
 Run it:
 
 ```bash
-python offline_verify.py ./credential.json attestix:f9bdb7a94ccb40f1
+python offline_verify.py ./credential.json ./audit-trail.json did:key:z6Mk...
 ```
 
 Output:
@@ -206,15 +217,19 @@ Output:
 ```
 [ok] signature verified (issuer did:key:z6Mk...)
 [ok] audit chain consistent (1247 entries)
-VERIFY = PASS
+SIGNATURE AND SUPPLIED CHAIN CHECKS = PASS; trust/status/completeness require separate review
 ```
 
 ## Verify without Python
 
-The same credential verifies in any language. Six independent verifier implementations share one conformance suite at [`spec/verify/v1`](https://github.com/VibeTensor/attestix/tree/main/spec/verify/v1), so a Go, Rust, JS, Java, or R verifier reaches the identical verdict on the identical canonical bytes. You can also verify a credential in the browser at [attestix.io/verify](https://attestix.io/verify). Issuance stays in the Python core; verification is open and portable.
+The verifiers share fixtures at [`spec/verify/v1`](https://github.com/VibeTensor/attestix/tree/main/spec/verify/v1). Shared fixtures do not establish identical handling of every input, API or trust policy. Read the current verifier README and pin a reviewed release. You can also verify a credential in the browser at [attestix.io/verify](https://attestix.io/verify). Issuance stays in the Python core; verification is open and portable.
 
 ## Why this matters
 
-Every other compliance artefact you receive as a regulator comes as a PDF or a dashboard screenshot. Neither is cryptographically bindable to a specific operator or point in time. Attestix artefacts are.
+Signed records can bind recorded bytes to a signing key. They do not establish the signer's authority, truthful claims, independently trusted time or legal conformity. Other systems can also supply cryptographic evidence.
 
 The same verification is what a peer agent runs when it decides whether to trust another agent's capability claim. See [UCAN delegation](/docs/guides/integration-guide) for how delegation chains are verified the same way.
+
+## Browser and package release status
+
+Python/PyPI and JavaScript/npm, Go and Java/Maven 0.4.2 are published. The 0.4.3 source prepares a website/documentation update; verify registry availability before pinning that release. Rust and R have GitHub 0.4.2 releases; crates.io and CRAN remain at 0.4.1 at this cutoff. The browser page uses npm `attestix` 0.4.2 with the retained boundary guards. Offline results do not check live revocation.

@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { generateKeyPairSync, sign } from "node:crypto";
 import { readFileSync } from "node:fs";
 import test from "node:test";
-import { canonicalize, verifyCredential } from "@vibetensor/attestix";
+import { canonicalize, verifyCredential } from "attestix";
 import { ModuleKind, ScriptTarget, transpileModule } from "typescript";
 
 // Pages currently pins Node 20, which cannot strip TypeScript natively.
@@ -52,7 +52,7 @@ test("stated issuer cannot be replaced by an attacker's proof key", () => {
   delete payload.credentialStatus;
   credential.proof.verificationMethod = `did:key:z${key}#key-1`;
   credential.proof.proofValue = sign(null, canonicalize(payload), pair.privateKey).toString("base64");
-  assert.equal(verifyCredential(credential, { now: NOW }).valid, true, "published 0.2.0 accepts the substituted issuer fixture");
+  assert.equal(verifyCredential(credential, { now: NOW }).valid, false, "published 0.4.2 rejects the substituted issuer fixture");
   denied(credential);
 });
 

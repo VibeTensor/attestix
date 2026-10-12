@@ -1,4 +1,4 @@
-import { ConsoleWorkspace } from "./console-workspace";
+import { ConsoleWithTour } from "./console-with-tour";
 import { ConsoleBanner } from "./console-banner";
 import { AtxEyebrow } from "@/components/atx/atx-eyebrow";
 import { constructMetadata } from "@/lib/utils";
@@ -11,7 +11,7 @@ export const metadata = constructMetadata({
 
 export default function ConsolePage() {
   return (
-    <section className="mx-auto max-w-[1400px] px-7 py-16">
+    <section className="mx-auto max-w-[1200px] px-7 py-16">
       <div className="grid items-start gap-10 lg:grid-cols-[1fr_1.2fr]">
         <div>
           <AtxEyebrow>Console</AtxEyebrow>
@@ -35,7 +35,7 @@ export default function ConsolePage() {
 
       <div className="mt-12">
         <ConsoleBanner />
-        <ConsoleWorkspace />
+        <ConsoleWithTour />
       </div>
     </section>
   );

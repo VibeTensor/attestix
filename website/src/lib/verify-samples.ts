@@ -3,7 +3,7 @@
 // SAMPLE_VALID_VC is a genuine, Ed25519-signed W3C Verifiable Credential issued
 // by the Python `attestix` core (issuer DID
 // did:key:z6Mkija7eQS9kNrvh1kAp7PJFgPEznFpBdDm825vugSQxdW7, name VibeTensor). It
-// verifies green under the same @vibetensor/attestix verifier the page imports.
+// verifies green under the same attestix verifier the page imports.
 //
 // SAMPLE_TAMPERED_VC is the identical credential with one signed field mutated
 // (credentialSubject.risk_level "high" -> "low") while the original proofValue

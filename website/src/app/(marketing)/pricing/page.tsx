@@ -91,14 +91,14 @@ function TierCard({ tier }: { tier: Tier }) {
 			href={tier.ctaHref}
 			target="_blank"
 			rel="noopener noreferrer"
-			className={`mt-7 inline-flex h-10 items-center justify-center rounded-atx-md px-5 text-[13px] font-medium transition-colors ${ctaClasses(tier.highlight)}`}
+			className={`mt-7 inline-flex h-10 items-center justify-center rounded-2xl px-5 text-[13px] font-medium transition-colors ${ctaClasses(tier.highlight)}`}
 		>
 			{tier.cta} &rarr;
 		</a>
 	) : (
 		<Link
 			href={tier.ctaHref}
-			className={`mt-7 inline-flex h-10 items-center justify-center rounded-atx-md px-5 text-[13px] font-medium transition-colors ${ctaClasses(tier.highlight)}`}
+			className={`mt-7 inline-flex h-10 items-center justify-center rounded-2xl px-5 text-[13px] font-medium transition-colors ${ctaClasses(tier.highlight)}`}
 		>
 			{tier.cta} &rarr;
 		</Link>
@@ -106,7 +106,7 @@ function TierCard({ tier }: { tier: Tier }) {
 
 	return (
 		<div
-			className={`relative flex flex-col rounded-atx-md border p-6 transition-colors ${
+			className={`relative flex flex-col rounded-2xl border p-6 transition-colors ${
 				tier.highlight
 					? "border-atx-accent/50 bg-atx-panel-hi"
 					: "border-atx-line-soft bg-atx-panel"
@@ -120,7 +120,7 @@ function TierCard({ tier }: { tier: Tier }) {
 					</span>
 				) : tier.highlight ? (
 					<span className="rounded-atx-xs border border-atx-accent/40 bg-atx-accent-soft px-2 py-0.5 text-atx-accent">
-						popular
+						planned
 					</span>
 				) : null}
 			</div>
@@ -160,166 +160,170 @@ function TierCard({ tier }: { tier: Tier }) {
 
 			{isWaitlist ? (
 				<p className="mt-3 text-[10.5px] leading-[1.5] text-atx-ink-faint">
-					Not a checkout. Self-serve billing (Stripe for cards, Razorpay for
-					UPI/INR) is coming as we finish the billing backend  -  until then we
-					onboard you directly.
-				</p>
+              Hosted availability, pricing, billing and contract terms require separate confirmation. This is not a checkout.
+            </p>
 			) : null}
 		</div>
 	);
 }
 
+const WRAP = "mx-auto w-full max-w-[1200px] px-6";
+const H2 =
+	"text-[32px] font-medium leading-[1.15] tracking-[-0.8px] text-atx-ink";
+const LEAD = "text-[17.5px] leading-[1.6] text-atx-ink-mid";
+
 export default function PricingPage() {
 	return (
-		<section className="mx-auto max-w-[1320px] px-7 py-24">
-			{/* ----- Hero -------------------------------------------------------- */}
-			<div className="grid items-start gap-10 lg:grid-cols-[1fr_1.1fr]">
-				<div>
+		<>
+			{/* ----- Hero + tier cards ------------------------------------------- */}
+			<section className="bg-atx-bg px-6 pb-20 pt-16 md:pt-20">
+				<div className="mx-auto max-w-[860px] text-center">
 					<AtxEyebrow>Pricing</AtxEyebrow>
-					<h1 className="mt-3 font-serif text-[clamp(36px,4.8vw,60px)] leading-[1.05] tracking-[-0.012em] text-atx-ink">
-						Start free, self-host
-						<br />
-						forever, or{" "}
-						<em className="italic text-atx-accent">let us run it.</em>
+					<h1 className="mt-3 text-[clamp(34px,5vw,52px)] font-normal leading-[1.09] tracking-[-0.03em] text-atx-ink [text-wrap:balance]">
+						Self-host the toolkit, or discuss{" "}
+						<span className="text-atx-accent">proposed hosted plans.</span>
 					</h1>
+					<p className={`mx-auto mt-5 max-w-[640px] [text-wrap:balance] ${LEAD}`}>
+              The Python toolkit is open source under Apache 2.0. Its documented verification profile supports integrity checks and governance evidence. Hosted plans are proposals, subject to availability and operating acceptance; this page does not promise enterprise controls or a production service.
+            </p>
 				</div>
-				<p className="text-[15px] leading-[1.65] text-atx-ink-mid">
-					The Python toolkit is open source under Apache 2.0. Its documented verification profile supports integrity checks and governance evidence. Hosted plans are proposals, subject to availability and operating acceptance; this page does not promise enterprise controls or a production service.
-				</p>
-			</div>
 
-			{/* ----- Tier cards -------------------------------------------------- */}
-			<div className="mt-14 grid gap-5 md:grid-cols-2 xl:grid-cols-4">
-				{siteConfig.pricing.map((tier) => (
-					<TierCard key={tier.name} tier={tier} />
-				))}
-			</div>
+				<div className="mx-auto mt-12 w-full max-w-[1200px]">
+					<div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
+						{siteConfig.pricing.map((tier) => (
+							<TierCard key={tier.name} tier={tier} />
+						))}
+					</div>
 
-			<p className="mt-6 text-[12px] leading-[1.6] text-atx-ink-dim">
-				Hosted pricing, availability and scope must be confirmed separately. A proposed price or plan label is not a service commitment.
-			</p>
+					<p className="mx-auto mt-6 max-w-[720px] text-center text-[13px] leading-[1.6] text-atx-ink-dim">
+              Hosted availability, pricing, currencies, operating controls and contract scope must be confirmed separately before relying on a service.
+            </p>
+				</div>
+			</section>
 
 			{/* ----- OSS forever-free -------------------------------------------- */}
-			<div className="mt-20">
-				<AtxEyebrow>Open-source capabilities</AtxEyebrow>
-				<h2 className="mt-3 font-serif text-[clamp(26px,3.2vw,38px)] leading-[1.1] tracking-[-0.01em] text-atx-ink">
-					Review what is implemented
-					<br />
-					<em className="italic text-atx-accent">in the public source.</em>
-				</h2>
-				<p className="mt-4 max-w-[760px] text-[14px] leading-[1.65] text-atx-ink-mid">
-					Use the public repositories to review implementation, license and verification limits. Self-hosting requires your own operating controls; hosted terms are agreed separately.
-				</p>
+			<section className="bg-atx-bg-elev py-20">
+				<div className={`${WRAP} text-center`}>
+					<AtxEyebrow>Open-source capabilities</AtxEyebrow>
+					<h2 className={`mt-3 ${H2}`}>
+						Evaluate the public source and its{" "}
+						<span className="text-atx-accent">documented limits.</span>
+					</h2>
+					<p className={`mx-auto mt-4 max-w-[760px] ${LEAD}`}>
+              Review the Apache 2.0 license and current release documentation. Operators manage authentication, storage, keys, recovery, monitoring, trust and incident handling.
+            </p>
 
-				<div className="mt-8 grid gap-px overflow-hidden rounded-atx-md border border-atx-line-soft bg-atx-line-soft sm:grid-cols-2 lg:grid-cols-3">
-					{FOREVER_FREE.map((item, i) => (
-						<div
-							key={item.title}
-							className="flex gap-3 bg-atx-panel p-5"
-						>
-							<span className="mt-0.5 font-mono-atx text-[11px] text-atx-accent">
-								{String(i + 1).padStart(2, "0")}
-							</span>
-							<div>
-								<div className="text-[13.5px] leading-[1.4] text-atx-ink">
-									{item.title}
-								</div>
-								<div className="mt-1 text-[11.5px] leading-[1.45] text-atx-ink-dim">
-									{item.note}
+					<div className="mt-12 grid gap-4 text-left sm:grid-cols-2 lg:grid-cols-3">
+						{FOREVER_FREE.map((item) => (
+							<div
+								key={item.title}
+								className="flex gap-3 rounded-2xl border border-atx-line bg-atx-panel/60 p-5 transition-colors duration-200 hover:border-atx-ink-dim"
+							>
+								<Check />
+								<div>
+									<div className="text-[15px] font-medium leading-[1.4] text-atx-ink">
+										{item.title}
+									</div>
+									<div className="mt-1 text-[13px] leading-[1.5] text-atx-ink-dim">
+										{item.note}
+									</div>
 								</div>
 							</div>
-						</div>
-					))}
+						))}
+					</div>
 				</div>
-			</div>
+			</section>
 
 			{/* ----- Detailed comparison table ----------------------------------- */}
-			<div className="mt-20">
-				<AtxEyebrow>Compare every tier</AtxEyebrow>
-				<h2 className="mt-3 font-serif text-[clamp(26px,3.2vw,38px)] leading-[1.1] tracking-[-0.01em] text-atx-ink">
-					Source capabilities and proposed services.
-				</h2>
+			<section className="bg-atx-bg py-20">
+				<div className={WRAP}>
+					<div className="text-center">
+						<AtxEyebrow>Source and proposed plans</AtxEyebrow>
+						<h2 className={`mt-3 ${H2}`}>Capabilities and acceptance requirements.</h2>
+					</div>
 
-				<div className="mt-8 overflow-x-auto rounded-atx-md border border-atx-line-soft">
-					<table className="w-full min-w-[760px] border-collapse text-left text-[13px]">
-						<thead className="bg-atx-bg-sunken">
-							<tr>
-								<th className="border-b border-atx-line-soft px-4 py-3 font-mono-atx text-[10.5px] uppercase tracking-[0.14em] text-atx-ink-faint">
-									Capability
-								</th>
-								{TIER_COLS.map((col) => (
-									<th
-										key={col}
-										className="border-b border-atx-line-soft px-4 py-3 text-center font-mono-atx text-[10.5px] uppercase tracking-[0.12em] text-atx-ink-faint"
-									>
-										{col}
+					<div className="mt-12 overflow-x-auto rounded-2xl border border-atx-line">
+						<table className="w-full min-w-[760px] border-collapse text-left text-[14px]">
+							<thead className="bg-atx-bg-sunken">
+								<tr>
+									<th className="border-b border-atx-line-soft px-4 py-3.5 text-[13px] font-medium text-atx-ink-dim">
+										Capability
 									</th>
-								))}
-							</tr>
-						</thead>
-						<tbody>
-							{COMPARE.map((group) => (
-								<Fragment key={group.heading}>
-									<tr className="bg-atx-panel-hi">
-										<td
-											colSpan={5}
-											className="border-b border-atx-line-soft px-4 py-2.5 font-mono-atx text-[10.5px] uppercase tracking-[0.14em] text-atx-ink-dim"
+									{TIER_COLS.map((col) => (
+										<th
+											key={col}
+											className="border-b border-atx-line-soft px-4 py-3.5 text-center text-[13px] font-medium text-atx-ink"
 										>
-											{group.heading}
-										</td>
-									</tr>
-									{group.rows.map((row) => (
-										<tr key={row.label} className="bg-atx-panel">
-											<td className="border-b border-atx-line-soft px-4 py-3 text-atx-ink-mid">
-												{row.label}
-											</td>
-											{row.cells.map((cell, ci) => (
-												<td
-													key={ci}
-													className="border-b border-atx-line-soft px-4 py-3 text-center"
-												>
-													<Cell value={cell} />
-												</td>
-											))}
-										</tr>
+											{col}
+										</th>
 									))}
-								</Fragment>
-							))}
-						</tbody>
-					</table>
+								</tr>
+							</thead>
+							<tbody>
+								{COMPARE.map((group) => (
+									<Fragment key={group.heading}>
+										<tr className="bg-atx-panel">
+											<td
+												colSpan={5}
+												className="border-b border-atx-line-soft px-4 py-3 text-[14px] font-medium text-atx-accent"
+											>
+												{group.heading}
+											</td>
+										</tr>
+										{group.rows.map((row) => (
+											<tr key={row.label} className="bg-atx-panel/60">
+												<td className="border-b border-atx-line-soft px-4 py-3 text-atx-ink-mid">
+													{row.label}
+												</td>
+												{row.cells.map((cell, ci) => (
+													<td
+														key={ci}
+														className="border-b border-atx-line-soft px-4 py-3 text-center"
+													>
+														<Cell value={cell} />
+													</td>
+												))}
+											</tr>
+										))}
+									</Fragment>
+								))}
+							</tbody>
+						</table>
+					</div>
+					<p className="mx-auto mt-4 max-w-[720px] text-center text-[13px] leading-[1.6] text-atx-ink-dim">
+              This table distinguishes public source capabilities from proposed hosted-service acceptance work. Planned or review entries do not establish current availability or production readiness.
+            </p>
 				</div>
-				<p className="mt-3 text-[11.5px] leading-[1.55] text-atx-ink-dim">
-					&quot;self-host&quot; means operator-managed source. Hosted columns are proposals requiring separate availability and acceptance review.
-				</p>
-			</div>
+			</section>
 
 			{/* ----- FAQ --------------------------------------------------------- */}
-			<div className="mt-20">
-				<AtxEyebrow>Questions</AtxEyebrow>
-				<h2 className="mt-3 font-serif text-[clamp(26px,3.2vw,38px)] leading-[1.1] tracking-[-0.01em] text-atx-ink">
-					Honest answers.
-				</h2>
+			<section className="bg-atx-bg-elev py-20">
+				<div className="mx-auto w-full max-w-[720px] px-6">
+					<div className="text-center">
+						<AtxEyebrow>Questions</AtxEyebrow>
+						<h2 className={`mt-3 ${H2}`}>Honest answers.</h2>
+					</div>
 
-				<div className="mt-8 grid gap-px overflow-hidden rounded-atx-md border border-atx-line-soft bg-atx-line-soft">
-					{FAQ.map((item) => (
-						<div key={item.q} className="bg-atx-panel p-6">
-							<div className="font-mono-atx text-[13px] text-atx-ink">
-								{item.q}
+					<div className="mt-10 rounded-xl border border-atx-line bg-atx-panel/60 px-6">
+						{FAQ.map((item, i) => (
+							<div
+								key={item.q}
+								className={`py-5 ${i ? "border-t border-atx-line-soft" : ""}`}
+							>
+								<h3 className="text-[15px] font-medium text-atx-ink">{item.q}</h3>
+								<p className="mt-2 text-[15px] leading-[1.65] text-atx-ink-mid">
+									{item.a}
+								</p>
 							</div>
-							<p className="mt-2 max-w-[860px] text-[13.5px] leading-[1.65] text-atx-ink-mid">
-								{item.a}
-							</p>
-						</div>
-					))}
-				</div>
-			</div>
+						))}
+					</div>
 
-			{/* ----- Footer compliance line -------------------------------------- */}
-			<div className="mt-16 rounded-atx-md border border-atx-line-soft bg-atx-bg-sunken p-6">
-				<p className="text-[12.5px] leading-[1.6] text-atx-ink-dim">
-					Attestix records signed evidence for governance workflows. Applicability depends on the system and operator role. Recorded documentation, a signature or a plan label does not establish legal conformity or certification.
-				</p>
-			</div>
-		</section>
+					{/* ----- Footer compliance line ------------------------------------ */}
+					<p className="mt-10 text-center text-[13px] leading-[1.6] text-atx-ink-dim">
+              Attestix records signed evidence for governance workflows. It does not establish SOC 2 or ISO certification, GDPR compliance, EU AI Act conformity, trusted issuers or truth of recorded claims.
+            </p>
+				</div>
+			</section>
+		</>
 	);
 }

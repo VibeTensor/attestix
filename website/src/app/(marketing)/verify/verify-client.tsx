@@ -8,7 +8,7 @@ import {
   canonicalize,
   verifyCredential,
   type JsonValue,
-} from "@vibetensor/attestix";
+} from "attestix";
 import Link from "next/link";
 import { credentialBoundary } from "@/lib/credential-boundary";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -16,7 +16,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 // ---------------------------------------------------------------------------
 // Everything below runs ENTIRELY in the visitor's browser. There is no fetch(),
 // no API call, no telemetry. The pasted credential never leaves the machine.
-// The only crypto is the published @vibetensor/attestix verifier (Ed25519 over
+// The only crypto is the published attestix verifier (Ed25519 over
 // the SDK canonical form via @noble/curves). Boundary checks bind the claimed
 // issuer and reject ambiguous JSON before the SDK; they do not reimplement crypto.
 // ---------------------------------------------------------------------------

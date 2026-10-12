@@ -36,7 +36,7 @@ export function AgentDetail({ agent, audit, onBack }: Props) {
       </button>
 
       <div className="mt-4 flex flex-wrap items-start justify-between gap-4">
-        <div>
+        <div data-tour="identity">
           <h2 className="font-serif text-[32px] leading-none text-atx-ink">
             {agent.displayName}
           </h2>
@@ -95,7 +95,7 @@ export function AgentDetail({ agent, audit, onBack }: Props) {
       </div>
 
       <div className="mt-6 border-b border-atx-line-soft">
-        <div className="flex flex-wrap gap-1">
+        <div data-tour="tabs" className="flex flex-wrap gap-1">
           {TABS.map((t) => {
             const active = tab === t;
             return (
@@ -116,7 +116,7 @@ export function AgentDetail({ agent, audit, onBack }: Props) {
         </div>
       </div>
 
-      <div className="mt-6">
+      <div data-tour="tab-body" className="mt-6">
         {tab === "overview" && <AgentOverview agent={agent} />}
         {tab === "compliance" && <ComplianceProfile agent={agent} />}
         {tab === "credentials" && (

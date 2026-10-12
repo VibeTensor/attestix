@@ -12,6 +12,16 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Correct AI Act application dates and separate source changes from registry publication and deployment acceptance.
 - Remove unverified tool/download counts and qualify language-specific verifier behavior.
 
+## [0.4.3] - 2026-10-12
+
+### Changed
+
+- Ship the previously drafted homepage and site-wide design on the current hardened source.
+- Upgrade the browser verifier to npm `attestix` 0.4.2 while retaining boundary checks and regression tests.
+- Correct registry installation/version guidance and the offline action-log hash example.
+- Clarify trust, revocation, capture and external-witness limits; refresh release metadata and evidence-only website wording.
+- Improve console-tour keyboard focus and timer cleanup.
+
 ## [0.4.2] - 2026-10-12
 
 ### Security

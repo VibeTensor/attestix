@@ -42,7 +42,7 @@
 
 ## Source and verification status
 
-The readiness changes are merged to main. This is source status, not a new registry-release announcement. Install from a reviewed source revision when you need changes that are not yet in your registry package.
+Published runtime hardening is available in Python `attestix` 0.4.2 on PyPI. This source also prepares the 0.4.3 website/documentation update; source metadata is not proof of registry publication. The JavaScript offline verifier is also published as npm `attestix` 0.4.2. Main may contain later changes; compare release notes and pin the version you reviewed. Go and Java 0.4.2 are published. R and Rust have GitHub 0.4.2 releases, while CRAN and crates.io still serve 0.4.1 at this release cutoff.
 
 - Credential verification binds the stated issuer to the supported proof controller. Ambiguous NFC-normalized keys fail before signing or verification.
 - Presentation verification requires the caller's expected challenge and domain. A signature alone does not provide replay protection.
@@ -54,11 +54,11 @@ The readiness changes are merged to main. This is source status, not a new regis
 ## Install
 
 ```bash
-# Registry package (check release notes against the main branch):
-pip install attestix
+# Reviewed release (check release notes before upgrading):
+pip install attestix==0.4.2
 ```
 
-> Stable 0.4.0 ships only the canonical
+> Since 0.4.0, the supported namespace is the canonical
 > `attestix.*` namespace. The older flat layout (`from services... import`,
 > `from auth... import`, ...) keeps working via thin deprecation shims that
 > emit a `DeprecationWarning` on first import and are scheduled for removal in
@@ -106,12 +106,12 @@ Cryptographic validity is separate from issuer trust, authorization, revocation 
 
 | Language | Install | Status |
 |----------|---------|--------|
-| **Python** | `pip install attestix` | Python source and registry package |
-| **JS / TS** | `npm install @vibetensor/attestix` | Verifier source ([attestix-js](https://github.com/VibeTensor/attestix-js)) |
-| **Go** | `go get github.com/VibeTensor/attestix-go` | Verifier source ([attestix-go](https://github.com/VibeTensor/attestix-go)) |
-| **Rust** | `cargo add attestix` | Verifier source ([attestix-rs](https://github.com/VibeTensor/attestix-rs)) |
-| **Java** | See repository build instructions | Verifier source ([attestix-java](https://github.com/VibeTensor/attestix-java)) |
-| **R** | See repository installation instructions | Verifier source ([attestix-r](https://github.com/VibeTensor/attestix-r)) |
+| **Python** | `pip install attestix==0.4.2` | Published hardening baseline: PyPI 0.4.2 |
+| **JS / TS** | `npm install attestix@0.4.2` | npm 0.4.2; verifier source ([attestix-js](https://github.com/VibeTensor/attestix-js)) |
+| **Go** | `go get github.com/VibeTensor/attestix-go@v0.4.2` | Go module v0.4.2; verifier source ([attestix-go](https://github.com/VibeTensor/attestix-go)) |
+| **Rust** | `cargo add attestix` | crates.io 0.4.1; GitHub v0.4.2 source ([attestix-rs](https://github.com/VibeTensor/attestix-rs)) |
+| **Java** | Maven `com.vibetensor:attestix:0.4.2` | Maven 0.4.2; verifier source ([attestix-java](https://github.com/VibeTensor/attestix-java)) |
+| **R** | See repository installation instructions | CRAN 0.4.1; GitHub 0.4.2 source ([attestix-r](https://github.com/VibeTensor/attestix-r)) |
 
 Every verifier targets the Attestix canonical-JSON profile, which differs from strict [RFC 8785](https://www.rfc-editor.org/rfc/rfc8785),
 and Ed25519 signatures ([RFC 8032](https://www.rfc-editor.org/rfc/rfc8032)) against
@@ -486,7 +486,7 @@ an operating guarantee.
 
 ## Research Paper
 
-Attestix is described in a research paper covering system architecture, cryptographic pipeline, EU AI Act compliance automation, and evaluation with 531 automated tests (440 functional + 91 RFC / W3C conformance benchmarks).
+Attestix is described in a research paper covering system architecture, cryptographic pipeline, governance evidence workflows, and evaluation with 531 automated tests (440 functional + 91 RFC / W3C conformance benchmarks).
 
 **[Attestix: A Unified Attestation Infrastructure for Autonomous AI Agents](https://github.com/VibeTensor/attestix/blob/main/paper/attestix-paper.pdf)**
 Pavan Kumar Dubasi, VibeTensor Private Limited, 2026.

@@ -8,12 +8,12 @@ export const metadata: Metadata = {
 export default function TermsOfService() {
   return (
     <>
-      <h1>Terms of Service</h1>
-      <p className="text-muted-foreground">
+      <h1>Terms of service</h1>
+      <p className="!mt-4 text-[14px] text-atx-ink-dim">
         Last updated: February 27, 2026
       </p>
 
-      <h2>1. Acceptance of Terms</h2>
+      <h2>1. Acceptance of terms</h2>
       <p>
         By accessing or using the Attestix website (attestix.io) or
         the Attestix software, you agree to be bound by these Terms of Service.
@@ -27,8 +27,8 @@ export default function TermsOfService() {
         distributed under the Apache License 2.0.
       </p>
 
-      <h2>3. Use of the Software</h2>
-      <h3>3.1 Open Source License</h3>
+      <h2>3. Use of the software</h2>
+      <h3>3.1 Open source license</h3>
       <p>
         The Attestix software is licensed under the Apache License, Version 2.0.
         You may use, modify, and distribute the software in accordance with the
@@ -42,7 +42,7 @@ export default function TermsOfService() {
         </a>
         .
       </p>
-      <h3>3.2 Acceptable Use</h3>
+      <h3>3.2 Acceptable use</h3>
       <p>You agree not to:</p>
       <ul>
         <li>Use the software for any unlawful purpose</li>
@@ -62,13 +62,13 @@ export default function TermsOfService() {
         </li>
       </ul>
 
-      <h2>4. Enterprise Services</h2>
+      <h2>4. Enterprise services</h2>
       <p>
         Enterprise support services are governed by separate agreements. Contact
         info@vibetensor.com for enterprise inquiries.
       </p>
 
-      <h2>5. Disclaimer of Warranties</h2>
+      <h2>5. Disclaimer of warranties</h2>
       <p>
         THE SOFTWARE IS PROVIDED &quot;AS IS&quot; AND &quot;AS AVAILABLE&quot;
         WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT
@@ -86,7 +86,7 @@ export default function TermsOfService() {
         for compliance decisions.
       </p>
 
-      <h2>6. Limitation of Liability</h2>
+      <h2>6. Limitation of liability</h2>
       <p>
         TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, VIBETENSOR PRIVATE
         LIMITED SHALL NOT BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL,
@@ -103,21 +103,21 @@ export default function TermsOfService() {
         resulting from artifacts you generate using Attestix.
       </p>
 
-      <h2>8. Intellectual Property</h2>
+      <h2>8. Intellectual property</h2>
       <p>
         The Attestix name, logo, and brand assets are trademarks of VibeTensor
         Private Limited. The software source code is licensed under Apache 2.0.
         Third-party components retain their respective licenses.
       </p>
 
-      <h2>9. Third-Party Links</h2>
+      <h2>9. Third-party links</h2>
       <p>
         Our website may contain links to third-party websites (GitHub, PyPI, MCP
         Registry). We are not responsible for the content or practices of these
         external sites.
       </p>
 
-      <h2>10. Governing Law</h2>
+      <h2>10. Governing law</h2>
       <p>
         These Terms shall be governed by and construed in accordance with the
         laws of India. Any disputes arising out of these Terms shall be subject
@@ -125,7 +125,7 @@ export default function TermsOfService() {
         India.
       </p>
 
-      <h2>11. Changes to Terms</h2>
+      <h2>11. Changes to terms</h2>
       <p>
         We may revise these Terms at any time by posting updates on this page.
         Continued use of the website or software after changes constitutes

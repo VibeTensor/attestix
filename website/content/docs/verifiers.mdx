@@ -14,12 +14,12 @@ Attestix uses a published canonical-JSON and Ed25519 credential profile. Shared 
 | [R](https://github.com/VibeTensor/attestix-r) | Credential verification and delegation pair helpers. |
 | [Rust](https://github.com/VibeTensor/attestix-rs) | Credential/delegation verification and checked canonicalization. |
 
-The npm package name is `@vibetensor/attestix`. Read each repository's installation and release notes; merged main-branch source is not a registry-publication announcement. The non-Python repositories are verifier libraries, not credential issuers.
+The current npm package is `attestix`: install `attestix@0.4.2`. The legacy `@vibetensor/attestix` package remains at 0.2.0. Read each repository's installation and release notes; registry publication is separate from a GitHub release. JavaScript, Go and Java 0.4.2 are published; R and Rust have GitHub 0.4.2 releases, while CRAN and crates.io remain at 0.4.1 at this cutoff. The non-Python repositories are verifier libraries, not credential issuers.
 
 ## Verification responsibilities
 
 Establish which issuer/key is trusted, what claims authorize, whether time/status checks are appropriate, and how replay is prevented. An embedded DID or caller-supplied key proves key control, not identity or permission. Offline verification cannot establish live revocation unless you provide a trusted status source and freshness policy.
 
-The [browser verifier](/verify) applies its documented local boundary checks and signature verification. It is not a legal conformity decision or a substitute for a trusted resolver.
+The [browser verifier](/verify) uses npm `attestix` 0.4.2 with its documented local boundary checks and signature verification. It is not a legal conformity decision or a substitute for a trusted resolver.
 
 See the [public conformance fixtures](https://github.com/VibeTensor/attestix/tree/main/spec/verify/v1) and each SDK README for exact APIs and limitations.
