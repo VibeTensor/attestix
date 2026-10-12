@@ -6,7 +6,7 @@ import { VerifyClient } from "./verify-client";
 export const metadata = constructMetadata({
   title: "Verify a credential",
   description:
-    "Verify an Attestix-issued W3C Verifiable Credential in your browser. Ed25519 over JCS-canonical form, did:key resolution — fully client-side. Your credential is never uploaded.",
+    "Verify an Attestix-issued W3C Verifiable Credential in your browser. Ed25519 over the SDK canonical form, did:key resolution  -  fully client-side. Your credential is never uploaded.",
 });
 
 const NPM_PKG = "@vibetensor/attestix";
@@ -16,7 +16,7 @@ export default function VerifyPage() {
     <section className="mx-auto max-w-[1080px] px-7 py-24">
       <AtxEyebrow>Verification portal</AtxEyebrow>
       <h1 className="mt-3 font-serif text-[clamp(36px,4.8vw,60px)] leading-[1.05] tracking-[-0.012em] text-atx-ink">
-        Verify an Attestix credential —
+        Verify an Attestix credential  -
         <br />
         <em className="italic text-atx-accent">in your browser, nothing uploaded.</em>
       </h1>
@@ -32,7 +32,7 @@ export default function VerifyPage() {
         >
           {NPM_PKG}
         </a>{" "}
-        verifier. No installation, no account, no backend — your credential never
+        verifier. No installation, no account, no backend  -  your credential never
         leaves your machine. That is a stronger trust story than a server-side
         verifier: there is nothing to log, nothing to intercept, and nothing to
         trust beyond the open-source code running in your own browser tab.
@@ -60,8 +60,9 @@ export default function VerifyPage() {
           <code className="font-mono-atx text-[12.5px] text-atx-ink">
             credentialStatus
           </code>{" "}
-          fields, then re-serialises the remainder to its JCS-canonical byte form
-          (sorted keys, tightest separators, NFC-normalised).
+          fields, then serialises the remainder using the Attestix SDK
+          canonical form (sorted keys and NFC normalization). This profile
+          is not strict RFC 8785 JCS, which does not normalize Unicode.
         </li>
         <li>
           Resolves the issuer&apos;s public key from the{" "}
@@ -70,20 +71,21 @@ export default function VerifyPage() {
           <code className="font-mono-atx text-[12.5px] text-atx-ink">
             verificationMethod
           </code>{" "}
-          (the key is self-certifying — it is the public key, multibase-encoded).
+          after requiring its controller to match the stated issuer. The key is
+          self-certifying; no domain resolver or network lookup is used.
         </li>
         <li>
           Verifies the Ed25519 signature over those canonical bytes via{" "}
           <code className="font-mono-atx text-[12.5px] text-atx-ink">
             @noble/curves
           </code>
-          , checks the credential structure, and compares the validity window
-          against your browser&apos;s clock.
+          , checks the supported proof profile and unambiguous JSON keys, and
+          compares any valid expiration timestamp against your browser clock.
         </li>
       </ol>
       <p className="mt-4 max-w-[760px] text-[14px] leading-[1.7] text-atx-ink-mid">
         Every step runs in a WebAssembly-free, pure-JavaScript crypto path inside
-        your tab. The same verifier ships in the{" "}
+        your tab. Cryptographic verification uses the{" "}
         <a
           href={`https://www.npmjs.com/package/${NPM_PKG}`}
           target="_blank"
@@ -110,7 +112,7 @@ export default function VerifyPage() {
 
       {/* ----- Honest limitations ----------------------------------------- */}
       <h2 className="mt-16 font-mono-atx text-[11px] uppercase tracking-[0.14em] text-atx-ink-dim">
-        02 / What offline verification proves — and what it doesn&apos;t
+        02 / What offline verification proves  -  and what it doesn&apos;t
       </h2>
       <div className="mt-6 grid gap-5 md:grid-cols-2">
         <div className="rounded-atx-md border border-atx-ok/30 bg-atx-ok/[0.06] p-5">
@@ -121,24 +123,21 @@ export default function VerifyPage() {
             <li>
               <strong className="text-atx-ink">Signature authenticity.</strong>{" "}
               The credential was signed by the private key matching the issuer
-              DID, and not modified since — any tampered field breaks the
-              signature.
+              DID. Changes to signed fields break the signature; mutable
+              credentialStatus and proof metadata are excluded.
             </li>
             <li>
-              <strong className="text-atx-ink">Structural validity.</strong>{" "}
-              The document is a well-formed W3C VC with the required fields.
+              <strong className="text-atx-ink">Supported local checks.</strong>{" "}
+              The stated did:key issuer matches the proof controller, supported
+              proof fields pass local checks, and normalized JSON keys are
+              unambiguous. This is not a complete W3C conformance assessment.
             </li>
             <li>
-              <strong className="text-atx-ink">Validity window.</strong>{" "}
-              Whether the credential is within its{" "}
-              <code className="font-mono-atx text-[12px] text-atx-ink">
-                issuanceDate
-              </code>
-              –
-              <code className="font-mono-atx text-[12px] text-atx-ink">
-                expirationDate
-              </code>{" "}
-              range, compared against your clock at view time.
+              <strong className="text-atx-ink">Expiration.</strong>{" "}
+              If expirationDate is present, it must be a valid RFC 3339 calendar
+              timestamp later than your browser clock. An absent expiration is
+              allowed. This check does not enforce issuanceDate or establish
+              that the credential is currently authorized for use.
             </li>
           </ul>
         </div>
@@ -163,10 +162,10 @@ export default function VerifyPage() {
             <li>
               <strong className="text-atx-ink">Issuer identity.</strong>{" "}
               A <code className="font-mono-atx text-[12px] text-atx-ink">did:key</code>{" "}
-              is self-certifying — it proves control of a key, not who controls
-              it. <code className="font-mono-atx text-[12px] text-atx-ink">did:web</code>{" "}
-              binds a DID to a domain; <code className="font-mono-atx text-[12px] text-atx-ink">did:key</code>{" "}
-              does not. Establish out-of-band that the DID belongs to the party
+              is self-certifying  -  it proves control of a key, not who controls
+              it. This offline verifier supports only did:key. did:web requires
+              a trusted resolver and is rejected here. Establish out-of-band
+              that the DID belongs to the party
               you expect.
             </li>
             <li>
@@ -204,7 +203,7 @@ export default function VerifyPage() {
         </div>
         <p className="mt-4 text-[12.5px] leading-[1.6] text-atx-ink-dim">
           Attestix is evidence tooling, not a guarantor of compliance. A green
-          result proves the credential&apos;s signature and structure — it does
+          result proves the credential&apos;s signature and structure  -  it does
           not by itself establish that the issuer was authorised to make the
           claims, nor that the subject is compliant. Maintained by{" "}
           <a

@@ -24,13 +24,13 @@ export function CompliancePane({ onSelect }: Props) {
             Compliance
           </h2>
           <div className="mt-1 font-mono-atx text-[11px] uppercase tracking-[0.06em] text-atx-ink-dim">
-            EU AI Act / gap analysis across all agents
+            Illustrative checklist / fixture data / not a conformity assessment
           </div>
         </div>
       </div>
 
       <div className="mt-6 grid gap-4 md:grid-cols-4">
-        <Stat k="Compliant" v={compl} tone="ok" />
+        <Stat k="Checklist recorded" v={compl} tone="ok" />
         <Stat k="Gap" v={gap} tone="warn" />
         <Stat k="Revoked" v={rev} tone="err" />
         <Stat k="Pending" v={pend} tone="info" />

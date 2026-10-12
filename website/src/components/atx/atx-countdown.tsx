@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 
-const TARGET_UTC = Date.UTC(2026, 7, 2, 0, 0, 0);
+const TARGET_UTC = Date.UTC(2027, 11, 2, 0, 0, 0);
 
 function compute() {
   const now = Date.now();
@@ -23,13 +23,13 @@ export function AtxCountdown() {
   }, []);
 
   if (!t) {
-    return <span className="font-mono-atx text-atx-ink">Aug 2, 2026</span>;
+    return <span className="font-mono-atx text-atx-ink">Dec 2, 2027</span>;
   }
 
   if (t.days === 0 && t.hours === 0 && t.minutes === 0) {
     return (
       <strong className="font-mono-atx text-atx-err">
-        Enforcement active
+        Application date reached
       </strong>
     );
   }

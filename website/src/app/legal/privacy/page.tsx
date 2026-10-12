@@ -1,4 +1,5 @@
 import { Metadata } from "next";
+import Link from "next/link";
 
 export const metadata: Metadata = {
   title: "Privacy Policy",
@@ -163,7 +164,7 @@ export default function PrivacyPolicy() {
         Our website uses only strictly necessary cookies for basic
         functionality (such as theme preference). We do not use analytics
         cookies, tracking cookies, or third-party advertising cookies. See our{" "}
-        <a href="/legal/cookies">Cookie Policy</a> for details.
+        <Link href="/legal/cookies">Cookie Policy</Link> for details.
       </p>
 
       <h2>10. Children&#39;s Privacy</h2>

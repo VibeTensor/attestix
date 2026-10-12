@@ -23,7 +23,7 @@ interface FineTier {
   name: string;
   article: string;
   description: string;
-  flatMinimumEur: number;
+  fixedCapEur: number;
   revenuePercentage: number;
   colorClass: string;
   bgClass: string;
@@ -36,7 +36,7 @@ const FINE_TIERS: FineTier[] = [
     name: "Tier 1",
     article: "Article 5",
     description: "Prohibited AI practices",
-    flatMinimumEur: 35_000_000,
+    fixedCapEur: 35_000_000,
     revenuePercentage: 7,
     colorClass: "text-red-400",
     bgClass: "bg-red-500/10",
@@ -45,9 +45,9 @@ const FINE_TIERS: FineTier[] = [
   },
   {
     name: "Tier 2",
-    article: "Articles 6-49",
-    description: "High-risk non-compliance",
-    flatMinimumEur: 15_000_000,
+    article: "Article 99(4)",
+    description: "Listed operator and transparency obligations",
+    fixedCapEur: 15_000_000,
     revenuePercentage: 3,
     colorClass: "text-orange-400",
     bgClass: "bg-orange-500/10",
@@ -56,9 +56,9 @@ const FINE_TIERS: FineTier[] = [
   },
   {
     name: "Tier 3",
-    article: "Article 99(4)",
+    article: "Article 99(5)",
     description: "Incorrect information to authorities",
-    flatMinimumEur: 7_500_000,
+    fixedCapEur: 7_500_000,
     revenuePercentage: 1,
     colorClass: "text-yellow-400",
     bgClass: "bg-yellow-500/10",
@@ -118,8 +118,8 @@ function calculateFine(
 } {
   const revenueEur = revenueUsd / EUR_USD_RATE;
   const percentageAmount = revenueEur * (tier.revenuePercentage / 100);
-  const isPercentageBased = percentageAmount > tier.flatMinimumEur;
-  const fineEur = Math.max(tier.flatMinimumEur, percentageAmount);
+  const isPercentageBased = percentageAmount > tier.fixedCapEur;
+  const fineEur = Math.max(tier.fixedCapEur, percentageAmount);
 
   return { fineEur, isPercentageBased, percentageAmount };
 }
@@ -217,7 +217,7 @@ function FineCard({
 
       <div className="mb-3">
         <AnimatedFineAmount
-          value={hasCalculated ? fineEur : tier.flatMinimumEur}
+          value={hasCalculated ? fineEur : tier.fixedCapEur}
           className={cn("text-3xl font-bold tracking-tight", tier.colorClass)}
         />
       </div>
@@ -257,18 +257,18 @@ function FineCard({
                   !isPercentageBased ? "text-foreground font-medium" : ""
                 }
               >
-                Flat minimum = {formatCurrency(tier.flatMinimumEur, "EUR")}
+                Fixed monetary cap = {formatCurrency(tier.fixedCapEur, "EUR")}
               </span>
             </p>
             <p className="mt-2 pt-2 border-t border-current/10 font-medium text-foreground">
-              Applying {isPercentageBased ? "percentage" : "flat minimum"}{" "}
+              Applying {isPercentageBased ? "percentage" : "fixed monetary cap"}{" "}
               (whichever is higher)
             </p>
           </>
         ) : (
           <>
             <p>
-              {formatCurrency(tier.flatMinimumEur, "EUR")} or{" "}
+              {formatCurrency(tier.fixedCapEur, "EUR")} or{" "}
               {tier.revenuePercentage}% of global annual revenue
             </p>
             <p className="italic">Whichever is higher</p>
@@ -326,9 +326,9 @@ export function FineCalculator() {
           What could non-compliance cost you?
         </h1>
         <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto">
-          The EU AI Act introduces three tiers of fines based on the severity
-          of the violation. Enter your company&apos;s revenue to see your
-          potential financial exposure.
+          Estimate Article 99 maximum ceilings for non-SME undertakings.
+          These are statutory caps, not predicted penalties or minimum fines.
+          SME caps use the lower amount and are not calculated here.
         </p>
       </div>
 
@@ -426,13 +426,15 @@ export function FineCalculator() {
               <div className="flex items-center gap-2 mb-3">
                 <CalendarClock className="h-4 w-4 text-primary" />
                 <h3 className="text-sm font-semibold text-foreground">
-                  Enforcement begins
+                  Staged application dates
                 </h3>
               </div>
               <p className="text-sm text-muted-foreground leading-relaxed">
-                August 2, 2026. Prohibited AI practice provisions already
-                apply since February 2025. Full enforcement for high-risk
-                systems follows.
+                Article 50 transparency duties generally apply from August 2,
+                2026. Chapter III Sections 1-3 apply to Annex III high-risk
+                systems from December 2, 2027 and Annex I high-risk products
+                from August 2, 2028 under Regulation (EU) 2026/1744.
+                Review applicability and transitional provisions.
               </p>
             </div>
 
@@ -445,9 +447,10 @@ export function FineCalculator() {
                 </h3>
               </div>
               <p className="text-sm text-muted-foreground leading-relaxed">
-                SMEs and startups get proportionate fines, but the flat
-                minimums still apply. A company with EUR 5M revenue faces the
-                same EUR 35M Tier 1 minimum as a multinational.
+                Under Article 99(6), SMEs, including startups, use the lower
+                applicable percentage or fixed monetary cap. For EUR 5M
+                annual turnover, the Tier 1 SME ceiling is EUR 350,000,
+                not EUR 35M. Actual penalties depend on the circumstances.
               </p>
             </div>
           </div>

@@ -23,6 +23,8 @@ const withMDX = createMDX();
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   output: "export",
+  // prebuild runs Oxlint before every build; do not invoke the removed ESLint stack.
+  eslint: { ignoreDuringBuilds: true },
   images: {
     unoptimized: true,
   },

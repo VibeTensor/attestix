@@ -36,6 +36,7 @@ export default async function Blog() {
       </div>
 
       <div className="mt-6 flex flex-wrap items-center gap-4 font-mono-atx text-[11px] uppercase tracking-[0.14em] text-atx-ink-dim">
+        {/* oxlint-disable-next-line nextjs/no-html-link-for-pages -- Feed document is not a Next page. */}
         <a
           href="/feed.xml"
           className="inline-flex items-center gap-1.5 transition-colors hover:text-atx-accent"
@@ -45,6 +46,7 @@ export default async function Blog() {
           RSS
         </a>
         <span className="text-atx-ink-faint">/</span>
+        {/* oxlint-disable-next-line nextjs/no-html-link-for-pages -- Feed document is not a Next page. */}
         <a
           href="/feed.json"
           className="inline-flex items-center gap-1.5 transition-colors hover:text-atx-accent"

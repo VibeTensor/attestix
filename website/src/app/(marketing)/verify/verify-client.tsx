@@ -9,13 +9,16 @@ import {
   verifyCredential,
   type JsonValue,
 } from "@vibetensor/attestix";
+import Link from "next/link";
+import { credentialBoundary } from "@/lib/credential-boundary";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 // ---------------------------------------------------------------------------
 // Everything below runs ENTIRELY in the visitor's browser. There is no fetch(),
 // no API call, no telemetry. The pasted credential never leaves the machine.
 // The only crypto is the published @vibetensor/attestix verifier (Ed25519 over
-// JCS-canonical bytes via @noble/curves) — we do not reimplement any of it.
+// the SDK canonical form via @noble/curves). Boundary checks bind the claimed
+// issuer and reject ambiguous JSON before the SDK; they do not reimplement crypto.
 // ---------------------------------------------------------------------------
 
 type Outcome = "valid" | "invalid" | "malformed";
@@ -43,15 +46,6 @@ interface Report {
   subjectClaims?: Array<{ key: string; value: string }>;
   status?: { type?: string; revoked?: boolean; id?: string };
   canonicalHash?: string;
-}
-
-const SUPPORTED_DID_METHODS = ["did:key", "did:web"];
-
-function didMethodOf(did?: string): string | undefined {
-  if (!did) return undefined;
-  const parts = did.split(":");
-  if (parts.length >= 2 && parts[0] === "did") return `did:${parts[1]}`;
-  return undefined;
 }
 
 async function sha256Hex(bytes: Uint8Array): Promise<string> {
@@ -102,46 +96,20 @@ export function VerifyClient() {
       return;
     }
 
-    const proof = vc.proof as Record<string, unknown> | undefined;
-    if (!proof) {
-      setReport({
-        outcome: "malformed",
-        reason:
-          "No signature present — this credential has no `proof` block, so there is nothing to verify. An unsigned document carries no cryptographic assurance.",
-      });
+    const boundary = credentialBoundary(vc);
+    if (!boundary.valid) {
+      setReport({ outcome: "invalid", reason: boundary.reason });
       return;
     }
-
-    const verificationMethod =
-      typeof proof.verificationMethod === "string"
-        ? proof.verificationMethod
-        : undefined;
-    const issuerObj = vc.issuer as Record<string, unknown> | string | undefined;
-    const issuerId =
-      typeof issuerObj === "string"
-        ? issuerObj
-        : (issuerObj?.id as string | undefined);
-    const issuerDidForMethod =
-      verificationMethod?.split("#")[0] ?? issuerId;
-    const didMethod = didMethodOf(issuerDidForMethod);
-
-    if (didMethod && !SUPPORTED_DID_METHODS.includes(didMethod)) {
-      setReport({
-        outcome: "malformed",
-        reason: `This verifier supports ${SUPPORTED_DID_METHODS.join(
-          " and "
-        )}; this credential's issuer uses ${didMethod}, which cannot be resolved client-side here.`,
-        issuer: issuerId,
-        verificationMethod,
-        didMethod,
-      });
-      return;
-    }
+    const verificationMethod = boundary.verificationMethod;
+    const issuerId = boundary.issuer;
+    const issuerObj = vc.issuer as Record<string, unknown> | string;
+    const didMethod = "did:key";
 
     let canonicalHash: string | undefined;
     try {
       // Hash the canonical bytes over the SIGNED field set (proof and the
-      // mutable credentialStatus removed) — the exact bytes the Ed25519
+      // mutable credentialStatus removed) - the exact bytes the Ed25519
       // signature covers. Lets a technical user cross-check independently.
       const signedView: Record<string, unknown> = { ...vc };
       delete signedView.proof;
@@ -150,7 +118,7 @@ export function VerifyClient() {
         canonicalize(signedView as unknown as JsonValue)
       );
     } catch {
-      // Non-fatal: canonicalisation can throw on values JCS rejects; the
+      // Non-fatal: canonicalization can reject unsupported SDK profile values; the
       // verifier below will surface the real reason.
     }
 
@@ -189,7 +157,7 @@ export function VerifyClient() {
       outcome: result.valid ? "valid" : "invalid",
       reason: result.reason,
       checks: result.checks as unknown as CredentialChecks,
-      issuer: result.issuer ?? issuerId,
+      issuer: issuerId,
       issuerName:
         typeof issuerObj === "object"
           ? (issuerObj?.name as string | undefined)
@@ -218,12 +186,12 @@ export function VerifyClient() {
   }, []);
 
   // Honest handling of the /verify/<id> deep link: we cannot resolve a
-  // credential by id without the hosted API, so we never fake it — we surface
+  // credential by id without the hosted API, so we never fake it - we surface
   // the id and steer the visitor to the offline paste box.
   const [showDeepLinkNotice, setShowDeepLinkNotice] = useState(false);
   useEffect(() => {
     // Read the by-id deep link client-side. Supports the query form
-    // /verify?id=<id> (the shipped form — query strings work in a static
+    // /verify?id=<id> (the shipped form - query strings work in a static
     // export without per-id pre-rendering). We never resolve the id; we only
     // surface it and steer the visitor to the offline paste box.
     if (typeof window === "undefined") return;
@@ -260,15 +228,15 @@ export function VerifyClient() {
               {deepLinkId}
             </code>
             . Resolving a credential by id requires a hosted lookup (an{" "}
-            <a
+            <Link
               href="/pricing"
               className="text-atx-accent hover:underline"
             >
               Attestix Cloud
-            </a>{" "}
+            </Link>{" "}
             workspace). This page is a static, zero-backend verifier, so there is
             nothing to fetch the credential from. Paste the full credential JSON
-            below to verify it offline instead — the result is identical, and
+            below to verify it offline instead - the result is identical, and
             nothing is uploaded.
           </p>
         </div>
@@ -297,7 +265,7 @@ export function VerifyClient() {
           htmlFor="vc-input"
           className="font-mono-atx text-[10.5px] uppercase tracking-[0.14em] text-atx-ink-dim"
         >
-          Paste credential JSON · or drop a .json file
+          Paste credential JSON / or drop a .json file
         </label>
         <textarea
           id="vc-input"
@@ -433,7 +401,7 @@ function ResultPanel({ report }: { report: Report }) {
           border: "border-atx-ok/40",
           bg: "bg-atx-ok/[0.05]",
           text: "text-atx-ok",
-          label: "Valid",
+          label: "Signature verified",
         }
       : report.outcome === "invalid"
         ? {
@@ -457,9 +425,9 @@ function ResultPanel({ report }: { report: Report }) {
           aria-hidden
         >
           {report.outcome === "valid"
-            ? "✓"
+            ? "OK"
             : report.outcome === "invalid"
-              ? "✗"
+              ? "FAIL"
               : "!"}
         </span>
         <div>
@@ -470,7 +438,7 @@ function ResultPanel({ report }: { report: Report }) {
           </div>
           <div className="mt-0.5 text-[13px] text-atx-ink-mid">
             {report.outcome === "valid"
-              ? "The signature is authentic and the credential is well-formed and within its validity window."
+              ? "The signature matches the stated did:key issuer and local boundary checks passed. Establish issuer identity, authorization, and live revocation status separately."
               : report.outcome === "invalid"
                 ? report.reason ?? "Verification failed."
                 : report.reason ?? "This document could not be parsed as a credential."}
@@ -501,7 +469,7 @@ function ResultPanel({ report }: { report: Report }) {
             <Row label="Structure">
               <Badge
                 pass={report.checks.structure_valid}
-                passLabel="Well-formed VC"
+                passLabel="VC type recognized"
                 failLabel="Malformed"
               />
             </Row>
@@ -513,7 +481,7 @@ function ResultPanel({ report }: { report: Report }) {
                 <span className="text-atx-ink">{report.issuerName}</span>
               ) : null}
               <code className="font-mono-atx text-[11.5px] text-atx-ink-dim">
-                {report.issuer ?? "—"}
+                {report.issuer ?? "-"}
               </code>
             </div>
           </Row>
@@ -521,7 +489,7 @@ function ResultPanel({ report }: { report: Report }) {
           <Row label="Subject">
             <div className="flex flex-col gap-1">
               <code className="font-mono-atx text-[11.5px] text-atx-ink-dim">
-                {report.subject ?? "—"}
+                {report.subject ?? "-"}
               </code>
               {report.subjectClaims && report.subjectClaims.length > 0 ? (
                 <div className="mt-1 flex flex-col gap-1">
@@ -546,11 +514,11 @@ function ResultPanel({ report }: { report: Report }) {
             </Row>
           ) : null}
 
-          <Row label="Validity window">
+          <Row label="Declared dates">
             <div className="flex flex-col gap-1">
               <div className="flex flex-wrap items-center gap-3">
                 <span className="font-mono-atx text-[12px] text-atx-ink-dim">
-                  issued {report.issuanceDate ?? "—"}
+                  issued {report.issuanceDate ?? "-"}
                 </span>
                 {report.expirationDate ? (
                   <span className="font-mono-atx text-[12px] text-atx-ink-dim">
@@ -561,7 +529,7 @@ function ResultPanel({ report }: { report: Report }) {
               {report.expirationDate ? (
                 <Badge
                   pass={!report.expired}
-                  passLabel="Within validity window"
+                  passLabel="Expiration not reached"
                   failLabel="Expired"
                 />
               ) : (
@@ -602,7 +570,7 @@ function ResultPanel({ report }: { report: Report }) {
             ) : (
               <span className="text-[12.5px] text-atx-ink-mid">
                 No <code className="font-mono-atx text-[11.5px] text-atx-ink">credentialStatus</code>{" "}
-                present — this credential carries no revocation endpoint to check.
+                present - this credential carries no revocation endpoint to check.
               </span>
             )}
           </Row>
@@ -611,7 +579,7 @@ function ResultPanel({ report }: { report: Report }) {
             <Row label="Canonical form">
               <div className="flex flex-col gap-1">
                 <span className="text-[12px] text-atx-ink-mid">
-                  SHA-256 of the JCS-canonical signed bytes (proof and
+                  SHA-256 of the SDK-canonical signed bytes (proof and
                   credentialStatus removed):
                 </span>
                 <code className="break-all font-mono-atx text-[11.5px] text-atx-accent">

@@ -17,7 +17,7 @@ export function AuditPane({ audit }: Props) {
             Audit trail
           </h2>
           <div className="mt-1 font-mono-atx text-[11px] uppercase tracking-[0.06em] text-atx-ink-dim">
-            Article 12 / SHA-256 hash-chained / tamper-evident
+            Article 12 evidence example / illustrative fixture data
           </div>
         </div>
         <div className="flex gap-2">
@@ -37,8 +37,8 @@ export function AuditPane({ audit }: Props) {
       </div>
 
       <div className="mt-4 font-mono-atx text-[10.5px] uppercase tracking-[0.12em] text-atx-ink-dim">
-        sha-256 hash-chained / article 12 compliant / {audit.length} entries /
-        genesis verified <span className="text-atx-ok">&#10003;</span>
+        demo hash-chain fields / {audit.length} fixture entries /
+        integrity and legal compliance require separate verification
       </div>
 
       <div className="mt-4">
@@ -93,8 +93,7 @@ export function AuditList({ items }: { items: ConsoleAudit[] }) {
                 <Row k="prev_hash" v={a.prev} dim />
                 <Row
                   k="verify"
-                  v="SHA-256(prev_hash + canonical_json(entry)) = hash \u2713"
-                  ok
+                  v="Illustrative hash-chain field; no verification is run in this preview"
                 />
               </div>
             )}
