@@ -24,15 +24,15 @@
 </p>
 
 <p align="center">
-  Make your AI agents EU AI Act compliant with cryptographically verifiable proof.<br/>
+  Record cryptographically verifiable evidence to support AI governance workflows.<br/>
   Open-source identity, credentials, compliance automation, and trust scoring.<br/>
   47 MCP tools across 9 modules, 44 REST API endpoints,
-  531-test suite (440 functional + 91 RFC / W3C conformance benchmarks).<br/>
+  Automated functional tests and Attestix interoperability benchmarks.<br/>
   Real integrations with LangChain, OpenAI Agents SDK, and CrewAI.
 </p>
 
 <p align="center">
-  <em>Status: v0.4.0 stable (pre-release 0.4.1rc1 available via the --pre channel).
+  <em>Status: v0.4.1 stable, with pre-1.0 deployment limitations.
   Single-maintainer project, community
   contributions welcome. No independent third-party security audit has been
   performed yet; deploy with the same diligence you would apply to any
@@ -44,11 +44,8 @@
 ## Install
 
 ```bash
-# Stable 0.4.0:
+# Stable release:
 pip install attestix
-
-# Pre-release 0.4.1rc1 (opt in with --pre):
-pip install --pre attestix
 ```
 
 > Stable 0.4.0 ships only the canonical
@@ -63,7 +60,7 @@ pip install --pre attestix
 ```bash
 attestix status                          # System overview
 attestix init --name MyBot               # Create agent identity
-attestix compliance <agent-id>           # Check EU AI Act compliance
+attestix compliance <agent-id>           # Check recorded documentation gaps
 attestix verify <agent-id>               # Verify identity cryptographically
 attestix audit <agent-id>                # View hash-chained audit trail
 attestix credential --list               # List W3C Verifiable Credentials
@@ -72,7 +69,8 @@ attestix credential --list               # List W3C Verifiable Credentials
 ### REST API
 
 ```bash
-pip install fastapi uvicorn
+pip install 'attestix[api]'
+# Configure ATTESTIX_API_KEY in your environment before starting the API.
 uvicorn attestix.api.main:app --reload   # Swagger docs at http://localhost:8000/docs
 ```
 
@@ -105,7 +103,7 @@ issuer. The verifiers are verifier-only: issuance stays in the Python core.
 | **Java** | `com.vibetensor:attestix:0.4.0` | publishing soon ([attestix-java](https://github.com/VibeTensor/attestix-java)) |
 | **R** | `install.packages("attestix")` | coming to CRAN ([attestix-r](https://github.com/VibeTensor/attestix-r)) |
 
-Every verifier checks the same canonical-JSON form ([RFC 8785](https://www.rfc-editor.org/rfc/rfc8785))
+Every verifier targets the Attestix canonical-JSON profile, which differs from strict [RFC 8785](https://www.rfc-editor.org/rfc/rfc8785),
 and Ed25519 signatures ([RFC 8032](https://www.rfc-editor.org/rfc/rfc8032)) against
 the shared [`spec/verify/v1`](https://github.com/VibeTensor/attestix/tree/main/spec/verify/v1)
 vectors. Verify in the browser at <https://attestix.io/verify>, or read the
@@ -113,11 +111,20 @@ bundle wire-format at <https://attestix.io/spec/bundle/v1>.
 
 ## Why Attestix
 
-On **August 2, 2026**, the EU AI Act enforcement begins. Fines reach EUR 35M or 7% of global revenue.
+The EU AI Act has a staged application timeline. The European Commission currently lists
+2 December 2027 for specified high-risk use cases and 2 August 2028 for high-risk systems
+embedded in regulated products. Applicability depends on the system and the operator's role.
+See the [European Commission's current AI Act guidance](https://digital-strategy.ec.europa.eu/en/policies/regulatory-framework-ai).
 
-Existing compliance tools (Credo AI, Holistic AI, Vanta) are organizational dashboards. None produce **machine-readable, cryptographically verifiable proof** that an AI agent can present to another agent, regulator, or system.
+Attestix helps organize evidence; a signature or generated declaration does not establish
+legal conformity or replace the applicable assessment process.
 
-Agent identity is fragmenting across walled gardens (Microsoft Entra, AWS AgentCore, Google A2A, ERC-8004). No single tool combines **agent identity + EU AI Act compliance + verifiable credentials** in one protocol.
+Attestix provides agent identity, signed credentials, delegation, and offline verification
+for developers who need portable evidence in their applications. Broader governance
+platforms also offer APIs, SDKs, agent governance, and compliance workflows; evaluate
+their current capabilities against your requirements.
+
+Agent identity is fragmenting across walled gardens (Microsoft Entra, AWS AgentCore, ERC-8004). Attestix combines **agent identity, AI governance evidence and verifiable credentials** in one toolkit.
 
 Attestix fills this gap.
 
@@ -222,7 +229,7 @@ python -m attestix.main
 
 ## EU AI Act Compliance Workflow
 
-Take a high-risk AI agent from zero to fully compliant:
+Record a high-risk AI agent documentation workflow for provider review:
 
 ```
 1. create_agent_identity        --> UAIT with DID (Ed25519 signed)
