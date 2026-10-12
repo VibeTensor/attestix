@@ -81,7 +81,7 @@ Error: MCP server "attestix" failed to start
 
 **Cause:** The agent ID does not exist in `identities.json`. This can happen if:
 - The identity was created in a different working directory (Attestix uses local JSON files)
-- The identity was revoked or erased (GDPR Article 17)
+- The identity was revoked or its managed local records were erased
 - You're using a different Attestix instance
 
 **Solution:** Check `identities.json` in your working directory. Create a new identity if needed.

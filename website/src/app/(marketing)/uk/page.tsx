@@ -3,26 +3,26 @@ import { AtxEyebrow } from "@/components/atx/atx-eyebrow";
 import { constructMetadata } from "@/lib/utils";
 
 export const metadata = constructMetadata({
-  title: "Attestix · United Kingdom",
+  title: "Attestix / United Kingdom",
   description:
-    "AI-Act-grade evidence for UK builders selling into the EU + an FCA-aligned audit story for regulated AI. FCA, ICO, Bank of England framings.",
+    "Signed identity and governance evidence for UK teams evaluating AI agent workflows. Legal and regulatory applicability requires separate review.",
 });
 
 const WHY_NOW = [
   {
     n: "01",
     title: "EU AI Act extraterritoriality",
-    body: "UK firms selling AI services into the EU are providers or deployers under Articles 25 and 28. The Act enters general application on 2 August 2026 — a UK-incorporated supplier with EU customers carries the obligations regardless of where the team sits.",
+    body: "UK teams serving EU markets should assess the applicable EU AI Act role, classification and staged timeline. Signed evidence supports that assessment; it does not determine legal conformity.",
   },
   {
     n: "02",
     title: "FCA outcome-based AI guidance",
-    body: "The Financial Conduct Authority puts the burden of evidence on the deploying firm — explainability, accountability, governance over AI models. A cryptographically-signed audit trail is the cheapest defence; Attestix is the evidence engine, not a model-risk-management replacement.",
+    body: "Signed audit records can support accountability and oversight reviews. Their completeness, accuracy and suitability need assessment within the deploying firm's operating controls.",
   },
   {
     n: "03",
     title: "ICO data-protection-by-design",
-    body: "Attestix's hash-chained audit and redaction-with-retained-hash erasure model line up with the ICO's “by design” and “demonstrable accountability” expectations. Honest scope: our GDPR coverage today is Article 17 only.",
+    body: "Attestix records signed evidence and supports erasure of managed local records and parseable local backups. Remote replicas, shared credentials and external backups need separate handling. This tooling does not establish GDPR conformity.",
   },
 ];
 
@@ -30,20 +30,20 @@ const ICPS = [
   {
     city: "London",
     sector: "Fintech",
-    pain: "Open-banking copilots and agent-driven KYC report to the FCA under SUP 16.3 — proving which agent did what, on what data, with what authority is non-optional.",
+    pain: "Open-banking copilots and agent-driven KYC report to the FCA under SUP 16.3  -  proving which agent did what, on what data, with what authority is non-optional.",
     wedge: "Attestix issues an Ed25519-signed DID per agent, UCAN delegations per action, hash-chained audit per call. Auditable in retrospect; no vendor lock-in.",
   },
   {
     city: "Cambridge",
     sector: "Biotech AI",
-    pain: "Agent-driven drug discovery is increasingly scoped under MHRA evidence requirements — model lineage, training-data provenance, and version control across pipeline steps.",
+    pain: "Agent-driven drug discovery is increasingly scoped under MHRA evidence requirements  -  model lineage, training-data provenance, and version control across pipeline steps.",
     wedge: "Attestix records the model lineage credential and training-data provenance as W3C VCs, anchored to Base Sepolia testnet for tamper-evident retention.",
   },
   {
     city: "Edinburgh",
     sector: "Safety research",
     pain: "DeepMind-alumni and ARIA-funded safety teams need citable, reproducible provenance for monitor evaluations and red-team artifacts referenced in papers.",
-    wedge: "Attestix is Apache-2.0 with a published canonical-form spec and a JS verifier — a regulator or reviewer can verify our claims independently of our package.",
+    wedge: "Attestix is Apache-2.0 with a published canonical-form spec and a JS verifier  -  a regulator or reviewer can verify our claims independently of our package.",
   },
 ];
 
@@ -62,22 +62,19 @@ attestix audit verify-chain`;
 export default function UKPage() {
   return (
     <section className="mx-auto max-w-[1080px] px-7 py-24">
-      <AtxEyebrow>Region · United Kingdom</AtxEyebrow>
+      <AtxEyebrow>Region / United Kingdom</AtxEyebrow>
       <h1 className="mt-3 font-serif text-[clamp(36px,4.8vw,60px)] leading-[1.05] tracking-[-0.012em] text-atx-ink">
         Attestix
         <br />
-        <em className="italic text-atx-accent">· United Kingdom.</em>
+        <em className="italic text-atx-accent">/ United Kingdom.</em>
       </h1>
 
       <div className="mt-10 max-w-[760px] space-y-5 text-[15px] leading-[1.65] text-atx-ink-mid">
         <p>
-          AI-Act-grade evidence for UK builders selling into the EU, and an
-          FCA-aligned audit story for regulated AI. The UK is consciously
-          <em> not </em>
-          mirroring the EU horizontal regulation; each sector regulator (FCA,
-          MHRA, Ofcom, ICO) brings AI rules into existing frameworks. UK firms
-          exporting AI services to the EU still have to clear 2 August 2026 —
-          so the UK market gets two regulatory regimes for the price of one.
+          Signed identity and governance evidence for UK teams evaluating AI
+          agent workflows. Applicable requirements depend on the system,
+          operator role and jurisdiction. The EU AI Act has a staged timeline;
+          use the current official timetable when assessing a deployment.
         </p>
         <p>
           Attestix is the open-source identity, audit, and on-chain anchoring
@@ -157,13 +154,13 @@ export default function UKPage() {
         <Link href="/docs/quickstart" className="text-atx-accent hover:underline">
           /docs/quickstart
         </Link>
-        {" "}— LangChain, OpenAI Agents SDK, and CrewAI are real integrations
+        {" "} -  LangChain, OpenAI Agents SDK, and CrewAI are real integrations
         (not example shims). Dify, Google ADK, Semantic Kernel, and Strands are
         example-only via the MCP server.
       </p>
 
       <h2 className="mt-20 font-mono-atx text-[11px] uppercase tracking-[0.14em] text-atx-ink-dim">
-        FCA evidence — honesty beat
+        FCA evidence  -  honesty beat
       </h2>
       <div className="mt-4 rounded-atx-md border border-atx-line-soft bg-atx-panel p-6 text-[13.5px] leading-[1.65] text-atx-ink-mid">
         <p>
@@ -193,14 +190,14 @@ export default function UKPage() {
           <p className="mt-4 text-[13.5px] leading-[1.6] text-atx-ink-mid">
             Bring your compliance lead, your AI engineering lead, and whoever
             needs to say yes. We will walk through the console end-to-end against
-            a workflow you care about — no slide pitch.
+            a workflow you care about  -  no slide pitch.
           </p>
           <div className="mt-6 flex flex-wrap gap-3">
             <Link
               href="/demo-call?region=uk"
               className="inline-flex h-10 items-center gap-2 rounded-atx-md bg-atx-accent px-5 text-[13px] font-medium text-[oklch(0.14_0.01_180)] transition-colors hover:bg-atx-accent-deep"
             >
-              Book a demo →
+              Book a demo -&gt;
             </Link>
             <a
               href="mailto:pkd@vibetensor.com?subject=%5BUK%5D%20Attestix%20demo&body=Company%3A%20%0ARole%3A%20%0AFrameworks%20in%20use%3A%20%0ARisk%20tier%3A%20%0ATimeline%3A%20"
@@ -247,7 +244,7 @@ export default function UKPage() {
           Compliance posture
         </div>
         <p className="mt-3 text-[12.5px] leading-[1.6] text-atx-ink-mid">
-          Attestix is an evidence tool, not a guarantor of compliance —
+          Attestix is an evidence tool, not a guarantor of compliance  -
           providers remain liable under EU AI Act Articles 16-22 regardless of
           which evidence tool they use. We do not provide legal advice. Base L2
           anchoring is Sepolia testnet only as of v0.4.1; mainnet schema
