@@ -18,7 +18,6 @@ export function AtxEyebrow({ children, accent = true, className }: AtxEyebrowPro
         className
       )}
     >
-      {number ? `Section  ${number} / ` : null}
       {children}
     </div>
   );

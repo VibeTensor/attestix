@@ -35,9 +35,11 @@ export default async function Page(props: {
         <MDX components={{ ...defaultMdxComponents, Mermaid }} />
       </DocsBody>
       <div className="mt-10 flex flex-wrap gap-x-6 gap-y-2 border-t border-fd-border pt-5 text-[13px] text-fd-muted-foreground">
+        {/* oxlint-disable-next-line next/no-html-link-for-pages -- Static Markdown document, not a Next page. */}
         <a href={mdHref} className="hover:text-fd-foreground">
           View as Markdown (for AI agents)
         </a>
+        {/* oxlint-disable-next-line next/no-html-link-for-pages -- Static text index, not a Next page. */}
         <a href="/llms.txt" className="hover:text-fd-foreground">
           llms.txt index
         </a>

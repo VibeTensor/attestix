@@ -52,7 +52,7 @@ test("stated issuer cannot be replaced by an attacker's proof key", () => {
   delete payload.credentialStatus;
   credential.proof.verificationMethod = `did:key:z${key}#key-1`;
   credential.proof.proofValue = sign(null, canonicalize(payload), pair.privateKey).toString("base64");
-  assert.equal(verifyCredential(credential, { now: NOW }).valid, true, "published 0.2.0 accepts the substituted issuer fixture");
+  assert.equal(verifyCredential(credential, { now: NOW }).valid, false, "published 0.4.2 rejects the substituted issuer fixture");
   denied(credential);
 });
 

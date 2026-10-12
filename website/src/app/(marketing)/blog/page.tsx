@@ -37,42 +37,37 @@ export default async function Blog() {
             >
               Research and vision
             </Link>
-            <a
+            <Link
+              prefetch={false}
               href="/feed.xml"
               className="inline-flex items-center gap-2 rounded-full border border-atx-line px-6 py-3 text-[15px] font-medium text-atx-ink-mid transition-colors duration-200 hover:border-atx-ink-dim hover:text-atx-ink"
             >
               <RssIcon className="h-4 w-4" /> RSS feed
-            </a>
+            </Link>
           </div>
         </div>
       </section>
 
-      <div className="mt-6 flex flex-wrap items-center gap-4 font-mono-atx text-[11px] uppercase tracking-[0.14em] text-atx-ink-dim">
-        {/* oxlint-disable-next-line nextjs/no-html-link-for-pages -- Feed document is not a Next page. */}
-        <a
-          href="/feed.xml"
-          className="inline-flex items-center gap-1.5 transition-colors hover:text-atx-accent"
-          title="RSS Feed"
-        >
-          <RssIcon className="h-3.5 w-3.5" />
-          RSS
-        </a>
-        <span className="text-atx-ink-faint">/</span>
-        {/* oxlint-disable-next-line nextjs/no-html-link-for-pages -- Feed document is not a Next page. */}
-        <a
-          href="/feed.json"
-          className="inline-flex items-center gap-1.5 transition-colors hover:text-atx-accent"
-          title="JSON Feed"
-        >
-          JSON feed
-        </a>
-      </div>
-
-      <div className="mt-14 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-        {articles.map((data, idx) => (
-          <BlogCard key={data.slug} data={data} priority={idx <= 1} />
-        ))}
-      </div>
+      <section className="px-6 pb-16">
+        <div className="mx-auto max-w-[1200px]">
+          <p className="text-[14px] font-medium text-atx-accent">Highlights</p>
+          <h2 className="mt-2 text-[32px] font-medium tracking-[-0.8px] text-atx-ink">Latest updates</h2>
+          <div className="mt-6 grid gap-3 md:grid-cols-2 lg:grid-cols-4">
+            {latest.map((p) => (
+              <Link
+                key={p.slug}
+                href={`/blog/${p.slug}`}
+                className="group flex min-h-[230px] flex-col rounded-2xl border border-atx-accent/25 bg-atx-accent/[0.05] p-5 transition-colors duration-200 hover:border-atx-accent/60"
+              >
+                <span className="text-[13px] text-atx-accent">{fmt(p.publishedAt)}</span>
+                <span className="mt-2 text-[18px] font-medium leading-[1.3] tracking-[-0.4px] text-atx-ink">{p.title}</span>
+                <span className="mt-2 line-clamp-2 text-[14px] leading-[1.5] text-atx-ink-mid">{p.summary}</span>
+                <span className="mt-auto pt-4 text-[14px] font-medium text-atx-ink-mid group-hover:text-atx-ink">Read more &rarr;</span>
+              </Link>
+            ))}
+          </div>
+        </div>
+      </section>
 
       <section className="px-6 pb-20">
         <div className="mx-auto max-w-[1200px]">

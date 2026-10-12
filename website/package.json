@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbo",
-    "prebuild": "npm run lint && npm run test:verify-boundary && node scripts/generate-og.mjs",
+    "prebuild": "npm run lint && npm run test:verify-boundary && node scripts/generate-og.mjs && node scripts/generate-llms.mjs",
     "build": "next build",
     "start": "next start",
     "lint": "oxlint src",

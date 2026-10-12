@@ -21,15 +21,18 @@ const jetbrainsMono = JetBrains_Mono({
   display: "swap",
 });
 
-export const metadata: Metadata = constructMetadata({
-  title: `${siteConfig.name} - ${siteConfig.description}`,
-  description:
-    "Verifiable identity, W3C credentials, delegation chains, and reputation scoring for every AI agent. MCP tools, 9 modules, AI governance evidence tooling. Open source, Apache 2.0.",
-  alternates: {
-    canonical: siteConfig.url,
-    types: {
-      "application/rss+xml": `${siteConfig.url}/feed.xml`,
-      "application/feed+json": `${siteConfig.url}/feed.json`,
+const homeTitle = "Attestix - Cryptographic evidence for AI agents";
+
+export const metadata: Metadata = {
+  ...constructMetadata({
+    title: homeTitle,
+    description: "Verifiable agent identity, signed credentials, delegation and portable governance evidence. Open source under Apache 2.0.",
+    alternates: {
+      canonical: siteConfig.url,
+      types: {
+        "application/rss+xml": `${siteConfig.url}/feed.xml`,
+        "application/feed+json": `${siteConfig.url}/feed.json`,
+      },
     },
   }),
   title: { default: homeTitle, template: `%s | ${siteConfig.name}` },

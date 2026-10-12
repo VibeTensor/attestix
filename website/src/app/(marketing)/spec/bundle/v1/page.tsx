@@ -272,7 +272,7 @@ export default function BundleSpecV1Page() {
         {SPEC_URI}
       </pre>
       <p className="mt-4 max-w-[720px] text-[15px] leading-[1.7] text-atx-ink-mid">
-        Every bundle produced by Attestix  -  Python core ≥ v0.4.0 via
+        Every bundle produced by Attestix  -  Python core &gt;= v0.4.0 via
         the <code className="font-mono-atx text-[13px] text-atx-ink">attestix.portability.bundle_writer</code>{" "}
         module, the TypeScript cloud worker, and both the{" "}
         <code className="font-mono-atx text-[13px] text-atx-ink">attestix export</code> and{" "}

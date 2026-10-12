@@ -38,3 +38,7 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Build-generated Markdown exports
+/public/docs/
+/public/docs.md

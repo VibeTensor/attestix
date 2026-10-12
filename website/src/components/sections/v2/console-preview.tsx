@@ -1,9 +1,7 @@
+import { AtxEyebrow } from "@/components/atx/atx-eyebrow";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 
-const WRAP = "mx-auto w-full max-w-[1200px] px-6";
-const H2 = "text-[32px] font-medium leading-[1.15] tracking-[-0.8px] text-atx-ink";
-const LEAD = "text-[17.5px] leading-[1.6] text-atx-ink-mid";
 
 // Also rendered by home/home-demo.tsx.
 export function PreviewCard() {
