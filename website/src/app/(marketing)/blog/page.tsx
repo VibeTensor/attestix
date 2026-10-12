@@ -12,7 +12,7 @@ export const metadata = constructMetadata({
 });
 
 const fmt = (d: string) =>
-  new Date(d).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
+  new Date(d).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" });
 
 export default async function Blog() {
   const posts = (await getBlogPosts()).sort((a, b) => b.publishedAt.localeCompare(a.publishedAt));

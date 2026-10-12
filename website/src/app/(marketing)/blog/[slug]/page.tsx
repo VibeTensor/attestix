@@ -48,7 +48,7 @@ export async function generateMetadata(props: {
 
 // Absolute dates: relative ones ("3mo ago") go stale on a static site.
 const formatDate = (d: string) =>
-  new Date(d).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
+  new Date(d).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" });
 
 export default async function Page(props: {
   params: Promise<{ slug: string }>;

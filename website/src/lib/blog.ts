@@ -5,7 +5,8 @@ import rehypeStringify from "rehype-stringify";
 import remarkGfm from "remark-gfm";
 import remarkParse from "remark-parse";
 import remarkRehype from "remark-rehype";
-import { unified } from "unified";
+import { unified, type Plugin } from "unified";
+import type { Root, RootContent } from "hast";
 
 export type Post = {
   title: string;
@@ -20,20 +21,27 @@ export type Post = {
 
 export type Heading = { id: string; text: string };
 
-const slugify = (t: string) =>
-  t.toLowerCase().replace(/<[^>]+>/g, "").replace(/&[a-z#0-9]+;/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+function headingText(node: Root | RootContent): string {
+  if (node.type === "text") return node.value;
+  return "children" in node ? node.children.map(headingText).join("") : "";
+}
 
-// Give every h2 an id (for the table of contents) and collect them.
-function withHeadingIds(html: string): { html: string; headings: Heading[] } {
-  const headings: Heading[] = [];
-  const out = html.replace(/<h2>([\s\S]*?)<\/h2>/g, (_, inner: string) => {
-    const text = inner.replace(/<[^>]+>/g, "").trim();
-    let id = slugify(text) || `section-${headings.length + 1}`;
-    if (headings.some((h) => h.id === id)) id = `${id}-${headings.length + 1}`;
-    headings.push({ id, text });
-    return `<h2 id="${id}">${inner}</h2>`;
-  });
-  return { html: out, headings };
+function headingIds(headings: Heading[]): Plugin<[], Root> {
+  return () => (tree) => {
+    const visit = (node: Root | RootContent) => {
+      if (node.type === "element" && node.tagName === "h2") {
+        const text = headingText(node).trim();
+        const base = text.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "") || "section";
+        let id = base;
+        let suffix = 2;
+        while (headings.some((heading) => heading.id === id)) id = `${base}-${suffix++}`;
+        node.properties.id = id;
+        headings.push({ id, text });
+      }
+      if ("children" in node) node.children.forEach(visit);
+    };
+    visit(tree);
+  };
 }
 
 const readingMinutes = (md: string) =>
@@ -64,7 +72,8 @@ function getMDXFiles(dir: string) {
   return fs.readdirSync(dir).filter((file) => path.extname(file) === ".mdx");
 }
 
-export async function markdownToHTML(markdown: string) {
+async function renderMarkdown(markdown: string) {
+  const headings: Heading[] = [];
   const p = await unified()
     .use(remarkParse)
     .use(remarkGfm)
@@ -77,10 +86,15 @@ export async function markdownToHTML(markdown: string) {
       },
       keepBackground: false,
     })
+    .use(headingIds(headings))
     .use(rehypeStringify)
     .process(markdown);
 
-  return p.toString();
+  return { html: p.toString(), headings };
+}
+
+export async function markdownToHTML(markdown: string) {
+  return (await renderMarkdown(markdown)).html;
 }
 
 export async function getPost(slug: string) {
@@ -90,7 +104,7 @@ export async function getPost(slug: string) {
   const filePath = path.join(process.cwd(), "content", `${slug}.mdx`);
   const source = fs.readFileSync(filePath, "utf-8");
   const { content: rawContent, data: metadata } = parseFrontmatter(source);
-  const { html: content, headings } = withHeadingIds(await markdownToHTML(rawContent));
+  const { html: content, headings } = await renderMarkdown(rawContent);
   const defaultImage = `/og-image.png`;
   return {
     source: content,

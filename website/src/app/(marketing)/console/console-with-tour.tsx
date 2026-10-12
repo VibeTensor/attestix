@@ -9,19 +9,25 @@ import { ConsoleWorkspace } from "./console-workspace";
 export function ConsoleWithTour({ autoStart = false }: { autoStart?: boolean }) {
   const [root, setRoot] = useState<HTMLDivElement | null>(null);
   const [touring, setTouring] = useState(autoStart);
+  const [workspaceVersion, setWorkspaceVersion] = useState(0);
+
+  const startTour = () => {
+    setWorkspaceVersion((version) => version + 1);
+    setTouring(true);
+  };
 
   return (
     <div ref={setRoot} className="relative">
       {!touring && (
         <button
           type="button"
-          onClick={() => setTouring(true)}
+          onClick={startTour}
           className="mb-3 inline-flex items-center gap-2 rounded-full border border-atx-line px-4 py-1.5 text-[13px] font-medium text-atx-ink-mid transition-colors duration-200 hover:border-atx-ink-dim hover:text-atx-ink"
         >
           Take the 1-minute tour
         </button>
       )}
-      <ConsoleWorkspace />
+      <ConsoleWorkspace key={workspaceVersion} />
       {touring && root && <ConsoleTour root={root} onDone={() => setTouring(false)} />}
     </div>
   );

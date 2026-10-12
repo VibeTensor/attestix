@@ -1,14 +1,15 @@
 {
   "name": "attestix-website",
-  "version": "0.3.0",
+  "version": "0.4.3",
   "private": true,
   "scripts": {
     "dev": "next dev --turbo",
-    "prebuild": "npm run lint && npm run test:verify-boundary && node scripts/generate-og.mjs && node scripts/generate-llms.mjs",
+    "prebuild": "npm run lint && npm run test:verify-boundary && npm run test:blog-headings && node scripts/generate-og.mjs && node scripts/generate-llms.mjs",
     "build": "next build",
     "start": "next start",
     "lint": "oxlint src",
-    "test:verify-boundary": "node --test scripts/verify-boundary.test.mjs"
+    "test:verify-boundary": "node --test scripts/verify-boundary.test.mjs",
+    "test:blog-headings": "node --test scripts/blog-headings.test.mjs"
   },
   "dependencies": {
     "@radix-ui/react-accordion": "^1.2.14",

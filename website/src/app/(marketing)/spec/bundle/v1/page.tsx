@@ -543,11 +543,8 @@ assert sha256(canonical).hexdigest() == sidecar.strip()`}
         >
           attestix
         </a>
-        ) and TypeScript in attestix-js (today{" "}
-        <code className="font-mono-atx text-[13px] text-atx-ink">attestix@0.4.2</code>;
-        unscoped{" "}
-        <code className="font-mono-atx text-[13px] text-atx-ink">attestix</code>{" "}
-        publish in flight). Both follow the same algorithm:
+        ) and TypeScript in attestix-js (published on npm as{" "}
+        <code className="font-mono-atx text-[13px] text-atx-ink">attestix@0.4.2</code>). Both follow the same algorithm:
       </p>
       <pre className="mt-5 overflow-x-auto rounded-xl border border-atx-line-soft bg-atx-bg-sunken px-5 py-4 font-mono-atx text-[12px] leading-[1.6] text-atx-ink">
         {VERIFIER_ALGORITHM}

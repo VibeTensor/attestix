@@ -6,8 +6,9 @@
  *   - public/docs/<slug>.md: raw markdown of each docs page (URL + ".md")
  * Page order follows the sidebar (content/docs/**\/meta.json).
  */
-import { mkdirSync, readFileSync, copyFileSync, writeFileSync, existsSync } from "fs";
+import { mkdirSync, readFileSync, copyFileSync, writeFileSync, renameSync, existsSync } from "fs";
 import { dirname, join, relative } from "path";
+import { randomUUID } from "node:crypto";
 import { fileURLToPath } from "url";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
@@ -60,7 +61,9 @@ function writeGenerated(file, content) {
     }
   }
   mkdirSync(dirname(file), { recursive: true });
-  writeFileSync(file, content);
+  const temporary = `${file}.${process.pid}.${randomUUID()}.tmp`;
+  writeFileSync(temporary, content);
+  renameSync(temporary, file);
 }
 
 const lines = [

@@ -40,7 +40,7 @@ const STEPS: Step[] = [
   {
     before: { text: "Audit trail", within: '[data-tour="tabs"] button' },
     target: { selector: '[data-tour="tab-body"]' },
-    body: "Every action the agent takes lands in a hash-chained audit trail. Each entry commits to the one before it, so any edit breaks the chain.",
+    body: "Instrumented actions appear as recorded entries in this simulated hash-chained trail. Continuity checks can reveal changes to retained records, but they do not prove complete capture or protect against a signing-key holder rewriting the trail.",
   },
   {
     before: { text: "credentials", within: '[data-tour="tabs"] button' },

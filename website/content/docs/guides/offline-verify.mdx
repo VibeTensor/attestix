@@ -18,7 +18,7 @@ No network calls. Everything verifies from the JSON blob, because the issuer's E
 ## Prerequisites
 
 ```bash
-pip install attestix==0.4.3
+pip install attestix==0.4.2
 ```
 
 ## Step 1 / Fetch the artefacts
@@ -181,7 +181,7 @@ def main(vc_path: str, audit_path: str, expected_issuer: str) -> int:
     if not result.get("valid"):
         print(f"[fail] credential not valid: {result.get('checks')}")
         return 1
-    print(f"[ok] signature verified (issuer {vc['issuer']['id']})")
+    print(f"[ok] signature verified (issuer {issuer_did})")
 
     with open(audit_path, encoding="utf-8") as f:
         entries = json.load(f)
@@ -232,4 +232,4 @@ The same verification is what a peer agent runs when it decides whether to trust
 
 ## Browser and package release status
 
-Python/PyPI 0.4.3 and JavaScript/npm, Go and Java/Maven 0.4.2 are published. Rust and R have GitHub 0.4.2 releases; crates.io and CRAN remain at 0.4.1 at this cutoff. The browser page uses npm `attestix` 0.4.2 with the retained boundary guards. Offline results do not check live revocation.
+Python/PyPI and JavaScript/npm, Go and Java/Maven 0.4.2 are published. The 0.4.3 source prepares a website/documentation update; verify registry availability before pinning that release. Rust and R have GitHub 0.4.2 releases; crates.io and CRAN remain at 0.4.1 at this cutoff. The browser page uses npm `attestix` 0.4.2 with the retained boundary guards. Offline results do not check live revocation.

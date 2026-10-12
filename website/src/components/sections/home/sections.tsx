@@ -326,7 +326,8 @@ export function HomeStandards() {
 
 const INSTALL = `pip install attestix
 attestix init --name my-agent
-attestix verify <agent-id>`;
+# Replace AGENT_ID with the agent ID printed by the init command.
+attestix verify "AGENT_ID"`;
 
 export function HomeInstall() {
   return (
@@ -347,8 +348,11 @@ export function HomeInstall() {
           <div><span className="text-atx-accent">$</span> <span className="text-atx-ink">pip install</span> <span className="text-atx-ok">attestix</span></div>
           <div className="text-atx-ink-faint"># create a signed identity for an agent</div>
           <div><span className="text-atx-accent">$</span> <span className="text-atx-ink">attestix init</span> <span className="text-atx-info">--name</span> my-agent</div>
-          <div><span className="text-atx-accent">$</span> <span className="text-atx-ink">attestix verify</span> <span className="text-atx-ink-dim">&lt;agent-id&gt;</span></div>
+          <div><span className="text-atx-accent">$</span> <span className="text-atx-ink">attestix verify</span> <span className="text-atx-ink-dim">&quot;AGENT_ID&quot;</span></div>
         </div>
+        <p className="mx-auto mt-4 max-w-[560px] text-[13px] leading-[1.6] text-atx-ink-dim">
+          Replace AGENT_ID with the agent ID printed by the init command before running verification.
+        </p>
         <div className="mt-8">
           <TextLink href="/docs/getting-started">Setup documentation</TextLink>
         </div>

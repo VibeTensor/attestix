@@ -9,11 +9,9 @@ export const metadata = constructMetadata({
     "Why Attestix exists, where it is going, and the research behind it: the product vision, the paper, and technical notes.",
 });
 
-const minutes = (html: string) =>
-  Math.max(1, Math.ceil(html.replace(/<[^>]+>/g, " ").split(/\s+/).filter(Boolean).length / 220));
 
 const fmt = (d: string) =>
-  new Date(d).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
+  new Date(d).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" });
 
 function Tag({ children }: { children: React.ReactNode }) {
   return (
@@ -50,7 +48,7 @@ export default async function ResearchPage() {
             className="group rounded-2xl border border-atx-accent/30 bg-atx-accent/[0.05] p-7 transition-colors duration-200 hover:border-atx-accent/60"
           >
             <div className="flex items-center gap-3 text-[13px] text-atx-ink-dim">
-              <Tag>Product</Tag> {fmt(vision.publishedAt)} &middot; {minutes(vision.source)} min read
+              <Tag>Product</Tag> {fmt(vision.publishedAt)} &middot; {vision.minutes} min read
             </div>
             <h2 className="mt-4 text-[26px] font-medium tracking-[-0.6px] text-atx-ink">{vision.title}</h2>
             <p className="mt-3 text-[15px] leading-[1.6] text-atx-ink-mid">{vision.summary}</p>
@@ -95,7 +93,7 @@ export default async function ResearchPage() {
               </span>
               <span className="mt-1 block text-[14px] leading-[1.55] text-atx-ink-mid">{p.summary}</span>
             </span>
-            <span className="text-[13px] text-atx-ink-dim">{minutes(p.source)} min read</span>
+            <span className="text-[13px] text-atx-ink-dim">{p.minutes} min read</span>
           </Link>
         ))}
       </div>

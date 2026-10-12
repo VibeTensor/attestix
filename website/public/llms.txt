@@ -1,33 +1,64 @@
 # Attestix
 
-> AI agent identity and signed evidence tooling.
+> Agent identity, signed credentials, delegated authority and portable governance evidence. Apache 2.0. Signatures do not establish legal conformity, trusted issuer authority, live revocation or complete capture.
 
-Attestix is an Apache 2.0 toolkit for DID-based agent identities, signed Verifiable Credentials, delegated authority, provenance and audit records. Governance workflows collect evidence and generate provider-review drafts. They do not establish SOC 2, ISO, GDPR or EU AI Act conformity or certification.
+Every docs page below is also available as raw markdown at its URL plus `.md`. This file is generated at build time from the docs themselves.
 
-## Public source and documentation
+## Site
 
-- [Core repository](https://github.com/VibeTensor/attestix)
-- [Documentation](https://attestix.io/docs)
-- [Credential verifier](https://attestix.io/verify)
-- [Core releases](https://github.com/VibeTensor/attestix/releases)
-- [JavaScript SDK](https://github.com/VibeTensor/attestix-js)
-- [Go SDK](https://github.com/VibeTensor/attestix-go)
-- [Java SDK](https://github.com/VibeTensor/attestix-java)
-- [R SDK](https://github.com/VibeTensor/attestix-r)
-- [Rust SDK](https://github.com/VibeTensor/attestix-rs)
+- [Home](https://attestix.io/): What Attestix is, how it works, install in three commands
+- [Research](https://attestix.io/research): Product vision, the research paper, and technical notes
+- [Platform](https://attestix.io/platform): Agent identity, signed records, verification boundaries and integrations
+- [Console demo](https://attestix.io/console): Interactive preview of the Attestix workspace; data is simulated
+- [Verify a credential](https://attestix.io/verify): In-browser W3C VC verifier; nothing uploaded
+- [Bundle wire format v1](https://attestix.io/spec/bundle/v1): Frozen spec of the portability bundle format
+- [EU AI Act fine calculator](https://attestix.io/demo/fine-calculator): Illustrative Article 99 estimator; assess actual applicability separately
+- [Pricing](https://attestix.io/pricing): Self-hosted source and proposed hosted-service availability
+- [Changelog](https://attestix.io/changelog): Release history
+- [Security](https://attestix.io/security): Responsible disclosure
 
-## Trust and operating limits
+## Docs
 
-Signatures support integrity and key association, not the truth or legal validity of a claim. Verifiers need an explicit trusted-key policy and must reject unsupported inputs. The default REST service is authenticated and single-tenant; a tenant header does not provide cross-tenant authorization.
-
-Local erasure removes managed records and parseable local backups. Remote replicas, prior exports, shared credentials and external backups require separate handling. Erasure tooling does not establish GDPR conformity.
-
-Evaluate the exact installed release. Source checks, registry publication and production deployment are separate acceptance steps. Review key custody, restore, authentication, monitoring and incident response before production adoption. Hosted offerings are planned; source availability does not establish hosted service readiness.
-
-## Installation
-
-Python: `pip install attestix`. For other languages, consult the SDK release pages and verify registry availability for the required version.
-
-## EU AI Act
-
-Applicability depends on the system and operator role. Consult the [official staged timeline](https://digital-strategy.ec.europa.eu/en/policies/regulatory-framework-ai) and [Regulation (EU) 2026/1744](https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32026R1744). Attestix supplies evidence tooling, not a legal conformity decision.
+- [Attestix](https://attestix.io/docs.md): Attestation Infrastructure for AI Agents - the compliance identity layer for the EU AI Act era.
+- [Getting Started with Attestix](https://attestix.io/docs/getting-started.md): Get your first AI agent identity in under 5 minutes.
+- [Offline credential verifiers](https://attestix.io/docs/verifiers.md): Language-specific verification helpers and their trust boundaries.
+- [Quickstart: pick your role](https://attestix.io/docs/quickstart.md): Copy-paste to verifiable agents in 90 seconds. One page per ICP persona from the v0.4.0 funnel evaluation, written against the actual pain point that persona hit.
+- [Indie AI-agent dev Quickstart](https://attestix.io/docs/quickstart/indie-dev.md): For the solo founder shipping a LangChain RAG agent fast. Skip the boilerplate, get a hash-chained audit trail and a signed VC on every chain completion.
+- [Fintech compliance engineer Quickstart](https://attestix.io/docs/quickstart/fintech-compliance.md): Wire a trading or credit-scoring agent with hash-chained audit, signed inference logs, and a third-party conformity assessment record, without a database.
+- [Healthcare ML lead: Quickstart](https://attestix.io/docs/quickstart/healthcare-ml.md): Record training-data provenance, model lineage, and an Annex III high-risk profile for a clinical decision-support agent. local data erasure tooling included; DPDP / HIPAA-adjacent obligations called out honestly.
+- [Enterprise platform architect Quickstart](https://attestix.io/docs/quickstart/enterprise-architect.md): Run Attestix as a service behind your own ingress. Multi-tenant context, idempotent REST, hash-chained audit. Honest about what's not in v0.4.0.
+- [EU AI Act / GRC consultant Quickstart](https://attestix.io/docs/quickstart/grc-consultant.md): Generate Annex IV technical documentation and an Annex V Declaration of Conformity for a client's high-risk AI system. Honest about where cryptographic integrity ends and human / notified-body sign-off begins.
+- [DevTools / DX skeptic Quickstart](https://attestix.io/docs/quickstart/devtools-skeptic.md): Does the package actually import? Yes, in v0.4.0-rc.5. Here's the smallest possible test you can run in 60 seconds to verify the DX claim before reading anything else.
+- [Web3 / on-chain dev Quickstart](https://attestix.io/docs/quickstart/web3-onchain.md): Anchor an Attestix artefact to Base L2 Sepolia testnet via the Ethereum Attestation Service. Schema UID, gas estimate, faucet, on-chain verification (testnet only in v0.4.0).
+- [AI safety researcher Quickstart](https://attestix.io/docs/quickstart/ai-safety-research.md): Produce signed, hash-chained telemetry from an LLM-agent eval run that other labs can re-verify offline. No backend, no cloud.
+- [Startup CTO Quickstart](https://attestix.io/docs/quickstart/startup-cto.md): 5-minute build-vs-buy proof of what Attestix gives you that you would otherwise build yourself for agent identity, audit, and EU AI Act paperwork.
+- [MLOps engineer Quickstart](https://attestix.io/docs/quickstart/mlops-engineer.md): Wire Attestix into a CI/CD pipeline so every model promotion produces a signed credential and a hash-chained audit row. Pinned versions, deterministic CLI, exit codes.
+- [Examples](https://attestix.io/docs/examples.md): Runnable examples for every Attestix module, from identity creation to full EU AI Act compliance workflows.
+- [EU AI Act Compliance with Attestix](https://attestix.io/docs/guides/eu-ai-act-compliance.md): Step-by-step guide to recording AI governance evidence. Workflow completion is not a legal conformity determination.
+- [EU Compliance Walkthrough](https://attestix.io/docs/guides/eu-compliance-walkthrough.md): This guide has been renamed. See the EU AI Act Compliance guide for the full walkthrough.
+- [EU AI Act Risk Classification Guide](https://attestix.io/docs/guides/risk-classification.md): How to determine the risk category for your AI system under the EU AI Act (Regulation 2024/1689).
+- [Reputation Scoring Guide](https://attestix.io/docs/guides/reputation.md): Build trust between AI agents using Attestix's recency-weighted reputation system with interaction tracking, category breakdowns, and threshold-based queries.
+- [Integration Guide](https://attestix.io/docs/guides/integration-guide.md): How to use Attestix with LangChain, OpenAI Agents SDK, CrewAI, plain Python, and other MCP clients.
+- [LangChain Integration](https://attestix.io/docs/guides/langchain.md): Drop Attestix into a LangChain agent with the BaseCallbackHandler. Real (not example) integration shipped in v0.3.0; v0.4.0-rc.2 release candidate. Every tool call, LLM call, and chain step gets hash-chained and signed.
+- [OpenAI Agents SDK Integration](https://attestix.io/docs/guides/openai-agents-sdk.md): Expose MCP tools natively to the OpenAI Agents SDK via MCPServerStdio. Real (not example) integration shipped in v0.3.0; v0.4.0-rc.2 release candidate.
+- [CrewAI Integration](https://attestix.io/docs/guides/crewai.md): Attach Attestix to every CrewAI agent via MCPServerAdapter. Real (not example) integration shipped in v0.3.0; v0.4.0-rc.2 release candidate. Crews become attestable by default.
+- [Offline Verification Walkthrough](https://attestix.io/docs/guides/offline-verify.md): How a regulator, auditor, or other agent verifies an Attestix Verifiable Credential without any network access.
+- [Base L2 Testnet Anchor Walkthrough](https://attestix.io/docs/guides/base-l2-anchor.md): Anchor an Attestix artefact hash to Base L2 testnet via the Ethereum Attestation Service. End-to-end guide with Sepolia faucets, gas estimates, and verification.
+- [Migrating to the canonical attestix.* namespace (v0.4.0-rc.2)](https://attestix.io/docs/guides/migration-v0.4.0-namespace.md): Move existing Attestix integrations from the legacy flat top-level packages (services/, auth/, ...) to the canonical attestix.* namespace before the deprecation shims are removed in v0.5.0.
+- [npm package rename: @vibetensor/attestix to attestix](https://attestix.io/docs/guides/migration-npm-rename.md): How to migrate to the bare 'attestix' name on npm (now matching pip install attestix on PyPI).
+- [Agent security review inputs](https://attestix.io/docs/security/owasp-agentic-top10.md): Signed documentation inputs and their verification limits.
+- [ISO/IEC 42001 evidence inputs](https://attestix.io/docs/security/iso-42001-mapping.md): Signed documentation inputs and their verification limits.
+- [NIST AI RMF evidence inputs](https://attestix.io/docs/security/nist-ai-rmf-mapping.md): Signed documentation inputs and their verification limits.
+- [SOC 2 evidence inputs](https://attestix.io/docs/security/soc2-mapping.md): Signed documentation inputs and their verification limits.
+- [Fundamental-rights impact assessment evidence](https://attestix.io/docs/security/fria-template.md): Signed documentation inputs and their verification limits.
+- [API Reference](https://attestix.io/docs/reference/api-reference.md): Complete reference for all 47 Attestix MCP tools organized by module.
+- [MCP Tools Reference](https://attestix.io/docs/reference/mcp-tools.md): Complete reference for all 47 Attestix MCP tools across 9 modules, with parameters, return types, and EU AI Act article mapping.
+- [Attestix Concepts Explained](https://attestix.io/docs/reference/concepts.md): Plain-English explanations of the key concepts used in Attestix, including UAITs, DIDs, Verifiable Credentials, and more.
+- [Configuration](https://attestix.io/docs/reference/configuration.md): Attestix configuration via environment variables, storage setup, signing key management, and MCP client configuration.
+- [Glossary](https://attestix.io/docs/reference/glossary.md): Terms and acronyms used throughout Attestix documentation
+- [Troubleshooting](https://attestix.io/docs/reference/troubleshooting.md): Common errors and solutions when working with Attestix
+- [Frequently Asked Questions](https://attestix.io/docs/reference/faq.md): Common questions about Attestix covering identity, EU AI Act compliance, credentials, provenance, and technical details.
+- [Research Paper](https://attestix.io/docs/project/research.md): Attestix research paper covering system architecture, cryptographic pipeline, EU AI Act compliance automation, and evaluation results.
+- [Roadmap](https://attestix.io/docs/project/roadmap.md): Attestix project roadmap from identity and trust foundations through blockchain anchoring and future ecosystem bridges.
+- [Changelog](https://attestix.io/docs/project/changelog.md): All notable changes to Attestix documented in Keep a Changelog format.
+- [Contributing to Attestix](https://attestix.io/docs/project/contributing.md): How to get started contributing to Attestix, including development workflow, code conventions, and project architecture rules.

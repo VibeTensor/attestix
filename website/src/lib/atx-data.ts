@@ -359,9 +359,9 @@ export const ATX_CERT_SAMPLE: AtxCertSample = {
     "ao-BCXbZz9KAJmcSY1cK4abXmtkRihup522srZg4cFF1_d__DnjNHkJiN2HEuf7diZJOtb2jzALEDyDE_sskzg==",
 };
 
-// Durable, verifiable facts only (qualified on the homepage). No test counts
-// (they drift per commit) and no crypto-library benchmarks (they measure the
-// library, not Attestix).
+// Release and license facts plus the recorded local test count, qualified on
+// the homepage. Test counts describe that validation run, not a stable package
+// guarantee. Crypto-library benchmarks do not measure Attestix.
 export const ATX_HERO_STATS = [
   { v: "0.4.3", k: "Current core release" },
   { v: "626", k: "Local tests passed" },
