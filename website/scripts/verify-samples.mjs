@@ -7,13 +7,13 @@
 // Run:  node scripts/verify-samples.mjs
 //
 // It imports the SAME JSON fixtures the browser page embeds and the SAME
-// @vibetensor/attestix verifier the page calls, so a green result here is the
+// attestix verifier the page calls, so a green result here is the
 // same green result a visitor sees in the portal.
 
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, resolve } from "node:path";
-import { verifyCredential } from "@vibetensor/attestix";
+import { verifyCredential } from "attestix";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const load = (name) =>

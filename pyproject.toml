@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "attestix"
-version = "0.4.2"
+version = "0.4.3"
 description = "Attestix - AI agent identity and signed evidence tooling. DID-based identity, W3C Verifiable Credentials, governance evidence, delegation chains, and reputation scoring."
 readme = "README.md"
 license = {file = "LICENSE"}

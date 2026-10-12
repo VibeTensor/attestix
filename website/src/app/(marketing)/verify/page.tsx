@@ -9,7 +9,13 @@ export const metadata = constructMetadata({
     "Verify an Attestix-issued W3C Verifiable Credential in your browser. Ed25519 over the SDK canonical form, did:key resolution  -  fully client-side. Your credential is never uploaded.",
 });
 
-const NPM_PKG = "@vibetensor/attestix";
+const NPM_PKG = "attestix";
+
+const WRAP = "mx-auto w-full max-w-[1200px] px-6";
+const H2 = "text-[32px] font-medium leading-[1.15] tracking-[-0.8px] text-atx-ink";
+const CODE = "font-mono-atx text-[13px] text-atx-ink";
+const LINK =
+  "text-atx-ink underline decoration-atx-line underline-offset-4 transition-colors duration-200 hover:text-atx-accent hover:decoration-atx-accent";
 
 export default function VerifyPage() {
   return (
@@ -38,8 +44,11 @@ export default function VerifyPage() {
         trust beyond the open-source code running in your own browser tab.
       </p>
 
-      {/* Interactive verifier (client component) -------------------------- */}
-      <VerifyClient />
+        {/* Interactive verifier (client component) -------------------------- */}
+        <div className="mx-auto max-w-[1080px]">
+          <VerifyClient />
+        </div>
+      </section>
 
       {/* ----- How this works --------------------------------------------- */}
       <h2 className="mt-20 font-mono-atx text-[11px] uppercase tracking-[0.14em] text-atx-ink-dim">
@@ -141,9 +150,72 @@ export default function VerifyPage() {
             </li>
           </ul>
         </div>
-        <div className="rounded-atx-md border border-atx-warn/40 bg-atx-warn/[0.06] p-5">
-          <div className="font-mono-atx text-[10.5px] uppercase tracking-[0.14em] text-atx-warn">
-            NOT proven offline
+      </section>
+
+      {/* ----- Honest limitations ----------------------------------------- */}
+      <section className="bg-atx-bg py-20">
+        <div className={WRAP}>
+          <h2 className={`${H2} text-center`}>
+            What offline verification proves, and what it doesn&apos;t
+          </h2>
+          <div className="mx-auto mt-12 grid max-w-[1040px] gap-5 md:grid-cols-2">
+            <div className="rounded-2xl border border-atx-ok/30 bg-atx-ok/[0.05] p-6">
+              <h3 className="text-[19px] font-semibold tracking-[-0.48px] text-atx-ok">
+                Proven offline
+              </h3>
+              <ul className="mt-4 space-y-3 text-[15px] leading-[1.6] text-atx-ink-mid">
+                <li>
+                  <strong className="font-medium text-atx-ink">Signature authenticity.</strong>{" "}
+                  The credential was signed by the private key matching the issuer
+                  DID, and not modified since  -  any tampered field breaks the
+                  signature.
+                </li>
+                <li>
+                  <strong className="font-medium text-atx-ink">Structural validity.</strong>{" "}
+                  The document is a well-formed W3C VC with the required fields.
+                </li>
+                <li>
+                  <strong className="font-medium text-atx-ink">Validity window.</strong>{" "}
+                  Whether the credential is within its{" "}
+                  <code className={CODE}>issuanceDate</code>
+                  -
+                  <code className={CODE}>expirationDate</code>{" "}
+                  range, compared against your clock at view time.
+                </li>
+              </ul>
+            </div>
+            <div className="rounded-2xl border border-atx-warn/30 bg-atx-warn/[0.05] p-6">
+              <h3 className="text-[19px] font-semibold tracking-[-0.48px] text-atx-warn">
+                Not proven offline
+              </h3>
+              <ul className="mt-4 space-y-3 text-[15px] leading-[1.6] text-atx-ink-mid">
+                <li>
+                  <strong className="font-medium text-atx-ink">Live revocation.</strong>{" "}
+                  Offline mode reads only the{" "}
+                  <code className={CODE}>credentialStatus</code>{" "}
+                  embedded in the document. Checking the issuer&apos;s status list in
+                  real time is a hosted lookup (an{" "}
+                  <Link href="/pricing" className={LINK}>
+                    Attestix Cloud
+                  </Link>{" "}
+                  feature). A signature can be valid and the credential still revoked.
+                </li>
+                <li>
+                  <strong className="font-medium text-atx-ink">Issuer identity.</strong>{" "}
+                  A <code className={CODE}>did:key</code>{" "}
+                  is self-certifying  -  it proves control of a key, not who controls
+                  it. <code className={CODE}>did:web</code>{" "}
+                  binds a DID to a domain; <code className={CODE}>did:key</code>{" "}
+                  does not. Establish out-of-band that the DID belongs to the party
+                  you expect.
+                </li>
+                <li>
+                  <strong className="font-medium text-atx-ink">By-id lookup.</strong>{" "}
+                  Resolving a credential from just its id needs the hosted API; this
+                  static page has no store to resolve against.
+                </li>
+              </ul>
+            </div>
           </div>
           <ul className="mt-3 space-y-2 text-[13.5px] leading-[1.65] text-atx-ink-mid">
             <li>
@@ -177,29 +249,44 @@ export default function VerifyPage() {
         </div>
       </div>
 
-      {/* ----- See also ---------------------------------------------------- */}
-      <div className="mt-14 rounded-atx-md border border-atx-line-soft bg-atx-bg-sunken p-6">
-        <div className="font-mono-atx text-[10.5px] uppercase tracking-[0.14em] text-atx-ink-dim">
-          See also
-        </div>
-        <div className="mt-2 flex flex-wrap gap-4 text-[13.5px]">
-          <a
-            href={`https://www.npmjs.com/package/${NPM_PKG}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-atx-accent hover:underline"
-          >
-            {NPM_PKG} (npm verifier)
-          </a>
-          <Link href="/spec/bundle/v1" className="text-atx-accent hover:underline">
-            Bundle wire format v1
-          </Link>
-          <Link href="/security" className="text-atx-accent hover:underline">
-            Security
-          </Link>
-          <Link href="/docs/guides/offline-verify" className="text-atx-accent hover:underline">
-            Offline verification docs
-          </Link>
+          {/* ----- See also -------------------------------------------------- */}
+          <div className="mx-auto mt-10 max-w-[1040px] rounded-2xl border border-atx-line bg-atx-panel/60 p-6">
+            <p className="text-[14px] font-medium text-atx-ink">See also</p>
+            <div className="mt-3 flex flex-wrap gap-x-6 gap-y-2 text-[15px]">
+              <a
+                href={`https://www.npmjs.com/package/${NPM_PKG}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={LINK}
+              >
+                {NPM_PKG} (npm verifier)
+              </a>
+              <Link href="/spec/bundle/v1" className={LINK}>
+                Bundle wire format v1
+              </Link>
+              <Link href="/security" className={LINK}>
+                Security
+              </Link>
+              <Link href="/docs/guides/offline-verify" className={LINK}>
+                Offline verification docs
+              </Link>
+            </div>
+            <p className="mt-5 text-[13px] leading-[1.6] text-atx-ink-dim">
+              Attestix is evidence tooling, not a guarantor of compliance. A green
+              result proves the credential&apos;s signature and structure  -  it does
+              not by itself establish that the issuer was authorised to make the
+              claims, nor that the subject is compliant. Maintained by{" "}
+              <a
+                href="https://vibetensor.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="underline decoration-atx-line underline-offset-4 transition-colors duration-200 hover:text-atx-ink"
+              >
+                VibeTensor
+              </a>
+              .
+            </p>
+          </div>
         </div>
         <p className="mt-4 text-[12.5px] leading-[1.6] text-atx-ink-dim">
           Attestix is evidence tooling, not a guarantor of compliance. A green

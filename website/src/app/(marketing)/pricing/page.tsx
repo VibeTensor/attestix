@@ -73,13 +73,13 @@ function Dash() {
 function Cell({ value }: { value: Cell }) {
 	if (value === "yes") return <Check />;
 	if (value === "no") return <Dash />;
-	return <span className="text-[12px] text-atx-ink-mid">{value}</span>;
+	return <span className="text-[13px] text-atx-ink-mid">{value}</span>;
 }
 
 function ctaClasses(highlight: boolean) {
 	return highlight
 		? "bg-atx-accent text-[oklch(0.14_0.01_180)] hover:bg-atx-accent-deep"
-		: "border border-atx-line text-atx-ink hover:border-atx-ink-dim hover:bg-atx-bg-sunken";
+		: "border border-atx-line text-atx-ink-mid hover:border-atx-ink-dim hover:text-atx-ink";
 }
 
 function TierCard({ tier }: { tier: Tier }) {
@@ -91,14 +91,14 @@ function TierCard({ tier }: { tier: Tier }) {
 			href={tier.ctaHref}
 			target="_blank"
 			rel="noopener noreferrer"
-			className={`mt-7 inline-flex h-10 items-center justify-center rounded-atx-md px-5 text-[13px] font-medium transition-colors ${ctaClasses(tier.highlight)}`}
+			className={`mt-7 inline-flex items-center justify-center rounded-full px-6 py-3 text-[15px] font-medium transition-colors duration-200 ${ctaClasses(tier.highlight)}`}
 		>
 			{tier.cta} &rarr;
 		</a>
 	) : (
 		<Link
 			href={tier.ctaHref}
-			className={`mt-7 inline-flex h-10 items-center justify-center rounded-atx-md px-5 text-[13px] font-medium transition-colors ${ctaClasses(tier.highlight)}`}
+			className={`mt-7 inline-flex items-center justify-center rounded-full px-6 py-3 text-[15px] font-medium transition-colors duration-200 ${ctaClasses(tier.highlight)}`}
 		>
 			{tier.cta} &rarr;
 		</Link>
@@ -106,30 +106,32 @@ function TierCard({ tier }: { tier: Tier }) {
 
 	return (
 		<div
-			className={`relative flex flex-col rounded-atx-md border p-6 transition-colors ${
+			className={`relative flex flex-col rounded-2xl border p-6 transition-colors duration-200 ${
 				tier.highlight
-					? "border-atx-accent/50 bg-atx-panel-hi"
-					: "border-atx-line-soft bg-atx-panel"
+					? "border-atx-accent/30 bg-atx-accent/[0.05]"
+					: "border-atx-line bg-atx-panel/60 hover:border-atx-ink-dim"
 			}`}
 		>
-			<div className="flex items-center justify-between font-mono-atx text-[11px] uppercase tracking-[0.14em] text-atx-ink-dim">
-				<span>{tier.name}</span>
+			<div className="flex items-center justify-between gap-3">
+				<h3 className="text-[19px] font-semibold tracking-[-0.48px] text-atx-ink">
+					{tier.name}
+				</h3>
 				{tier.name === "OSS" ? (
-					<span className="rounded-atx-xs border border-atx-accent/40 bg-atx-accent-soft px-2 py-0.5 text-atx-accent">
+					<span className="rounded-full bg-atx-accent/15 px-2.5 py-0.5 text-[12px] font-medium text-atx-accent">
 						Apache 2.0
 					</span>
 				) : tier.highlight ? (
-					<span className="rounded-atx-xs border border-atx-accent/40 bg-atx-accent-soft px-2 py-0.5 text-atx-accent">
-						popular
+					<span className="rounded-full bg-atx-accent/15 px-2.5 py-0.5 text-[12px] font-medium text-atx-accent">
+						Popular
 					</span>
 				) : null}
 			</div>
 
-			<div className="mt-4 flex items-baseline gap-2">
-				<div className="font-serif text-[40px] leading-none text-atx-ink">
+			<div className="mt-5 flex items-baseline gap-2">
+				<div className="text-[40px] font-normal leading-none tracking-[-0.03em] text-atx-ink">
 					{tier.price.monthly}
 				</div>
-				<div className="font-mono-atx text-[10.5px] uppercase tracking-[0.1em] text-atx-ink-dim">
+				<div className="text-[13px] text-atx-ink-dim">
 					{tier.frequency.monthly}
 				</div>
 			</div>
@@ -140,17 +142,17 @@ function TierCard({ tier }: { tier: Tier }) {
 				</p>
 			) : null}
 
-			<p className="mt-3 text-[12.5px] leading-[1.55] text-atx-ink-mid">
+			<p className="mt-4 text-[15px] leading-[1.6] text-atx-ink-mid">
 				{tier.description}
 			</p>
 
-			<ul className="mt-5 flex-1 space-y-2">
+			<ul className="mt-5 flex-1 space-y-2.5">
 				{tier.features.map((feature) => (
 					<li
 						key={feature}
-						className="flex gap-2.5 text-[12.5px] leading-[1.5] text-atx-ink-mid"
+						className="flex gap-2.5 text-[14px] leading-[1.55] text-atx-ink-mid"
 					>
-						<span className="mt-1.5 block h-1 w-1 shrink-0 rounded-full bg-atx-accent" />
+						<span className="mt-2 block h-1 w-1 shrink-0 rounded-full bg-atx-accent" />
 						{feature}
 					</li>
 				))}
@@ -159,7 +161,7 @@ function TierCard({ tier }: { tier: Tier }) {
 			{cta}
 
 			{isWaitlist ? (
-				<p className="mt-3 text-[10.5px] leading-[1.5] text-atx-ink-faint">
+				<p className="mt-3 text-[13px] leading-[1.5] text-atx-ink-dim">
 					Not a checkout. Self-serve billing (Stripe for cards, Razorpay for
 					UPI/INR) is coming as we finish the billing backend  -  until then we
 					onboard you directly.
@@ -169,31 +171,42 @@ function TierCard({ tier }: { tier: Tier }) {
 	);
 }
 
+const WRAP = "mx-auto w-full max-w-[1200px] px-6";
+const H2 =
+	"text-[32px] font-medium leading-[1.15] tracking-[-0.8px] text-atx-ink";
+const LEAD = "text-[17.5px] leading-[1.6] text-atx-ink-mid";
+
 export default function PricingPage() {
 	return (
-		<section className="mx-auto max-w-[1320px] px-7 py-24">
-			{/* ----- Hero -------------------------------------------------------- */}
-			<div className="grid items-start gap-10 lg:grid-cols-[1fr_1.1fr]">
-				<div>
+		<>
+			{/* ----- Hero + tier cards ------------------------------------------- */}
+			<section className="bg-atx-bg px-6 pb-20 pt-16 md:pt-20">
+				<div className="mx-auto max-w-[860px] text-center">
 					<AtxEyebrow>Pricing</AtxEyebrow>
-					<h1 className="mt-3 font-serif text-[clamp(36px,4.8vw,60px)] leading-[1.05] tracking-[-0.012em] text-atx-ink">
-						Start free, self-host
-						<br />
-						forever, or{" "}
-						<em className="italic text-atx-accent">let us run it.</em>
+					<h1 className="mt-3 text-[clamp(34px,5vw,52px)] font-normal leading-[1.09] tracking-[-0.03em] text-atx-ink [text-wrap:balance]">
+						Start free, self-host forever, or{" "}
+						<span className="text-atx-accent">let us run it.</span>
 					</h1>
+					<p className={`mx-auto mt-5 max-w-[640px] [text-wrap:balance] ${LEAD}`}>
+						Every cryptographic primitive and standards-conformance claim lives in
+						the open-source release  -  Apache 2.0, free forever, reproducible
+						offline. Cloud Free, Pro, and Enterprise add hosted{" "}
+						<span className="text-atx-ink">operations</span> on top of the same
+						capabilities: managed Postgres, workers, webhooks, residency, SSO. You
+						never pay to unlock crypto you could run yourself.
+					</p>
 				</div>
 				<p className="text-[15px] leading-[1.65] text-atx-ink-mid">
 					The Python toolkit is open source under Apache 2.0. Its documented verification profile supports integrity checks and governance evidence. Hosted plans are proposals, subject to availability and operating acceptance; this page does not promise enterprise controls or a production service.
 				</p>
 			</div>
 
-			{/* ----- Tier cards -------------------------------------------------- */}
-			<div className="mt-14 grid gap-5 md:grid-cols-2 xl:grid-cols-4">
-				{siteConfig.pricing.map((tier) => (
-					<TierCard key={tier.name} tier={tier} />
-				))}
-			</div>
+				<div className="mx-auto mt-12 w-full max-w-[1200px]">
+					<div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
+						{siteConfig.pricing.map((tier) => (
+							<TierCard key={tier.name} tier={tier} />
+						))}
+					</div>
 
 			<p className="mt-6 text-[12px] leading-[1.6] text-atx-ink-dim">
 				Hosted pricing, availability and scope must be confirmed separately. A proposed price or plan label is not a service commitment.
@@ -211,27 +224,26 @@ export default function PricingPage() {
 					Use the public repositories to review implementation, license and verification limits. Self-hosting requires your own operating controls; hosted terms are agreed separately.
 				</p>
 
-				<div className="mt-8 grid gap-px overflow-hidden rounded-atx-md border border-atx-line-soft bg-atx-line-soft sm:grid-cols-2 lg:grid-cols-3">
-					{FOREVER_FREE.map((item, i) => (
-						<div
-							key={item.title}
-							className="flex gap-3 bg-atx-panel p-5"
-						>
-							<span className="mt-0.5 font-mono-atx text-[11px] text-atx-accent">
-								{String(i + 1).padStart(2, "0")}
-							</span>
-							<div>
-								<div className="text-[13.5px] leading-[1.4] text-atx-ink">
-									{item.title}
-								</div>
-								<div className="mt-1 text-[11.5px] leading-[1.45] text-atx-ink-dim">
-									{item.note}
+					<div className="mt-12 grid gap-4 text-left sm:grid-cols-2 lg:grid-cols-3">
+						{FOREVER_FREE.map((item) => (
+							<div
+								key={item.title}
+								className="flex gap-3 rounded-2xl border border-atx-line bg-atx-panel/60 p-5 transition-colors duration-200 hover:border-atx-ink-dim"
+							>
+								<Check />
+								<div>
+									<div className="text-[15px] font-medium leading-[1.4] text-atx-ink">
+										{item.title}
+									</div>
+									<div className="mt-1 text-[13px] leading-[1.5] text-atx-ink-dim">
+										{item.note}
+									</div>
 								</div>
 							</div>
-						</div>
-					))}
+						))}
+					</div>
 				</div>
-			</div>
+			</section>
 
 			{/* ----- Detailed comparison table ----------------------------------- */}
 			<div className="mt-20">
@@ -240,53 +252,60 @@ export default function PricingPage() {
 					Source capabilities and proposed services.
 				</h2>
 
-				<div className="mt-8 overflow-x-auto rounded-atx-md border border-atx-line-soft">
-					<table className="w-full min-w-[760px] border-collapse text-left text-[13px]">
-						<thead className="bg-atx-bg-sunken">
-							<tr>
-								<th className="border-b border-atx-line-soft px-4 py-3 font-mono-atx text-[10.5px] uppercase tracking-[0.14em] text-atx-ink-faint">
-									Capability
-								</th>
-								{TIER_COLS.map((col) => (
-									<th
-										key={col}
-										className="border-b border-atx-line-soft px-4 py-3 text-center font-mono-atx text-[10.5px] uppercase tracking-[0.12em] text-atx-ink-faint"
-									>
-										{col}
+					<div className="mt-12 overflow-x-auto rounded-2xl border border-atx-line">
+						<table className="w-full min-w-[760px] border-collapse text-left text-[14px]">
+							<thead className="bg-atx-bg-sunken">
+								<tr>
+									<th className="border-b border-atx-line-soft px-4 py-3.5 text-[13px] font-medium text-atx-ink-dim">
+										Capability
 									</th>
-								))}
-							</tr>
-						</thead>
-						<tbody>
-							{COMPARE.map((group) => (
-								<Fragment key={group.heading}>
-									<tr className="bg-atx-panel-hi">
-										<td
-											colSpan={5}
-											className="border-b border-atx-line-soft px-4 py-2.5 font-mono-atx text-[10.5px] uppercase tracking-[0.14em] text-atx-ink-dim"
+									{TIER_COLS.map((col) => (
+										<th
+											key={col}
+											className="border-b border-atx-line-soft px-4 py-3.5 text-center text-[13px] font-medium text-atx-ink"
 										>
-											{group.heading}
-										</td>
-									</tr>
-									{group.rows.map((row) => (
-										<tr key={row.label} className="bg-atx-panel">
-											<td className="border-b border-atx-line-soft px-4 py-3 text-atx-ink-mid">
-												{row.label}
-											</td>
-											{row.cells.map((cell, ci) => (
-												<td
-													key={ci}
-													className="border-b border-atx-line-soft px-4 py-3 text-center"
-												>
-													<Cell value={cell} />
-												</td>
-											))}
-										</tr>
+											{col}
+										</th>
 									))}
-								</Fragment>
-							))}
-						</tbody>
-					</table>
+								</tr>
+							</thead>
+							<tbody>
+								{COMPARE.map((group) => (
+									<Fragment key={group.heading}>
+										<tr className="bg-atx-panel">
+											<td
+												colSpan={5}
+												className="border-b border-atx-line-soft px-4 py-3 text-[14px] font-medium text-atx-accent"
+											>
+												{group.heading}
+											</td>
+										</tr>
+										{group.rows.map((row) => (
+											<tr key={row.label} className="bg-atx-panel/60">
+												<td className="border-b border-atx-line-soft px-4 py-3 text-atx-ink-mid">
+													{row.label}
+												</td>
+												{row.cells.map((cell, ci) => (
+													<td
+														key={ci}
+														className="border-b border-atx-line-soft px-4 py-3 text-center"
+													>
+														<Cell value={cell} />
+													</td>
+												))}
+											</tr>
+										))}
+									</Fragment>
+								))}
+							</tbody>
+						</table>
+					</div>
+					<p className="mx-auto mt-4 max-w-[720px] text-center text-[13px] leading-[1.6] text-atx-ink-dim">
+						&quot;self-host&quot; means the capability exists in OSS for you to run
+						yourself  -  the Cloud tiers run it for you. Derived from the canonical
+						tier matrix; if a row is not here, it is not yet a committed public
+						claim.
+					</p>
 				</div>
 				<p className="mt-3 text-[11.5px] leading-[1.55] text-atx-ink-dim">
 					&quot;self-host&quot; means operator-managed source. Hosted columns are proposals requiring separate availability and acceptance review.
@@ -294,25 +313,26 @@ export default function PricingPage() {
 			</div>
 
 			{/* ----- FAQ --------------------------------------------------------- */}
-			<div className="mt-20">
-				<AtxEyebrow>Questions</AtxEyebrow>
-				<h2 className="mt-3 font-serif text-[clamp(26px,3.2vw,38px)] leading-[1.1] tracking-[-0.01em] text-atx-ink">
-					Honest answers.
-				</h2>
+			<section className="bg-atx-bg-elev py-20">
+				<div className="mx-auto w-full max-w-[720px] px-6">
+					<div className="text-center">
+						<AtxEyebrow>Questions</AtxEyebrow>
+						<h2 className={`mt-3 ${H2}`}>Honest answers.</h2>
+					</div>
 
-				<div className="mt-8 grid gap-px overflow-hidden rounded-atx-md border border-atx-line-soft bg-atx-line-soft">
-					{FAQ.map((item) => (
-						<div key={item.q} className="bg-atx-panel p-6">
-							<div className="font-mono-atx text-[13px] text-atx-ink">
-								{item.q}
+					<div className="mt-10 rounded-xl border border-atx-line bg-atx-panel/60 px-6">
+						{FAQ.map((item, i) => (
+							<div
+								key={item.q}
+								className={`py-5 ${i ? "border-t border-atx-line-soft" : ""}`}
+							>
+								<h3 className="text-[15px] font-medium text-atx-ink">{item.q}</h3>
+								<p className="mt-2 text-[15px] leading-[1.65] text-atx-ink-mid">
+									{item.a}
+								</p>
 							</div>
-							<p className="mt-2 max-w-[860px] text-[13.5px] leading-[1.65] text-atx-ink-mid">
-								{item.a}
-							</p>
-						</div>
-					))}
-				</div>
-			</div>
+						))}
+					</div>
 
 			{/* ----- Footer compliance line -------------------------------------- */}
 			<div className="mt-16 rounded-atx-md border border-atx-line-soft bg-atx-bg-sunken p-6">

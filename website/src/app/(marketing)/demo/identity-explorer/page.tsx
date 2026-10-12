@@ -9,7 +9,7 @@ export const metadata = constructMetadata({
 
 export default function IdentityExplorerPage() {
   return (
-    <div className="mt-24 mb-16">
+    <div className="pb-20 pt-16">
       <IdentityExplorer />
     </div>
   );

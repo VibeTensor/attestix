@@ -1,103 +1,103 @@
-import { AtxEyebrow } from "@/components/atx/atx-eyebrow";
-import { constructMetadata } from "@/lib/utils";
 import Link from "next/link";
+import { ArrowRight } from "lucide-react";
+import { getBlogPosts } from "@/lib/blog";
+import { constructMetadata } from "@/lib/utils";
 
 export const metadata = constructMetadata({
   title: "Research",
   description:
-    "The research paper behind Attestix. IEEE-format LaTeX, open-access, peer review in progress.",
+    "Why Attestix exists, where it is going, and the research behind it: the product vision, the paper, and technical notes.",
 });
 
-export default function ResearchPage() {
+const minutes = (html: string) =>
+  Math.max(1, Math.ceil(html.replace(/<[^>]+>/g, " ").split(/\s+/).filter(Boolean).length / 220));
+
+const fmt = (d: string) =>
+  new Date(d).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
+
+function Tag({ children }: { children: React.ReactNode }) {
   return (
-    <section className="mx-auto max-w-[1080px] px-7 py-24">
-      <AtxEyebrow>Research</AtxEyebrow>
-      <h1 className="mt-3 font-serif text-[clamp(36px,4.8vw,60px)] leading-[1.05] tracking-[-0.012em] text-atx-ink">
-        Attestation
-        <br />
-        infrastructure
-        <br />
-        <em className="italic text-atx-accent">for AI agents.</em>
-      </h1>
+    <span className="rounded-full border border-atx-line px-2.5 py-0.5 text-[12px] text-atx-ink-mid">
+      {children}
+    </span>
+  );
+}
 
-      <div className="mt-10 flex flex-wrap items-center gap-4 font-mono-atx text-[11px] uppercase tracking-[0.14em] text-atx-ink-dim">
-        <span>IEEE format</span>
-        <span>&middot;</span>
-        <span>Open access (Apache 2.0)</span>
-        <span>&middot;</span>
-        <span>Peer review in progress</span>
-      </div>
+export default async function ResearchPage() {
+  const posts = (await getBlogPosts()).sort(
+    (a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime(),
+  );
+  const vision = posts.find((p) => p.slug === "product-vision");
+  const notes = posts.filter((p) => p.slug !== "product-vision");
 
-      <div className="mt-10 space-y-6 text-[15px] leading-[1.7] text-atx-ink-mid">
-        <p>
-          The paper introduces a machine-verifiable trust layer for autonomous
-          AI agents. Three primitives are combined: Unified Agent Identity
-          Tokens (UAIT) bridging MCP OAuth, A2A, DIDs, and API keys; W3C
-          Verifiable Credentials with Ed25519Signature2020 proofs; and a
-          hash-chained audit trail with optional Base L2 testnet anchoring via
-          the Ethereum Attestation Service.
-        </p>
-        <p>
-          The system is evaluated against five open standards (RFC 8032, W3C
-          Verifiable Credentials 1.1, W3C DID 1.0, UCAN v0.9, MCP 1.8) through
-          91 automated conformance benchmarks, and against ten EU AI Act
-          articles plus Annex III and Annex V through compliance-workflow tests.
-          Ed25519 sign + verify runs at 0.22 ms median. End-to-end credential
-          issuance runs at 21 ms median on commodity hardware.
-        </p>
-        <p>
-          The artefact and all tests are open-source under Apache 2.0 and
-          published on PyPI as the <code className="rounded-atx-xs border border-atx-line-soft bg-atx-bg-sunken px-1.5 py-0.5 font-mono-atx text-[13px] text-atx-accent">attestix</code> package, alongside an MCP server registered on the
-          Model Context Protocol registry.
+  return (
+    <section className="mx-auto max-w-[1200px] px-6 pb-20 pt-16">
+      <div className="text-center">
+        <p className="text-[14px] font-medium text-atx-accent">Research</p>
+        <h1 className="mt-3 text-[clamp(34px,5vw,52px)] font-normal leading-[1.09] tracking-[-0.03em] text-atx-ink [text-wrap:balance]">
+          Why Attestix exists, and where it is going
+        </h1>
+        <p className="mx-auto mt-5 max-w-[640px] text-[17.5px] leading-[1.6] text-atx-ink-mid [text-wrap:balance]">
+          The product vision, the research paper, and the technical notes behind
+          verifiable evidence for AI agents.
         </p>
       </div>
 
-      <h2 className="mt-16 font-mono-atx text-[11px] uppercase tracking-[0.14em] text-atx-ink-dim">
-        Contributions
-      </h2>
-      <ul className="mt-4 space-y-2 text-[14px] leading-[1.7] text-atx-ink-mid">
-        <li>
-          <strong className="text-atx-ink">1.</strong> A protocol-agnostic
-          identity token (UAIT) that unifies MCP, A2A, DIDs, OAuth, API keys.
-        </li>
-        <li>
-          <strong className="text-atx-ink">2.</strong> An automated EU AI Act
-          compliance pipeline from risk classification to Annex V declaration
-          as a W3C Verifiable Credential.
-        </li>
-        <li>
-          <strong className="text-atx-ink">3.</strong> A hash-chained,
-          tamper-evident audit trail verifiable offline.
-        </li>
-        <li>
-          <strong className="text-atx-ink">4.</strong> Optional on-chain
-          anchoring via EAS on Base L2 testnet with Merkle batching.
-        </li>
-        <li>
-          <strong className="text-atx-ink">5.</strong> An MCP-native,
-          open-source reference implementation validated by 585 automated
-          tests (494 functional + 91 RFC / W3C conformance benchmarks).
-        </li>
-      </ul>
-
-      <h2 className="mt-16 font-mono-atx text-[11px] uppercase tracking-[0.14em] text-atx-ink-dim">
-        Read the full paper
-      </h2>
-      <div className="mt-4 flex flex-wrap gap-3">
+      <div className="mt-14 grid gap-4 lg:grid-cols-2">
+        {vision && (
+          <Link
+            href={`/blog/${vision.slug}`}
+            className="group rounded-2xl border border-atx-accent/30 bg-atx-accent/[0.05] p-7 transition-colors duration-200 hover:border-atx-accent/60"
+          >
+            <div className="flex items-center gap-3 text-[13px] text-atx-ink-dim">
+              <Tag>Product</Tag> {fmt(vision.publishedAt)} &middot; {minutes(vision.source)} min read
+            </div>
+            <h2 className="mt-4 text-[26px] font-medium tracking-[-0.6px] text-atx-ink">{vision.title}</h2>
+            <p className="mt-3 text-[15px] leading-[1.6] text-atx-ink-mid">{vision.summary}</p>
+            <span className="mt-5 inline-flex items-center gap-1.5 text-[14px] font-medium text-atx-accent">
+              Read <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
+            </span>
+          </Link>
+        )}
         <Link
-          href="/docs/project/research"
-          className="inline-flex h-10 items-center rounded-atx-md bg-atx-accent px-5 text-[13px] font-medium text-[oklch(0.14_0.01_180)] transition-colors hover:bg-atx-accent-deep"
+          href="/research/paper"
+          className="group rounded-2xl border border-atx-info/30 bg-atx-info/[0.05] p-7 transition-colors duration-200 hover:border-atx-info/60"
         >
-          Read in docs
+          <div className="flex items-center gap-3 text-[13px] text-atx-ink-dim">
+            <Tag>Research</Tag> IEEE format &middot; peer review in progress
+          </div>
+          <h2 className="mt-4 text-[26px] font-medium tracking-[-0.6px] text-atx-ink">
+            Attestation infrastructure for AI agents
+          </h2>
+          <p className="mt-3 text-[15px] leading-[1.6] text-atx-ink-mid">
+            The paper behind Attestix: agent identity tokens, W3C Verifiable
+            Credentials, and a hash-chained audit trail, evaluated against five
+            open standards and ten EU AI Act articles.
+          </p>
+          <span className="mt-5 inline-flex items-center gap-1.5 text-[14px] font-medium text-atx-info">
+            Read <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
+          </span>
         </Link>
-        <a
-          href="https://github.com/VibeTensor/attestix/tree/main/paper"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex h-10 items-center rounded-atx-md border border-atx-line px-5 text-[13px] font-medium text-atx-ink transition-colors hover:border-atx-ink-dim hover:bg-atx-panel"
-        >
-          LaTeX source on GitHub
-        </a>
+      </div>
+
+      <h2 className="mt-16 text-[14px] font-medium text-atx-ink-mid">Notes and releases</h2>
+      <div className="mt-4 divide-y divide-atx-line-soft border-y border-atx-line-soft">
+        {notes.map((p) => (
+          <Link
+            key={p.slug}
+            href={`/blog/${p.slug}`}
+            className="group grid gap-2 py-5 transition-colors duration-200 md:grid-cols-[180px_1fr_auto] md:items-baseline md:gap-6"
+          >
+            <span className="text-[13px] text-atx-ink-dim">{fmt(p.publishedAt)}</span>
+            <span>
+              <span className="block text-[17px] text-atx-ink transition-colors group-hover:text-atx-accent">
+                {p.title}
+              </span>
+              <span className="mt-1 block text-[14px] leading-[1.55] text-atx-ink-mid">{p.summary}</span>
+            </span>
+            <span className="text-[13px] text-atx-ink-dim">{minutes(p.source)} min read</span>
+          </Link>
+        ))}
       </div>
     </section>
   );

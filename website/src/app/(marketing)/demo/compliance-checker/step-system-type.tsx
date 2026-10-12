@@ -76,10 +76,10 @@ export function StepSystemType({
 }: StepSystemTypeProps) {
   return (
     <div>
-      <h2 className="text-xl font-semibold text-foreground mb-2">
+      <h2 className="mb-2 text-[26px] font-medium leading-[1.2] tracking-[-0.6px] text-atx-ink">
         What type of AI system do you operate?
       </h2>
-      <p className="text-sm text-muted-foreground mb-6">
+      <p className="mb-6 text-[15px] leading-[1.6] text-atx-ink-mid">
         Select the category that best describes your AI system.
       </p>
 
@@ -92,10 +92,10 @@ export function StepSystemType({
               key={option.id}
               type="button"
               onClick={() => onTypeChange(option.id)}
-              className={`group relative flex items-start gap-4 rounded-lg border p-4 text-left transition-all duration-200 ${
+              className={`group relative flex items-start gap-4 rounded-2xl border p-5 text-left transition-colors duration-200 ${
                 isSelected
-                  ? "border-primary bg-primary/5 ring-1 ring-primary/20"
-                  : "border-border hover:border-primary/40 hover:bg-accent/50"
+                  ? "border-atx-accent/50 bg-atx-accent/[0.05]"
+                  : "border-atx-line bg-atx-panel/60 hover:border-atx-ink-dim"
               }`}
             >
               {/* Radio indicator */}
@@ -103,12 +103,12 @@ export function StepSystemType({
                 <div
                   className={`flex h-5 w-5 items-center justify-center rounded-full border-2 transition-colors duration-200 ${
                     isSelected
-                      ? "border-primary"
-                      : "border-muted-foreground/40 group-hover:border-primary/60"
+                      ? "border-atx-accent"
+                      : "border-atx-ink-faint group-hover:border-atx-ink-dim"
                   }`}
                 >
                   {isSelected && (
-                    <div className="h-2.5 w-2.5 rounded-full bg-primary" />
+                    <div className="h-2.5 w-2.5 rounded-full bg-atx-accent" />
                   )}
                 </div>
               </div>
@@ -116,13 +116,13 @@ export function StepSystemType({
               {/* Label and description */}
               <div className="min-w-0">
                 <div
-                  className={`text-sm font-medium ${
-                    isSelected ? "text-foreground" : "text-foreground/90"
+                  className={`text-[15px] font-medium ${
+                    isSelected ? "text-atx-ink" : "text-atx-ink/90"
                   }`}
                 >
                   {option.label}
                 </div>
-                <div className="mt-0.5 text-xs text-muted-foreground">
+                <div className="mt-1 text-[13px] leading-[1.5] text-atx-ink-dim">
                   {option.description}
                 </div>
               </div>
@@ -136,7 +136,7 @@ export function StepSystemType({
         <div className="mt-4">
           <label
             htmlFor="other-description"
-            className="block text-sm font-medium text-foreground mb-2"
+            className="mb-2 block text-[14px] font-medium text-atx-ink"
           >
             Describe your AI system
           </label>
@@ -146,7 +146,7 @@ export function StepSystemType({
             placeholder="e.g., recommendation engine, spam filter, predictive analytics..."
             value={otherDescription}
             onChange={(e) => onOtherDescriptionChange(e.target.value)}
-            className="w-full"
+            className="w-full rounded-xl border-atx-line bg-atx-bg-sunken text-atx-ink placeholder:text-atx-ink-faint"
           />
         </div>
       )}

@@ -42,7 +42,7 @@
 
 ## Source and verification status
 
-The readiness changes are released in Python `attestix` 0.4.2 on PyPI. The JavaScript offline verifier is also published as npm `attestix` 0.4.2. Main may contain later changes; compare release notes and pin the version you reviewed. Go and Java 0.4.2 are published. R and Rust have GitHub 0.4.2 releases, while CRAN and crates.io still serve 0.4.1 at this release cutoff.
+The readiness changes are released in Python `attestix` 0.4.3 on PyPI. The JavaScript offline verifier is also published as npm `attestix` 0.4.2. Main may contain later changes; compare release notes and pin the version you reviewed. Go and Java 0.4.2 are published. R and Rust have GitHub 0.4.2 releases, while CRAN and crates.io still serve 0.4.1 at this release cutoff.
 
 - Credential verification binds the stated issuer to the supported proof controller. Ambiguous NFC-normalized keys fail before signing or verification.
 - Presentation verification requires the caller's expected challenge and domain. A signature alone does not provide replay protection.
@@ -55,7 +55,7 @@ The readiness changes are released in Python `attestix` 0.4.2 on PyPI. The JavaS
 
 ```bash
 # Reviewed release (check release notes before upgrading):
-pip install attestix==0.4.2
+pip install attestix==0.4.3
 ```
 
 > Since 0.4.0, the supported namespace is the canonical
@@ -106,7 +106,7 @@ Cryptographic validity is separate from issuer trust, authorization, revocation 
 
 | Language | Install | Status |
 |----------|---------|--------|
-| **Python** | `pip install attestix==0.4.2` | PyPI 0.4.2 |
+| **Python** | `pip install attestix==0.4.3` | PyPI 0.4.3 |
 | **JS / TS** | `npm install attestix@0.4.2` | npm 0.4.2; verifier source ([attestix-js](https://github.com/VibeTensor/attestix-js)) |
 | **Go** | `go get github.com/VibeTensor/attestix-go@v0.4.2` | Go module v0.4.2; verifier source ([attestix-go](https://github.com/VibeTensor/attestix-go)) |
 | **Rust** | `cargo add attestix` | crates.io 0.4.1; GitHub v0.4.2 source ([attestix-rs](https://github.com/VibeTensor/attestix-rs)) |

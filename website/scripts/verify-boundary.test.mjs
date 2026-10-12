@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { generateKeyPairSync, sign } from "node:crypto";
 import { readFileSync } from "node:fs";
 import test from "node:test";
-import { canonicalize, verifyCredential } from "@vibetensor/attestix";
+import { canonicalize, verifyCredential } from "attestix";
 import { ModuleKind, ScriptTarget, transpileModule } from "typescript";
 
 // Pages currently pins Node 20, which cannot strip TypeScript natively.

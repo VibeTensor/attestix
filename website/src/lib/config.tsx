@@ -3,7 +3,7 @@ import { Icons } from "@/components/icons";
 export const BLUR_FADE_DELAY = 0.15;
 
 export const ATTESTIX_VERSION =
-  process.env.NEXT_PUBLIC_ATTESTIX_VERSION || "0.4.1";
+  process.env.NEXT_PUBLIC_ATTESTIX_VERSION || "0.4.3";
 
 export const siteConfig = {
   name: "Attestix",
@@ -17,7 +17,7 @@ export const siteConfig = {
     "EU AI Act Compliance",
     "MCP Tools",
     "Decentralized Identity",
-    "UCAN Delegation",
+    "UCAN-style Delegation",
     "Blockchain Anchoring",
     "AI Attestation",
   ],
@@ -223,12 +223,12 @@ export const siteConfig = {
     {
       question: "How do I install Attestix?",
       answer:
-        'Install via pip: "pip install attestix". Then configure your MCP client to connect to the Attestix server. Full setup takes under 5 minutes.',
+        'Install via pip: "pip install attestix". Then point your MCP client at the Attestix MCP server, which runs over stdio with "python -m attestix.main". Full setup takes under 5 minutes.',
     },
     {
       question: "What standards does Attestix implement?",
       answer:
-        "Attestix implements W3C Verifiable Credentials (VC Data Model 1.1), W3C Decentralized Identifiers (DIDs), UCAN delegation (based on JWT), Ed25519 signatures (RFC 8032), and Ethereum Attestation Service (EAS) for blockchain anchoring.",
+        "Attestix builds on the W3C Verifiable Credentials Data Model 1.1, W3C Decentralized Identifiers (did:key, did:web), UCAN-style delegation tokens (server-signed JWTs), Ed25519 signatures (RFC 8032), and the Ethereum Attestation Service (EAS) for blockchain anchoring. Proofs are Ed25519 over Attestix's RFC 8785-style canonical JSON, so they are checked with the open-source Attestix verifiers rather than generic W3C VC verifiers.",
     },
     {
       question: "What is the current maturity level?",
@@ -238,12 +238,12 @@ export const siteConfig = {
     {
       question: "Does Attestix work with LangChain, OpenAI Agents SDK, or CrewAI?",
       answer:
-        "Yes, all three are real integrations rather than examples or shims. LangChain uses a BaseCallbackHandler that writes every tool call, LLM call, and chain step to the Attestix audit trail with hash chaining. OpenAI Agents SDK uses MCPServerStdio so Attestix tools appear as native MCP tools. CrewAI attaches Attestix to the mcps field on every agent, giving each crew member full attestation capabilities. You can also use Attestix via its MCP server from any MCP-compatible client (Claude Desktop, Cursor, Continue, Windsurf, VS Code).",
+        "Yes, all three ship in the attestix package. LangChain: AttestixCallback, a BaseCallbackHandler that logs chain, tool, and LLM events to the hash-chained Attestix audit trail. OpenAI Agents SDK: AttestixAuditHook, a helper you call to log guardrail and tool decisions. CrewAI: AttestixCrewAdapter, which you call from your Task callbacks to log task start and finish. Any MCP-compatible client (for example Claude Desktop or Cursor) can also run the Attestix MCP server over stdio with python -m attestix.main.",
     },
     {
       question: "How does blockchain anchoring work?",
       answer:
-        "Attestix anchors identity and credential hashes to Base L2 testnet via the Ethereum Attestation Service (EAS). It supports both individual anchoring and Merkle batch anchoring for cost efficiency. Anchored records are tamper-proof and independently verifiable on Base Sepolia testnet. Mainnet schema registration is planned for a future release.",
+        "Attestix anchors identity, credential, and audit-batch hashes to Base L2 via the Ethereum Attestation Service (EAS), on Base Sepolia testnet by default. It supports both individual anchoring and Merkle batch anchoring of audit logs for cost efficiency. Once a hash is anchored, later tampering with the record is detectable and anyone can check the attestation on-chain. Anchoring needs the [blockchain] extra and a funded wallet (EVM_PRIVATE_KEY); mainnet is selected with BASE_NETWORK.",
     },
     {
       question: "Can I use Attestix without blockchain?",

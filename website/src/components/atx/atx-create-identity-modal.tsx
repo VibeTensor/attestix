@@ -166,8 +166,9 @@ export function AtxCreateIdentityModal({ onClose }: Props) {
               </Field>
               {risk === "high" && (
                 <div className="rounded-atx-sm border border-atx-warn/40 bg-atx-warn/[0.08] p-3 font-mono-atx text-[12px] text-atx-warn">
-                  HIGH-RISK systems require third-party conformity assessment
-                  under Article 43. Self-assessment will be blocked.
+                  HIGH-RISK: Article 43 sets the conformity route. Annex III
+                  points 2-8 use internal control; point 1 (biometrics) needs a
+                  notified body, and self-assessment is refused there.
                 </div>
               )}
             </div>

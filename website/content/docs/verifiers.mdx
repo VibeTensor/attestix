@@ -20,6 +20,6 @@ The current npm package is `attestix`: install `attestix@0.4.2`. The legacy `@vi
 
 Establish which issuer/key is trusted, what claims authorize, whether time/status checks are appropriate, and how replay is prevented. An embedded DID or caller-supplied key proves key control, not identity or permission. Offline verification cannot establish live revocation unless you provide a trusted status source and freshness policy.
 
-The [browser verifier](/verify) has deployed local boundary checks, but currently uses the legacy scoped 0.2.0 library. It has not yet migrated to the new 0.4.2 npm SDK. It applies its documented local boundary checks and signature verification. It is not a legal conformity decision or a substitute for a trusted resolver.
+The [browser verifier](/verify) uses npm `attestix` 0.4.2 with its documented local boundary checks and signature verification. It is not a legal conformity decision or a substitute for a trusted resolver.
 
 See the [public conformance fixtures](https://github.com/VibeTensor/attestix/tree/main/spec/verify/v1) and each SDK README for exact APIs and limitations.
