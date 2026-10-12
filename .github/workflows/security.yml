@@ -38,18 +38,12 @@ jobs:
           pip install -e . --no-deps
 
       - name: Run pip-audit
-        # Advisory on PR, enforced on schedule + push to main.
         # --skip-editable skips the locally-installed editable attestix itself.
         # No --strict: under --strict pip-audit fails on any un-auditable dep,
         # and an editable self-install can never be audited (it errors even with
         # --skip-editable). Without --strict, pip-audit still exits non-zero on
         # any real dependency vulnerability — which is the behaviour we enforce.
-        run: |
-          if [ "${{ github.event_name }}" = "pull_request" ]; then
-            pip-audit --progress-spinner off --skip-editable || echo "pip-audit findings present (advisory on PR)."
-          else
-            pip-audit --progress-spinner off --skip-editable
-          fi
+        run: pip-audit --progress-spinner off --skip-editable
 
   bandit:
     name: bandit (source code SAST)
@@ -69,25 +63,4 @@ jobs:
         run: pip install --require-hashes -r requirements-ci.txt
 
       - name: Run bandit (medium+ severity, medium+ confidence)
-        run: bandit -r services tools auth blockchain api -c pyproject.toml -ll -ii
-
-  safety:
-    name: safety (CVE scan, advisory)
-    runs-on: ubuntu-latest
-    continue-on-error: true
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
-
-      - name: Set up Python
-        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
-        with:
-          python-version: '3.12'
-          cache: 'pip'
-          cache-dependency-path: pyproject.toml
-
-      - name: Install safety
-        run: pip install --require-hashes -r requirements-ci.txt
-
-      - name: Run safety check
-        run: safety check --file=requirements.txt --full-report || true
+        run: bandit -r attestix -c pyproject.toml -ll -ii
