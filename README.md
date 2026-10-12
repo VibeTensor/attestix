@@ -124,7 +124,7 @@ for developers who need portable evidence in their applications. Broader governa
 platforms also offer APIs, SDKs, agent governance, and compliance workflows; evaluate
 their current capabilities against your requirements.
 
-Agent identity is fragmenting across walled gardens (Microsoft Entra, AWS AgentCore, Google A2A, ERC-8004). Attestix combines **agent identity, AI governance evidence and verifiable credentials** in one toolkit.
+Agent identity is fragmenting across walled gardens (Microsoft Entra, AWS AgentCore, ERC-8004). Attestix combines **agent identity, AI governance evidence and verifiable credentials** in one toolkit.
 
 Attestix fills this gap.
 
