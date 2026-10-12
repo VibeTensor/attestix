@@ -99,7 +99,7 @@ doc/contract breaks, and 1 idempotency-replay defect across Windows + Linux).
 ### Headline since 0.3.0
 - **Pluggable storage + signer**  -  swap the in-memory defaults for Postgres + HSM/KMS without forking (`Storage` / `Signer` protocols).
 - **Multi-tenancy**  -  every resource carries `tenant_id`; structured, hash-chained, idempotency-aware audit events that don't leak across tenants.
-- **Portability**  -  bundle EXPORT + IMPORT (`attestix export` / `attestix import`), byte-stable JCS wire-format published at https://attestix.io/spec/bundle/v1. Cloud-workspace to/from self-host round-trip.
+- **Portability**  -  bundle EXPORT + IMPORT (`attestix export` / `attestix import`), byte-stable JCS wire-format published at https://attestix.io/spec/bundle/v1. Self-hosted export/import round-trip; a hosted workspace is planned.
 - **Cross-engine offline verifier**  -  `npm install @vibetensor/attestix` (unscoped `attestix` migration in progress) verifies Python-issued credentials in any JS runtime.
 - **Structured `verify_chain`**  -  `VerifyChainResult` with `broken_event_id` + `failure_reason`.
 - **Canonical `attestix.*` namespace** with back-compat shims; `[api]` / `[langchain]` / `[crewai]` / `[openai-agents]` install extras; LangChain / OpenAI Agents / CrewAI integrations shipped in the wheel.
