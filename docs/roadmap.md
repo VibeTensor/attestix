@@ -42,6 +42,7 @@ MCP tools for regulatory compliance documentation.
 
 **EU AI Act timeline:**
 - 2 August 2026 - general application, with role-specific exceptions; see the current EU timeline
+- 2 December 2027 - Chapter III Sections 1-3 apply to Annex III high-risk systems
 - 2 August 2028 - specified Annex I high-risk systems embedded in regulated products
 
 ## Phase 3 - Blockchain Anchoring (Complete)
