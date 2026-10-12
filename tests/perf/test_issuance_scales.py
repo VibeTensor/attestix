@@ -109,9 +109,14 @@ def test_issuance_scales_near_linearly(tmp_attestix, repo_factory, monkeypatch):
             config._repo().flush()
             return time.perf_counter() - start
 
-    samples = [(_time_for(100, i), _time_for(400, i)) for i in range(5)]
-    small = max(median(pair[0] for pair in samples), 1e-3)
-    large = median(pair[1] for pair in samples)
+    # Alternate which size runs first so drift in runner load or CPU
+    # frequency cannot bias every pair in the same direction.
+    samples = {100: [], 400: []}
+    for i in range(5):
+        for n in ((100, 400) if i % 2 == 0 else (400, 100)):
+            samples[n].append(_time_for(n, i))
+    small = max(median(samples[100]), 1e-3)
+    large = median(samples[400])
     ratio = large / small
 
     assert ratio < 9.0, (
