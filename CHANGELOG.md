@@ -12,6 +12,20 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Correct AI Act application dates and separate source changes from registry publication and deployment acceptance.
 - Remove unverified tool/download counts and qualify language-specific verifier behavior.
 
+## [0.4.2] - 2026-10-12
+
+### Security
+
+- Bound untrusted identity, credential and portability inputs and preserve credential trust-key binding.
+- Fail closed for unsupported REST tenants and document the single-tenant default.
+- Purge managed local agent records and parseable backups; external copies require separate handling.
+
+### Changed
+
+- Publish the merged readiness hardening in a new package version.
+- Correct authentication, namespace migration, erasure and verification guidance.
+- Describe governance output as evidence and provider-review drafts, without legal conformity or certification claims.
+
 ## [0.4.1] - 2026-06-24
 
 Stable. Promotes `0.4.1rc2` with the exported audit-chain known issue now

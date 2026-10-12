@@ -5,14 +5,14 @@ import { constructMetadata } from "@/lib/utils";
 export const metadata = constructMetadata({
   title: "Attestix  /  India",
   description:
-    "DPDP-aware AI infrastructure for Indian builders + an RBI-readable audit story for fintech and BFSI. DPDP Act 2023, RBI Master Direction, MeitY AI advisory framings.",
+    "Signed identity and governance evidence for Indian teams evaluating AI agent workflows. Regulatory applicability requires separate review.",
 });
 
 const WHY_NOW = [
   {
     n: "01",
     title: "DPDP Act 2023 + Rules 2025",
-    body: "Notified 14 November 2025; substantive duties  -  notice, consent, data-principal rights, Consent Manager, breach notification  -  land on 14 May 2027. Today Attestix has zero DPDP-specific code; this is referenced in our roadmap, not shipped in v0.4.1.",
+    body: "Deploying teams should assess applicable DPDP requirements, roles and implementation dates separately. Attestix provides evidence and managed local record handling; it does not establish DPDP conformity.",
   },
   {
     n: "02",
@@ -47,7 +47,7 @@ const ICPS = [
   },
 ];
 
-const INSTALL_SNIPPET = `# Install the v0.4.1 stable
+const INSTALL_SNIPPET = `# Install Attestix
 pip install attestix
 
 # Issue an agent identity
@@ -71,17 +71,16 @@ export default function IndiaPage() {
 
       <div className="mt-10 max-w-[760px] space-y-5 text-[15px] leading-[1.65] text-atx-ink-mid">
         <p>
-          DPDP-aware AI infrastructure for Indian builders, and an
-          RBI-readable audit story for fintech and BFSI. India just notified
-          the DPDP Rules  -  substantive duties land on 14 May 2027  -  and the
-          RBI&apos;s Master Direction on IT outsourcing already wants audit trails
-          for AI-driven trading and credit decisions.
+          Signed identity and governance evidence for Indian teams evaluating
+          AI agent workflows. Applicable obligations depend on the system,
+          operator role and sector. Use the relevant official requirements
+          and implementation timetable when assessing a deployment.
         </p>
         <p>
-          Attestix is the open-source identity, audit, and on-chain anchoring
-          layer that gives every AI agent a verifiable credential, a UCAN
-          delegation chain for every action, and a hash-chained audit anchored
-          to Base L2 (Sepolia testnet today; mainnet planned).
+          Attestix provides agent identity, delegated authority and audit
+          records. Optional Base L2 testnet anchoring requires separate
+          configuration and network access. These records support review;
+          they do not prove complete capture or legal conformity.
         </p>
       </div>
 
@@ -262,14 +261,12 @@ export default function IndiaPage() {
           Compliance posture
         </div>
         <p className="mt-3 text-[12.5px] leading-[1.6] text-atx-ink-mid">
-          DPDP Act coverage is referenced in our roadmap; it is{" "}
-          <span className="text-atx-ink">not yet implemented in v0.4.1</span>  -
-          planned for v0.5, ahead of the 14 May 2027 substantive-duties date.
-          Attestix is an evidence tool, not a guarantor of compliance:
-          providers remain liable under EU AI Act Articles 16-22, and under
-          DPDP under the data-fiduciary obligations of the data principal once
-          enforced. We do not provide legal advice. Base L2 anchoring is
-          Sepolia testnet only; mainnet schema registration is on the roadmap.
+          The current release provides evidence tooling and managed local
+          record handling. It does not establish DPDP or EU AI Act conformity.
+          Operators must separately assess lawful data handling, retention,
+          external copies and applicable obligations. Base L2 anchoring defaults
+          to Base Sepolia and supports Base mainnet when configured. External
+          deployment and schema registration require separate verification.
         </p>
       </div>
     </section>
