@@ -6,16 +6,16 @@ How Attestix is structured internally.
 
 ```
 attestix/
-  main.py                 # MCP server entry point (registers all 47 tools)
+  main.py                 # MCP server entry point (registers MCP tools)
   config.py               # Configuration loader (env vars, defaults)
   errors.py               # Custom exception hierarchy
 
   auth/
-    signing.py            # Ed25519 key management (generation, loading, signing, verification)
+    crypto.py             # Ed25519 key management (generation, loading, signing, verification)
     ssrf.py               # SSRF protection for outbound HTTP requests
 
   services/
-    identity_service.py   # UAIT creation, resolution, verification, translation, GDPR erasure
+    identity_service.py   # UAIT creation, resolution, verification, translation, local data erasure
     agent_card_service.py # A2A agent card parsing, generation, discovery
     did_service.py        # DID creation (did:key, did:web), resolution
     delegation_service.py # UCAN-style delegation with JWT tokens
@@ -29,15 +29,15 @@ attestix/
     merkle.py             # Merkle tree implementation for batch anchoring
 
   tools/
-    identity_tools.py     # MCP tool definitions for Identity module (8 tools)
-    agent_card_tools.py   # MCP tool definitions for Agent Cards module (3 tools)
-    did_tools.py          # MCP tool definitions for DID module (3 tools)
-    delegation_tools.py   # MCP tool definitions for Delegation module (4 tools)
-    reputation_tools.py   # MCP tool definitions for Reputation module (3 tools)
-    compliance_tools.py   # MCP tool definitions for Compliance module (7 tools)
-    credential_tools.py   # MCP tool definitions for Credentials module (8 tools)
-    provenance_tools.py   # MCP tool definitions for Provenance module (5 tools)
-    blockchain_tools.py   # MCP tool definitions for Blockchain module (6 tools)
+    identity_tools.py     # MCP tool definitions for Identity module
+    agent_card_tools.py   # MCP tool definitions for Agent Cards module
+    did_tools.py          # MCP tool definitions for DID module
+    delegation_tools.py   # MCP tool definitions for Delegation module
+    reputation_tools.py   # MCP tool definitions for Reputation module
+    compliance_tools.py   # MCP tool definitions for Compliance module
+    credential_tools.py   # MCP tool definitions for Credentials module
+    provenance_tools.py   # MCP tool definitions for Provenance module
+    blockchain_tools.py   # MCP tool definitions for Blockchain module
 
   tests/
     conftest.py           # Shared fixtures (tmp isolation, service factories)

@@ -1,11 +1,11 @@
 ---
 title: "Healthcare ML lead: Quickstart"
-description: Record training-data provenance, model lineage, and an Annex III high-risk profile for a clinical decision-support agent. GDPR Article 17 erasure included; DPDP / HIPAA-adjacent obligations called out honestly.
+description: Record training-data provenance, model lineage, and an Annex III high-risk profile for a clinical decision-support agent. local data erasure tooling included; DPDP / HIPAA-adjacent obligations called out honestly.
 ---
 
-## You're here because…
+## You're here because...
 
-You're an ML lead on a clinical / healthcare stack and you need provenance-grade documentation before the agent touches a patient record. The funnel evaluation flagged that healthcare evaluators continued past install but dropped at integration: there was no copy-paste path that produced an Annex III high-risk profile plus a model-lineage record in one go. This page is that path. **DPDP / HIPAA-adjacent coverage is not implemented in v0.4.0**; what you get today is EU AI Act + GDPR Article 17 erasure.
+You're an ML lead on a clinical / healthcare stack and you need provenance-grade documentation before the agent touches a patient record. Use the runnable example and the source limitations below to assess whether this workflow meets your requirements.
 
 ## 60-second install
 
@@ -27,7 +27,7 @@ agent_id = IdentityService().create_identity(
     issuer_name="VibeTensor",
 )["agent_id"]
 
-# Article 10 — training data provenance (de-identified clinical set)
+# Article 10  -  training data provenance (de-identified clinical set)
 ProvenanceService().record_training_data(
     agent_id=agent_id,
     dataset_name="MIMIC-IV de-identified ED triage subset",
@@ -38,7 +38,7 @@ ProvenanceService().record_training_data(
     data_governance_measures="De-identified per HIPAA Safe Harbor. IRB approval IRB-2026-0042.",
 )
 
-# Article 11 — model lineage + evaluation metrics
+# Article 11  -  model lineage + evaluation metrics
 ProvenanceService().record_model_lineage(
     agent_id=agent_id,
     base_model="clinicalBERT-base",
@@ -52,7 +52,7 @@ ComplianceService().create_compliance_profile(
     agent_id=agent_id,
     risk_category="high",
     provider_name="VibeTensor",
-    intended_purpose="ED triage decision support (Annex III §5(a) — access to essential services)",
+    intended_purpose="ED triage decision support (Annex III Section 5(a)  -  access to essential services)",
     human_oversight_measures="Clinician reviews every triage recommendation before action.",
     transparency_obligations="Patient-facing disclosure of AI involvement per Article 50.",
 )
@@ -62,7 +62,7 @@ ComplianceService().create_compliance_profile(
 
 - A signed Article 10 + Article 11 record per dataset and per fine-tuning run, every regulator's first ask.
 - A high-risk profile gated under Annex III. The conformity-assessment service will block self-assessment and require a third-party result before issuing a Declaration of Conformity.
-- A GDPR Article 17 erasure path (`identity_svc.revoke_identity(agent_id, reason="erasure")`), the only data-subject-rights primitive implemented today.
+- A local erasure path (`IdentityService().purge_agent_data(agent_id)`) for managed records and parseable local backups. Revocation only marks an identity revoked. External copies need separate handling.
 
 ## Next step (5 minutes)
 
@@ -72,11 +72,11 @@ Log every clinical inference into the hash-chained Article 12 audit trail (no PH
 ProvenanceService().log_action(
     agent_id=agent_id,
     action_type="inference",
-    input_summary="Case CR-7421 (vitals + chief complaint hash sha256:a91…)",
+    input_summary="Case CR-7421 (vitals + chief complaint hash sha256:a91...)",
     output_summary="Triage band: ESI-2; recommend immediate clinician review.",
     decision_rationale="Tachycardia + chest pain + age>65 -> ESI-2 per CDS rules.",
     human_override=False,
 )
 ```
 
-**Open caveats for healthcare production:** there is no third-party security audit, no HIPAA BAA template, and **DPDP (India) coverage is referenced in marketing but is planned for v0.5; it is not implemented in v0.4.0**. GDPR Article 17 (erasure) is the only data-subject-rights primitive shipped today. Treat all output as evidence under your existing legal review, not as legal sign-off.
+**Open caveats for healthcare production:** there is no third-party security audit, no HIPAA BAA template, and **DPDP (India) coverage is referenced in marketing but is planned for v0.5; it is not implemented in v0.4.0**. Local erasure tooling does not establish GDPR conformity or remove external copies. Treat all output as evidence under your existing legal review, not as legal sign-off.

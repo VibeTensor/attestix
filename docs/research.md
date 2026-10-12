@@ -8,7 +8,7 @@ Attestix is described in a peer-reviewed research paper that covers the system a
 
 Pavan Kumar Dubasi (VibeTensor Private Limited)
 
-> The rapid proliferation of autonomous AI agents operating across organizational boundaries introduces fundamental challenges in identity verification, trust establishment, and regulatory compliance. We present Attestix, an open-source attestation infrastructure that provides a unified trust layer for AI agents through nine integrated modules. Attestix is implemented as a Model Context Protocol (MCP) server exposing 47 tools, validated by 284 automated tests including 91 conformance benchmarks against RFC 8032, W3C VC/DID, and UCAN specifications.
+> The rapid proliferation of autonomous AI agents operating across organizational boundaries introduces fundamental challenges in identity verification, trust establishment, and regulatory compliance. We present Attestix, an open-source attestation infrastructure that provides a unified trust layer for AI agents through nine integrated modules. Attestix is implemented as a Model Context Protocol (MCP) server exposing MCP tools, validated by 284 automated tests including 91 conformance benchmarks against RFC 8032, W3C VC/DID, and UCAN specifications.
 
 **Links:**
 
@@ -51,7 +51,7 @@ The paper presents four main contributions:
 
 2. **Compliance automation engine** implementing Articles 5, 9-15, 43, 72-73, and Annex V of the EU AI Act, including automated risk classification, conformity assessment enforcement, and declaration generation.
 
-3. **Open-source MCP implementation** with 47 tools validated by 358 automated tests (1 skipped on Windows; 91 conformance benchmarks against RFC 8032, W3C VC, W3C DID, and UCAN specifications).
+3. **Open-source MCP implementation** with MCP tools validated by 358 automated tests (1 skipped on Windows; 91 conformance benchmarks against RFC 8032, W3C VC, W3C DID, and UCAN specifications).
 
 4. **Tamper-evident audit mechanism** combining SHA-256 hash-chained logs with Merkle tree aggregation and on-chain anchoring via the Ethereum Attestation Service on Base L2.
 
@@ -67,7 +67,7 @@ The paper presents four main contributions:
 | W3C VC Data Model 1.1 | Credential structure, proof, presentations | 24 |
 | W3C DID Core 1.0 | did:key/web structure, roundtrip resolution | 16 |
 | UCAN v0.9.0 | JWT header, payload, attenuation, revocation | 16 |
-| MCP Protocol | 47 tools, 9 modules, async, naming | 5 |
+| MCP Protocol | MCP tools, 9 modules, async, naming | 5 |
 | Performance | Latency thresholds | 7 |
 
 ### Performance (median, Docker)

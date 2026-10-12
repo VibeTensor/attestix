@@ -7,7 +7,7 @@
 <h1 align="center">Attestix</h1>
 
 <p align="center">
-  <strong>Compliance Automation for AI Agents</strong>
+  <strong>Signed identity and evidence for AI agents</strong>
 </p>
 
 <p align="center">
@@ -17,7 +17,6 @@
   <a href="https://codecov.io/gh/VibeTensor/attestix"><img src="https://img.shields.io/codecov/c/github/VibeTensor/attestix?style=flat-square" alt="Coverage"></a>
   <a href="https://pypi.org/project/attestix/"><img src="https://img.shields.io/pypi/v/attestix?color=4f46e5&style=flat-square" alt="PyPI"></a>
   <a href="https://pypi.org/project/attestix/"><img src="https://img.shields.io/pypi/pyversions/attestix?color=4f46e5&style=flat-square" alt="Python"></a>
-  <a href="https://pypi.org/project/attestix/"><img src="https://img.shields.io/pypi/dm/attestix?color=4f46e5&style=flat-square" alt="Downloads"></a>
   <a href="https://github.com/VibeTensor/attestix/blob/main/LICENSE"><img src="https://img.shields.io/github/license/VibeTensor/attestix?color=4f46e5&style=flat-square" alt="License"></a>
   <a href="https://attestix.io/docs"><img src="https://img.shields.io/badge/docs-attestix.io%2Fdocs-4f46e5?style=flat-square" alt="Docs"></a>
   <a href="https://attestix.io"><img src="https://img.shields.io/badge/website-attestix.io-4f46e5?style=flat-square" alt="Website"></a>
@@ -26,13 +25,13 @@
 <p align="center">
   Record cryptographically verifiable evidence to support AI governance workflows.<br/>
   Open-source identity, credentials, compliance automation, and trust scoring.<br/>
-  47 MCP tools across 9 modules, 44 REST API endpoints,
+  MCP and REST interfaces,
   Automated functional tests and Attestix interoperability benchmarks.<br/>
   Real integrations with LangChain, OpenAI Agents SDK, and CrewAI.
 </p>
 
 <p align="center">
-  <em>Status: v0.4.1 stable, with pre-1.0 deployment limitations.
+  <em>Status: pre-1.0 toolkit; this README describes current main source.
   Single-maintainer project, community
   contributions welcome. No independent third-party security audit has been
   performed yet; deploy with the same diligence you would apply to any
@@ -41,10 +40,21 @@
 
 ---
 
+## Source and verification status
+
+The readiness changes are merged to main. This is source status, not a new registry-release announcement. Install from a reviewed source revision when you need changes that are not yet in your registry package.
+
+- Credential verification binds the stated issuer to the supported proof controller. Ambiguous NFC-normalized keys fail before signing or verification.
+- Presentation verification requires the caller's expected challenge and domain. A signature alone does not provide replay protection.
+- REST use requires an API key by default. The default REST server is single-tenant and rejects non-default tenant headers; a shared API key does not provide cross-tenant authorization.
+- JSON updates use the shared storage lock. Protect the local signing key and data directory; test backup restoration, isolation and your selected signer/backend before production.
+- `workflow_complete` describes recorded documentation completion. `legal_conformity` is not assessed; the deprecated `compliant` field is a workflow alias. Generated declarations are drafts for provider review.
+- Local purge cannot erase external replicas, remote logs, previously shared credentials or third-party backups. Plan historical data and credential migration separately.
+
 ## Install
 
 ```bash
-# Stable release:
+# Registry package (check release notes against the main branch):
 pip install attestix
 ```
 
@@ -84,24 +94,24 @@ streamlit run demo/webapp/app.py         # Opens at http://localhost:8501
 ### Quick Demo
 
 ```bash
-python examples/quickstart.py            # Full 9-module workflow in 0.1 seconds
+python examples/quickstart.py            # Local synthetic workflow
 ```
 
 ## Verify in any language
 
-Attestix credentials are issued once (Python core or cloud) and verify
-**anywhere**. Six independent verifier implementations share one conformance
-suite (`spec/verify/v1`): verify offline, no Python runtime, zero trust in the
-issuer. The verifiers are verifier-only: issuance stays in the Python core.
+Attestix credentials use a published canonical-JSON and Ed25519 verification profile.
+Language-specific verifier repositories share conformance fixtures, but their trust-input
+and delegation-chain checks differ. Read each verifier README and pin a reviewed version.
+Cryptographic validity is separate from issuer trust, authorization, revocation and replay policy.
 
 | Language | Install | Status |
 |----------|---------|--------|
-| **Python** | `pip install attestix` | live (full lib: issue + verify) |
-| **JS / TS** | `npm install attestix` | live ([attestix-js](https://github.com/VibeTensor/attestix-js)) |
-| **Go** | `go get github.com/VibeTensor/attestix-go` | live ([attestix-go](https://github.com/VibeTensor/attestix-go)) |
-| **Rust** | `cargo add attestix` | live ([attestix-rs](https://github.com/VibeTensor/attestix-rs)) |
-| **Java** | `com.vibetensor:attestix:0.4.0` | publishing soon ([attestix-java](https://github.com/VibeTensor/attestix-java)) |
-| **R** | `install.packages("attestix")` | coming to CRAN ([attestix-r](https://github.com/VibeTensor/attestix-r)) |
+| **Python** | `pip install attestix` | Python source and registry package |
+| **JS / TS** | `npm install @vibetensor/attestix` | Verifier source ([attestix-js](https://github.com/VibeTensor/attestix-js)) |
+| **Go** | `go get github.com/VibeTensor/attestix-go` | Verifier source ([attestix-go](https://github.com/VibeTensor/attestix-go)) |
+| **Rust** | `cargo add attestix` | Verifier source ([attestix-rs](https://github.com/VibeTensor/attestix-rs)) |
+| **Java** | See repository build instructions | Verifier source ([attestix-java](https://github.com/VibeTensor/attestix-java)) |
+| **R** | See repository installation instructions | Verifier source ([attestix-r](https://github.com/VibeTensor/attestix-r)) |
 
 Every verifier targets the Attestix canonical-JSON profile, which differs from strict [RFC 8785](https://www.rfc-editor.org/rfc/rfc8785),
 and Ed25519 signatures ([RFC 8032](https://www.rfc-editor.org/rfc/rfc8032)) against
@@ -132,17 +142,17 @@ Attestix fills this gap.
 
 ## Modules
 
-| Module | Tools | What it does |
-|--------|:-----:|-------------|
-| **Identity** | 8 | Unified Agent Identity Tokens (UAITs) bridging MCP OAuth, A2A, DIDs, and API keys. GDPR Article 17 erasure |
-| **Agent Cards** | 3 | Parse, generate, and discover A2A-compatible agent cards |
-| **DID** | 3 | Create and resolve W3C Decentralized Identifiers (`did:key`, `did:web`) |
-| **Delegation** | 4 | UCAN-style capability delegation with EdDSA-signed JWT tokens |
-| **Reputation** | 3 | Recency-weighted trust scoring (0.0 - 1.0) with category breakdown |
-| **Compliance** | 7 | EU AI Act risk profiles, conformity assessments (Article 43), Annex V declarations |
-| **Credentials** | 8 | W3C Verifiable Credentials with Ed25519Signature2020 proofs, presentations |
-| **Provenance** | 5 | Training data provenance (Article 10), model lineage (Article 11), hash-chained audit trail (Article 12) |
-| **Blockchain** | 6 | Anchor artifact hashes to Base L2 via Ethereum Attestation Service, Merkle batching |
+| Module | What it does |
+|--------|-------------|
+| **Identity** | Unified Agent Identity Tokens (UAITs) bridging MCP OAuth, A2A, DIDs, and API keys. local data erasure tooling |
+| **Agent Cards** | Parse, generate, and discover A2A-compatible agent cards |
+| **DID** | Create and resolve W3C Decentralized Identifiers (`did:key`, `did:web`) |
+| **Delegation** | UCAN-style capability delegation with EdDSA-signed JWT tokens |
+| **Reputation** | Recency-weighted trust scoring (0.0 - 1.0) with category breakdown |
+| **Compliance** | EU AI Act risk profiles, conformity assessments (Article 43), Annex V declarations |
+| **Credentials** | W3C Verifiable Credentials with Ed25519Signature2020 proofs, presentations |
+| **Provenance** | Training data provenance (Article 10), model lineage (Article 11), hash-chained audit trail (Article 12) |
+| **Blockchain** | Anchor artifact hashes to Base L2 via Ethereum Attestation Service, Merkle batching |
 
 ---
 
@@ -227,7 +237,7 @@ python -m attestix.main
 
 ---
 
-## EU AI Act Compliance Workflow
+## AI governance evidence workflow
 
 Record a high-risk AI agent documentation workflow for provider review:
 
@@ -236,12 +246,12 @@ Record a high-risk AI agent documentation workflow for provider review:
 2. record_training_data         --> Article 10 data governance
 3. record_model_lineage         --> Article 11 technical documentation
 4. create_compliance_profile    --> Risk categorization + obligations
-5. record_conformity_assessment --> Article 43 third-party assessment
+5. record_conformity_assessment --> Operator-recorded assessment details
 6. generate_declaration_of_conformity --> Annex V declaration + W3C VC
-7. create_verifiable_presentation     --> Signed VP for regulator
+7. create_verifiable_presentation     --> Signed VP for a verifier with a fresh challenge
 ```
 
-High-risk systems are blocked from self-assessment:
+The current Attestix workflow blocks self-assessment for a profile marked high-risk. This application policy is not a universal determination of the legally applicable assessment route:
 
 ```
 record_conformity_assessment(assessment_type="self", ...)
@@ -254,7 +264,8 @@ Full walkthrough: [EU AI Act Compliance Guide](https://attestix.io/docs/guides/e
 
 ## How It Works
 
-Every artifact Attestix produces is cryptographically signed with Ed25519:
+Credentials and presentations carry signatures; audit chains carry integrity hashes.
+Not every record or external artifact is independently signed:
 
 | Artifact | Standard | Signed |
 |----------|----------|--------|
@@ -262,11 +273,12 @@ Every artifact Attestix produces is cryptographically signed with Ed25519:
 | Verifiable Credential | W3C VC Data Model 1.1 | Ed25519Signature2020 |
 | Verifiable Presentation | W3C VP | Ed25519Signature2020 |
 | Delegation Token | UCAN-style JWT | EdDSA |
-| Compliance Records | EU AI Act Annex V | Ed25519 |
+| Draft evidence credential | Attestix documentation profile | Ed25519 |
 | Audit Trail | Hash-chained log | SHA-256 chain |
 | Blockchain Anchor | EAS on Base L2 | On-chain |
 
-**No cloud dependency.** All core operations work offline with local JSON storage.
+**Local operation.** Core identity and credential operations can use local JSON storage.
+Remote DID resolution, hosted signers and blockchain integrations require their configured services.
 
 ---
 
@@ -274,23 +286,23 @@ Every artifact Attestix produces is cryptographically signed with Ed25519:
 
 ```
 attestix/                  # Canonical Python package (v0.4.0)
-  main.py                  # MCP server entry point (47 tools)
+  main.py                  # MCP server entry point (MCP tools)
   cli.py                   # `attestix` console script
   config.py                # Environment-based configuration
   errors.py                # Error handling with JSON logging
   api/                     # FastAPI REST surface
     main.py                # uvicorn entry: `attestix.api.main:app`
-    routers/               # one router per service (44 endpoints)
+    routers/               # REST routers
   auth/
     crypto.py              # Ed25519 key management
     ssrf.py                # SSRF protection for outbound HTTP
   services/
-    identity_service.py    # UAIT lifecycle, GDPR erasure
+    identity_service.py    # UAIT lifecycle, local data erasure
     agent_card_service.py  # A2A agent card operations
     did_service.py         # DID creation and resolution
     delegation_service.py  # UCAN delegation tokens
     reputation_service.py  # Trust scoring
-    compliance_service.py  # EU AI Act profiles and assessments
+    compliance_service.py  # Operator-recorded profiles and assessment evidence
     credential_service.py  # W3C VCs and VPs
     provenance_service.py  # Training data, lineage, audit trail
     blockchain_service.py  # Base L2 anchoring via EAS
@@ -311,10 +323,10 @@ import. The shims are scheduled for removal in v0.5.0.
 
 ---
 
-## All 47 Tools
+## MCP tools
 
 <details>
-<summary><strong>Identity</strong> (8 tools)</summary>
+<summary><strong>Identity</strong></summary>
 
 | Tool | Description |
 |------|-------------|
@@ -325,12 +337,12 @@ import. The shims are scheduled for removal in v0.5.0.
 | `list_identities` | List UAITs with protocol/revocation filters |
 | `get_identity` | Get full UAIT details |
 | `revoke_identity` | Mark a UAIT as revoked |
-| `purge_agent_data` | GDPR Article 17 right to erasure across all stores |
+| `purge_agent_data` | Remove locally managed records and parseable local backups; external copies need separate handling |
 
 </details>
 
 <details>
-<summary><strong>Agent Cards</strong> (3 tools)</summary>
+<summary><strong>Agent Cards</strong></summary>
 
 | Tool | Description |
 |------|-------------|
@@ -341,7 +353,7 @@ import. The shims are scheduled for removal in v0.5.0.
 </details>
 
 <details>
-<summary><strong>DID</strong> (3 tools)</summary>
+<summary><strong>DID</strong></summary>
 
 | Tool | Description |
 |------|-------------|
@@ -352,7 +364,7 @@ import. The shims are scheduled for removal in v0.5.0.
 </details>
 
 <details>
-<summary><strong>Delegation</strong> (4 tools)</summary>
+<summary><strong>Delegation</strong></summary>
 
 | Tool | Description |
 |------|-------------|
@@ -364,7 +376,7 @@ import. The shims are scheduled for removal in v0.5.0.
 </details>
 
 <details>
-<summary><strong>Reputation</strong> (3 tools)</summary>
+<summary><strong>Reputation</strong></summary>
 
 | Tool | Description |
 |------|-------------|
@@ -375,7 +387,7 @@ import. The shims are scheduled for removal in v0.5.0.
 </details>
 
 <details>
-<summary><strong>Compliance</strong> (7 tools)</summary>
+<summary><strong>Compliance</strong></summary>
 
 | Tool | Description |
 |------|-------------|
@@ -390,7 +402,7 @@ import. The shims are scheduled for removal in v0.5.0.
 </details>
 
 <details>
-<summary><strong>Credentials</strong> (8 tools)</summary>
+<summary><strong>Credentials</strong></summary>
 
 | Tool | Description |
 |------|-------------|
@@ -406,7 +418,7 @@ import. The shims are scheduled for removal in v0.5.0.
 </details>
 
 <details>
-<summary><strong>Provenance</strong> (5 tools)</summary>
+<summary><strong>Provenance</strong></summary>
 
 | Tool | Description |
 |------|-------------|
@@ -419,7 +431,7 @@ import. The shims are scheduled for removal in v0.5.0.
 </details>
 
 <details>
-<summary><strong>Blockchain</strong> (6 tools)</summary>
+<summary><strong>Blockchain</strong></summary>
 
 | Tool | Description |
 |------|-------------|
@@ -436,10 +448,10 @@ import. The shims are scheduled for removal in v0.5.0.
 
 ## Standards Conformance
 
-Every standards claim is validated by 91 automated conformance benchmarks that
-run alongside the rest of the suite for a total of 531 tests passing (1 skipped
-on Windows). These benchmarks demonstrate cryptographic conformance with the
-listed standards; they are not a substitute for a legal compliance audit.
+Public tests and conformance fixtures cover selected signature, canonicalization,
+credential, delegation and interface behavior. They do not establish universal W3C
+interoperability, legal conformity, certification or operating acceptance. Consult
+the test cases and the selected verifier's documented boundaries.
 Run them yourself:
 
 ```bash
@@ -452,22 +464,14 @@ docker build -f Dockerfile.test -t attestix-bench . && docker run --rm attestix-
 | **W3C VC Data Model 1.1** | Credential structure, Ed25519Signature2020 proof, mutable field exclusion, VP structure, replay protection | 25 |
 | **W3C DID Core 1.0** | `did:key` and `did:web` document structure, roundtrip resolution, Ed25519VerificationKey2020 | 18 |
 | **UCAN v0.9.0** | JWT header (alg/typ/ucv), all payload fields, capability attenuation, expiry enforcement, revocation | 18 |
-| **MCP Protocol** | 47 tools registered, 9 modules, async convention, snake\_case naming | 5 |
+| **MCP Protocol** | MCP tools registered, 9 modules, async convention, snake\_case naming | 5 |
 | **Performance** | Ed25519 key gen, JSON canonicalization, sign/verify, identity creation, credential ops | 7 |
 
-### Performance (median latency, 1000 runs)
+### Performance
 
-| Operation | Latency |
-|-----------|---------|
-| Ed25519 key generation | 0.08 ms |
-| JSON canonicalization | 0.02 ms |
-| Ed25519 sign + verify | 0.28 ms |
-| Identity creation | ~14 ms |
-| Credential issuance | ~17 ms |
-| Credential verification | ~2 ms |
-| UCAN token creation | ~9 ms |
-
----
+Benchmark results depend on interpreter, hardware, storage and workload. Run the
+repository benchmarks on your target environment; no static latency figure here is
+an operating guarantee.
 
 ## Security
 
@@ -513,7 +517,7 @@ Full documentation at **[attestix.io/docs](https://attestix.io/docs)**
 | [EU AI Act Compliance](https://attestix.io/docs/guides/eu-ai-act-compliance) | Step-by-step compliance workflow |
 | [Risk Classification](https://attestix.io/docs/guides/risk-classification) | How to determine your AI system's risk category |
 | [Architecture](https://attestix.io/docs/guides/architecture) | System design and data flows |
-| [API Reference](https://attestix.io/docs/reference/api-reference) | All 47 tools with parameter tables |
+| [API Reference](https://attestix.io/docs/reference/api-reference) | MCP tools with parameter tables |
 | [Integration Guide](https://attestix.io/docs/guides/integration-guide) | LangChain, OpenAI Agents SDK, CrewAI, MCP client |
 | [Configuration](https://attestix.io/docs/reference/configuration) | Environment variables, storage, Docker |
 | [Research Paper](https://attestix.io/docs/project/research) | Paper, citation formats, evaluation highlights |

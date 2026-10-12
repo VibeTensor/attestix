@@ -15,15 +15,7 @@ substitutions you need to apply, and how to verify the migration.
 
 ## Why
 
-The ICP funnel evaluation that gated the v0.4.0 release found that pre-rc.2
-wheels were dropping flat top-level packages (`services/`, `auth/`,
-`storage/`, `signing/`, `audit/`, `tenancy/`, `idempotency/`, `blockchain/`,
-`api/`, `tools/`, plus `config.py`, `errors.py`, `main.py`, `cli.py`) directly
-into `site-packages` on every install. That polluted every consumer's
-namespace and forced the documented import to be `from services.X import Y`
-instead of the more conventional `from attestix.services.X import Y`. The
-evaluation reported that 9 of 12 ICP personas dropped at the Integrate step
-because of this.
+The earlier flat top-level packages could collide with a consumer's modules. The canonical `attestix.*` namespace keeps those public imports under the package name. Existing legacy imports remain compatibility shims until their announced removal.
 
 v0.4.0-rc.2 fixes the packaging without changing service behavior, the REST
 API, the MCP tools, or any on-disk format. It is byte-identical to rc.1 at
@@ -75,8 +67,8 @@ The substitution is one-to-one: prefix every flat import with `attestix.`.
 | `from api.X import Y` | `from attestix.api.X import Y` |
 | `from api.routers.X import Y` | `from attestix.api.routers.X import Y` |
 | `import services` (etc.) | `from attestix import services` |
-| `from config import …` | `from attestix.config import …` |
-| `from errors import …` | `from attestix.errors import …` |
+| `from config import ...` | `from attestix.config import ...` |
+| `from errors import ...` | `from attestix.errors import ...` |
 
 ### One-liner for a whole codebase
 

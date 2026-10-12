@@ -1,11 +1,13 @@
 ---
 title: "v0.3.0 ships: real framework integrations, CI/CD, and the security hardening batch"
 publishedAt: "2026-04-20"
-summary: Attestix v0.3.0 introduces production-ready integrations for LangChain, OpenAI Agents SDK, and CrewAI, plus a security hardening batch and an automated CI/CD pipeline.
+summary: Attestix v0.3.0 introduces framework integrations for LangChain, OpenAI Agents SDK, and CrewAI, plus a security hardening batch and an automated CI/CD pipeline.
 author: "Pavan Kumar Dubasi"
 ---
 
-Attestix v0.3.0 ships with three production-ready framework integrations, a security hardening batch, and a GitHub Actions CI/CD pipeline. Every supported AI agent framework now has a first-party way to plug Attestix into its audit trail.
+> Source update - 12 October 2026: This is a historical article. Current main source and registry publication are separate. Language-specific verifier APIs have different validation boundaries; shared fixtures do not prove identical trust, status or replay policy. See the current [verifier documentation](/docs/verifiers) and repository release notes.
+
+Attestix v0.3.0 ships with three framework integrations, a security hardening batch, and a GitHub Actions CI/CD pipeline. Every supported AI agent framework now has a first-party way to plug Attestix into its audit trail.
 
 ## Framework integrations
 
@@ -24,7 +26,7 @@ executor = AgentExecutor(
 )
 ```
 
-**OpenAI Agents SDK MCPServerStdio.** All 47 Attestix tools are now discoverable as native MCP tools by the OpenAI Agents SDK. Wrap the server in an `async with` and pass it to the agent. No per-tool wrapping, no custom adapters.
+**OpenAI Agents SDK MCPServerStdio.** MCP tools are now discoverable as native MCP tools by the OpenAI Agents SDK. Wrap the server in an `async with` and pass it to the agent. No per-tool wrapping, no custom adapters.
 
 ```python
 async with MCPServerStdio(
@@ -67,7 +69,7 @@ v0.3.0 ships with a GitHub Actions workflow that runs on every push and pull req
 - bandit SAST, pip-audit for transitive CVE scanning, safety as advisory second opinion
 - Automated PyPI publish on version tag
 
-Merges to main are gated on lint and pytest. The conformance benchmark suite is part of every run, validating W3C, IETF, and UCAN standards compliance on every change. Total automated test count: 358 (267 functional + 91 conformance), up from 284 in v0.2.4.
+Merges to main are gated on lint and pytest. The benchmark suite checks supported credential and delegation profiles against regression fixtures. These checks do not establish complete W3C, IETF or UCAN standards conformance, identical cross-language behavior or legal conformity. Total automated test count: 358 (267 functional + 91 conformance), up from 284 in v0.2.4.
 
 ## Dependency pins
 
@@ -82,13 +84,13 @@ See `pyproject.toml` and the changelog for the full dependency audit.
 
 ## EAS and conformity assessment corrections
 
-Two correctness fixes shipped with v0.3.0. `anchor_credential` and `verify_anchor` on Base L2 testnet now compute the EAS schema UID correctly, so anchored artefacts resolve to their on-chain attestation. The compliance service now differentiates Annex III categories: systems in Annex III Point 1 (biometric categorisation) still require third-party assessment, while systems in Annex III Points 2 through 8 permit the internal control procedure, with a fail-safe default to third-party for edge cases. This matches the EU AI Act text more faithfully than the earlier blanket rejection.
+Two correctness fixes shipped with v0.3.0. `anchor_credential` and `verify_anchor` on Base L2 testnet now compute the EAS schema UID correctly, so anchored artefacts resolve to their on-chain attestation. The governance service changed its category-based workflow restrictions from the earlier blanket rejection. These restrictions are evidence-workflow behavior, not a determination of the legally applicable assessment route. Providers and assessors must separately review classification, operator role and relevant requirements; recorded assessment assertions and declaration drafts do not establish legal conformity.
 
 ## What is next
 
-Framework integrations stabilise Attestix for production use on the three dominant agent stacks. The security batch closes the remaining gaps in delegation, SSRF, timing, and upstream CVEs. CI/CD keeps the quality bar consistent on every merge.
+Framework integrations provide hooks for agent workflows. Source checks and security regression tests support evaluation; production acceptance and independent review remain separate requirements.
 
-Next up: broader GDPR coverage beyond Article 17, Base L2 mainnet schema registration after an external security review, and i18n scaffolding so Annex V declarations can ship in the issuer's language.
+Next up: additional data-management tooling, without a GDPR conformity claim, Base L2 mainnet schema registration after an external security review, and i18n scaffolding so Annex V declarations can ship in the issuer's language.
 
 Install or upgrade:
 

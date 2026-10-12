@@ -3,9 +3,9 @@ title: Enterprise platform architect Quickstart
 description: Run Attestix as a service behind your own ingress. Multi-tenant context, idempotent REST, hash-chained audit. Honest about what's not in v0.4.0.
 ---
 
-## You're here because…
+## You're here because...
 
-You're evaluating whether Attestix can sit inside an enterprise platform as a deployable service, not a CLI. The funnel evaluation flagged that enterprise evaluators got past install but dropped at integration: file-based storage, one signing key, no RBAC, no multi-tenant isolation, no KMS. **Most of that is still true in v0.4.0.** What v0.4.0 *does* ship: a proper Python package, idempotent REST endpoints, audit events per service, and an in-process tenant context. The honest gaps are listed at the bottom of this page so your architecture review can land on them now.
+You're evaluating whether Attestix can sit inside an enterprise platform as a deployable service, not a CLI. Use the runnable example and the source limitations below to assess whether this workflow meets your requirements.
 
 ## 60-second install
 
@@ -28,7 +28,7 @@ attestix mcp --transport http --port 8501
 ## First 30 lines that actually do something
 
 ```python
-# A minimal multi-tenant call against the running service.
+# A default single-tenant call against the running service.
 # Idempotency is honoured via the Idempotency-Key header (Stripe-style).
 import os, requests, uuid
 
@@ -44,9 +44,8 @@ resp = requests.post(
     },
     headers={
         "Idempotency-Key": str(uuid.uuid4()),
-        # In a multi-tenant deployment, your gateway maps an authenticated
-        # principal to a tenant id and stamps this header before forwarding.
-        "X-Tenant-Id": "tenant_a",
+        "X-API-Key": os.environ["ATTESTIX_API_KEY"],
+        "X-Attestix-Tenant": "default",
     },
     timeout=10,
 )
@@ -54,19 +53,19 @@ resp.raise_for_status()
 agent = resp.json()
 print(agent["agent_id"], agent["issuer"]["did"])
 
-# Subsequent reads scope to the same tenant.
+# Read from the same authenticated single-tenant service.
 trail = requests.get(
     f"{BASE}/v1/provenance/audit-trail/{agent['agent_id']}",
-    headers={"X-Tenant-Id": "tenant_a"},
+    headers={"X-API-Key": os.environ["ATTESTIX_API_KEY"], "X-Attestix-Tenant": "default"},
 ).json()
 print(len(trail), "audit rows so far")
 ```
 
 ## What you just got
 
-- An HTTP service exposing the 44 REST endpoints, all under a `/v1/` prefix (`/v1/identities`, `/v1/credentials`, `/v1/compliance`, `/v1/provenance/audit-trail/{id}`, `/v1/delegations`, …), the same surface as the 47 MCP tools.
+- An HTTP service exposing the 44 REST endpoints, all under a `/v1/` prefix (`/v1/identities`, `/v1/credentials`, `/v1/compliance`, `/v1/provenance/audit-trail/{id}`, `/v1/delegations`, ...), the same surface as the MCP tools.
 - An idempotency middleware: repeating the same `Idempotency-Key` returns the cached response, not a duplicate write.
-- A tenant context header (`X-Tenant-Id`) that is plumbed through every service and stamped onto audit events. Pair it with your existing OIDC / mTLS edge.
+- An authenticated default single-tenant REST service. Non-default `X-Attestix-Tenant` headers are rejected; this is not cross-tenant authorization.
 
 ## Next step (5 minutes)
 
@@ -86,7 +85,7 @@ These are explicit gaps in v0.4.0; track them on the [roadmap](/docs/project/roa
 |---|---|
 | Storage | Flat JSON files. Postgres / S3 backend is planned. |
 | Signing key | `.signing_key.json`, plaintext by default. Encrypted-at-rest is opt-in via `ATTESTIX_KEY_PASSPHRASE`. KMS / HSM / Vault is planned. |
-| RBAC / IAM | Tenant header is honoured by services; full RBAC + OIDC / SAML mapping is not in scope for v0.4.0. |
+| RBAC / IAM | The default REST surface rejects non-default tenant headers. It is not a multi-tenant authorization or IAM service. |
 | HA | Single-process. Multi-replica with shared state needs the pluggable storage backend first. |
 | Third-party security audit | None to date. |
 | Anchoring | Base L2 **testnet** only (Sepolia). Mainnet schema registration on the roadmap. |

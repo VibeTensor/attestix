@@ -1,70 +1,25 @@
 ---
-title: "Verifiers: verify Attestix credentials in any language"
-description: Attestix credentials are issued once and verify anywhere. Six independent verifier implementations share one conformance suite, offline, with no Python runtime and zero trust in the issuer.
+title: Offline credential verifiers
+description: Language-specific verification helpers and their trust boundaries.
 ---
 
-An Attestix credential is issued once, by the Python core or Attestix Cloud, and verifies **anywhere**. Six independent verifier implementations all check the same canonical-JSON form ([RFC 8785](https://www.rfc-editor.org/rfc/rfc8785)) and the same Ed25519 signatures ([RFC 8032](https://www.rfc-editor.org/rfc/rfc8032)) against one shared conformance suite, [`spec/verify/v1`](https://github.com/VibeTensor/attestix/tree/main/spec/verify/v1).
+Attestix uses a published canonical-JSON and Ed25519 credential profile. Shared fixtures test interoperability; they do not prove identical validation or trust policy across every API in every language. The profile differs from strict RFC 8785.
 
-The result: a regulator, an auditor, or a peer agent can confirm a Verifiable Credential offline, with no network access and no Python runtime, and **zero trust in the issuer**: the math either checks out or it does not.
+| Source repository | Scope |
+| --- | --- |
+| [Python](https://github.com/VibeTensor/attestix) | Identity and credential issuance, verification, documentation and provenance workflows. |
+| [JavaScript / TypeScript](https://github.com/VibeTensor/attestix-js) | Offline verifier and delegation helpers; read parsing and chain-validation boundaries. |
+| [Go](https://github.com/VibeTensor/attestix-go) | Credential verification and basic/full delegation helpers with different checks. |
+| [Java](https://github.com/VibeTensor/attestix-java) | Caller-pinned trust inputs and supported signature/profile checks. |
+| [R](https://github.com/VibeTensor/attestix-r) | Credential verification and delegation pair helpers. |
+| [Rust](https://github.com/VibeTensor/attestix-rs) | Credential/delegation verification and checked canonicalization. |
 
-> **Verifier-only.** These language ports *verify* credentials and delegations; they do not *issue*. Issuance stays in the Python core (`pip install attestix`) or in Attestix Cloud. If you need to mint credentials, use Python.
+The npm package name is `@vibetensor/attestix`. Read each repository's installation and release notes; merged main-branch source is not a registry-publication announcement. The non-Python repositories are verifier libraries, not credential issuers.
 
-## Status
+## Verification responsibilities
 
-Python is published to PyPI and the JS/TS verifier to npm as `attestix`. Go and Rust are publishing soon.
+Establish which issuer/key is trusted, what claims authorize, whether time/status checks are appropriate, and how replay is prevented. An embedded DID or caller-supplied key proves key control, not identity or permission. Offline verification cannot establish live revocation unless you provide a trusted status source and freshness policy.
 
-| Language | Install | Status |
-|----------|---------|--------|
-| **Python** | `pip install attestix` | Live: full library (issue + verify) |
-| **JS / TS** | `npm install attestix` | Live: [attestix-js](https://github.com/VibeTensor/attestix-js) |
-| **Go** | `go get github.com/VibeTensor/attestix-go` | Publishing soon: [attestix-go](https://github.com/VibeTensor/attestix-go) |
-| **Rust** | `cargo add attestix` | Publishing soon: [attestix-rs](https://github.com/VibeTensor/attestix-rs) |
-| **Java** | `com.vibetensor:attestix:0.4.0` | Publishing soon: [attestix-java](https://github.com/VibeTensor/attestix-java) |
-| **R** | `install.packages("attestix")` | Coming to CRAN: [attestix-r](https://github.com/VibeTensor/attestix-r) |
+The [browser verifier](/verify) applies its documented local boundary checks and signature verification. It is not a legal conformity decision or a substitute for a trusted resolver.
 
-Prefer not to install anything? Verify a credential in your browser at [attestix.io/verify](https://attestix.io/verify), or read the bundle wire-format at [attestix.io/spec/bundle/v1](https://attestix.io/spec/bundle/v1).
-
-## Code examples
-
-Each verifier exposes a `verifyCredential` entry point that takes a credential JSON and the issuer's DID document (or embedded public key) and returns a structured pass/fail result. No network calls.
-
-### Python
-
-```python
-from attestix.services.credential_service import CredentialService
-
-result = CredentialService().verify_credential_external(vc)  # the VC JSON
-# -> dict with result["valid"] and per-check breakdown
-```
-
-### JavaScript / TypeScript
-
-```ts
-import { verifyCredential } from "attestix";
-
-const result = await verifyCredential(vc, { didDocument });
-if (!result.valid) {
-  console.error(result.reason);
-}
-// result.valid: boolean — Ed25519 over RFC 8785 canonical JSON
-```
-
-### Go
-
-```go
-import "github.com/VibeTensor/attestix-go/verify"
-
-result, err := verify.VerifyCredential(vc, didDocument)
-if err != nil {
-    log.Fatal(err)
-}
-fmt.Println(result.Valid) // true if the Ed25519 signature checks out
-```
-
-## One signature, six readers
-
-Every verifier is exercised against the shared [`spec/verify/v1`](https://github.com/VibeTensor/attestix/tree/main/spec/verify/v1) vectors before release, so a credential that passes in Python passes identically in Go, Rust, or the browser. That conformance suite, not any single implementation, is the source of truth for what "valid" means.
-
-See the [Offline Verification Walkthrough](/docs/guides/offline-verify) for an end-to-end regulator scenario, and the [bundle wire-format spec](https://attestix.io/spec/bundle/v1) for the on-the-wire format.
-
-> Attestix produces cryptographically signed evidence; it is an evidence-tooling system, not a legal guarantor of compliance. Blockchain anchoring, where used, targets Base L2 (Sepolia testnet). Always consult qualified legal counsel for compliance decisions.
+See the [public conformance fixtures](https://github.com/VibeTensor/attestix/tree/main/spec/verify/v1) and each SDK README for exact APIs and limitations.

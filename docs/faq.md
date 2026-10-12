@@ -4,13 +4,13 @@
 
 ### What is Attestix?
 
-Attestix (Attestation Infrastructure for AI Agents) is an open-source tool that gives AI agents a verifiable identity, proves their regulatory compliance, and tracks their provenance. It runs as an MCP server or Python library with 47 tools across 9 modules.
+Attestix (Attestation Infrastructure for AI Agents) is an open-source tool that gives AI agents a verifiable identity, records signed evidence for governance review, and tracks their provenance. It runs as an MCP server, Python library, CLI or REST service.
 
 ### Who is Attestix for?
 
 - **AI/ML engineers** building multi-agent systems who need agent-to-agent identity verification
-- **Compliance teams** preparing for EU AI Act enforcement (August 2, 2026)
-- **Platform builders** who need to prove their AI agents meet regulatory requirements
+- **Compliance teams** organizing evidence for role-specific AI governance obligations
+- **Platform builders** who need inspectable records for their governance review
 - **Researchers** exploring decentralized identity, verifiable credentials, and agent trust
 
 ### Is Attestix a replacement for legal compliance?
@@ -19,7 +19,7 @@ No. Attestix produces machine-readable, cryptographically signed compliance docu
 
 ### Does Attestix require a blockchain?
 
-No. Attestix works entirely offline with local JSON storage. Blockchain anchoring (6 tools) is available as an optional feature for tamper-proof on-chain verification via Base L2 and Ethereum Attestation Service, but it is not required for any core functionality.
+No. Attestix works entirely offline with local JSON storage. Blockchain anchoring is available as an optional feature for tamper-evident on-chain verification via Base L2 and Ethereum Attestation Service, but it is not required for any core functionality.
 
 ### Does Attestix require cloud services?
 
@@ -45,13 +45,13 @@ Yes. Use `translate_identity(agent_id, target_format="a2a_agent_card")` to conve
 The signing key in `.signing_key.json` is used to sign all UAITs, credentials, and audit entries. If you lose it:
 - Existing signed artifacts remain valid (signatures can be verified by anyone with the public key)
 - You will not be able to create new artifacts that chain to the same DID
-- Generate a new key by deleting `.signing_key.json` and restarting Attestix
+- Preserve a protected recovery copy and plan identity rotation before creating a replacement key; a new key creates a different issuer identity
 
 Keep `.signing_key.json` backed up securely. It is excluded from git by default.
 
 ### Can multiple Attestix instances share identities?
 
-Yes, if they share the same `.signing_key.json` and JSON data files. Point multiple instances to the same data directory or use symlinks.
+The local JSON backend serializes supported operations with thread/process locks. This is isolation, not rollback across collections or a distributed-service guarantee. Review filesystem locking, key custody and backup recovery before sharing storage; never mix environments by copying signing keys casually.
 
 ---
 
@@ -59,8 +59,9 @@ Yes, if they share the same `.signing_key.json` and JSON data files. Point multi
 
 ### When does the EU AI Act take effect?
 
-- **August 2, 2026** -Enforcement begins for high-risk systems (Annex III) and Article 50 transparency obligations
-- **August 2, 2027** -Obligations for AI in regulated products (Annex I: medical devices, machinery)
+- **2 August 2026** - general application, subject to the relevant provision and role
+- **2 December 2027** - specified Annex III high-risk systems
+- **2 August 2028** - specified Annex I high-risk systems embedded in regulated products
 
 ### How do I determine my risk category?
 
@@ -82,7 +83,7 @@ Three documented carve-outs within Points 2-8 still require third-party assessme
 
 ### What is an Annex V declaration?
 
-The EU AI Act's Annex V specifies the required contents of a Declaration of Conformity. When you call `generate_declaration_of_conformity`, Attestix produces a structured document with all required fields and auto-issues a W3C Verifiable Credential as cryptographic proof.
+The EU AI Act's Annex V specifies the required contents of a Declaration of Conformity. When you call `generate_declaration_of_conformity`, Attestix produces a structured document with all required fields and auto-issues a W3C Verifiable Credential as signed evidence for provider review.
 
 ### Can I update a compliance profile?
 
@@ -143,7 +144,7 @@ Attestix includes 91 conformance benchmark tests that run alongside the main tes
 - **W3C VC Data Model 1.1**: credential structure, Ed25519Signature2020 proof fields, mutable field exclusion, Verifiable Presentations with replay protection
 - **W3C DID Core 1.0**: `did:key` and `did:web` document structure, roundtrip resolution, Ed25519VerificationKey2020 verification method
 - **UCAN v0.9.0**: JWT header fields (alg=EdDSA, typ=JWT, ucv=0.9.0), capability attenuation, expiry enforcement, revocation
-- **MCP**: all 47 tools registered, 9 modules, async interface, snake\_case naming
+- **MCP**: MCP tools registered, 9 modules, async interface, snake\_case naming
 
 Run them yourself: `docker build -f Dockerfile.test -t attestix-bench . && docker run --rm attestix-bench`
 
@@ -153,7 +154,7 @@ Ed25519 (EdDSA with Curve25519). The signing key is auto-generated on first run 
 
 ### Where is data stored?
 
-Six JSON files in the Attestix directory, plus two key files:
+Managed JSON records and key files live under `ATTESTIX_DATA_DIR` (default `~/.attestix`). The files below are illustrative; consult source configuration for the complete list:
 
 | File | Contents |
 |------|----------|
@@ -177,7 +178,7 @@ No hard limit, but JSON files are loaded entirely into memory on each operation.
 Yes. Import the service classes directly in Python:
 
 ```python
-from services.identity_service import IdentityService
+from attestix.services.identity_service import IdentityService
 svc = IdentityService()
 agent = svc.create_identity(display_name="MyAgent")
 ```
@@ -189,3 +190,5 @@ Python 3.10 or later.
 ### Does Attestix support Windows?
 
 Yes. Attestix runs on Windows, macOS, and Linux. File locking uses the `filelock` library which is cross-platform.
+
+See the [current EU AI Act application timeline](https://digital-strategy.ec.europa.eu/en/policies/regulatory-framework-ai). Applicability depends on the system, provision and operator role. No Attestix output determines legal conformity.

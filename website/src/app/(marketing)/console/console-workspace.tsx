@@ -45,7 +45,7 @@ const SECTIONS: SectionDef[] = [
 ];
 
 const TOOLS: { name: string; icon: AtxIconName; count?: number }[] = [
-  { name: "MCP tools", icon: "book", count: 47 },
+  { name: "MCP tools", icon: "book" },
   { name: "REST API", icon: "ext" },
   { name: "Keys", icon: "lock" },
 ];

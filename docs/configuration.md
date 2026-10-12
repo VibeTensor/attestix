@@ -6,8 +6,7 @@ Attestix is configured via environment variables. No config file is needed for b
 
 | Variable | Required | Default | Description |
 |----------|----------|---------|-------------|
-| `ATTESTIX_DATA_DIR` | No | Same directory as `main.py` | Directory for JSON storage files |
-| `ATTESTIX_KEY_FILE` | No | `.signing_key.json` | Path to Ed25519 signing key file |
+| `ATTESTIX_DATA_DIR` | No | `~/.attestix` | Directory for JSON storage files |
 | `BASE_RPC_URL` | For blockchain | - | Base L2 RPC endpoint (e.g., `https://sepolia.base.org`) |
 | `BASE_WALLET_KEY` | For blockchain | - | Private key for blockchain transactions (hex string, no `0x` prefix) |
 | `EAS_CONTRACT` | For blockchain | Sepolia default | Ethereum Attestation Service contract address |
@@ -20,7 +19,7 @@ Attestix is configured via environment variables. No config file is needed for b
     ```bash
     export ATTESTIX_DATA_DIR=/var/lib/attestix
     export ATTESTIX_LOG_LEVEL=DEBUG
-    python main.py
+    python -m attestix.main
     ```
 
 === "Windows"
@@ -28,7 +27,7 @@ Attestix is configured via environment variables. No config file is needed for b
     ```powershell
     $env:ATTESTIX_DATA_DIR = "C:\attestix-data"
     $env:ATTESTIX_LOG_LEVEL = "DEBUG"
-    python main.py
+    python -m attestix.main
     ```
 
 === ".env file"
@@ -44,7 +43,7 @@ Attestix is configured via environment variables. No config file is needed for b
 
 ## Storage Configuration
 
-By default, Attestix stores all data in JSON files alongside `main.py`:
+By default, Attestix stores all data in JSON files under `ATTESTIX_DATA_DIR` (default `~/.attestix`):
 
 ```
 attestix/
@@ -69,15 +68,11 @@ All JSON files will be created in that directory instead.
 
 ## Signing Key Management
 
-On first run, Attestix generates an Ed25519 keypair and stores it in `.signing_key.json`. This key is used to sign every UAIT, credential, compliance record, and audit entry.
+On first run, Attestix generates an Ed25519 keypair and stores it in `.signing_key.json`. The default signer uses this key for supported signed artifacts. Audit-chain hashes and stored metadata are not proof that every record has an independent signature.
 
 **Important:** Back up `.signing_key.json` securely. If you lose it, you cannot create new artifacts that chain to the same DID.
 
-To use a specific key file:
-
-```bash
-export ATTESTIX_KEY_FILE=/secure/path/attestix-key.json
-```
+The default key lives under `ATTESTIX_DATA_DIR`. `ATTESTIX_KEY_FILE` is not a supported configuration variable. Review the public signer interface for explicit signer/key selection, and validate custody and restoration before deployment.
 
 ## Blockchain Configuration
 
@@ -122,7 +117,7 @@ Add to `~/.claude.json` (macOS/Linux) or `%USERPROFILE%\.claude.json` (Windows):
     "attestix": {
       "type": "stdio",
       "command": "python",
-      "args": ["/absolute/path/to/attestix/main.py"]
+      "args": ["-m", "attestix.main"]
     }
   }
 }
@@ -137,7 +132,7 @@ Add to `claude_desktop_config.json`:
   "mcpServers": {
     "attestix": {
       "command": "python",
-      "args": ["/absolute/path/to/attestix/main.py"]
+      "args": ["-m", "attestix.main"]
     }
   }
 }
@@ -148,28 +143,16 @@ Add to `claude_desktop_config.json`:
 Attestix communicates over stdio using the MCP protocol. Start the server with:
 
 ```bash
-python main.py
+python -m attestix.main
 ```
 
 Connect your MCP client to the process's stdin/stdout.
 
 ## Multi-Instance Setup
 
-To share data across multiple Attestix instances (e.g., development and staging):
+Supported JSON operations use a shared storage lock across threads and processes. The lock provides isolation, not rollback of multi-collection writes or distributed deployment acceptance. Validate filesystem locking, storage durability, key custody, recovery and instance lifecycle before sharing a data directory. Keep development and production data/keys separate.
 
-1. Set `ATTESTIX_DATA_DIR` to a shared directory
-2. Copy `.signing_key.json` to the shared directory
-3. Each instance reads/writes the same JSON files with file locking
-
-```bash
-# Instance 1
-export ATTESTIX_DATA_DIR=/shared/attestix
-python main.py
-
-# Instance 2 (different process or machine with shared filesystem)
-export ATTESTIX_DATA_DIR=/shared/attestix
-python main.py
-```
+The default REST surface is single-tenant. Non-default `X-Attestix-Tenant` headers are rejected; do not present that header as a multi-tenant authorization boundary. Configure `ATTESTIX_API_KEY` through an approved runtime secret channel; no-auth mode is for isolated development/tests only.
 
 ## Docker
 
@@ -203,3 +186,5 @@ This validates:
 - 193 unit and end-to-end tests
 - 91 conformance benchmarks (RFC 8032, W3C VC, W3C DID, UCAN, MCP, performance)
 - Performance thresholds for all cryptographic and service operations
+
+Signing keys are stored locally by the default signer. Protect permissions, versioned backups and recovery access; a key replacement changes issuer identity. Source configuration and a green health response do not demonstrate production custody.
