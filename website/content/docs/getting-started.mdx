@@ -24,7 +24,7 @@ pip install attestix
 ```
 
 Stable 0.4.1 ships the proper `attestix.*` namespace. The older flat layout
-(`from services... import ...`) keeps working via deprecation shims and is
+(`from attestix.services... import ...`) keeps working via deprecation shims and is
 scheduled for removal in v0.5.0. See the
 [namespace migration guide](/docs/guides/migration-v0.4.0-namespace) before
 upgrading existing code.
@@ -47,13 +47,13 @@ Add to your Claude Code config (`~/.claude.json` on macOS/Linux, `%USERPROFILE%\
     "attestix": {
       "type": "stdio",
       "command": "python",
-      "args": ["/path/to/attestix/main.py"]
+      "args": ["-m", "attestix.main"]
     }
   }
 }
 ```
 
-Restart Claude Code. You now have 47 Attestix tools available.
+Restart Claude Code. You now have MCP tools available.
 
 Then just ask Claude:
 
@@ -84,7 +84,7 @@ print(f"Signed: {bool(agent['signature'])}")
 
 ```bash
 cd attestix
-python main.py
+python -m attestix.main
 ```
 
 This starts the MCP server on stdio, ready for any MCP client to connect.
@@ -125,5 +125,5 @@ print(result)
 
 - [EU AI Act Compliance Guide](/docs/guides/eu-ai-act-compliance) - Full compliance workflow
 - [Concepts Explained](/docs/reference/concepts) - What are UAITs, DIDs, VCs?
-- [API Reference](/docs/reference/api-reference) - All 47 tools documented
+- [API Reference](/docs/reference/api-reference) - MCP tools documented
 - [Integration Guide](/docs/guides/integration-guide) - LangChain, OpenAI Agents SDK, CrewAI integrations

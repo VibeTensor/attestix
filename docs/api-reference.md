@@ -2,7 +2,7 @@
 
 All 47 Attestix MCP tools organized by module.
 
-## Identity (8 tools)
+## Identity
 
 ### `create_agent_identity`
 
@@ -70,7 +70,7 @@ Convert a UAIT to another identity format.
 
 ### `purge_agent_data`
 
-GDPR Article 17 right to erasure. Removes all data for an agent across all storage files (identities, credentials, compliance, provenance, audit logs, reputation, delegations).
+Removes locally managed records and parseable local backups for an agent. This does not erase remote replicas, previously shared credentials or external backups, and does not establish GDPR compliance.
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
@@ -80,7 +80,7 @@ GDPR Article 17 right to erasure. Removes all data for an agent across all stora
 
 ---
 
-## Agent Cards (3 tools)
+## Agent Cards
 
 ### `parse_agent_card`
 
@@ -112,7 +112,7 @@ Fetch `/.well-known/agent.json` from a URL (HTTPS only, SSRF-protected).
 
 ---
 
-## DID (3 tools)
+## DID
 
 ### `create_did_key`
 
@@ -141,7 +141,7 @@ Resolve any DID to its DID Document. Supports `did:key` (local), `did:web` (HTTP
 
 ---
 
-## Delegation (4 tools)
+## Delegation
 
 ### `create_delegation`
 
@@ -182,7 +182,7 @@ Revoke a delegation token, immediately invalidating the delegated capabilities.
 
 ---
 
-## Reputation (3 tools)
+## Reputation
 
 ### `record_interaction`
 
@@ -220,7 +220,7 @@ Search agents by reputation criteria.
 
 ---
 
-## Compliance (7 tools)
+## Compliance
 
 ### `create_compliance_profile`
 
@@ -294,7 +294,7 @@ Generate Annex V declaration + auto-issue W3C Verifiable Credential.
 
 ---
 
-## Credentials (8 tools)
+## Credentials
 
 ### `issue_credential`
 
@@ -371,7 +371,7 @@ Verify a Verifiable Presentation including all embedded credentials.
 
 ---
 
-## Provenance (5 tools)
+## Provenance
 
 ### `record_training_data`
 
@@ -434,7 +434,7 @@ Query audit trail with filters.
 
 ---
 
-## Blockchain (6 tools)
+## Blockchain
 
 ### `anchor_identity`
 
@@ -505,7 +505,7 @@ All endpoints accept and return JSON. Authentication is via the `Authorization: 
 | POST | `/v1/identities/{agent_id}/verify` | Verify an identity's signature |
 | POST | `/v1/identities/{agent_id}/translate` | Translate identity between protocols |
 | DELETE | `/v1/identities/{agent_id}` | Revoke an identity |
-| DELETE | `/v1/identities/{agent_id}/purge` | GDPR Article 17 erasure |
+| DELETE | `/v1/identities/{agent_id}/purge` | local data erasure tooling |
 
 ### Credentials (7 endpoints)
 
@@ -585,3 +585,7 @@ All endpoints accept and return JSON. Authentication is via the `Authorization: 
 | GET | `/v1/blockchain/estimate-cost` | Estimate gas cost for an anchor |
 
 > Endpoint counts verified against `api/routers/*.py` on 2026-04-17. Total: 44 REST endpoints across 9 routers.
+
+## Evidence and verification boundaries
+
+Compliance-named API identifiers are compatibility names for recorded documentation workflows. `workflow_complete` reports presence checks; `legal_conformity` is `not_assessed`. A generated declaration is `draft_for_provider_review`, and operator-recorded assessor/CE-marking information is not independently authenticated. Local purge excludes remote copies. The default REST service rejects non-default tenant headers and requires API authentication except documented public paths. Presentation verification uses the caller's expected challenge and domain; verifiers must apply their own trust and replay policy.

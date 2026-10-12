@@ -42,11 +42,11 @@ agent = <span class="k">AgentExecutor</span>(
     name: "OpenAI Agents SDK",
     status: "production",
     tagline:
-      "Attestix exposes all 47 MCP tools natively to the OpenAI Agents SDK via MCPServerStdio.",
+      "Attestix exposes MCP tools natively to the OpenAI Agents SDK via MCPServerStdio.",
     install: "pip install attestix[openai-agents]",
     wires: [
       "MCPServerStdio integration",
-      "47 Attestix tools available to any OpenAI agent",
+      "MCP tools available to any OpenAI agent",
       "Actions logged through the Attestix audit service",
     ],
     code: `<span class="c">from</span> agents <span class="c">import</span> Agent
@@ -60,7 +60,7 @@ agent = <span class="k">Agent</span>(
   name=<span class="s">"quarterly-analyst"</span>,
   mcp_servers=[attestix_mcp],
 )
-<span class="c"># all 47 Attestix tools discovered automatically</span>`,
+<span class="c"># MCP tools discovered automatically</span>`,
   },
   {
     slug: "crewai",

@@ -5,19 +5,19 @@ description: Attestix project roadmap from identity and trust foundations throug
 
 # Roadmap
 
-The project vision: every AI agent gets a verifiable identity, proves its compliance, and anchors its trust on-chain.
+The project vision: every AI agent gets a verifiable identity, records evidence for review, and anchors its trust on-chain.
 
 ## Phase 1 - Identity & Trust (Complete)
 
-21 MCP tools for cross-protocol agent identity.
+MCP tools for cross-protocol agent identity.
 
-| Module | Tools | What it does |
-|--------|-------|-------------|
-| Identity | 8 | Unified Agent Identity Tokens (UAITs) bridging MCP OAuth, A2A Agent Cards, DIDs, and API keys. GDPR Article 17 erasure |
-| Agent Cards | 3 | Parse, generate, and discover Google A2A-compatible agent cards |
-| DID | 3 | Create and resolve W3C Decentralized Identifiers (did:key, did:web, Universal Resolver) |
-| Delegation | 4 | UCAN-style capability delegation with EdDSA-signed JWT tokens, revocation |
-| Reputation | 3 | Recency-weighted trust scoring (0.0-1.0) with category breakdown and 30-day half-life decay |
+| Module | What it does |
+|--------|-------------|
+| Identity | Unified Agent Identity Tokens (UAITs) bridging MCP OAuth, A2A Agent Cards, DIDs, and API keys. local data erasure tooling |
+| Agent Cards | Parse, generate, and discover Google A2A-compatible agent cards |
+| DID | Create and resolve W3C Decentralized Identifiers (did:key, did:web, Universal Resolver) |
+| Delegation | UCAN-style capability delegation with EdDSA-signed JWT tokens, revocation |
+| Reputation | Recency-weighted trust scoring (0.0-1.0) with category breakdown and 30-day half-life decay |
 
 **Key decisions:**
 - Ed25519 for all cryptographic operations (same as SSH, Signal, Solana, Cosmos)
@@ -28,15 +28,15 @@ The project vision: every AI agent gets a verifiable identity, proves its compli
 - Hash-chained audit trail with SHA-256 for tamper-evident logging
 - 91 conformance benchmark tests validating RFC 8032, W3C VC, W3C DID, UCAN, and MCP standards
 
-## Phase 2 - EU AI Act Compliance (Complete)
+## Phase 2 - Governance documentation workflow (implemented)
 
-20 MCP tools for regulatory compliance documentation.
+MCP tools for regulatory compliance documentation.
 
-| Module | Tools | What it does |
-|--------|-------|-------------|
-| Compliance | 7 | Risk categorization (minimal/limited/high), conformity assessments (Article 43), Annex V declarations, profile updates |
-| Credentials | 8 | W3C Verifiable Credentials (VC Data Model 1.1) with Ed25519Signature2020 proofs, external verification, Verifiable Presentations |
-| Provenance | 5 | Training data provenance (Article 10), model lineage (Article 11), hash-chained audit trail (Article 12) |
+| Module | What it does |
+|--------|-------------|
+| Compliance | Risk categorization (minimal/limited/high), conformity assessments (Article 43), Annex V declarations, profile updates |
+| Credentials | W3C Verifiable Credentials (VC Data Model 1.1) with Ed25519Signature2020 proofs, external verification, Verifiable Presentations |
+| Provenance | Training data provenance (Article 10), model lineage (Article 11), hash-chained audit trail (Article 12) |
 
 **Key decisions:**
 - VC Data Model 1.1 (widely supported, stable specification)
@@ -52,11 +52,11 @@ The project vision: every AI agent gets a verifiable identity, proves its compli
 
 ## Phase 3 - Blockchain Anchoring (Complete)
 
-6 MCP tools for on-chain tamper-proof verification. Everything still works offline - blockchain adds public verifiability.
+MCP tools for on-chain tamper-evident verification. Everything still works offline - blockchain adds public verifiability.
 
-| Module | Tools | What it does |
-|--------|-------|-------------|
-| Blockchain | 6 | Anchor identity and credential hashes to Base L2 via EAS, Merkle batch anchoring, cost estimation |
+| Module | What it does |
+|--------|-------------|
+| Blockchain | Anchor identity and credential hashes to Base L2 via EAS, Merkle batch anchoring, cost estimation |
 
 **Tools:**
 - `anchor_identity` - Anchor a UAIT hash on-chain
@@ -90,7 +90,7 @@ Connect to existing agent identity ecosystems for interoperability.
 
 ### Polygon ID / Zero-Knowledge Credentials
 - Issue ZK-compatible credentials (selective disclosure)
-- Prove compliance without revealing underlying data
+- Explore selective disclosure of recorded claims (planned)
 - Integration with Polygon ID Verifier SDK
 
 **Estimated tools: 8-12**
@@ -130,8 +130,8 @@ Connect to existing agent identity ecosystems for interoperability.
 
 | Version | Phase | Target |
 |---------|-------|--------|
-| 0.1.0 | Phase 1 + 2 | Initial release (36 tools) |
-| 0.2.0 | Phase 3 | Blockchain anchoring + security audit + conformance benchmarks (47 tools, 284 tests) |
+| 0.1.0 | Phase 1 + 2 | Initial release |
+| 0.2.0 | Phase 3 | Blockchain anchoring + security audit + conformance benchmarks (MCP tools, 284 tests) |
 | 0.3.0 | Phase 3 hardening | Real framework integrations (LangChain, OpenAI Agents SDK, CrewAI), security hardening, 358 tests, GitHub Actions CI/CD |
 | 0.4.0 | Phase 4 | ERC-8004, A2A sync, ANS, Polygon ID / ZK credentials |
 | 0.5.0 | Phase 5 | Multi-chain + enterprise storage |

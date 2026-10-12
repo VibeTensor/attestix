@@ -54,7 +54,7 @@ A VC contains:
 **Real-world analogy:** Like a university diploma, but instead of being a piece of paper that could be forged, it's a digital document signed by the university's private key that anyone can verify.
 
 **Attestix credential types:**
-- `EUAIActComplianceCredential` -Proves EU AI Act compliance
+- `EUAIActComplianceCredential` -Carries recorded evidence; legal conformity is not assessed
 - `ConformityAssessmentCredential` -Proves assessment results
 - `AgentIdentityCredential` -Proves agent identity claims
 - `TrainingDataProvenanceCredential` -Proves data governance

@@ -3,7 +3,7 @@ title: MCP Tools Reference
 description: Complete reference for all 47 Attestix MCP tools across 9 modules, with parameters, return types, and EU AI Act article mapping.
 ---
 
-All 47 Attestix tools exposed via the Model Context Protocol. Grouped by the 9 modules. For REST and Python library signatures see the [API reference](/docs/reference/api-reference).
+MCP tools exposed via the Model Context Protocol. Grouped by the 9 modules. For REST and Python library signatures see the [API reference](/docs/reference/api-reference).
 
 Every tool is discoverable by any MCP-compatible client (Claude Desktop, Cursor, Continue, VS Code, Windsurf) once Attestix is installed:
 
@@ -12,7 +12,7 @@ pip install attestix
 attestix mcp
 ```
 
-## 01 / Identity (8 tools)
+## 01 / Identity
 
 Unified Agent Identity Tokens bridging MCP OAuth, A2A, DIDs, and API keys.
 
@@ -25,9 +25,9 @@ Unified Agent Identity Tokens bridging MCP OAuth, A2A, DIDs, and API keys.
 | `revoke_identity` | Revoke an identity (soft delete with audit entry) |
 | `translate_identity` | Translate between UAIT formats (MCP, A2A, DID, OAuth) |
 | `resolve_identity` | Resolve an agent by DID or agent card URL |
-| `purge_agent_data` | GDPR Article 17 right to erasure: permanently delete all data for an agent |
+| `purge_agent_data` | Local erasure: remove managed records and parseable local backups; external copies are separate |
 
-## 02 / Agent Cards (3 tools)
+## 02 / Agent Cards
 
 A2A-compatible agent card generation and discovery.
 
@@ -37,7 +37,7 @@ A2A-compatible agent card generation and discovery.
 | `parse_agent_card` | Parse and validate a remote agent card |
 | `discover_agent` | Fetch `/.well-known/agent.json` from a URL |
 
-## 03 / DID (3 tools)
+## 03 / DID
 
 W3C Decentralized Identifiers.
 
@@ -47,7 +47,7 @@ W3C Decentralized Identifiers.
 | `create_did_web` | Create a `did:web` identifier for a domain |
 | `resolve_did` | Resolve any DID method (key, web, universal resolver) |
 
-## 04 / Delegation (4 tools)
+## 04 / Delegation
 
 UCAN v0.9 capability delegation with signed JWTs.
 
@@ -58,7 +58,7 @@ UCAN v0.9 capability delegation with signed JWTs.
 | `list_delegations` | List delegations issued by an agent |
 | `revoke_delegation` | Revoke a delegation (propagates to children) |
 
-## 05 / Reputation (3 tools)
+## 05 / Reputation
 
 Recency-weighted trust scoring.
 
@@ -68,7 +68,7 @@ Recency-weighted trust scoring.
 | `get_reputation` | Get the current reputation for an agent |
 | `query_reputation` | Search and filter reputation across a cohort |
 
-## 06 / Compliance (7 tools)
+## 06 / Compliance
 
 EU AI Act risk profiles, Article 43 conformity, Annex V declarations.
 
@@ -82,7 +82,7 @@ EU AI Act risk profiles, Article 43 conformity, Annex V declarations.
 | `generate_declaration_of_conformity` | Generate Annex V declaration as a W3C VC |
 | `update_compliance_profile` | Iteratively update an existing profile (only non-empty fields change) |
 
-## 07 / Credentials (8 tools)
+## 07 / Credentials
 
 W3C Verifiable Credentials 1.1 with Ed25519Signature2020.
 
@@ -97,7 +97,7 @@ W3C Verifiable Credentials 1.1 with Ed25519Signature2020.
 | `verify_presentation` | Verify a VP including replay protection |
 | `verify_credential_external` | Verify a VC supplied as raw JSON, without local storage |
 
-## 08 / Provenance (5 tools)
+## 08 / Provenance
 
 Article 10 data governance, Article 11 lineage, Article 12 audit trail.
 
@@ -109,7 +109,7 @@ Article 10 data governance, Article 11 lineage, Article 12 audit trail.
 | `get_provenance` | Get the provenance record for an agent |
 | `get_audit_trail` | Retrieve the audit trail, optionally scoped |
 
-## 09 / Blockchain (6 tools)
+## 09 / Blockchain
 
 Anchor to Base L2 testnet via Ethereum Attestation Service. Mainnet schema registration is planned.
 

@@ -3,7 +3,7 @@ import { AtxEyebrow } from "@/components/atx/atx-eyebrow";
 import { constructMetadata } from "@/lib/utils";
 
 export const metadata = constructMetadata({
-  title: "Attestix · India",
+  title: "Attestix  /  India",
   description:
     "DPDP-aware AI infrastructure for Indian builders + an RBI-readable audit story for fintech and BFSI. DPDP Act 2023, RBI Master Direction, MeitY AI advisory framings.",
 });
@@ -12,17 +12,17 @@ const WHY_NOW = [
   {
     n: "01",
     title: "DPDP Act 2023 + Rules 2025",
-    body: "Notified 14 November 2025; substantive duties — notice, consent, data-principal rights, Consent Manager, breach notification — land on 14 May 2027. Today Attestix has zero DPDP-specific code; this is referenced in our roadmap, not shipped in v0.4.1.",
+    body: "Notified 14 November 2025; substantive duties  -  notice, consent, data-principal rights, Consent Manager, breach notification  -  land on 14 May 2027. Today Attestix has zero DPDP-specific code; this is referenced in our roadmap, not shipped in v0.4.1.",
   },
   {
     n: "02",
     title: "RBI Master Direction on IT outsourcing",
-    body: "The RBI's Master Direction on IT outsourcing (2023/2024) mandates audit trails for any IT process material to a regulated financial entity — including AI-driven trading, credit, and KYC. Attestix's hash-chained audit and on-chain anchor fit the tamper-evident audit-trail requirement cleanly.",
+    body: "The RBI's Master Direction on IT outsourcing (2023/2024) mandates audit trails for any IT process material to a regulated financial entity  -  including AI-driven trading, credit, and KYC. Attestix's hash-chained audit and on-chain anchor fit the tamper-evident audit-trail requirement cleanly.",
   },
   {
     n: "03",
     title: "MeitY AI advisory + IndiaAI Mission",
-    body: "MeitY's revised draft AI advisory pushes traceability and grievance redressal for significant AI deployments. The IndiaAI Mission's safe-and-trusted-AI pillar explicitly names open-source foundational infrastructure — Attestix is exactly that, with Apache-2.0 and a published canonical-form spec.",
+    body: "MeitY's revised draft AI advisory pushes traceability and grievance redressal for significant AI deployments. The IndiaAI Mission's safe-and-trusted-AI pillar explicitly names open-source foundational infrastructure  -  Attestix is exactly that, with Apache-2.0 and a published canonical-form spec.",
   },
 ];
 
@@ -36,14 +36,14 @@ const ICPS = [
   {
     city: "Mumbai",
     sector: "BFSI",
-    pain: "Large bank AI pilots — credit scoring, fraud detection, customer-support copilots — need explainable provenance and lineage for internal model-risk and external supervisory review.",
+    pain: "Large bank AI pilots  -  credit scoring, fraud detection, customer-support copilots  -  need explainable provenance and lineage for internal model-risk and external supervisory review.",
     wedge: "Attestix records model lineage and training-data provenance as W3C Verifiable Credentials, with a declaration-of-conformity generator for high-risk profiles.",
   },
   {
     city: "Hyderabad",
     sector: "ML platform teams",
-    pain: "Internal ML platforms at large enterprises are accreting governance functions — pipeline-step attestation, model-card publishing, agent registry. Build-vs-buy is the live question.",
-    wedge: "Attestix is the build-substrate: 47 MCP tools, 9 service modules, 44 REST endpoints. Self-host with Docker; export bundles for portability under the published wire-format.",
+    pain: "Internal ML platforms at large enterprises are accreting governance functions  -  pipeline-step attestation, model-card publishing, agent registry. Build-vs-buy is the live question.",
+    wedge: "Attestix is the build-substrate: MCP tools, 9 service modules, 44 REST endpoints. Self-host with Docker; export bundles for portability under the published wire-format.",
   },
 ];
 
@@ -62,18 +62,18 @@ attestix audit verify-chain`;
 export default function IndiaPage() {
   return (
     <section className="mx-auto max-w-[1080px] px-7 py-24">
-      <AtxEyebrow>Region · India</AtxEyebrow>
+      <AtxEyebrow>Region  /  India</AtxEyebrow>
       <h1 className="mt-3 font-serif text-[clamp(36px,4.8vw,60px)] leading-[1.05] tracking-[-0.012em] text-atx-ink">
         Attestix
         <br />
-        <em className="italic text-atx-accent">· India.</em>
+        <em className="italic text-atx-accent"> /  India.</em>
       </h1>
 
       <div className="mt-10 max-w-[760px] space-y-5 text-[15px] leading-[1.65] text-atx-ink-mid">
         <p>
           DPDP-aware AI infrastructure for Indian builders, and an
           RBI-readable audit story for fintech and BFSI. India just notified
-          the DPDP Rules — substantive duties land on 14 May 2027 — and the
+          the DPDP Rules  -  substantive duties land on 14 May 2027  -  and the
           RBI&apos;s Master Direction on IT outsourcing already wants audit trails
           for AI-driven trading and credit decisions.
         </p>
@@ -113,14 +113,14 @@ export default function IndiaPage() {
       <div className="mt-4 max-w-[820px] rounded-atx-md border border-atx-line-soft bg-atx-panel p-7">
         <p className="text-[14.5px] leading-[1.7] text-atx-ink-mid">
           India&apos;s Digital Public Infrastructure is the global gold standard for
-          open-source, sovereign, verifiable digital primitives — Aadhaar for
+          open-source, sovereign, verifiable digital primitives  -  Aadhaar for
           identity, UPI for payments, DigiLocker for credentials, Account
           Aggregator for consented data. Just as DigiLocker is verifiable
           identity infrastructure for citizens,{" "}
           <span className="text-atx-ink">
             Attestix is verifiable identity infrastructure for AI agents
           </span>
-          {" "}— same primitives (signed credentials, public verifiability),
+          {" "} -  same primitives (signed credentials, public verifiability),
           one layer higher, different subjects. The pitch lands in India
           because the audience already understands the architecture
           intuitively.
@@ -171,7 +171,7 @@ export default function IndiaPage() {
           <code className="rounded-atx-xs border border-atx-line-soft bg-atx-panel px-1.5 py-0.5 font-mono-atx text-[11.5px] text-atx-accent">
             U74909TS2025PTC197692
           </code>
-          ), operating from Bengaluru. We model on India&apos;s DPI playbook —
+          ), operating from Bengaluru. We model on India&apos;s DPI playbook  -
           open standards, sovereign deployability, custom data residency on
           the Enterprise tier when that conversation begins.
         </p>
@@ -192,7 +192,7 @@ export default function IndiaPage() {
         <Link href="/docs/quickstart" className="text-atx-accent hover:underline">
           /docs/quickstart
         </Link>
-        {" "}— LangChain, OpenAI Agents SDK, and CrewAI are real integrations
+        {" "} -  LangChain, OpenAI Agents SDK, and CrewAI are real integrations
         (not example shims). Dify, Google ADK, Semantic Kernel, and Strands are
         example-only via the MCP server.
       </p>
@@ -208,14 +208,14 @@ export default function IndiaPage() {
           <p className="mt-4 text-[13.5px] leading-[1.6] text-atx-ink-mid">
             Bring your compliance lead, your AI engineering lead, and whoever
             needs to say yes. We will walk through the console end-to-end
-            against a workflow you care about — no slide pitch.
+            against a workflow you care about  -  no slide pitch.
           </p>
           <div className="mt-6 flex flex-wrap gap-3">
             <Link
               href="/demo-call?region=india"
               className="inline-flex h-10 items-center gap-2 rounded-atx-md bg-atx-accent px-5 text-[13px] font-medium text-[oklch(0.14_0.01_180)] transition-colors hover:bg-atx-accent-deep"
             >
-              Book a demo →
+              Book a demo \u2192
             </Link>
             <a
               href="mailto:pkd@vibetensor.com?subject=%5BIndia%5D%20Attestix%20demo&body=Company%3A%20%0ARole%3A%20%0AFrameworks%20in%20use%3A%20%0ARisk%20tier%3A%20%0ATimeline%3A%20"
@@ -263,7 +263,7 @@ export default function IndiaPage() {
         </div>
         <p className="mt-3 text-[12.5px] leading-[1.6] text-atx-ink-mid">
           DPDP Act coverage is referenced in our roadmap; it is{" "}
-          <span className="text-atx-ink">not yet implemented in v0.4.1</span> —
+          <span className="text-atx-ink">not yet implemented in v0.4.1</span>  -
           planned for v0.5, ahead of the 14 May 2027 substantive-duties date.
           Attestix is an evidence tool, not a guarantor of compliance:
           providers remain liable under EU AI Act Articles 16-22, and under

@@ -1,18 +1,18 @@
 # Roadmap
 
-The project vision: every AI agent gets a verifiable identity, proves its compliance, and anchors its trust on-chain.
+The project vision: every AI agent gets a verifiable identity, records evidence for review, and anchors its trust on-chain.
 
 ## Phase 1 - Identity & Trust (Complete)
 
-21 MCP tools for cross-protocol agent identity.
+MCP tools for cross-protocol agent identity.
 
-| Module | Tools | What it does |
-|--------|-------|-------------|
-| Identity | 8 | Unified Agent Identity Tokens (UAITs) bridging MCP OAuth, A2A Agent Cards, DIDs, and API keys. GDPR Article 17 erasure |
-| Agent Cards | 3 | Parse, generate, and discover Google A2A-compatible agent cards |
-| DID | 3 | Create and resolve W3C Decentralized Identifiers (did:key, did:web, Universal Resolver) |
-| Delegation | 4 | UCAN-style capability delegation with EdDSA-signed JWT tokens, revocation |
-| Reputation | 3 | Recency-weighted trust scoring (0.0-1.0) with category breakdown and 30-day half-life decay |
+| Module | What it does |
+|--------|-------------|
+| Identity | Unified Agent Identity Tokens (UAITs) bridging MCP OAuth, A2A Agent Cards, DIDs, and API keys. local data erasure tooling |
+| Agent Cards | Parse, generate, and discover Google A2A-compatible agent cards |
+| DID | Create and resolve W3C Decentralized Identifiers (did:key, did:web, Universal Resolver) |
+| Delegation | UCAN-style capability delegation with EdDSA-signed JWT tokens, revocation |
+| Reputation | Recency-weighted trust scoring (0.0-1.0) with category breakdown and 30-day half-life decay |
 
 **Key decisions:**
 - Ed25519 for all cryptographic operations (same as SSH, Signal, Solana, Cosmos)
@@ -23,15 +23,15 @@ The project vision: every AI agent gets a verifiable identity, proves its compli
 - Hash-chained audit trail with SHA-256 for tamper-evident logging
 - 91 conformance benchmark tests validating RFC 8032, W3C VC, W3C DID, UCAN, and MCP standards
 
-## Phase 2 - EU AI Act Compliance (Complete)
+## Phase 2 - Governance documentation workflow (implemented)
 
-20 MCP tools for regulatory compliance documentation.
+MCP tools for regulatory compliance documentation.
 
-| Module | Tools | What it does |
-|--------|-------|-------------|
-| Compliance | 7 | Risk categorization (minimal/limited/high), conformity assessments (Article 43), Annex V declarations, profile updates |
-| Credentials | 8 | W3C Verifiable Credentials (VC Data Model 1.1) with Ed25519Signature2020 proofs, external verification, Verifiable Presentations |
-| Provenance | 5 | Training data provenance (Article 10), model lineage (Article 11), hash-chained audit trail (Article 12) |
+| Module | What it does |
+|--------|-------------|
+| Compliance | Risk categorization (minimal/limited/high), conformity assessments (Article 43), Annex V declarations, profile updates |
+| Credentials | W3C Verifiable Credentials (VC Data Model 1.1) with Ed25519Signature2020 proofs, external verification, Verifiable Presentations |
+| Provenance | Training data provenance (Article 10), model lineage (Article 11), hash-chained audit trail (Article 12) |
 
 **Key decisions:**
 - VC Data Model 1.1 (widely supported, stable specification)
@@ -41,16 +41,16 @@ The project vision: every AI agent gets a verifiable identity, proves its compli
 - External VP and credential verification for third-party auditors
 
 **EU AI Act timeline:**
-- August 2, 2026 - Enforcement begins for high-risk systems and transparency obligations
-- August 2, 2027 - Obligations for AI in regulated products (medical devices, machinery)
+- 2 August 2026 - general application, with role-specific exceptions; see the current EU timeline
+- 2 August 2028 - specified Annex I high-risk systems embedded in regulated products
 
 ## Phase 3 - Blockchain Anchoring (Complete)
 
-6 MCP tools for on-chain tamper-proof verification. Everything still works offline - blockchain adds public verifiability.
+MCP tools for on-chain tamper-evident verification. Everything still works offline - blockchain adds public verifiability.
 
-| Module | Tools | What it does |
-|--------|-------|-------------|
-| Blockchain | 6 | Anchor identity and credential hashes to Base L2 via EAS, Merkle batch anchoring, cost estimation |
+| Module | What it does |
+|--------|-------------|
+| Blockchain | Anchor identity and credential hashes to Base L2 via EAS, Merkle batch anchoring, cost estimation |
 
 **Tools:**
 - `anchor_identity` - Anchor a UAIT hash on-chain
@@ -61,28 +61,6 @@ The project vision: every AI agent gets a verifiable identity, proves its compli
 - `estimate_anchor_cost` - Gas estimation before anchoring
 
 **Target chain:** Base (Ethereum L2) - sub-$0.01 gas costs, EAS support, growing agent ecosystem.
-
-**Status update (v0.3.0):** EAS integration is complete and testnet-ready on Base Sepolia. Mainnet schema registration is still outstanding.
-
-## Phase 3.5 - Real Framework Integrations and CI/CD (Complete, v0.3.0)
-
-Delivered in the v0.3.0 release on 2026-04-17.
-
-**Real integrations:**
-- LangChain: real `BaseCallbackHandler` that records agent actions and tool calls into the Attestix audit trail
-- OpenAI Agents SDK: real `MCPServerStdio` integration (47 Attestix tools auto-discovered)
-- CrewAI: real `MCPServerAdapter` integration (47 Attestix tools loaded directly)
-
-**Simulated integrations (for reference only):** Dify, Google ADK, Semantic Kernel, Strands.
-
-**CI/CD:**
-- GitHub Actions: pytest matrix on Python 3.10-3.13, ruff + mypy lint, bandit + pip-audit security, PyPI publish workflow
-- Test suite: 358 passing (1 skipped on Windows)
-
-**Security hardening:**
-- Delegation chain authorization fix (parent token verification + capability attenuation)
-- SSRF tightening, API timing normalization, exception sanitization, restrictive key file permissions
-- PyJWT CVE-2026-32597 mitigated, all runtime deps pinned with lower + upper bounds
 
 ## Phase 4 - Ecosystem Bridges (Planned)
 
@@ -106,7 +84,7 @@ Connect to existing agent identity ecosystems for interoperability.
 
 ### Polygon ID / Zero-Knowledge Credentials
 - Issue ZK-compatible credentials (selective disclosure)
-- Prove compliance without revealing underlying data
+- Explore selective disclosure of recorded claims (planned)
 - Integration with Polygon ID Verifier SDK
 
 **Estimated tools: 8-12**
@@ -146,10 +124,10 @@ Connect to existing agent identity ecosystems for interoperability.
 
 | Version | Phase | Target |
 |---------|-------|--------|
-| 0.1.0 | Phase 1 + 2 | Initial release (36 tools) |
-| 0.2.0 | Phase 3 | Blockchain anchoring + security audit + conformance benchmarks (47 tools, 284 tests) |
+| 0.1.0 | Phase 1 + 2 | Initial release |
+| 0.2.0 | Phase 3 | Blockchain anchoring + security audit + conformance benchmarks (MCP tools, 284 tests) |
 | 0.3.0 | Phase 3.5 | Real LangChain/OpenAI Agents/CrewAI integrations, CI/CD, security hardening (358 tests, 1 skipped on Windows) |
-| 0.4.0 | Phase 4 | Broader GDPR coverage (beyond Article 17), ISO/IEC 42001 alignment, EAS mainnet schema registration |
-| 0.5.0 | Phase 4 | ERC-8004, A2A sync, ANS, Polygon ID / ZK credentials |
-| 0.6.0 | Phase 5 | Multi-chain + enterprise storage |
+| 0.4.0 | Phase 4 | ERC-8004, A2A sync, ANS |
+| 0.4.1 | Phase 4 | Polygon ID / ZK credentials |
+| 0.5.0 | Phase 5 | Multi-chain + enterprise storage |
 | 1.0.0 | Stable | Production-ready with full test suite and third-party audit |

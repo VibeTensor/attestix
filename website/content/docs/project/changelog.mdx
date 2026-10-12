@@ -9,6 +9,11 @@ All notable changes to Attestix are documented here.
 
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [Unreleased]
+
+- Document the readiness changes merged to main, their verification boundaries and the difference between source merges and registry publication.
+- Describe governance records as evidence, not legal conformity or certification; correct current application dates and remove unverified tool/download counts.
+
 ## [0.3.0] - 2026-04-17
 
 Flagship release introducing real framework integrations, a security hardening sweep, and GitHub Actions CI/CD.
@@ -104,7 +109,7 @@ Flagship release introducing real framework integrations, a security hardening s
   - W3C VC Data Model 1.1 conformance (credential structure, proof, presentations, 24 tests)
   - W3C DID Core 1.0 conformance (did:key, did:web, roundtrip resolution, 16 tests)
   - UCAN v0.9.0 conformance (JWT header, payload, attenuation, revocation, 16 tests)
-  - MCP tool registration conformance (47 tools, 9 modules, naming, 5 tests)
+  - MCP tool registration conformance (MCP tools, 9 modules, naming, 5 tests)
   - Performance benchmarks with hard latency thresholds (7 tests)
 - Standards Conformance section in README with measured performance numbers
 - Running the Test Suite section in configuration docs
@@ -119,7 +124,7 @@ Flagship release introducing real framework integrations, a security hardening s
 
 ### Added
 
-**Blockchain Anchoring (6 tools)**
+**Blockchain Anchoring**
 - Blockchain module: anchor identity and credential hashes to Base L2 via Ethereum Attestation Service (EAS)
 - Merkle batch anchoring for audit log entries (cost optimization)
 - On-chain verification and anchor status queries
@@ -129,10 +134,10 @@ Flagship release introducing real framework integrations, a security hardening s
 - SSRF protection with private IP blocking, metadata endpoint blocking, and DNS rebinding prevention
 - Hash-chained audit trail with SHA-256 chain hashes for tamper-evident logging
 - Encrypted key storage with AES-256-GCM when `ATTESTIX_KEY_PASSWORD` is set
-- GDPR Article 17 right to erasure via `purge_agent_data` across all data stores
+- Local erasure via `purge_agent_data`; remote copies and shared artifacts require separate handling
 
 **New Tools**
-- `purge_agent_data` - Complete GDPR erasure across all 6 storage files
+- `purge_agent_data` - Complete local data erasure across all 6 storage files
 - `revoke_delegation` - Revoke delegation tokens
 - `update_compliance_profile` - Update existing compliance profiles
 - `verify_credential_external` - Verify any W3C VC JSON from external sources
@@ -145,7 +150,7 @@ Flagship release introducing real framework integrations, a security hardening s
   - W3C VC Data Model 1.1 conformance (credential structure, proof, presentations, 24 tests)
   - W3C DID Core 1.0 conformance (did:key, did:web, roundtrip resolution, 16 tests)
   - UCAN v0.9.0 conformance (JWT header, payload, attenuation, revocation, 16 tests)
-  - MCP tool registration conformance (47 tools, 9 modules, naming, 5 tests)
+  - MCP tool registration conformance (MCP tools, 9 modules, naming, 5 tests)
   - Performance benchmarks with hard latency thresholds (7 tests)
 - 16 user persona test scenarios (cybersecurity, government regulator, legal, healthcare, DPO, enterprise architect)
 - 10 manual workflow simulations with real tool output
@@ -153,10 +158,10 @@ Flagship release introducing real framework integrations, a security hardening s
 - AWS CodeBuild CI spec
 
 ### Changed
-- Identity module: 7 -> 8 tools (added purge_agent_data)
-- Delegation module: 3 -> 4 tools (added revoke_delegation)
-- Compliance module: 6 -> 7 tools (added update_compliance_profile)
-- Credentials module: 6 -> 8 tools (added verify_credential_external, verify_presentation)
+- Identity module: added purge_agent_data
+- Delegation module: added revoke_delegation
+- Compliance module: added update_compliance_profile
+- Credentials module: added verify_credential_external, verify_presentation
 - Total tools: 36 -> 47 across 9 modules
 
 ## [0.1.0] - 2026-02-19
@@ -165,17 +170,17 @@ Initial public release.
 
 ### Added
 
-**Identity & Trust (19 tools)**
-- Identity module (7 tools): create, resolve, verify, translate, list, get, revoke agent identities via Unified Agent Identity Tokens (UAITs)
-- Agent Cards module (3 tools): parse, generate, and discover Google A2A-compatible agent cards
-- DID module (3 tools): create did:key and did:web identifiers, resolve any DID via Universal Resolver
-- Delegation module (3 tools): UCAN-style capability delegation with EdDSA-signed JWT tokens
-- Reputation module (3 tools): recency-weighted trust scoring with category breakdown
+**Identity & Trust**
+- Identity module: create, resolve, verify, translate, list, get, revoke agent identities via Unified Agent Identity Tokens (UAITs)
+- Agent Cards module: parse, generate, and discover Google A2A-compatible agent cards
+- DID module: create did:key and did:web identifiers, resolve any DID via Universal Resolver
+- Delegation module: UCAN-style capability delegation with EdDSA-signed JWT tokens
+- Reputation module: recency-weighted trust scoring with category breakdown
 
-**EU AI Act Compliance (17 tools)**
-- Compliance module (6 tools): risk categorization (minimal/limited/high), conformity assessments (Article 43), Annex V declarations of conformity
-- Credentials module (6 tools): W3C Verifiable Credentials (VC Data Model 1.1) with Ed25519Signature2020 proofs, Verifiable Presentations
-- Provenance module (5 tools): training data provenance (Article 10), model lineage (Article 11), audit trail (Article 12)
+**EU AI Act Compliance**
+- Compliance module: risk categorization (minimal/limited/high), conformity assessments (Article 43), Annex V declarations of conformity
+- Credentials module: W3C Verifiable Credentials (VC Data Model 1.1) with Ed25519Signature2020 proofs, Verifiable Presentations
+- Provenance module: training data provenance (Article 10), model lineage (Article 11), audit trail (Article 12)
 
 **Infrastructure**
 - Ed25519 cryptographic signing for all persistent records

@@ -3,9 +3,9 @@ title: EU AI Act / GRC consultant Quickstart
 description: Generate Annex IV technical documentation and an Annex V Declaration of Conformity for a client's high-risk AI system. Honest about where cryptographic integrity ends and human / notified-body sign-off begins.
 ---
 
-## You're here because…
+## You're here because\u2026
 
-You're consulting on EU AI Act readiness and you need a tool that produces *machine-readable* evidence for Annex IV / Annex V, not another GRC dashboard. The funnel evaluation flagged that the GRC persona was one of only two TRIAL verdicts, but still dropped at integration because the docs conflated cryptographic integrity with regulatory conformity. This page de-conflates them: a signed VC proves an artefact existed and wasn't tampered with; it does **not** replace notified-body sign-off for high-risk systems.
+You're consulting on EU AI Act readiness and you need a tool that produces *machine-readable* evidence for Annex IV / Annex V, not another GRC dashboard. Use the runnable example and the source limitations below to assess whether this workflow meets your requirements.
 
 ## 60-second install
 
@@ -38,7 +38,7 @@ ProvenanceService().record_training_data(
     data_governance_measures="Removed protected attributes per Art. 10(2)(f). Bias audit Q4-2025.",
 )
 
-# Annex III §4(a) — employment / HR screening = high-risk
+# Annex III \xa74(a) \u2014 employment / HR screening = high-risk
 ComplianceService().create_compliance_profile(
     agent_id=agent_id,
     risk_category="high",
@@ -48,13 +48,13 @@ ComplianceService().create_compliance_profile(
     transparency_obligations="Candidates informed of AI assistance per Article 50.",
 )
 
-# Article 43 — record the third-party assessment your client procured.
+# Article 43 \u2014 record the third-party assessment your client procured.
 ComplianceService().record_conformity_assessment(
     agent_id=agent_id,
     assessment_type="third_party",
     assessor_name="Notified Body NB-0482",
     result="pass",
-    findings="System meets Annex III §4(a) requirements with documented oversight.",
+    findings="System meets Annex III \xa74(a) requirements with documented oversight.",
     ce_marking_eligible=True,
 )
 
@@ -81,7 +81,7 @@ vp = CredentialService().create_verifiable_presentation(
 
 Read this section before billing a client. It is the single most important distinction in the product.
 
-| Attestix proves… | Attestix does NOT prove |
+| Attestix proves\u2026 | Attestix does NOT prove |
 |---|---|
 | The declaration existed at this hash | A notified body has approved CE marking |
 | The third-party assessment row was recorded by this issuer DID | The assessor's findings are factually sound |

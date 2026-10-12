@@ -2,7 +2,7 @@
  * Attestix v2 landing data.
  * Numbers here are the real project surface:
  *   - Stable 0.4.1, 585 passing tests (494 functional + 91 conformance benchmarks),
- *     47 MCP tools, 9 modules, 44 REST endpoints. Single-maintainer project.
+ *     MCP tools, 9 modules, 44 REST endpoints. Single-maintainer project.
  *   - Base L2 is testnet (integration complete, mainnet schema not yet registered).
  *   - Real framework integrations: LangChain, OpenAI Agents SDK, CrewAI.
  * Mock agents/credentials/audit entries are clearly marked as illustrative.
@@ -46,7 +46,7 @@ export const ATX_MODULES: AtxModule[] = [
     name: "Identity",
     tools: 8,
     icon: "identity",
-    desc: "Unified Agent Identity Tokens (UAIT) bridging MCP OAuth, A2A, DIDs and API keys. GDPR Article 17 erasure.",
+    desc: "Unified Agent Identity Tokens (UAIT) bridging MCP OAuth, A2A, DIDs and API keys. local data erasure tooling.",
     pills: ["create_agent_identity", "verify_identity", "translate_identity", "+5"],
   },
   {
@@ -303,7 +303,7 @@ vp = credential_svc.create_verifiable_presentation(
 // SDKs). Aspirational items (IEEE 7000, ISO/IEC 42001, ERC-8004) were
 // removed pending actual implementation.
 export const ATX_STANDARDS: string[] = [
-  "MCP Protocol / 47 tools",
+  "MCP Protocol / MCP tools",
   "W3C Verifiable Credentials 1.1",
   "W3C DID Core 1.0",
   "UCAN v0.9 delegation",
@@ -311,7 +311,7 @@ export const ATX_STANDARDS: string[] = [
   "RFC 8785 / JSON canonicalization",
   "RFC 6962 / Merkle trees",
   "EU AI Act Annex V",
-  "GDPR Article 17 / erasure",
+  "Local record erasure",
   "Ethereum Attestation Service",
   "LangChain / CrewAI / OpenAI Agents SDK",
 ];
@@ -346,8 +346,8 @@ export const ATX_CERT_SAMPLE: AtxCertSample = {
 };
 
 export const ATX_HERO_STATS = [
-  { v: "47", k: "MCP Tools \u00B7 9 Modules" },
-  { v: "585", k: "Passing Tests \u00B7 91 Conformance" },
-  { v: "0.22 ms", k: "Ed25519 Sign + Verify (median)" },
-  { v: "6", k: "IETF \u00B7 W3C \u00B7 UCAN Standards" },
+  { v: "MCP", k: "Tool interface" },
+  { v: "Tests", k: "Public conformance fixtures" },
+  { v: "Ed25519", k: "Credential signature profile" },
+  { v: "JSON", k: "Published canonical format" },
 ];

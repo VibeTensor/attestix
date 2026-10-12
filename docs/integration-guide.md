@@ -10,10 +10,10 @@ You can import Attestix services directly without running the MCP server.
 import sys
 sys.path.insert(0, "/path/to/attestix")
 
-from services.identity_service import IdentityService
-from services.credential_service import CredentialService
-from services.compliance_service import ComplianceService
-from services.provenance_service import ProvenanceService
+from attestix.services.identity_service import IdentityService
+from attestix.services.credential_service import CredentialService
+from attestix.services.compliance_service import ComplianceService
+from attestix.services.provenance_service import ProvenanceService
 
 # Services are instantiated once and reuse the same signing key
 identity_svc = IdentityService()
@@ -34,8 +34,8 @@ Wrap Attestix services as LangChain tools:
 from langchain_core.tools import tool
 
 sys.path.insert(0, "/path/to/attestix")
-from services.identity_service import IdentityService
-from services.compliance_service import ComplianceService
+from attestix.services.identity_service import IdentityService
+from attestix.services.compliance_service import ComplianceService
 
 identity_svc = IdentityService()
 compliance_svc = ComplianceService()
@@ -86,8 +86,8 @@ from crewai import Agent, Task, Crew
 from crewai_tools import tool
 
 sys.path.insert(0, "/path/to/attestix")
-from services.identity_service import IdentityService
-from services.compliance_service import ComplianceService
+from attestix.services.identity_service import IdentityService
+from attestix.services.compliance_service import ComplianceService
 
 identity_svc = IdentityService()
 compliance_svc = ComplianceService()
@@ -134,7 +134,7 @@ import autogen
 import sys
 
 sys.path.insert(0, "/path/to/attestix")
-from services.identity_service import IdentityService
+from attestix.services.identity_service import IdentityService
 
 identity_svc = IdentityService()
 
@@ -167,8 +167,8 @@ user_proxy.initiate_chat(
 When multiple agents need to identify each other and delegate capabilities:
 
 ```python
-from services.identity_service import IdentityService
-from services.delegation_service import DelegationService
+from attestix.services.identity_service import IdentityService
+from attestix.services.delegation_service import DelegationService
 
 identity_svc = IdentityService()
 delegation_svc = DelegationService()
@@ -207,9 +207,9 @@ print(f"Capabilities: {verification['payload']['att']}")
 Add compliance checks to your agent pipeline:
 
 ```python
-from services.identity_service import IdentityService
-from services.compliance_service import ComplianceService
-from services.provenance_service import ProvenanceService
+from attestix.services.identity_service import IdentityService
+from attestix.services.compliance_service import ComplianceService
+from attestix.services.provenance_service import ProvenanceService
 
 identity_svc = IdentityService()
 compliance_svc = ComplianceService()

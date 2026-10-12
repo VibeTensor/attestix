@@ -1,11 +1,13 @@
 ---
 title: "v0.3.0 ships: real framework integrations, CI/CD, and the security hardening batch"
 publishedAt: "2026-04-20"
-summary: Attestix v0.3.0 introduces production-ready integrations for LangChain, OpenAI Agents SDK, and CrewAI, plus a security hardening batch and an automated CI/CD pipeline.
+summary: Attestix v0.3.0 introduces framework integrations for LangChain, OpenAI Agents SDK, and CrewAI, plus a security hardening batch and an automated CI/CD pipeline.
 author: "Pavan Kumar Dubasi"
 ---
 
-Attestix v0.3.0 ships with three production-ready framework integrations, a security hardening batch, and a GitHub Actions CI/CD pipeline. Every supported AI agent framework now has a first-party way to plug Attestix into its audit trail.
+> Source update - 12 October 2026: This is a historical article. Current main source and registry publication are separate. Language-specific verifier APIs have different validation boundaries; shared fixtures do not prove identical trust, status or replay policy. See the current [verifier documentation](/docs/verifiers) and repository release notes.
+
+Attestix v0.3.0 ships with three framework integrations, a security hardening batch, and a GitHub Actions CI/CD pipeline. Every supported AI agent framework now has a first-party way to plug Attestix into its audit trail.
 
 ## Framework integrations
 
@@ -24,7 +26,7 @@ executor = AgentExecutor(
 )
 ```
 
-**OpenAI Agents SDK MCPServerStdio.** All 47 Attestix tools are now discoverable as native MCP tools by the OpenAI Agents SDK. Wrap the server in an `async with` and pass it to the agent. No per-tool wrapping, no custom adapters.
+**OpenAI Agents SDK MCPServerStdio.** MCP tools are now discoverable as native MCP tools by the OpenAI Agents SDK. Wrap the server in an `async with` and pass it to the agent. No per-tool wrapping, no custom adapters.
 
 ```python
 async with MCPServerStdio(

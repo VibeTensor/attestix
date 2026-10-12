@@ -29,7 +29,7 @@ const jetbrainsMono = JetBrains_Mono({
 export const metadata: Metadata = constructMetadata({
   title: `${siteConfig.name} - ${siteConfig.description}`,
   description:
-    "Verifiable identity, W3C credentials, delegation chains, and reputation scoring for every AI agent. 47 MCP tools, 9 modules, EU AI Act ready. Open source, Apache 2.0.",
+    "Verifiable identity, W3C credentials, delegation chains, and reputation scoring for every AI agent. MCP tools, 9 modules, AI governance evidence tooling. Open source, Apache 2.0.",
   alternates: {
     canonical: siteConfig.url,
     types: {

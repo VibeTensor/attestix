@@ -186,7 +186,7 @@ export function StepResult({ result, onStartOver }: StepResultProps) {
           Automate your compliance with Attestix
         </h3>
         <p className="text-sm text-muted-foreground mb-4 max-w-lg mx-auto">
-          Attestix provides 47 MCP tools for verifiable identity, W3C credentials, compliance
+          Attestix provides MCP tools for verifiable identity, W3C credentials, compliance
           declarations, audit trails, and more. Start automating your EU AI Act compliance today.
         </p>
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
