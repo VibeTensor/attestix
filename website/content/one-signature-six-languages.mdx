@@ -50,7 +50,7 @@ Most agent-governance and AI-compliance tools  -  including the well-funded ones
 
 Six independent engines agreeing on one vector suite is a different category of claim:
 
-- **No single-implementation risk.** A bug in one verifier is caught by the other five disagreeing.
+- **Shared regression evidence.** A disagreement on a covered fixture can expose a verifier bug. Shared fixtures do not guarantee detection of every implementation defect.
 - **No vendor in the loop.** A regulator verifies in their own Java stack. The credential never touches our servers. There's nothing to phone home to.
 - **Genuine interoperability.** This is the same standard the cross-engine identity community has been building toward  -  independent engines verifying each other's signatures. Attestix now brings several engines to that table at once.
 
@@ -64,10 +64,10 @@ The verifiers are real, public, and CI-green:
 |---|---|
 | **Python** | `pip install attestix` (the full library) |
 | **Go** | `go get github.com/VibeTensor/attestix-go` |
-| **JavaScript / TypeScript** | `npm install @vibetensor/attestix` |
-| **Rust** | `attestix-rs` (crates.io publish imminent) |
-| **Java** | `attestix-java` (Maven Central publish in progress) |
-| **R** | `attestix-r` (CRAN submission in progress) |
+| **JavaScript / TypeScript** | `npm install attestix@0.4.2` |
+| **Rust** | GitHub v0.4.2 source; crates.io `attestix` remains 0.4.1 |
+| **Java** | `com.vibetensor:attestix:0.4.2` on Maven Central |
+| **R** | GitHub 0.4.2 tarball; CRAN remains 0.4.1 |
 
 And if you never want to install anything at all, paste a credential into [attestix.io/verify](https://attestix.io/verify)  -  it verifies in your browser, locally, with nothing uploaded.
 

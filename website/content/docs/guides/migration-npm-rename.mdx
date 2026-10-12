@@ -3,7 +3,7 @@ title: 'npm package rename: @vibetensor/attestix to attestix'
 description: How to migrate to the bare 'attestix' name on npm (now matching pip install attestix on PyPI).
 ---
 
-# npm package rename: `@vibetensor/attestix` → `attestix`
+# npm package rename: `@vibetensor/attestix` to `attestix`
 
 **TL;DR**: the JS/TS verifier package is now published as bare `attestix`
 on npm, matching `pip install attestix` on PyPI. The old scoped name
@@ -28,16 +28,15 @@ install the language-respective verifier under one canonical name.
 npm uninstall @vibetensor/attestix
 
 # 2. Install the bare package:
-npm install attestix
+npm install attestix@0.4.2
 
 # 3. Find and replace imports across your repo
-#    (POSIX / Git Bash / WSL — adjust for your shell):
+#    (POSIX / Git Bash / WSL - adjust for your shell):
 grep -rln "@vibetensor/attestix" . --include='*.{js,ts,jsx,tsx,mjs,cjs}' \
   | xargs sed -i 's|@vibetensor/attestix|attestix|g'
 ```
 
-The exports and API surface are **identical**. Only the package name
-changed. No source code changes are required beyond the import string.
+The original rename preserved its release API. Upgrading from the legacy 0.2.0 package to 0.4.2 also includes verifier hardening and can reject inputs accepted by older versions. Review the current SDK README and release notes, then test your credentials, presentations and delegation policies. Do not assume every version is interchangeable.
 
 ### Before / after
 
@@ -50,17 +49,17 @@ import { verifyCredential } from 'attestix'
 ```
 
 ```json
-// package.json — before
+// package.json - before
 {
   "dependencies": {
     "@vibetensor/attestix": "^0.2.0"
   }
 }
 
-// package.json — after
+// package.json - after
 {
   "dependencies": {
-    "attestix": "^0.2.0"
+    "attestix": "0.4.2"
   }
 }
 ```
