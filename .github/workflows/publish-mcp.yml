@@ -17,6 +17,7 @@ jobs:
     timeout-minutes: 10
     permissions:
       contents: read
+      # Exchange a short-lived GitHub OIDC identity for registry publishing.
       id-token: write
     steps:
       - name: Checkout approved main
@@ -41,10 +42,13 @@ jobs:
               raise SystemExit('Unexpected package name or release version')
           if manifest['name'] != 'io.github.VibeTensor/attestix' or manifest['version'] != version:
               raise SystemExit('Manifest and project versions or identity differ')
-          packages = manifest['packages']
-          if len(packages) != 1 or packages[0]['registryType'] != 'pypi':
-              raise SystemExit('Expected one PyPI package')
-          if packages[0]['identifier'] != project['name'] or packages[0]['version'] != version:
+          packages = manifest.get('packages')
+          if not isinstance(packages, list) or len(packages) != 1 or not isinstance(packages[0], dict):
+              raise SystemExit('Expected a one-item package list containing an object')
+          package = packages[0]
+          if package.get('registryType') != 'pypi':
+              raise SystemExit('Expected a PyPI package registry type')
+          if package.get('identifier') != project['name'] or package.get('version') != version:
               raise SystemExit('Package manifest does not match the project version')
           with urllib.request.urlopen(f'https://pypi.org/pypi/attestix/{version}/json', timeout=30) as response:
               published = json.load(response)
