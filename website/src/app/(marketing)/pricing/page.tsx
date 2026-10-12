@@ -58,7 +58,7 @@ const FAQ: { q: string; a: ReactNode }[] = [
 function Check() {
 	return (
 		<span aria-label="included" className="text-atx-ok">
-			\u2713
+			Included
 		</span>
 	);
 }

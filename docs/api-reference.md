@@ -493,7 +493,7 @@ Estimate gas cost for anchoring an artifact.
 
 Attestix ships a FastAPI-based HTTP API under `/v1/*`. Launch it with `uvicorn api.main:app` or via the Docker image. Interactive docs are served at `/docs` (Swagger UI) and `/redoc`.
 
-All endpoints accept and return JSON. Authentication is via the `Authorization: Bearer <token>` header when `ATTESTIX_API_AUTH_TOKEN` is configured.
+All endpoints accept and return JSON. Configure `ATTESTIX_API_KEY` and send `X-API-Key`; `Authorization: Bearer` is also accepted as a fallback. Without a configured key, non-public paths fail closed unless isolated development/test no-auth mode is explicitly enabled.
 
 ### Identity (7 endpoints)
 

@@ -127,7 +127,11 @@ Connect to existing agent identity ecosystems for interoperability.
 | 0.1.0 | Phase 1 + 2 | Initial release |
 | 0.2.0 | Phase 3 | Blockchain anchoring + security audit + conformance benchmarks (MCP tools, 284 tests) |
 | 0.3.0 | Phase 3.5 | Real LangChain/OpenAI Agents/CrewAI integrations, CI/CD, security hardening (358 tests, 1 skipped on Windows) |
-| 0.4.0 | Phase 4 | ERC-8004, A2A sync, ANS |
-| 0.4.1 | Phase 4 | Polygon ID / ZK credentials |
+| 0.4.0 | Released | Canonical packaging and storage/signing interfaces |
+| Unreleased Phase 4 | Planned | ERC-8004, A2A sync, ANS |
+| 0.4.1 | Released | Optional post-quantum signing and security hardening |
+| Unreleased Phase 4 follow-up | Planned | Polygon ID / ZK credentials |
 | 0.5.0 | Phase 5 | Multi-chain + enterprise storage |
 | 1.0.0 | Stable | Production-ready with full test suite and third-party audit |
+
+See the [European Commission's current AI Act timeline](https://digital-strategy.ec.europa.eu/en/policies/regulatory-framework-ai) and [Regulation (EU) 2026/1744](https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32026R1744). Applicability depends on the system and operator role.

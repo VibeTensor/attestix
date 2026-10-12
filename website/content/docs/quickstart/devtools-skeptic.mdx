@@ -55,7 +55,7 @@ python -W error::DeprecationWarning -c \
   "from attestix.services.identity_service import IdentityService; print('canonical ok')"
 ```
 
-If you see `canonical ok` and zero stderr, the import surface is clean. If you see a `DeprecationWarning` it means something in your tree is still hitting the legacy flat shim (`from attestix.services...`, `from attestix.auth...`, etc.). See the [namespace migration guide](/docs/guides/migration-v0.4.0-namespace).
+If you see `canonical ok` and zero stderr, the import surface is clean. If you see a `DeprecationWarning` it means something in your tree is still hitting the legacy flat shim (`from services...`, `from auth...`, etc.). See the [namespace migration guide](/docs/guides/migration-v0.4.0-namespace).
 
 ## What you just got
 

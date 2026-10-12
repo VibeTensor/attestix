@@ -372,7 +372,7 @@ function ComplianceProfile({ agent }: { agent: ConsoleAgent }) {
             </div>
             <div className="text-[13.5px] text-atx-ink">{it.name}</div>
             <div className="font-mono-atx text-[11px] text-atx-ink-dim">
-              {it.done ? "view evidence" : "resolve \u2192"}
+              {it.done ? "view evidence" : "resolve  -> "}
             </div>
           </div>
         ))}

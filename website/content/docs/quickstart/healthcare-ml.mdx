@@ -52,7 +52,7 @@ ComplianceService().create_compliance_profile(
     agent_id=agent_id,
     risk_category="high",
     provider_name="VibeTensor",
-    intended_purpose="ED triage decision support (Annex III \xa75(a)  -  access to essential services)",
+    intended_purpose="ED triage decision support (Annex III Section 5(a)  -  access to essential services)",
     human_oversight_measures="Clinician reviews every triage recommendation before action.",
     transparency_obligations="Patient-facing disclosure of AI involvement per Article 50.",
 )
@@ -62,7 +62,7 @@ ComplianceService().create_compliance_profile(
 
 - A signed Article 10 + Article 11 record per dataset and per fine-tuning run, every regulator's first ask.
 - A high-risk profile gated under Annex III. The conformity-assessment service will block self-assessment and require a third-party result before issuing a Declaration of Conformity.
-- A local data erasure tooling path (`identity_svc.revoke_identity(agent_id, reason="erasure")`), the only data-subject-rights primitive implemented today.
+- A local erasure path (`IdentityService().purge_agent_data(agent_id)`) for managed records and parseable local backups. Revocation only marks an identity revoked. External copies need separate handling.
 
 ## Next step (5 minutes)
 
@@ -79,4 +79,4 @@ ProvenanceService().log_action(
 )
 ```
 
-**Open caveats for healthcare production:** there is no third-party security audit, no HIPAA BAA template, and **DPDP (India) coverage is referenced in marketing but is planned for v0.5; it is not implemented in v0.4.0**. GDPR Article 17 (erasure) is the only data-subject-rights primitive shipped today. Treat all output as evidence under your existing legal review, not as legal sign-off.
+**Open caveats for healthcare production:** there is no third-party security audit, no HIPAA BAA template, and **DPDP (India) coverage is referenced in marketing but is planned for v0.5; it is not implemented in v0.4.0**. Local erasure tooling does not establish GDPR conformity or remove external copies. Treat all output as evidence under your existing legal review, not as legal sign-off.

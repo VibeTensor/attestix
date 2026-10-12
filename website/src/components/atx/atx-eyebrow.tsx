@@ -21,7 +21,7 @@ export function AtxEyebrow({
         className
       )}
     >
-      {number ? `\u00A7 ${number} / ` : null}
+      {number ? `Section  ${number} / ` : null}
       {children}
     </div>
   );

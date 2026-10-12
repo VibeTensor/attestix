@@ -99,7 +99,7 @@ doc/contract breaks, and 1 idempotency-replay defect across Windows + Linux).
 ### Headline since 0.3.0
 - **Pluggable storage + signer**  -  swap the in-memory defaults for Postgres + HSM/KMS without forking (`Storage` / `Signer` protocols).
 - **Multi-tenancy**  -  every resource carries `tenant_id`; structured, hash-chained, idempotency-aware audit events that don't leak across tenants.
-- **Portability**  -  bundle EXPORT + IMPORT (`attestix export` / `attestix import`), byte-stable JCS wire-format published at https://attestix.io/spec/bundle/v1. Cloud-workspace \u21c6 self-host round-trip.
+- **Portability**  -  bundle EXPORT + IMPORT (`attestix export` / `attestix import`), byte-stable JCS wire-format published at https://attestix.io/spec/bundle/v1. Cloud-workspace to/from self-host round-trip.
 - **Cross-engine offline verifier**  -  `npm install @vibetensor/attestix` (unscoped `attestix` migration in progress) verifies Python-issued credentials in any JS runtime.
 - **Structured `verify_chain`**  -  `VerifyChainResult` with `broken_event_id` + `failure_reason`.
 - **Canonical `attestix.*` namespace** with back-compat shims; `[api]` / `[langchain]` / `[crewai]` / `[openai-agents]` install extras; LangChain / OpenAI Agents / CrewAI integrations shipped in the wheel.
@@ -393,9 +393,8 @@ ICP funnel evaluation flagged on rc.1.
   `tenancy/`, `idempotency/`, `blockchain/`, `api/`, `tools/`, plus
   `config.py`, `errors.py`, `main.py`, `cli.py`) into site-packages on every
   install. That polluted every consumer's namespace and forced the documented
-  import to be `from attestix.services.X import Y` instead of `from attestix.services.X
-  import Y`. The funnel evaluation found 9 of 12 ICP personas dropped at
-  Integrate because of this. The canonical source has been promoted into the
+  import to be `from services.X import Y` instead of the canonical
+  `from attestix.services.X import Y`. The canonical source has been promoted into the
   `attestix/` package; the wheel now ships the `attestix.*` namespace plus
   thin deprecation shims at the legacy paths. The shims re-export from the
   canonical namespace and emit a single `DeprecationWarning` on first import,
@@ -405,9 +404,9 @@ ICP funnel evaluation flagged on rc.1.
 
   ```python
   # before (still works in v0.4.0-rc.2; emits DeprecationWarning)
-  from attestix.services.identity_service import IdentityService
+  from services.identity_service import IdentityService
   from signing.inprocess_signer import InProcessSigner
-  from attestix.auth.crypto import sign_json_payload
+  from auth.crypto import sign_json_payload
 
   # after (canonical, recommended)
   from attestix.services.identity_service import IdentityService
@@ -563,7 +562,7 @@ No breaking API changes for MCP tool callers.
 - **Namespace package support**: Added `attestix` namespace package for cleaner imports
   - New import pattern: `from attestix.services.identity_service import IdentityService`
   - New import pattern: `from attestix.auth.crypto import generate_ed25519_keypair`
-  - Flat imports still work for backward compatibility: `from attestix.services.identity_service import IdentityService`
+  - Flat imports still work for backward compatibility: `from services.identity_service import IdentityService`
 
 ### Changed
 - Package structure now includes both flat modules and `attestix.*` namespace

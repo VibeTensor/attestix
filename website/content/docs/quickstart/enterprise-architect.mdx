@@ -28,7 +28,7 @@ attestix mcp --transport http --port 8501
 ## First 30 lines that actually do something
 
 ```python
-# A minimal multi-tenant call against the running service.
+# A default single-tenant call against the running service.
 # Idempotency is honoured via the Idempotency-Key header (Stripe-style).
 import os, requests, uuid
 
@@ -44,9 +44,8 @@ resp = requests.post(
     },
     headers={
         "Idempotency-Key": str(uuid.uuid4()),
-        # In a multi-tenant deployment, your gateway maps an authenticated
-        # principal to a tenant id and stamps this header before forwarding.
-        "X-Tenant-Id": "tenant_a",
+        "X-API-Key": os.environ["ATTESTIX_API_KEY"],
+        "X-Attestix-Tenant": "default",
     },
     timeout=10,
 )
@@ -54,10 +53,10 @@ resp.raise_for_status()
 agent = resp.json()
 print(agent["agent_id"], agent["issuer"]["did"])
 
-# Subsequent reads scope to the same tenant.
+# Read from the same authenticated single-tenant service.
 trail = requests.get(
     f"{BASE}/v1/provenance/audit-trail/{agent['agent_id']}",
-    headers={"X-Tenant-Id": "tenant_a"},
+    headers={"X-API-Key": os.environ["ATTESTIX_API_KEY"], "X-Attestix-Tenant": "default"},
 ).json()
 print(len(trail), "audit rows so far")
 ```
@@ -66,7 +65,7 @@ print(len(trail), "audit rows so far")
 
 - An HTTP service exposing the 44 REST endpoints, all under a `/v1/` prefix (`/v1/identities`, `/v1/credentials`, `/v1/compliance`, `/v1/provenance/audit-trail/{id}`, `/v1/delegations`, ...), the same surface as the MCP tools.
 - An idempotency middleware: repeating the same `Idempotency-Key` returns the cached response, not a duplicate write.
-- A tenant context header (`X-Tenant-Id`) that is plumbed through every service and stamped onto audit events. Pair it with your existing OIDC / mTLS edge.
+- An authenticated default single-tenant REST service. Non-default `X-Attestix-Tenant` headers are rejected; this is not cross-tenant authorization.
 
 ## Next step (5 minutes)
 
