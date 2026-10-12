@@ -6,7 +6,7 @@
  *   - public/docs/<slug>.md: raw markdown of each docs page (URL + ".md")
  * Page order follows the sidebar (content/docs/**\/meta.json).
  */
-import { mkdirSync, readFileSync, copyFileSync, writeFileSync, renameSync, existsSync } from "fs";
+import { mkdirSync, readFileSync, copyFileSync, writeFileSync, renameSync, existsSync, readdirSync } from "fs";
 import { dirname, join, relative } from "path";
 import { randomUUID } from "node:crypto";
 import { fileURLToPath } from "url";
@@ -37,16 +37,28 @@ function frontmatter(raw) {
   return { title: get("title"), description: get("description"), body: m ? src.slice(m[0].length) : src };
 }
 
-// Walk the sidebar order from meta.json, falling back to nothing (explicit is better).
+// Preserve sidebar order, then include reachable pages omitted from the sidebar.
 function ordered(dir, slug = []) {
   const metaPath = join(dir, "meta.json");
   const pages = existsSync(metaPath) ? JSON.parse(readFileSync(metaPath, "utf8")).pages : [];
   const out = [];
+  const listed = new Set();
   for (const p of pages) {
     if (p.startsWith("---")) continue; // sidebar separator
+    if (listed.has(p)) continue;
+    listed.add(p);
     const file = join(dir, `${p}.mdx`);
     if (existsSync(file)) out.push({ file, slug: p === "index" ? slug : [...slug, p] });
     else if (existsSync(join(dir, p))) out.push(...ordered(join(dir, p), [...slug, p]));
+  }
+  for (const entry of readdirSync(dir, { withFileTypes: true }).sort((a, b) => a.name.localeCompare(b.name))) {
+    const name = entry.name.replace(/\.mdx$/, "");
+    if (listed.has(name)) continue;
+    if (entry.isFile() && entry.name.endsWith(".mdx")) {
+      out.push({ file: join(dir, entry.name), slug: name === "index" ? slug : [...slug, name] });
+    } else if (entry.isDirectory()) {
+      out.push(...ordered(join(dir, entry.name), [...slug, entry.name]));
+    }
   }
   return out;
 }

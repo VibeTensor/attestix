@@ -194,7 +194,7 @@ export function ConsoleTour({ root, onDone }: { root: HTMLElement | null; onDone
   if (!root) return null;
 
   return createPortal(
-    <div ref={dialogRef} tabIndex={-1} className="fixed inset-0 z-[60]" role="dialog" aria-modal="true" aria-label="Console tour">
+    <div ref={dialogRef} tabIndex={-1} className="fixed inset-0 z-[100]" role="dialog" aria-modal="true" aria-label="Console tour">
       {rect ? (
         <div
           aria-hidden

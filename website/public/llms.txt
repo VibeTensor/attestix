@@ -46,6 +46,7 @@ Every docs page below is also available as raw markdown at its URL plus `.md`. T
 - [Base L2 Testnet Anchor Walkthrough](https://attestix.io/docs/guides/base-l2-anchor.md): Anchor an Attestix artefact hash to Base L2 testnet via the Ethereum Attestation Service. End-to-end guide with Sepolia faucets, gas estimates, and verification.
 - [Migrating to the canonical attestix.* namespace (v0.4.0-rc.2)](https://attestix.io/docs/guides/migration-v0.4.0-namespace.md): Move existing Attestix integrations from the legacy flat top-level packages (services/, auth/, ...) to the canonical attestix.* namespace before the deprecation shims are removed in v0.5.0.
 - [npm package rename: @vibetensor/attestix to attestix](https://attestix.io/docs/guides/migration-npm-rename.md): How to migrate to the bare 'attestix' name on npm (now matching pip install attestix on PyPI).
+- [Architecture](https://attestix.io/docs/guides/architecture.md): How Attestix is structured internally, including project layout, data flows, and security boundaries.
 - [Agent security review inputs](https://attestix.io/docs/security/owasp-agentic-top10.md): Signed documentation inputs and their verification limits.
 - [ISO/IEC 42001 evidence inputs](https://attestix.io/docs/security/iso-42001-mapping.md): Signed documentation inputs and their verification limits.
 - [NIST AI RMF evidence inputs](https://attestix.io/docs/security/nist-ai-rmf-mapping.md): Signed documentation inputs and their verification limits.
