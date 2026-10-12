@@ -4,6 +4,8 @@ Records agent interactions and computes recency-weighted trust scores
 with exponential decay (30-day half-life).
 """
 
+from attestix.config import storage_transactional
+
 import math
 import time
 from datetime import datetime, timezone
@@ -43,6 +45,7 @@ class ReputationService:
         self._emitter = resolve_emitter(emitter)
         self._tenant_id = tenant_id
 
+    @storage_transactional
     def record_interaction(
         self,
         agent_id: str,

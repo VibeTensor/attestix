@@ -4,6 +4,8 @@ Issues, verifies, and manages W3C Verifiable Credentials (VC Data Model 1.1)
 with Ed25519Signature2020 proofs.
 """
 
+from attestix.config import storage_transactional
+
 import logging
 import uuid
 import warnings
@@ -62,6 +64,7 @@ class CredentialService:
         self._emitter = resolve_emitter(emitter)
         self._tenant_id = tenant_id
 
+    @storage_transactional
     def issue_credential(
         self,
         subject_id: Optional[str] = None,
@@ -218,6 +221,7 @@ class CredentialService:
             )
             return {"error": msg}
 
+    @storage_transactional
     def revoke_credential(self, credential_id: str, reason: str = "") -> dict:
         """Revoke a credential."""
         try:
@@ -389,9 +393,16 @@ class CredentialService:
         pub_key = did_key_to_public_key(expected_did)
         return verify_json_signature(pub_key, payload, proof_value)
 
-    def verify_presentation(self, presentation: dict) -> dict:
-        """Verify a Verifiable Presentation: check holder signature, domain, challenge,
-        and verify each contained credential."""
+    def verify_presentation(
+        self, presentation: dict, *, expected_challenge: Optional[str] = None,
+        expected_domain: Optional[str] = None,
+    ) -> dict:
+        """Verify the server-signed presentation and its contained credentials.
+
+        Expected context must be supplied by the verifier, not the presenter.
+        Challenge consumption is the verifier's responsibility; this method
+        checks binding but does not implement a single-use nonce store.
+        """
         try:
             checks = {}
 
@@ -420,11 +431,25 @@ class CredentialService:
             else:
                 checks["vp_signature_valid"] = False
 
-            # Check challenge (replay protection)
-            if proof.get("challenge"):
-                checks["challenge_present"] = True
-            if proof.get("domain"):
-                checks["domain_present"] = True
+            # Only signed top-level values can bind the presentation context.
+            for field, expected in (("challenge", expected_challenge),
+                                    ("domain", expected_domain)):
+                signed_value = presentation.get(field)
+                proof_value = proof.get(field)
+                if signed_value:
+                    checks[field + "_present"] = True
+                checks[field + "_consistent"] = (
+                    proof_value is None or proof_value == signed_value
+                )
+                if expected is not None:
+                    checks[field + "_matches"] = (
+                        isinstance(expected, str) and bool(expected)
+                        and signed_value == expected
+                    )
+            checks["replay_protection"] = (
+                "context_checked" if expected_challenge is not None
+                and expected_domain is not None else "unchecked"
+            )
 
             # Verify each contained credential
             credentials = presentation.get("verifiableCredential", [])
@@ -432,23 +457,9 @@ class CredentialService:
             checks["credentials_valid"] = True
 
             for i, cred in enumerate(credentials):
-                cred_proof = cred.get("proof", {})
-                cred_proof_value = cred_proof.get("proofValue")
-                if cred_proof_value:
-                    cred_payload = {
-                        k: v for k, v in cred.items() if k not in self.MUTABLE_FIELDS
-                    }
-                    try:
-                        # Each credential's key is bound to its own issuer.id
-                        # (the trust anchor), not to proof.verificationMethod.
-                        cred_valid = self._verify_proof_bound(
-                            self._issuer_did(cred), cred_proof, cred_payload
-                        )
-                        if not cred_valid:
-                            checks["credentials_valid"] = False
-                    except Exception:
-                        checks["credentials_valid"] = False
-                else:
+                # Reuse the complete verifier so bundling cannot bypass expiry
+                # or local revocation checks while retaining issuer key binding.
+                if not self.verify_credential_external(cred).get("valid", False):
                     checks["credentials_valid"] = False
 
                 # Check credential subject matches holder

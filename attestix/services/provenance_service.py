@@ -4,6 +4,8 @@ Manages training data provenance, model lineage tracking, and
 Article 12 EU AI Act automatic action logging (audit trail).
 """
 
+from attestix.config import storage_transactional
+
 import hashlib
 import json
 import uuid
@@ -61,6 +63,7 @@ class ProvenanceService:
                 return entry["chain_hash"]
         return self.GENESIS_HASH
 
+    @storage_transactional
     def record_training_data(
         self,
         agent_id: str,
@@ -135,6 +138,7 @@ class ProvenanceService:
             )
             return {"error": msg}
 
+    @storage_transactional
     def record_model_lineage(
         self,
         agent_id: str,
@@ -197,6 +201,7 @@ class ProvenanceService:
             )
             return {"error": msg}
 
+    @storage_transactional
     def log_action(
         self,
         agent_id: str,

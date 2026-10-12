@@ -25,6 +25,7 @@ import threading
 from typing import Callable, List, Optional
 
 from attestix.audit.events import GENESIS_HASH, AuditEvent
+from attestix.config import storage_transaction
 from attestix.storage import Repository, default_repository
 from attestix.storage.repository import DEFAULT_TENANT
 
@@ -95,7 +96,9 @@ class AuditEventEmitter:
         underlying state change has committed (FR-018): a caller that catches a
         write failure must not call ``emit``.
         """
-        with self._lock:
+        # Only the chain-head read and append hold the storage lock; a slow
+        # external sink must not block every other storage operation.
+        with storage_transaction(), self._lock:
             prev_hash = self._last_chain_hash(tenant_id)
             event = AuditEvent.create(
                 action=action,

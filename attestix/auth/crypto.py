@@ -324,13 +324,24 @@ def _normalize_for_signing(obj):
     elif isinstance(obj, int):
         return obj
     elif isinstance(obj, float):
+        import math
+        if not math.isfinite(obj):
+            raise ValueError("JSON numbers must be finite")
         # RFC 8785 requires specific float handling.
         # Convert to int if the value is a whole number (e.g., 1.0 -> 1).
         if obj == int(obj) and not (obj == 0.0 and str(obj).startswith("-")):
             return int(obj)
         return obj
     elif isinstance(obj, dict):
-        return {_normalize_for_signing(k): _normalize_for_signing(v) for k, v in obj.items()}
+        normalized = {}
+        for key, value in obj.items():
+            if not isinstance(key, str):
+                raise ValueError("JSON object keys must be strings")
+            normalized_key = _normalize_for_signing(key)
+            if normalized_key in normalized:
+                raise ValueError("JSON object keys collide after NFC normalization")
+            normalized[normalized_key] = _normalize_for_signing(value)
+        return normalized
     elif isinstance(obj, list):
         return [_normalize_for_signing(x) for x in obj]
     elif obj is None:
@@ -339,14 +350,14 @@ def _normalize_for_signing(obj):
 
 
 def canonicalize_json(payload: dict) -> bytes:
-    """Produce a canonical JSON byte string following RFC 8785 (JCS) conventions.
+    """Produce Attestix canonical JSON, including NFC normalization.
 
-    Uses sorted keys, compact separators, NFC normalization, and UTF-8 encoding.
-    This is a practical subset of JCS suitable for Ed25519 signing.
+    This custom format differs from strict RFC 8785. Ambiguous object keys and
+    non-finite numbers are rejected rather than silently losing signed claims.
     """
     normalized = _normalize_for_signing(payload)
     canonical = json.dumps(
-        normalized, sort_keys=True, separators=(",", ":"), ensure_ascii=False
+        normalized, sort_keys=True, separators=(",", ":"), ensure_ascii=False, allow_nan=False
     )
     return canonical.encode("utf-8")
 

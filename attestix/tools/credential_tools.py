@@ -152,14 +152,19 @@ def register(mcp):
         return json.dumps(result, indent=2, default=str)
 
     @mcp.tool()
-    async def verify_presentation(presentation_json: str) -> str:
+    async def verify_presentation(
+        presentation_json: str, expected_challenge: str = "", expected_domain: str = "",
+    ) -> str:
         """Verify a Verifiable Presentation provided as raw JSON.
 
-        Validates the VP signature, checks domain/challenge for replay protection,
-        and verifies each contained credential.
+        Validates the VP signature and each contained credential. When the
+        verifier supplies expected context, checks the signed challenge/domain.
+        The verifier must separately consume challenges to prevent reuse.
 
         Args:
             presentation_json: The full W3C Verifiable Presentation as a JSON string.
+            expected_challenge: Challenge issued by the verifier, when required.
+            expected_domain: Intended verifier domain, when required.
         """
         from attestix.services.cache import get_service
         from attestix.services.credential_service import CredentialService
@@ -170,7 +175,10 @@ def register(mcp):
         except json.JSONDecodeError:
             return json.dumps({"error": "Invalid JSON in presentation_json"})
 
-        result = svc.verify_presentation(presentation)
+        result = svc.verify_presentation(
+            presentation, expected_challenge=expected_challenge or None,
+            expected_domain=expected_domain or None,
+        )
         return json.dumps(result, indent=2, default=str)
 
     @mcp.tool()

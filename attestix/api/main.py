@@ -232,6 +232,18 @@ class APIKeyMiddleware(BaseHTTPMiddleware):
             "1", "true", "yes", "on",
         }
 
+    def _tenant_rejection(self, request: Request):
+        # Runs only after authentication so unauthenticated callers keep the
+        # 401/403/503 outcome and do not learn the tenant policy.
+        tenant = request.headers.get("X-Attestix-Tenant", "default").strip()
+        if request.url.path not in self.OPEN_PATHS and tenant not in {"", "default"}:
+            return JSONResponse(
+                status_code=400,
+                content={"error": "The default REST server is single-tenant; "
+                         "non-default tenant headers are not supported."},
+            )
+        return None
+
     async def dispatch(self, request: Request, call_next):
         api_key = os.environ.get("ATTESTIX_API_KEY")
 
@@ -239,7 +251,7 @@ class APIKeyMiddleware(BaseHTTPMiddleware):
         # fails closed unless the operator explicitly opted into no-auth mode.
         if not api_key:
             if request.url.path in self.OPEN_PATHS or self._allow_no_auth():
-                return await call_next(request)
+                return self._tenant_rejection(request) or await call_next(request)
             return JSONResponse(
                 status_code=503,
                 content={
@@ -279,7 +291,7 @@ class APIKeyMiddleware(BaseHTTPMiddleware):
                 content={"error": "Invalid API key"},
             )
 
-        return await call_next(request)
+        return self._tenant_rejection(request) or await call_next(request)
 
 
 # ---------------------------------------------------------------------------
@@ -322,6 +334,8 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    if os.environ.get("ATTESTIX_DURABILITY", "safe").strip().lower() == "fast":
+        raise RuntimeError("REST requires safe durability; fast mode is for single-writer batches")
     logger.info("Attestix API starting up")
     if not os.environ.get("ATTESTIX_API_KEY"):
         if APIKeyMiddleware._allow_no_auth():
@@ -368,12 +382,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Rate limiting (applied before auth so abusers get 429 before 401)
-app.add_middleware(RateLimitMiddleware)
-
-# API key auth
-app.add_middleware(APIKeyMiddleware)
-
 # ---------------------------------------------------------------------------
 # Idempotency (v0.4.0 US3 / P3) — mounted as a strict no-op without a key
 # ---------------------------------------------------------------------------
@@ -397,6 +405,11 @@ from attestix.idempotency.middleware import IdempotencyMiddleware as _Idempotenc
 
 if _IdempotencyMiddleware is not None:
     app.add_middleware(_IdempotencyMiddleware)
+
+# Starlette executes the last registered middleware first. Authentication and
+# rate limiting must run before a cached response can be read or reserved.
+app.add_middleware(APIKeyMiddleware)
+app.add_middleware(RateLimitMiddleware)
 
 
 # ---------------------------------------------------------------------------

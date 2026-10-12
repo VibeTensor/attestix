@@ -94,37 +94,18 @@ def parse_jwt_claims(token: str) -> Optional[dict]:
 
 
 def extract_identity_from_token(token: str) -> dict:
-    """Extract identity information from any supported token type.
+    """Return bounded display metadata without retaining credentials or claims.
 
-    Returns a dict with: token_type, original_token, and extracted fields.
+    Parsed JWT claims and headers are untrusted and may themselves contain
+    credentials. Persist only the token kind, size and an allowlisted algorithm.
     """
     token_type = detect_token_type(token)
-    result = {
-        "token_type": token_type.value,
-        "original_token": token,
-    }
-
+    result = {"token_type": token_type.value, "token_length": len(token)}
     if token_type == TokenType.JWT:
+        result["claims_verified"] = False
         parsed = parse_jwt_claims(token)
         if parsed:
-            result["subject"] = parsed["subject"]
-            result["issuer"] = parsed["issuer"]
-            result["scopes"] = parsed["scopes"]
-            result["expiry"] = parsed["expiry"]
-            result["jwt_header"] = parsed["header"]
-
-    elif token_type == TokenType.DID:
-        parts = token.split(":")
-        result["did_method"] = parts[1] if len(parts) >= 3 else "unknown"
-        result["did_specific_id"] = ":".join(parts[2:]) if len(parts) >= 3 else token
-
-    elif token_type == TokenType.URL:
-        result["url"] = token
-        result["note"] = "URL-based identity (e.g., A2A Agent Card endpoint)"
-
-    elif token_type == TokenType.API_KEY:
-        # Mask the key for safety
-        result["key_preview"] = token[:6] + "..." + token[-4:] if len(token) > 12 else "***"
-        result["key_length"] = len(token)
-
+            algorithm = parsed["header"].get("alg")
+            if isinstance(algorithm, str) and algorithm in jwt.algorithms.get_default_algorithms():
+                result["jwt_algorithm"] = algorithm
     return result

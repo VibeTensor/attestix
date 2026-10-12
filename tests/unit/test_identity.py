@@ -39,8 +39,7 @@ class TestCreateIdentity:
         )
         token = result["identity_token"]
         assert "fixture-do-not-use" not in token
-        assert token.startswith("sk-F")
-        assert token.endswith("7890")
+        assert token == "***"
 
 
 class TestGetIdentity:
