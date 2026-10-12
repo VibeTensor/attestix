@@ -264,8 +264,9 @@ export default function IndiaPage() {
           The current release provides evidence tooling and managed local
           record handling. It does not establish DPDP or EU AI Act conformity.
           Operators must separately assess lawful data handling, retention,
-          external copies and applicable obligations. Base L2 anchoring is
-          testnet only; mainnet registration remains planned.
+          external copies and applicable obligations. Base L2 anchoring defaults
+          to Base Sepolia and supports Base mainnet when configured. External
+          deployment and schema registration require separate verification.
         </p>
       </div>
     </section>
