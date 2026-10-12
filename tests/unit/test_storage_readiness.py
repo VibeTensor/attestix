@@ -110,3 +110,11 @@ def test_presentation_requires_expected_signed_context(credential_service, sampl
     assert not credential_service.verify_presentation(presentation, expected_challenge="wrong")["valid"]
     presentation["proof"]["challenge"] = "replacement"
     assert not credential_service.verify_presentation(presentation)["valid"]
+
+
+def test_purge_removes_unparseable_quarantined_copy(identity_service):
+    agent = identity_service.create_identity("erase", "test")
+    quarantined = config.IDENTITIES_FILE.parent / (config.IDENTITIES_FILE.stem + ".corrupted.123")
+    quarantined.write_text("{broken " + agent["agent_id"], encoding="utf-8")
+    identity_service.purge_agent_data(agent["agent_id"])
+    assert not quarantined.exists()

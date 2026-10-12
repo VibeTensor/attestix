@@ -405,13 +405,17 @@ class FileRepository(Repository):
     def recovery_documents(self, collection: str):
         """Read recovery documents for erasure planning; refuse unreadable copies."""
         file_path, _, _ = _resolve(collection)
-        recovery_paths = [file_path.with_suffix(".json.bak")]
-        recovery_paths.extend(file_path.parent.glob(file_path.stem + ".corrupted.*"))
         documents = []
-        for recovery in recovery_paths:
-            if recovery.exists():
-                with recovery.open("r", encoding="utf-8") as stream:
+        backup = file_path.with_suffix(".json.bak")
+        if backup.exists():
+            with backup.open("r", encoding="utf-8") as stream:
+                documents.append(json.load(stream))
+        for quarantined in file_path.parent.glob(file_path.stem + ".corrupted.*"):
+            try:
+                with quarantined.open("r", encoding="utf-8") as stream:
                     documents.append(json.load(stream))
+            except (OSError, ValueError):
+                continue  # unparseable by construction; erasure deletes it
         return documents
 
     @config.storage_transactional
@@ -426,15 +430,17 @@ class FileRepository(Repository):
             repository.flush()
         live = config._safe_load(file_path, default)
         clean_live, counts = scrub(deepcopy(live))
-        recovery_paths = [file_path.with_suffix(".json.bak")]
-        recovery_paths.extend(file_path.parent.glob(file_path.stem + ".corrupted.*"))
         try:
-            for recovery in recovery_paths:
-                if recovery.exists():
-                    with recovery.open("r", encoding="utf-8") as stream:
-                        recovered = json.load(stream)
-                    clean_recovery, _ = scrub(recovered)
-                    config._atomic_write_json(recovery, clean_recovery)
+            backup = file_path.with_suffix(".json.bak")
+            if backup.exists():
+                with backup.open("r", encoding="utf-8") as stream:
+                    recovered = json.load(stream)
+                clean_recovery, _ = scrub(recovered)
+                config._atomic_write_json(backup, clean_recovery)
+            # Quarantined copies are never read back for recovery, so removing
+            # them loses nothing and is the only way to erase their contents.
+            for quarantined in file_path.parent.glob(file_path.stem + ".corrupted.*"):
+                quarantined.unlink()
             config._atomic_write_json(file_path, clean_live)
         finally:
             for repository in tuple(_FILE_REPOSITORIES):

@@ -232,7 +232,9 @@ class APIKeyMiddleware(BaseHTTPMiddleware):
             "1", "true", "yes", "on",
         }
 
-    async def dispatch(self, request: Request, call_next):
+    def _tenant_rejection(self, request: Request):
+        # Runs only after authentication so unauthenticated callers keep the
+        # 401/403/503 outcome and do not learn the tenant policy.
         tenant = request.headers.get("X-Attestix-Tenant", "default").strip()
         if request.url.path not in self.OPEN_PATHS and tenant not in {"", "default"}:
             return JSONResponse(
@@ -240,13 +242,16 @@ class APIKeyMiddleware(BaseHTTPMiddleware):
                 content={"error": "The default REST server is single-tenant; "
                          "non-default tenant headers are not supported."},
             )
+        return None
+
+    async def dispatch(self, request: Request, call_next):
         api_key = os.environ.get("ATTESTIX_API_KEY")
 
         # No key configured. Open paths are always served; everything else
         # fails closed unless the operator explicitly opted into no-auth mode.
         if not api_key:
             if request.url.path in self.OPEN_PATHS or self._allow_no_auth():
-                return await call_next(request)
+                return self._tenant_rejection(request) or await call_next(request)
             return JSONResponse(
                 status_code=503,
                 content={
@@ -286,7 +291,7 @@ class APIKeyMiddleware(BaseHTTPMiddleware):
                 content={"error": "Invalid API key"},
             )
 
-        return await call_next(request)
+        return self._tenant_rejection(request) or await call_next(request)
 
 
 # ---------------------------------------------------------------------------

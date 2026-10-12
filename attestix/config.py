@@ -118,6 +118,14 @@ def _atomic_write_json(filepath: Path, data: dict):
             stream.flush()
             os.fsync(stream.fileno())
         os.replace(temp_path, filepath)
+        temp_path = None
+        # Persist the rename so an erased document cannot reappear after power loss.
+        if hasattr(os, "O_DIRECTORY"):
+            dir_fd = os.open(filepath.parent, os.O_RDONLY | os.O_DIRECTORY)
+            try:
+                os.fsync(dir_fd)
+            finally:
+                os.close(dir_fd)
     finally:
         if temp_path is not None and temp_path.exists():
             temp_path.unlink()
