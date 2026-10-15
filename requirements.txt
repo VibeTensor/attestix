@@ -2,7 +2,7 @@
 # MCP Server for agent identity, compliance, and verifiable credentials
 
 # MCP Framework
-mcp[cli]>=1.28.1,<2.0.0
+mcp[cli]>=1.28.1,<3.0.0
 
 # Cryptography
 # Floors MUST match pyproject.toml: cryptography>=48.0.1 closes
