@@ -46,8 +46,9 @@ URLs on Cloudflare Pages. Text exports elsewhere, including `llms.txt`, remain t
 `npm run build` runs the redirect tests and generates a rule for every published
 `content/*.mdx` article. Keep unrelated redirects outside the managed blog block.
 
-For the browser regression, install Python Playwright and its Chromium browser,
-build the site, then run these commands in separate terminals from `website/`:
+For the browser regression, install Python Playwright and its Chromium browser
+and install the Wrangler CLI separately (`npm install --global wrangler`). Build
+the site, then run these commands in separate terminals from `website/`:
 
 ```sh
 wrangler pages dev out --ip 127.0.0.1 --port 8797

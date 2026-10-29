@@ -16,6 +16,7 @@ from playwright.sync_api import sync_playwright
 def run(base_url, executable=None):
     results = []
     aborted = []
+    document_requests = []
 
     def record(value):
         results.append(value)
@@ -29,6 +30,8 @@ def run(base_url, executable=None):
         context = browser.new_context(viewport={"width": 1440, "height": 1000})
         page = context.new_page()
         page.set_default_timeout(30000)
+        page.on("request", lambda request: document_requests.append(request.url)
+                if request.resource_type == "document" else None)
 
         def fail_rsc_fetch(route):
             if route.request.resource_type == "document":
@@ -43,7 +46,6 @@ def run(base_url, executable=None):
         def open_page(path):
             page.goto(base_url + path, wait_until="domcontentloaded", timeout=60000)
             page.locator("h1").wait_for()
-            page.wait_for_timeout(1000)
             page.add_style_tag(content="* { animation: none !important; transition: none !important; scroll-behavior: auto !important; }")
 
         def article_passes(slug):
@@ -51,6 +53,12 @@ def run(base_url, executable=None):
             assert urlsplit(page.url).path == "/blog/" + slug
             assert page.locator("h1").inner_text().strip()
             assert page.locator("article").inner_text().strip()
+
+        def click_article(link, slug):
+            document_requests.clear()
+            link.click()
+            article_passes(slug)
+            assert not any(urlsplit(url).path.endswith(".txt") for url in document_requests), document_requests
 
         open_page("/blog")
         slugs = sorted({
@@ -62,17 +70,19 @@ def run(base_url, executable=None):
 
         for entry in ["/blog", "/research"]:
             for slug in slugs:
-                label = entry + " to " + slug
-                try:
-                    open_page(entry)
-                    link = page.locator(f'a[href="/blog/{slug}"]').first
-                    if link.count() == 0:
-                        continue
-                    link.click()
-                    article_passes(slug)
-                    record({"case": label, "passed": True})
-                except Exception as error:
-                    record({"case": label, "passed": False, "url": page.url, "error": str(error)[:300]})
+                open_page(entry)
+                selector = f'a[href="/blog/{slug}"]'
+                count = page.locator(selector).count()
+                if not count:
+                    record({"case": f"{entry} to {slug}", "passed": False, "error": "Article link is missing"})
+                for index in range(count):
+                    label = f"{entry} to {slug} link {index + 1}"
+                    try:
+                        open_page(entry)
+                        click_article(page.locator(selector).nth(index), slug)
+                        record({"case": label, "passed": True})
+                    except Exception as error:
+                        record({"case": label, "passed": False, "url": page.url, "error": str(error)[:300]})
 
         for slug in slugs:
             try:
@@ -91,8 +101,7 @@ def run(base_url, executable=None):
             related = [link.get_attribute("href") for link in page.locator('a[href^="/blog/"]').all()]
             for href in related:
                 open_page("/blog/" + slugs[0])
-                page.locator(f'a[href="{href}"]').first.click()
-                article_passes(href.removeprefix("/blog/"))
+                click_article(page.locator(f'a[href="{href}"]').first, href.removeprefix("/blog/"))
             open_page("/blog/" + slugs[0])
             page.locator('a[href="/blog"]').filter(has_text="All posts").click()
             page.locator("h1").wait_for()
