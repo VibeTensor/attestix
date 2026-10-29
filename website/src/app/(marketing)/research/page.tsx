@@ -43,7 +43,7 @@ export default async function ResearchPage() {
 
       <div className="mt-14 grid gap-4 lg:grid-cols-2">
         {vision && (
-          <Link
+          <a
             href={`/blog/${vision.slug}`}
             className="group rounded-2xl border border-atx-accent/30 bg-atx-accent/[0.05] p-7 transition-colors duration-200 hover:border-atx-accent/60"
           >
@@ -55,7 +55,7 @@ export default async function ResearchPage() {
             <span className="mt-5 inline-flex items-center gap-1.5 text-[14px] font-medium text-atx-accent">
               Read <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
             </span>
-          </Link>
+          </a>
         )}
         <Link
           href="/research/paper"
@@ -81,7 +81,7 @@ export default async function ResearchPage() {
       <h2 className="mt-16 text-[14px] font-medium text-atx-ink-mid">Notes and releases</h2>
       <div className="mt-4 divide-y divide-atx-line-soft border-y border-atx-line-soft">
         {notes.map((p) => (
-          <Link
+          <a
             key={p.slug}
             href={`/blog/${p.slug}`}
             className="group grid gap-2 py-5 transition-colors duration-200 md:grid-cols-[180px_1fr_auto] md:items-baseline md:gap-6"
@@ -94,7 +94,7 @@ export default async function ResearchPage() {
               <span className="mt-1 block text-[14px] leading-[1.55] text-atx-ink-mid">{p.summary}</span>
             </span>
             <span className="text-[13px] text-atx-ink-dim">{p.minutes} min read</span>
-          </Link>
+          </a>
         ))}
       </div>
     </section>

@@ -1,0 +1,10 @@
+# BEGIN ATTESTIX BLOG REDIRECTS
+# Recover article links shared after a failed static RSC navigation.
+/blog.txt /blog 301
+/blog/eu-ai-act-countdown.txt /blog/eu-ai-act-countdown 301
+/blog/getting-started-5-minutes.txt /blog/getting-started-5-minutes 301
+/blog/one-signature-six-languages.txt /blog/one-signature-six-languages 301
+/blog/research-paper.txt /blog/research-paper 301
+/blog/v0-3-0-ships-real-framework-integrations.txt /blog/v0-3-0-ships-real-framework-integrations 301
+/blog/why-attestation.txt /blog/why-attestation 301
+# END ATTESTIX BLOG REDIRECTS

@@ -34,3 +34,26 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+
+
+## Static blog navigation regression
+
+Article cards, research links, related posts and the article back link use native
+HTML navigation. A failed Next.js static RSC request can otherwise navigate to a
+transport `.txt` URL. The generated `public/_redirects` rules recover those shared
+URLs on Cloudflare Pages. Text exports elsewhere, including `llms.txt`, remain text.
+
+`npm run build` runs the redirect tests and generates a rule for every published
+`content/*.mdx` article. Keep unrelated redirects outside the managed blog block.
+
+For the browser regression, install Python Playwright and its Chromium browser,
+build the site, then run these commands in separate terminals from `website/`:
+
+```sh
+wrangler pages dev out --ip 127.0.0.1 --port 8797
+python scripts/blog-navigation.browser.py http://127.0.0.1:8797
+```
+
+This uses local Pages routing and aborts RSC fetches in the test browser. It checks
+all published blog/research links, related posts, the back link and old shared TXT
+URLs with query strings. It does not publish or change a cloud resource.
