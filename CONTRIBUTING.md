@@ -22,8 +22,8 @@ pip install -r requirements.txt
 ### Verify Setup
 
 ```bash
-python main.py
-# Should print "Attestix MCP server loaded: 47 tools registered" to stderr
+python -m attestix.main
+# Should log MCP server startup and tool registration to stderr
 # Then wait for MCP client connections on stdio
 ```
 
