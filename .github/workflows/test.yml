@@ -43,7 +43,7 @@ jobs:
       # hash). `requirements-ci.txt` is generated from pyproject.toml's
       # [dev,blockchain,security] extras + requirements-api.txt via:
       #
-      #   python -m piptools compile --generate-hashes --strip-extras \
+      #   uv pip compile --universal --python-version 3.11 --generate-hashes \
       #     --extra dev --extra blockchain --extra security \
       #     --output-file requirements-ci.txt pyproject.toml requirements-api.txt
       #

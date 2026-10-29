@@ -3,5 +3,6 @@
 #   pip-compile --generate-hashes --output-file=requirements-docs.txt requirements-docs.in
 mkdocs-material>=9.5
 
-# Use the refreshed trust store when downloading documentation dependencies.
+# Keep the CA bundle used by installed documentation HTTP clients current.
+# This does not update pip's separately vendored trust store.
 certifi>=2026.10.19

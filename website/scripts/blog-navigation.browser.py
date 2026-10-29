@@ -30,7 +30,8 @@ def run(base_url, executable=None):
         context = browser.new_context(viewport={"width": 1440, "height": 1000})
         page = context.new_page()
         page.set_default_timeout(30000)
-        page.on("request", lambda request: document_requests.append(request.url)
+        page.on("request", lambda request: document_requests.append(
+            (request.frame == page.main_frame, request.url))
                 if request.resource_type == "document" else None)
 
         def fail_rsc_fetch(route):
@@ -54,11 +55,17 @@ def run(base_url, executable=None):
             assert page.locator("h1").inner_text().strip()
             assert page.locator("article").inner_text().strip()
 
+        def assert_document_navigation(path):
+            assert any(is_main_frame and urlsplit(url).path == path
+                       for is_main_frame, url in document_requests), document_requests
+            assert not any(urlsplit(url).path.endswith(".txt")
+                           for _, url in document_requests), document_requests
+
         def click_article(link, slug):
             document_requests.clear()
             link.click()
             article_passes(slug)
-            assert not any(urlsplit(url).path.endswith(".txt") for url in document_requests), document_requests
+            assert_document_navigation("/blog/" + slug)
 
         open_page("/blog")
         slugs = sorted({
@@ -70,11 +77,15 @@ def run(base_url, executable=None):
 
         for entry in ["/blog", "/research"]:
             for slug in slugs:
-                open_page(entry)
                 selector = f'a[href="/blog/{slug}"]'
-                count = page.locator(selector).count()
-                if not count:
-                    record({"case": f"{entry} to {slug}", "passed": False, "error": "Article link is missing"})
+                try:
+                    open_page(entry)
+                    count = page.locator(selector).count()
+                    assert count, "Article link is missing"
+                except Exception as error:
+                    record({"case": f"{entry} to {slug} setup", "passed": False,
+                            "url": page.url, "error": str(error)[:300]})
+                    continue
                 for index in range(count):
                     label = f"{entry} to {slug} link {index + 1}"
                     try:
@@ -103,9 +114,11 @@ def run(base_url, executable=None):
                 open_page("/blog/" + slugs[0])
                 click_article(page.locator(f'a[href="{href}"]').first, href.removeprefix("/blog/"))
             open_page("/blog/" + slugs[0])
+            document_requests.clear()
             page.locator('a[href="/blog"]').filter(has_text="All posts").click()
             page.locator("h1").wait_for()
             assert urlsplit(page.url).path == "/blog"
+            assert_document_navigation("/blog")
             open_page("/blog.txt?ref=shared")
             assert urlsplit(page.url).path == "/blog"
             assert page.locator("h1").inner_text().strip()
