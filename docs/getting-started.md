@@ -4,7 +4,7 @@ Get your first AI agent identity in under 5 minutes.
 
 ## Prerequisites
 
-- Python 3.10 or later
+- Python 3.11 or later
 - pip
 
 ## Installation

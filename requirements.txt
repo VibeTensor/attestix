@@ -1,8 +1,10 @@
 # Attestix - Attestation Infrastructure for AI Agents
 # MCP Server for agent identity, compliance, and verifiable credentials
 
+# Requires Python 3.11 or later.
+
 # MCP Framework
-mcp[cli]>=1.28.1,<2.0.0
+mcp[cli]>=1.30.0,<2.0.0
 
 # Cryptography
 # Floors MUST match pyproject.toml: cryptography>=48.0.1 closes
@@ -15,6 +17,7 @@ anyio>=4.14.2,<5.0.0
 base58>=2.1.1
 
 # HTTP client
+certifi>=2026.10.19
 httpx>=0.28.0
 
 # Blockchain (optional, for on-chain anchoring)
@@ -24,4 +27,4 @@ httpx>=0.28.0
 python-dotenv>=1.1.0
 nest-asyncio>=1.6.0
 python-json-logger>=3.3.0
-filelock>=3.13.0
+filelock>=4.2.1,<5.0.0

@@ -2,3 +2,6 @@
 # .github/workflows/docs.yml). Regenerate with:
 #   pip-compile --generate-hashes --output-file=requirements-docs.txt requirements-docs.in
 mkdocs-material>=9.5
+
+# Use the refreshed trust store when downloading documentation dependencies.
+certifi>=2026.10.19

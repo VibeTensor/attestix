@@ -185,7 +185,7 @@ agent = svc.create_identity(display_name="MyAgent")
 
 ### What Python version is required?
 
-Python 3.10 or later.
+Python 3.11 or later.
 
 ### Does Attestix support Windows?
 
