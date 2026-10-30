@@ -6,7 +6,7 @@ packaging fix that promoted the canonical location to :mod:`attestix.api`.
 Importing this module emits a single ``DeprecationWarning`` directing callers
 at the new path.
 
-The flat-namespace shim is scheduled for removal in Attestix v0.5.0. Update to::
+The flat-namespace shim is retained for compatibility in this release. Update to::
 
     uvicorn attestix.api.main:app
     from attestix.api.main import app
@@ -16,7 +16,7 @@ import warnings as _warnings
 
 _warnings.warn(
     "Importing from the top-level `api` package is deprecated and will be "
-    "removed in Attestix v0.5.0. Update your imports / deployment config to "
+    "removed in a future Attestix release. Update your imports / deployment config to "
     "`attestix.api...` (canonical namespace).",
     DeprecationWarning,
     stacklevel=2,

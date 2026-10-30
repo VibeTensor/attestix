@@ -10,7 +10,7 @@ location to :mod:`attestix.services`. Importing this module (or any of its
 submodules) emits a single ``DeprecationWarning`` directing callers at the new
 path.
 
-The flat-namespace shim is scheduled for removal in v0.5.0. Update imports to::
+The flat-namespace shim is retained for compatibility in this release. Update imports to::
 
     from attestix.services.identity_service import IdentityService
 """
@@ -19,7 +19,7 @@ import warnings as _warnings
 
 _warnings.warn(
     "Importing from the top-level `services` package is deprecated and will be "
-    "removed in Attestix v0.5.0. Update your imports to "
+    "removed in a future Attestix release. Update your imports to "
     "`from attestix.services...` (canonical namespace).",
     DeprecationWarning,
     stacklevel=2,

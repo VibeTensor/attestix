@@ -7,12 +7,12 @@
     "url": "https://github.com/VibeTensor/attestix",
     "source": "github"
   },
-  "version": "0.4.3",
+  "version": "0.5.0",
   "packages": [
     {
       "registryType": "pypi",
       "identifier": "attestix",
-      "version": "0.4.3",
+      "version": "0.5.0",
       "transport": {
         "type": "stdio"
       }

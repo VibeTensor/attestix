@@ -3,8 +3,9 @@ name: SBOM
 on:
   push:
     branches: [main]
-  release:
-    types: [published]
+  workflow_run:
+    workflows: [Publish to PyPI]
+    types: [completed]
   workflow_dispatch:
 
 permissions:
@@ -17,7 +18,9 @@ concurrency:
 jobs:
   cyclonedx:
     name: Generate CycloneDX SBOM
+    if: github.event_name != 'workflow_run' || (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_repository.full_name == 'VibeTensor/attestix' && (github.event.workflow_run.event == 'release' || github.event.workflow_run.event == 'workflow_dispatch'))
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     # contents: write is required to upload the SBOM as a release asset via
     # the gh CLI when this workflow runs on a published release.
     permissions:
@@ -25,6 +28,10 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
 
       - name: Set up Python
         uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
@@ -33,10 +40,19 @@ jobs:
           cache: 'pip'
           cache-dependency-path: pyproject.toml
 
+      - name: Verify registry metadata before attaching release evidence
+        if: github.event_name == 'workflow_run'
+        run: |
+          git merge-base --is-ancestor HEAD origin/main
+          RELEASE_TAG="v$(python -c "import tomllib; print(tomllib.load(open('pyproject.toml','rb'))['project']['version'])")"
+          test "$(git rev-parse HEAD)" = "$(git rev-parse "refs/tags/$RELEASE_TAG^{commit}")"
+          python release_guard.py published --tag "$RELEASE_TAG"
+          echo "RELEASE_TAG=$RELEASE_TAG" >> "$GITHUB_ENV"
+
       - name: Install package and cyclonedx-bom
         run: |
-          pip install --require-hashes -r requirements-runtime.txt
-          pip install -e . --no-deps
+          python -m pip install --require-hashes -r requirements-runtime.txt
+          python -m pip install -e . --no-deps
 
       - name: Generate CycloneDX SBOM (JSON)
         run: |
@@ -61,11 +77,10 @@ jobs:
           retention-days: 30
 
       - name: Attach SBOM to the GitHub release
-        if: github.event_name == 'release'
+        if: github.event_name == 'workflow_run'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh release upload "${{ github.event.release.tag_name }}" \
+          gh release upload "$RELEASE_TAG" \
             attestix-sbom.cyclonedx.json \
-            attestix-sbom.cyclonedx.json.sha256 \
-            --clobber
+            attestix-sbom.cyclonedx.json.sha256

@@ -79,6 +79,7 @@ nav:
       - Roadmap: roadmap.md
       - Changelog: changelog.md
       - Contributing: contributing.md
+      - Releasing: releasing.md
 
 extra:
   social:

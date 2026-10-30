@@ -5,7 +5,7 @@ include pyproject.toml
 
 # Include all Python source. Canonical sources live under `attestix/`;
 # the flat top-level packages are pre-rc.2 deprecation shims and are also
-# included so legacy imports keep working until v0.5.0.
+# included so legacy imports keep working during the current compatibility period.
 recursive-include attestix *.py
 recursive-include api *.py
 recursive-include audit *.py
@@ -45,6 +45,12 @@ global-exclude __pycache__
 # Exclude development and CI files
 exclude .env
 exclude .env.local
+global-exclude .env.*
+global-exclude *.pem
+global-exclude *.key
+global-exclude client_secret_*
+global-exclude .credentials.ps1
+prune SECURE_VAULT
 exclude .coderabbit.yaml
 exclude Dockerfile
 exclude Dockerfile.test

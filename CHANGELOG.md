@@ -4,7 +4,7 @@ All notable changes to Attestix are documented here.
 
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
-## [Unreleased]
+## [0.5.0] - Unreleased
 
 ### Security
 - Require Python 3.11 or later to use the supported patched Filelock 4.2.1 release. Python 3.10 is no longer supported by current source.
@@ -12,6 +12,8 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Keep Windows dependency installation attached to the selected Python interpreter so updating pip does not abort the test matrix.
 
 ### Changed
+- Keep deprecated flat import shims in 0.5.0; migrate to the canonical `attestix.*` namespace before a future removal.
+- Couple package, runtime and MCP versions; reject reused versions, mismatched tags and unexpected distribution files before publishing. Verify published file hashes and test installed wheels outside the source tree.
 - Document the readiness changes merged to main: issuer/proof binding, presentation challenge/domain checks, NFC ambiguity rejection, serialized storage updates, REST tenant configuration, redacted metadata, and local purge boundaries.
 - Describe generated declarations and status fields as documentation-workflow evidence, not legal conformity or certification.
 - Correct AI Act application dates and separate source changes from registry publication and deployment acceptance.

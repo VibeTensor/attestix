@@ -42,7 +42,7 @@
 
 ## Source and verification status
 
-Published runtime hardening is available in Python `attestix` 0.4.2 on PyPI. This source also prepares the 0.4.3 website/documentation update; source metadata is not proof of registry publication. The JavaScript offline verifier is also published as npm `attestix` 0.4.2. Main may contain later changes; compare release notes and pin the version you reviewed. Go and Java 0.4.2 are published. R and Rust have GitHub 0.4.2 releases, while CRAN and crates.io still serve 0.4.1 at this release cutoff.
+PyPI currently publishes Python `attestix` 0.4.3 with Python 3.10 or later. This source prepares 0.5.0, requiring Python 3.11 or later; source metadata is not proof of registry publication. Language SDKs have independent release schedules; verify each registry and pin the version you reviewed.
 
 - Credential verification binds the stated issuer to the supported proof controller. Ambiguous NFC-normalized keys fail before signing or verification.
 - Presentation verification requires the caller's expected challenge and domain. A signature alone does not provide replay protection.
@@ -57,14 +57,14 @@ Current source and the next release require Python 3.11 or later for the patched
 
 ```bash
 # Reviewed release (check release notes before upgrading):
-pip install attestix==0.4.2
+pip install attestix==0.4.3
 ```
 
 > Since 0.4.0, the supported namespace is the canonical
 > `attestix.*` namespace. The older flat layout (`from services... import`,
 > `from auth... import`, ...) keeps working via thin deprecation shims that
-> emit a `DeprecationWarning` on first import and are scheduled for removal in
-> v0.5.0. Update imports to `from attestix.services... import` at your earliest
+> emit a `DeprecationWarning` on first import and may be removed in
+> a future release. Update imports to `from attestix.services... import` at your earliest
 > convenience.
 
 ### CLI
@@ -108,7 +108,7 @@ Cryptographic validity is separate from issuer trust, authorization, revocation 
 
 | Language | Install | Status |
 |----------|---------|--------|
-| **Python** | `pip install attestix==0.4.2` | Published hardening baseline: PyPI 0.4.2 |
+| **Python** | `pip install attestix==0.4.3` | Published Python package: PyPI 0.4.3 |
 | **JS / TS** | `npm install attestix@0.4.2` | npm 0.4.2; verifier source ([attestix-js](https://github.com/VibeTensor/attestix-js)) |
 | **Go** | `go get github.com/VibeTensor/attestix-go@v0.4.2` | Go module v0.4.2; verifier source ([attestix-go](https://github.com/VibeTensor/attestix-go)) |
 | **Rust** | `cargo add attestix` | crates.io 0.4.1; GitHub v0.4.2 source ([attestix-rs](https://github.com/VibeTensor/attestix-rs)) |
@@ -321,7 +321,7 @@ attestix/                  # Canonical Python package (v0.4.0)
 The pre-v0.4.0 flat layout (`services/`, `auth/`, `storage/`, ...) is
 preserved as deprecation shims at the same paths. They re-export from the
 canonical `attestix.*` namespace and emit a `DeprecationWarning` on first
-import. The shims are scheduled for removal in v0.5.0.
+import. The shims are deprecated and retained in 0.5.0.
 
 ---
 

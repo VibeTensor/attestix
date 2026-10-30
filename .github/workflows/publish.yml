@@ -4,29 +4,113 @@ on:
   release:
     types: [published]
   workflow_dispatch:
+    inputs:
+      release_tag:
+        description: Reviewed stable tag already merged to main
+        required: true
+        type: string
 
 permissions:
   contents: read
 
+concurrency:
+  group: pypi-${{ github.event.release.tag_name || inputs.release_tag }}
+  cancel-in-progress: false
+
+env:
+  RELEASE_TAG: ${{ github.event.release.tag_name || inputs.release_tag }}
+
 jobs:
-  publish:
-    runs-on: ubuntu-latest
+  build:
+    if: github.repository == 'VibeTensor/attestix' && (github.event_name == 'release' || github.ref == 'refs/heads/main')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
     steps:
+      - name: Validate stable release selector
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ "$RELEASE_TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]] || exit 1
+
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          ref: refs/tags/${{ env.RELEASE_TAG }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Require source already merged to main
+        run: git merge-base --is-ancestor HEAD origin/main
 
       - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
         with:
           python-version: '3.12'
 
-      - name: Install build tools
-        run: pip install --require-hashes -r requirements-ci.txt
+      - name: Reject mismatched or existing release metadata
+        run: python release_guard.py source --tag "$RELEASE_TAG" --unpublished
+
+      - name: Install hash-pinned build tools
+        run: python -m pip install --require-hashes -r requirements-ci.txt
 
       - name: Build package
-        run: python -m build
+        run: |
+          export SOURCE_DATE_EPOCH="$(git log -1 --format=%ct)"
+          python -m build --no-isolation
+          python release_guard.py artifacts --tag "$RELEASE_TAG" --dist dist
+
+      - name: Upload validated distributions
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: python-release-dist
+          path: dist/
+          if-no-files-found: error
+          retention-days: 30
+
+  publish:
+    needs: build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    environment: pypi
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: python-release-dist
+          path: dist/
 
       - name: Publish to PyPI
         uses: pypa/gh-action-pypi-publish@cef221092ed1bacb1cc03d23a2d87d1d172e277b # v1.14.0
         with:
+          # Preserve current authentication; an empty token selects configured OIDC.
           password: ${{ secrets.PYPI_API_TOKEN }}
-          skip-existing: true
-          verbose: true
+          attestations: ${{ secrets.PYPI_API_TOKEN == '' }}
+          skip-existing: false
+
+  verify-published:
+    needs: [build, publish]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          ref: refs/tags/${{ env.RELEASE_TAG }}
+          persist-credentials: false
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
+        with:
+          python-version: '3.12'
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: python-release-dist
+          path: dist/
+      - name: Verify actual published files and compatibility metadata
+        run: python release_guard.py published --tag "$RELEASE_TAG" --dist dist
+      - name: Install locked dependencies and the verified wheel
+        run: |
+          python -m pip install --require-hashes -r requirements-ci.txt
+          python -m pip install --no-deps dist/*.whl
+          python -m pip check
+      - name: Smoke installed package outside the source tree
+        run: |
+          cd "$RUNNER_TEMP"
+          python -I -c "import attestix; from importlib.metadata import version; from attestix.auth.crypto import generate_ed25519_keypair, sign_message, verify_signature; assert attestix.__version__ == version('attestix'); k,p=generate_ed25519_keypair(); s=sign_message(k,b'release-smoke'); assert verify_signature(p,s,b'release-smoke'); print('Installed registry-matched wheel passed')"

@@ -11,7 +11,7 @@ This test rebuilds the wheel from the source tree (via ``python -m build``),
 installs it into a throwaway venv, and asserts three invariants:
 
 1. The wheel's top-level set is the canonical ``attestix`` namespace plus the
-   v0.5.0-removal-scheduled deprecation shims (and nothing else weird like
+   deprecated compatibility deprecation shims (and nothing else weird like
    ``tests`` or ``paper``).
 2. The canonical imports work: ``from attestix.services.identity_service
    import IdentityService`` and friends.
@@ -33,6 +33,7 @@ import json
 import os
 import subprocess
 import sys
+import tomllib
 import zipfile
 from pathlib import Path
 
@@ -43,7 +44,7 @@ PROJECT_ROOT = Path(__file__).resolve().parents[2]
 
 EXPECTED_CANONICAL_TOPLEVEL = {"attestix"}
 
-# These are the v0.5.0-removal-scheduled deprecation shims. They exist on purpose
+# These are the deprecated compatibility deprecation shims. They exist on purpose
 # so pre-rc.2 user code keeps working; this test pins the exact set so any
 # future packaging change that accidentally ships extra top-level dirs fails
 # loud.
@@ -86,16 +87,21 @@ pytestmark = pytest.mark.skipif(
 def test_wheel_layout_and_install_smoke(tmp_path):
     """The wheel installs cleanly and exposes the v0.4.0-rc.2 packaging contract."""
     # 1) Build a wheel from the working tree.
-    dist = tmp_path / "dist"
-    dist.mkdir()
-    subprocess.run(
-        [sys.executable, "-m", "build", "--wheel", "--outdir", str(dist)],
-        cwd=str(PROJECT_ROOT),
-        check=True,
-    )
-    wheels = sorted(dist.glob("attestix-*.whl"))
-    assert wheels, "expected `python -m build --wheel` to produce a wheel"
-    wheel = wheels[-1]
+    prebuilt = os.environ.get("ATTESTIX_RELEASE_WHEEL")
+    if prebuilt:
+        wheel = Path(prebuilt).resolve()
+        assert wheel.is_file(), "the validated release wheel must exist"
+    else:
+        dist = tmp_path / "dist"
+        dist.mkdir()
+        subprocess.run(
+            [sys.executable, "-m", "build", "--no-isolation", "--wheel", "--outdir", str(dist)],
+            cwd=str(PROJECT_ROOT),
+            check=True,
+        )
+        wheels = sorted(dist.glob("attestix-*.whl"))
+        assert len(wheels) == 1, "expected one newly built wheel"
+        wheel = wheels[0]
 
     # 2) Inspect the wheel's top-level entries.
     with zipfile.ZipFile(wheel) as z:
@@ -125,9 +131,15 @@ def test_wheel_layout_and_install_smoke(tmp_path):
 
     # 4) Canonical imports work (the v0.4.0-rc.2 contract).
     canonical_check = (
+        "import attestix\n"
+        "from importlib.metadata import version\n"
+        f"assert attestix.__version__ == version('attestix') == {tomllib.loads((PROJECT_ROOT / 'pyproject.toml').read_text())['project']['version']!r}\n"
         "from attestix.services.identity_service import IdentityService\n"
         "from attestix.signing.inprocess_signer import InProcessSigner\n"
-        "from attestix.auth.crypto import sign_json_payload\n"
+        "from attestix.auth.crypto import sign_json_payload, generate_ed25519_keypair, sign_message, verify_signature\n"
+        "key, public = generate_ed25519_keypair()\n"
+        "signature = sign_message(key, b'release-smoke')\n"
+        "assert verify_signature(public, signature, b'release-smoke')\n"
         "from attestix.storage.repository import Repository\n"
         "from attestix.audit.events import AuditEvent\n"
         "from attestix.tenancy import TenantContext\n"
@@ -135,7 +147,8 @@ def test_wheel_layout_and_install_smoke(tmp_path):
         "print('OK')\n"
     )
     proc = subprocess.run(
-        [py, "-c", canonical_check],
+        [py, "-I", "-c", canonical_check],
+        cwd=tmp_path,
         capture_output=True,
         text=True,
     )
@@ -156,7 +169,8 @@ def test_wheel_layout_and_install_smoke(tmp_path):
         "print(json.dumps(msgs))\n"
     )
     proc = subprocess.run(
-        [py, "-c", deprecation_check],
+        [py, "-I", "-c", deprecation_check],
+        cwd=tmp_path,
         capture_output=True,
         text=True,
     )
