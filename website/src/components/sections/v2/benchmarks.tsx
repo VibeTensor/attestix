@@ -10,25 +10,25 @@ interface Bench {
 const BENCHES: Bench[] = [
   {
     label: "Ed25519 sign + verify",
-    value: "Pending",
+    value: "See run",
     unit: "release evidence",
     detail: "Installed-wheel comparison with raw samples and environment metadata.",
   },
   {
     label: "Crypto import",
-    value: "Pending",
+    value: "See run",
     unit: "release evidence",
     detail: "Fresh-process crypto import; this does not measure MCP readiness.",
   },
   {
     label: "JSON sign + verify",
-    value: "Pending",
+    value: "See run",
     unit: "release evidence",
     detail: "Custom Attestix canonical JSON and memory-only signing keys.",
   },
   {
     label: "CLI help startup",
-    value: "Pending",
+    value: "See run",
     unit: "release evidence",
     detail: "Installed console entry point, when both releases pass offline gates.",
   },
@@ -55,8 +55,12 @@ export function BenchmarksSection() {
             <a href="https://github.com/VibeTensor/attestix/tree/main/benchmarks" className="underline">
               benchmark methodology
             </a>{" "}
-            for workloads and exclusions. Numeric results remain pending until
-            an actual run is linked; these measurements are not a service SLA.
+            for workloads and exclusions, and the{" "}
+            <a href="https://github.com/VibeTensor/attestix/actions/runs/41106422757" className="underline">
+              dated 0.5.0 reference run
+            </a>{" "}
+            for observed measurements and raw evidence. These measurements are
+            not a service SLA.
           </p>
         </div>
 

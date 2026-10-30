@@ -8,6 +8,32 @@ discovered previous release.
 Different supported dependency versions are part of the release comparison;
 results do not isolate a single code change's causal effect.
 
+## Recorded 0.5.0 comparison
+
+The [2026-10-30 standard-runner run](https://github.com/VibeTensor/attestix/actions/runs/41106422757)
+produced [raw evidence artifact 13001158240](https://github.com/VibeTensor/attestix/actions/runs/41106422757/artifacts/13001158240)
+from harness head `1f3e67bf25acf60dd40ea49e883ad5ca472bd24c` (executed PR merge
+`7691b6193214e45385e9e8e18ba67b451773c462`). Both actual installed wheels passed
+all seven correctness checks before timing. The runner used CPython 3.12.15 on
+Ubuntu 24.04 with four logical CPUs. The artifact retains all 30 workload rows,
+raw samples and resolved dependency hashes; its archive SHA256 is
+`26f6eb02f666b7cd7c8f744a7ca3519692df47bb5b821d04daa217a4d23c47d6`.
+
+| Workload | 0.4.3 median ms | 0.4.3 p95 ms | 0.5.0 median ms | 0.5.0 p95 ms | p95 scope |
+| --- | --- | --- | --- | --- | --- |
+| Crypto import, fresh process | 312.376 | 324.482 | 289.077 | 298.685 | Process invocation |
+| CLI help, fresh process | 312.609 | 318.972 | 290.451 | 296.931 | Process invocation |
+| Sign + verify, 1024 bytes | 0.157188 | 0.158445 | 0.157464 | 0.158555 | Batch-average operation |
+| Custom JSON sign + verify, 1075 bytes | 0.180497 | 0.182809 | 0.181140 | 0.182786 | Batch-average operation |
+
+Startup uses 30 observations per release/mode after three warmups. Crypto cases
+use 100 measured batches of 100 operations after the warmups described below.
+These are observations of each product plus its resolved dependencies on one
+runner, not an SLA, a code-only attribution or evidence that all integrations ran.
+The reviewed baseline dependency's benign temporary capability probe is included.
+The Actions artifact has a 90-day retention period; this link is not a permanent
+release attachment.
+
 ## Workloads and gates
 
 Both installed canonical `attestix.auth.crypto` APIs must pass import, signature

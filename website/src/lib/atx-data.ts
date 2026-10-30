@@ -1,7 +1,7 @@
 /*
  * Attestix v2 landing data.
  * Numbers here are the real project surface:
- *   - Core 0.4.3, 626 local tests passed with 4 skipped,
+ *   - Core 0.5.0, release checks on Linux/Windows Python 3.11-3.13,
  *     MCP tools, 9 modules, 44 REST endpoints. Single-maintainer project.
  *   - Base L2 is testnet (integration complete, mainnet schema not yet registered).
  *   - Real framework integrations: LangChain, OpenAI Agents SDK, CrewAI.
@@ -359,12 +359,11 @@ export const ATX_CERT_SAMPLE: AtxCertSample = {
     "ao-BCXbZz9KAJmcSY1cK4abXmtkRihup522srZg4cFF1_d__DnjNHkJiN2HEuf7diZJOtb2jzALEDyDE_sskzg==",
 };
 
-// Release and license facts plus the recorded local test count, qualified on
-// the homepage. Test counts describe that validation run, not a stable package
-// guarantee. Crypto-library benchmarks do not measure Attestix.
+// Release and license facts plus the release-check matrix, linked on the
+// homepage. This does not imply all optional integrations were exercised.
 export const ATX_HERO_STATS = [
-  { v: "0.4.3", k: "Current core release" },
-  { v: "626", k: "Local tests passed" },
+  { v: "0.5.0", k: "Current core release" },
+  { v: "3.11-3.13", k: "Python checks on Linux and Windows" },
   { v: "6", k: "Verifier language implementations" },
   { v: "Apache 2.0", k: "Open-source license" },
 ];
