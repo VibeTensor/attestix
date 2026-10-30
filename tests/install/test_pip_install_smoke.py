@@ -29,6 +29,8 @@ skips cleanly so contributors without it can still run ``pytest``.
 
 from __future__ import annotations
 
+import asyncio
+import configparser
 import json
 import os
 import subprocess
@@ -182,3 +184,64 @@ def test_wheel_layout_and_install_smoke(tmp_path):
         f"legacy `from services...` import did not emit the canonical-namespace "
         f"DeprecationWarning. Captured: {msgs}"
     )
+
+    # Exercise the candidate registry launch from its installed wheel, outside
+    # the checkout. This source manifest is staged for the next release only.
+    manifest = json.loads((PROJECT_ROOT / "server.json").read_text(encoding="utf-8"))
+    package = next(item for item in manifest["packages"] if item["registryType"] == "pypi")
+    with zipfile.ZipFile(wheel) as archive:
+        entrypoints = configparser.ConfigParser()
+        entrypoints.read_string(archive.read(next(
+            name for name in archive.namelist() if name.endswith(".dist-info/entry_points.txt")
+        )).decode("utf-8"))
+    binary = package["identifier"]
+    assert entrypoints["console_scripts"][binary] == "attestix.cli:cli"
+    fixed_arguments = package["packageArguments"]
+    assert fixed_arguments == [{"type": "positional", "value": "mcp"}]
+    console = str(venv / bin_dir / (f"{binary}.exe" if os.name == "nt" else binary))
+    environment = {
+        name: os.environ[name]
+        for name in ("SystemRoot", "PATH", "USERPROFILE", "LOCALAPPDATA", "TEMP", "TMP", "APPDATA")
+        if name in os.environ
+    }
+    data_dir = tmp_path / "mcp-data"
+    environment.update(
+        ATTESTIX_DATA_DIR=str(data_dir), PYTHONDONTWRITEBYTECODE="1",
+        OTEL_SDK_DISABLED="true", DO_NOT_TRACK="1",
+    )
+
+    async def initialize_candidate_console(command, arguments):
+        from mcp import ClientSession, StdioServerParameters
+        from mcp.client.stdio import stdio_client
+
+        parse_errors = []
+
+        async def message_handler(message):
+            if isinstance(message, Exception):
+                parse_errors.append(message)
+
+        parameters = StdioServerParameters(
+            command=command, args=arguments,
+            env=environment, cwd=tmp_path,
+        )
+        async with asyncio.timeout(60):
+            async with stdio_client(parameters) as (reader, writer):
+                async with ClientSession(reader, writer, message_handler=message_handler) as session:
+                    initialized = await session.initialize()
+                    tools = await session.list_tools()
+                    assert initialized.serverInfo.name == "attestix"
+                    assert tools.tools
+        assert not parse_errors, "MCP stdout contained malformed protocol frames"
+
+    asyncio.run(initialize_candidate_console(console, [argument["value"] for argument in fixed_arguments]))
+    # SDK initialization alone also succeeds after malformed stdout; prove this
+    # smoke guard rejects that regression using the same installed candidate.
+    noisy_fixture = (
+        "import sys\n"
+        "sys.stdout.write('synthetic malformed frame\\n'); sys.stdout.flush()\n"
+        "from attestix.cli import cli\n"
+        "cli(args=['mcp'], prog_name='attestix')\n"
+    )
+    with pytest.raises(AssertionError, match="MCP stdout contained malformed protocol frames"):
+        asyncio.run(initialize_candidate_console(py, ["-I", "-c", noisy_fixture]))
+    assert not (data_dir / ".signing_key.json").exists()

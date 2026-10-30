@@ -77,6 +77,15 @@ def cli():
     """
 
 
+@cli.command(name="mcp")
+def mcp_command():
+    """Run the MCP server over standard input/output."""
+    # Keep MCP initialization and its stdout handling out of ordinary CLI use.
+    from attestix.main import main
+
+    main()
+
+
 # ---------------------------------------------------------------------------
 # attestix init
 # ---------------------------------------------------------------------------
