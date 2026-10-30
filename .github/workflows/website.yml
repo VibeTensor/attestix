@@ -30,9 +30,26 @@ jobs:
           DEPLOYMENT = '58156f8c-07aa-4bbe-982f-7cf9be22dc8a'
           URL = f'https://api.cloudflare.com/client/v4/accounts/{ACCOUNT}/pages/projects/attestix/deployments/{DEPLOYMENT}/history/logs?size=1000000'
           MAX_BYTES = 2 * 1024 * 1024
+          EXPECTED_SOURCE = 'e090ddcc726af8ecec9726a65541f6e9319dbec4'
+          EXPECTED_BRANCH = 'release/python-0.5.0'
+          STAGES = {'queued', 'initialize', 'clone_repo', 'build', 'deploy'}
+          STATES = {'idle', 'active', 'success', 'failure', 'canceled'}
           PATHS = ['.oxlintrc.json', 'README.md', 'components.json', 'content/docs/examples.mdx', 'content/docs/getting-started.mdx', 'content/docs/guides/architecture.mdx', 'content/docs/guides/base-l2-anchor.mdx', 'content/docs/guides/crewai.mdx', 'content/docs/guides/eu-ai-act-compliance.mdx', 'content/docs/guides/eu-compliance-walkthrough.mdx', 'content/docs/guides/integration-guide.mdx', 'content/docs/guides/langchain.mdx', 'content/docs/guides/meta.json', 'content/docs/guides/migration-npm-rename.mdx', 'content/docs/guides/migration-v0.4.0-namespace.mdx', 'content/docs/guides/offline-verify.mdx', 'content/docs/guides/openai-agents-sdk.mdx', 'content/docs/guides/reputation.mdx', 'content/docs/guides/risk-classification.mdx', 'content/docs/index.mdx', 'content/docs/meta.json', 'content/docs/project/changelog.mdx', 'content/docs/project/contributing.mdx', 'content/docs/project/meta.json', 'content/docs/project/research.mdx', 'content/docs/project/roadmap.mdx', 'content/docs/quickstart/ai-safety-research.mdx', 'content/docs/quickstart/devtools-skeptic.mdx', 'content/docs/quickstart/enterprise-architect.mdx', 'content/docs/quickstart/fintech-compliance.mdx', 'content/docs/quickstart/grc-consultant.mdx', 'content/docs/quickstart/healthcare-ml.mdx', 'content/docs/quickstart/index.mdx', 'content/docs/quickstart/indie-dev.mdx', 'content/docs/quickstart/meta.json', 'content/docs/quickstart/mlops-engineer.mdx', 'content/docs/quickstart/startup-cto.mdx', 'content/docs/quickstart/web3-onchain.mdx', 'content/docs/reference/api-reference.mdx', 'content/docs/reference/concepts.mdx', 'content/docs/reference/configuration.mdx', 'content/docs/reference/faq.mdx', 'content/docs/reference/glossary.mdx', 'content/docs/reference/mcp-tools.mdx', 'content/docs/reference/meta.json', 'content/docs/reference/troubleshooting.mdx', 'content/docs/security/fria-template.mdx', 'content/docs/security/iso-42001-mapping.mdx', 'content/docs/security/meta.json', 'content/docs/security/nist-ai-rmf-mapping.mdx', 'content/docs/security/owasp-agentic-top10.mdx', 'content/docs/security/soc2-mapping.mdx', 'content/docs/verifiers.mdx', 'content/eu-ai-act-countdown.mdx', 'content/getting-started-5-minutes.mdx', 'content/one-signature-six-languages.mdx', 'content/research-paper.mdx', 'content/v0-3-0-ships-real-framework-integrations.mdx', 'content/why-attestation.mdx', 'next.config.mjs', 'package-lock.json', 'package.json', 'postcss.config.mjs', 'public/demo.cast.README.md', 'scripts/blog-headings.test.mjs', 'scripts/blog-redirects.test.mjs', 'scripts/generate-blog-redirects.mjs', 'scripts/generate-llms.mjs', 'scripts/generate-og.mjs', 'scripts/verify-boundary.test.mjs', 'scripts/verify-samples.mjs', 'source.config.ts', 'src/app/(marketing)/blog/[slug]/page.tsx', 'src/app/(marketing)/blog/page.tsx', 'src/app/(marketing)/changelog/page.tsx', 'src/app/(marketing)/community/page.tsx', 'src/app/(marketing)/console/console-banner.tsx', 'src/app/(marketing)/console/console-with-tour.tsx', 'src/app/(marketing)/console/console-workspace.tsx', 'src/app/(marketing)/console/page.tsx', 'src/app/(marketing)/console/panes/agent-detail.tsx', 'src/app/(marketing)/console/panes/agents-pane.tsx', 'src/app/(marketing)/console/panes/anchors-pane.tsx', 'src/app/(marketing)/console/panes/audit-pane.tsx', 'src/app/(marketing)/console/panes/coming-soon.tsx', 'src/app/(marketing)/console/panes/compliance-pane.tsx', 'src/app/(marketing)/console/panes/vc-pane.tsx', 'src/app/(marketing)/demo-call/page.tsx', 'src/app/(marketing)/demo/compliance-checker/compliance-checker.tsx', 'src/app/(marketing)/demo/compliance-checker/page.tsx', 'src/app/(marketing)/demo/compliance-checker/risk-engine.ts', 'src/app/(marketing)/demo/compliance-checker/step-deployment-context.tsx', 'src/app/(marketing)/demo/compliance-checker/step-result.tsx', 'src/app/(marketing)/demo/compliance-checker/step-system-type.tsx', 'src/app/(marketing)/demo/demo-grid.tsx', 'src/app/(marketing)/demo/fine-calculator/fine-calculator.tsx', 'src/app/(marketing)/demo/fine-calculator/page.tsx', 'src/app/(marketing)/demo/identity-explorer/identity-explorer.tsx', 'src/app/(marketing)/demo/identity-explorer/page.tsx', 'src/app/(marketing)/demo/page.tsx', 'src/app/(marketing)/demo/reputation-dashboard/data.ts', 'src/app/(marketing)/demo/reputation-dashboard/page.tsx', 'src/app/(marketing)/demo/reputation-dashboard/reputation-dashboard.tsx', 'src/app/(marketing)/faq/page.tsx', 'src/app/(marketing)/india/page.tsx', 'src/app/(marketing)/layout.tsx', 'src/app/(marketing)/platform/page.tsx', 'src/app/(marketing)/pricing/page.tsx', 'src/app/(marketing)/research/page.tsx', 'src/app/(marketing)/research/paper/page.tsx', 'src/app/(marketing)/sbom/page.tsx', 'src/app/(marketing)/security/page.tsx', 'src/app/(marketing)/spec/bundle/v1/page.tsx', 'src/app/(marketing)/uk/page.tsx', 'src/app/(marketing)/verify/page.tsx', 'src/app/(marketing)/verify/verify-client.tsx', 'src/app/api/search/route.ts', 'src/app/cross-post/page.tsx', 'src/app/docs/[[...slug]]/page.tsx', 'src/app/docs/layout.tsx', 'src/app/feed.json/route.ts', 'src/app/feed.xml/route.ts', 'src/app/globals.css', 'src/app/layout.tsx', 'src/app/legal/cookies/page.tsx', 'src/app/legal/layout.tsx', 'src/app/legal/privacy/page.tsx', 'src/app/legal/terms/page.tsx', 'src/app/page.tsx', 'src/app/robots.ts', 'src/app/sitemap.ts', 'src/components/article-aside.tsx', 'src/components/atx/atx-command-palette.tsx', 'src/components/atx/atx-cookie-consent.tsx', 'src/components/atx/atx-copy-text.tsx', 'src/components/atx/atx-countdown.tsx', 'src/components/atx/atx-create-identity-modal.tsx', 'src/components/atx/atx-eyebrow.tsx', 'src/components/atx/atx-icons.tsx', 'src/components/atx/atx-substack-subscribe.tsx', 'src/components/atx/console-tour.tsx', 'src/components/blog-author.tsx', 'src/components/blog-card.tsx', 'src/components/icons.tsx', 'src/components/mermaid.tsx', 'src/components/mobile-drawer.tsx', 'src/components/post-list.tsx', 'src/components/search.tsx', 'src/components/sections/community.tsx', 'src/components/sections/faq.tsx', 'src/components/sections/header.tsx', 'src/components/sections/home/home-demo.tsx', 'src/components/sections/home/sections.tsx', 'src/components/sections/v2/benchmarks.tsx', 'src/components/sections/v2/compliance-matrix.tsx', 'src/components/sections/v2/console-preview.tsx', 'src/components/sections/v2/cta-v2.tsx', 'src/components/sections/v2/footer-v2.tsx', 'src/components/sections/v2/frameworks.tsx', 'src/components/sections/v2/hero-cert.tsx', 'src/components/sections/v2/hero-stats.tsx', 'src/components/sections/v2/hero-v2.tsx', 'src/components/sections/v2/modules.tsx', 'src/components/sections/v2/problem.tsx', 'src/components/sections/v2/standards-strip.tsx', 'src/components/sections/v2/use-cases.tsx', 'src/components/sections/v2/validation.tsx', 'src/components/sections/v2/workflow.tsx', 'src/components/tailwind-indicator.tsx', 'src/components/theme-provider.tsx', 'src/components/theme-toggle.tsx', 'src/components/ui/accordion.tsx', 'src/components/ui/badge.tsx', 'src/components/ui/button.tsx', 'src/components/ui/drawer.tsx', 'src/components/ui/input.tsx', 'src/components/ui/label.tsx', 'src/lib/animation.ts', 'src/lib/atx-console-data.ts', 'src/lib/atx-data.ts', 'src/lib/atx-frameworks.ts', 'src/lib/billing.ts', 'src/lib/blog.ts', 'src/lib/config.tsx', 'src/lib/credential-boundary.ts', 'src/lib/samples/sample-tampered-vc.json', 'src/lib/samples/sample-valid-vc.json', 'src/lib/source.ts', 'src/lib/utils.ts', 'src/lib/verify-samples.ts', 'tsconfig.json']
-          CODES = {'ENOMEM', 'ENOSPC', 'EACCES', 'EPERM', 'ENOENT', 'ETIMEDOUT', 'ECONNRESET', 'EAI_AGAIN', 'ENOTFOUND', 'E404', 'E429', 'E502', 'E503', 'E504', 'ELIFECYCLE', 'EBADENGINE', 'ETARGET', 'ERR_MODULE_NOT_FOUND', 'ERR_PNPM_FETCH_404', 'ERR_PNPM_FETCH_429', 'ERR_PNPM_FETCH_502', 'ERR_PNPM_FETCH_503', 'ERR_PNPM_FETCH_504'}
+          CODES = {'ENOMEM', 'ENOSPC', 'EACCES', 'EPERM', 'ENOENT', 'ETIMEDOUT', 'ECONNRESET', 'EAI_AGAIN', 'ENOTFOUND', 'E404', 'E429', 'E502', 'E503', 'E504', 'ELIFECYCLE', 'EBADENGINE', 'ETARGET', 'ERR_MODULE_NOT_FOUND', 'ERR_PNPM_FETCH_404', 'ERR_PNPM_FETCH_429', 'ERR_PNPM_FETCH_502', 'ERR_PNPM_FETCH_503', 'ERR_PNPM_FETCH_504', 'ERESOLVE', 'EUSAGE', 'ELOCKVERIFY'}
           PATTERNS = {
+              'cancellation': r'\bcancel(?:l)?(?:ed|ation)\b',
+              'queue_or_capacity': r'\bqueue(?:d)?\b|concurren(?:cy|t)|capacity|worker pool',
+              'resource_acquisition': r'acquir(?:e|ed|ing)|acquisition|allocat(?:e|ion|ing)|build resources|resource provisioning',
+              'infrastructure_failure': r'build image|build system|build infrastructure|internal|unexpected',
+              'repository_access': r'\brepository\b|\bclone\b|\bgit\b|\bcommit\b|\bfetch\b',
+              'repository_authentication': r'unauthorized|forbidden|authentication|permission denied|access denied',
+              'configuration': r'configuration|\bconfig\b|wrangler|build command|root directory|output directory',
+              'peer_dependency_conflict': r'\bERESOLVE\b|unable to resolve dependency|peer dep',
+              'dependency_lock_mismatch': r'\bEUSAGE\b|\bELOCKVERIFY\b|lock file.*(?:sync|mismatch)',
+              'time_limit': r'\btimeout\b|timed out|time limit|deadline',
+              'generic_failure': r'\bfailed\b|\bfailure\b|\berror\b|\bexception\b',
+              'superseded_build': r'superseded|newer commit|outdated',
+              'font_fetch_failure': r'next/font|Failed to fetch.*font',
               'network_timeout': r'ETIMEDOUT|UND_ERR_CONNECT_TIMEOUT|ConnectTimeoutError|connection timed out',
               'dns_resolution': r'ENOTFOUND|EAI_AGAIN|getaddrinfo',
               'connection_reset': r'ECONNRESET|socket hang up',
@@ -67,12 +84,57 @@ jobs:
               print(json.dumps({'http_status': http_status, 'category': category, **fields}, sort_keys=True, ensure_ascii=True))
 
 
+          def read_deployment_metadata(opener):
+              address = URL.removesuffix('/history/logs?size=1000000')
+              request = urllib.request.Request(address, headers={'Authorization': 'Bearer ' + os.environ['CF_DIAGNOSTIC_TOKEN']}, method='GET')
+              try:
+                  with opener.open(request, timeout=30) as response:
+                      status = response.status
+                      body = response.read(MAX_BYTES + 1)
+              except urllib.error.HTTPError as error:
+                  emit(error.code, 'metadata_redirect_blocked' if 300 <= error.code < 400 else 'metadata_http_error')
+                  return False
+              except (urllib.error.URLError, TimeoutError):
+                  emit(None, 'metadata_transport_error')
+                  return False
+              if len(body) > MAX_BYTES:
+                  emit(status, 'metadata_response_size_limit')
+                  return False
+              payload = json.loads(body)
+              result = payload.get('result') if isinstance(payload, dict) else None
+              if not isinstance(result, dict) or payload.get('success') is not True:
+                  emit(status, 'metadata_response_unavailable')
+                  return False
+              latest = result.get('latest_stage')
+              latest = latest if isinstance(latest, dict) else {}
+              trigger = result.get('deployment_trigger')
+              trigger = trigger if isinstance(trigger, dict) else {}
+              source = trigger.get('metadata')
+              source = source if isinstance(source, dict) else {}
+              stage = latest.get('name')
+              state = latest.get('status')
+              environment = result.get('environment')
+              source_matches = source.get('commit_hash') == EXPECTED_SOURCE
+              branch_matches = source.get('branch') == EXPECTED_BRANCH
+              preview_matches = environment == 'preview'
+              emit(status, 'deployment_metadata_summary',
+                   stage=stage if isinstance(stage, str) and stage in STAGES else 'unavailable',
+                   status=state if isinstance(state, str) and state in STATES else 'unavailable',
+                   environment=environment if environment in {'preview', 'production'} else 'unavailable',
+                   source_metadata_present=isinstance(source.get('commit_hash'), str) and isinstance(source.get('branch'), str),
+                   source_commit_matches=source_matches, source_branch_matches=branch_matches,
+                   preview_environment_matches=preview_matches)
+              return source_matches and branch_matches and preview_matches
+
+
           def main():
               if os.environ.get('CF_DIAGNOSTIC_ACCOUNT') != ACCOUNT or not os.environ.get('CF_DIAGNOSTIC_TOKEN'):
                   emit(None, 'credential_or_account_scope_unavailable')
                   return 1
               request = urllib.request.Request(URL, headers={'Authorization': 'Bearer ' + os.environ['CF_DIAGNOSTIC_TOKEN']}, method='GET')
               opener = urllib.request.build_opener(NoRedirect())
+              if not read_deployment_metadata(opener):
+                  return 1
               try:
                   with opener.open(request, timeout=30) as response:
                       status = response.status
