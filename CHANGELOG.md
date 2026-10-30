@@ -4,7 +4,7 @@ All notable changes to Attestix are documented here.
 
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
-## [0.5.0] - Unreleased
+## [0.5.0] - 2026-10-30
 
 ### Security
 - Require Python 3.11 or later to use the supported patched Filelock 4.2.1 release. Python 3.10 is no longer supported by current source.

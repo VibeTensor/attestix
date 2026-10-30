@@ -42,7 +42,7 @@
 
 ## Source and verification status
 
-PyPI currently publishes Python `attestix` 0.4.3 with Python 3.10 or later. This source prepares 0.5.0, requiring Python 3.11 or later; source metadata is not proof of registry publication. Language SDKs have independent release schedules; verify each registry and pin the version you reviewed.
+This source targets Python `attestix` 0.5.0, requiring Python 3.11 or later. Confirm the release files on [PyPI](https://pypi.org/project/attestix/0.5.0/) before installing; source metadata alone is not proof of publication. Python 0.4.3 is a previously published release with the Filelock constraint described below. Language SDKs have independent release schedules; verify each registry and pin the version you reviewed.
 
 - Credential verification binds the stated issuer to the supported proof controller. Ambiguous NFC-normalized keys fail before signing or verification.
 - Presentation verification requires the caller's expected challenge and domain. A signature alone does not provide replay protection.
@@ -53,14 +53,14 @@ PyPI currently publishes Python `attestix` 0.4.3 with Python 3.10 or later. This
 
 ## Install
 
-Current source and the next release require Python 3.11 or later for the patched file-locking dependency. Previously published releases retain their own Python requirements; this source change does not publish a new package.
+Attestix 0.5.0 requires Python 3.11 or later for the patched file-locking dependency. Earlier releases retain their own Python requirements; check the registry files for the version you install.
 
 ```bash
-# Published release (check release notes before upgrading):
-pip install attestix==0.4.3
+# Confirm this release is available on PyPI before installing:
+pip install attestix==0.5.0
 ```
 
-Version 0.4.3 requires `filelock<4.0.0` and cannot install patched Filelock 4.2.1. On Unix, keep the Attestix data directory private and prevent other users from replacing its lock path. This limits the conditional local file-truncation risk described in the [Filelock advisory](https://github.com/tox-dev/filelock/security/advisories/GHSA-69hj-f68j-2879). Upgrade to a reviewed Attestix release with Filelock 4.2.1 or later when published.
+Version 0.4.3 requires `filelock<4.0.0` and cannot install patched Filelock 4.2.1. On Unix, keep the Attestix data directory private and prevent other users from replacing its lock path. This limits the conditional local file-truncation risk described in the [Filelock advisory](https://github.com/tox-dev/filelock/security/advisories/GHSA-69hj-f68j-2879). Moving from 0.4.3 to 0.5.0 requires Python 3.11 or later; review the release files before upgrading.
 
 > Since 0.4.0, the supported namespace is the canonical
 > `attestix.*` namespace. The older flat layout (`from services... import`,
@@ -110,7 +110,7 @@ Cryptographic validity is separate from issuer trust, authorization, revocation 
 
 | Language | Install | Status |
 |----------|---------|--------|
-| **Python** | `pip install attestix==0.4.3` | Published Python package: PyPI 0.4.3 |
+| **Python** | `pip install attestix==0.5.0` | Python 0.5.0 target; verify PyPI publication |
 | **JS / TS** | `npm install attestix@0.4.2` | npm 0.4.2; verifier source ([attestix-js](https://github.com/VibeTensor/attestix-js)) |
 | **Go** | `go get github.com/VibeTensor/attestix-go@v0.4.2` | Go module v0.4.2; verifier source ([attestix-go](https://github.com/VibeTensor/attestix-go)) |
 | **Rust** | `cargo add attestix` | crates.io 0.4.1; GitHub v0.4.2 source ([attestix-rs](https://github.com/VibeTensor/attestix-rs)) |
