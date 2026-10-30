@@ -1,48 +1,117 @@
-name: Deploy Website to Cloudflare Pages
-
-# The main Next.js site (attestix.io) deploys through this Actions workflow
-# rather than Cloudflare's native GitHub build, which has been failing in the
-# CF build environment. Building here (Ubuntu, pinned install) and uploading
-# the static export via wrangler keeps the build logs visible and reproducible.
+name: Read fixed Cloudflare preview diagnostic categories
 
 on:
   workflow_dispatch:
-  push:
-    branches: [main, ci/website-deploy]
-    paths:
-      - 'website/**'
-      - '.github/workflows/website.yml'
 
 permissions:
   contents: read
 
-concurrency:
-  group: website-deploy
-  cancel-in-progress: true
-
 jobs:
-  deploy:
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: website
+  diagnose:
+    if: github.repository == 'VibeTensor/attestix' && github.ref == 'refs/heads/fix/cloudflare-preview-logs-20261030'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 3
     steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - name: Read only the approved failed preview log
+        env:
+          CF_DIAGNOSTIC_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CF_DIAGNOSTIC_ACCOUNT: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          python3 - <<'PY'
+          """Classify one approved deployment log without emitting vendor text."""
+          import json
+          import os
+          import re
+          import sys
+          import urllib.error
+          import urllib.request
 
-      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
-        with:
-          node-version: '24'
+          ACCOUNT = '8f976964427710aa2c2b28f3eb2d62d2'
+          DEPLOYMENT = '58156f8c-07aa-4bbe-982f-7cf9be22dc8a'
+          URL = f'https://api.cloudflare.com/client/v4/accounts/{ACCOUNT}/pages/projects/attestix/deployments/{DEPLOYMENT}/history/logs?size=1000000'
+          MAX_BYTES = 2 * 1024 * 1024
+          PATHS = ['.oxlintrc.json', 'README.md', 'components.json', 'content/docs/examples.mdx', 'content/docs/getting-started.mdx', 'content/docs/guides/architecture.mdx', 'content/docs/guides/base-l2-anchor.mdx', 'content/docs/guides/crewai.mdx', 'content/docs/guides/eu-ai-act-compliance.mdx', 'content/docs/guides/eu-compliance-walkthrough.mdx', 'content/docs/guides/integration-guide.mdx', 'content/docs/guides/langchain.mdx', 'content/docs/guides/meta.json', 'content/docs/guides/migration-npm-rename.mdx', 'content/docs/guides/migration-v0.4.0-namespace.mdx', 'content/docs/guides/offline-verify.mdx', 'content/docs/guides/openai-agents-sdk.mdx', 'content/docs/guides/reputation.mdx', 'content/docs/guides/risk-classification.mdx', 'content/docs/index.mdx', 'content/docs/meta.json', 'content/docs/project/changelog.mdx', 'content/docs/project/contributing.mdx', 'content/docs/project/meta.json', 'content/docs/project/research.mdx', 'content/docs/project/roadmap.mdx', 'content/docs/quickstart/ai-safety-research.mdx', 'content/docs/quickstart/devtools-skeptic.mdx', 'content/docs/quickstart/enterprise-architect.mdx', 'content/docs/quickstart/fintech-compliance.mdx', 'content/docs/quickstart/grc-consultant.mdx', 'content/docs/quickstart/healthcare-ml.mdx', 'content/docs/quickstart/index.mdx', 'content/docs/quickstart/indie-dev.mdx', 'content/docs/quickstart/meta.json', 'content/docs/quickstart/mlops-engineer.mdx', 'content/docs/quickstart/startup-cto.mdx', 'content/docs/quickstart/web3-onchain.mdx', 'content/docs/reference/api-reference.mdx', 'content/docs/reference/concepts.mdx', 'content/docs/reference/configuration.mdx', 'content/docs/reference/faq.mdx', 'content/docs/reference/glossary.mdx', 'content/docs/reference/mcp-tools.mdx', 'content/docs/reference/meta.json', 'content/docs/reference/troubleshooting.mdx', 'content/docs/security/fria-template.mdx', 'content/docs/security/iso-42001-mapping.mdx', 'content/docs/security/meta.json', 'content/docs/security/nist-ai-rmf-mapping.mdx', 'content/docs/security/owasp-agentic-top10.mdx', 'content/docs/security/soc2-mapping.mdx', 'content/docs/verifiers.mdx', 'content/eu-ai-act-countdown.mdx', 'content/getting-started-5-minutes.mdx', 'content/one-signature-six-languages.mdx', 'content/research-paper.mdx', 'content/v0-3-0-ships-real-framework-integrations.mdx', 'content/why-attestation.mdx', 'next.config.mjs', 'package-lock.json', 'package.json', 'postcss.config.mjs', 'public/demo.cast.README.md', 'scripts/blog-headings.test.mjs', 'scripts/blog-redirects.test.mjs', 'scripts/generate-blog-redirects.mjs', 'scripts/generate-llms.mjs', 'scripts/generate-og.mjs', 'scripts/verify-boundary.test.mjs', 'scripts/verify-samples.mjs', 'source.config.ts', 'src/app/(marketing)/blog/[slug]/page.tsx', 'src/app/(marketing)/blog/page.tsx', 'src/app/(marketing)/changelog/page.tsx', 'src/app/(marketing)/community/page.tsx', 'src/app/(marketing)/console/console-banner.tsx', 'src/app/(marketing)/console/console-with-tour.tsx', 'src/app/(marketing)/console/console-workspace.tsx', 'src/app/(marketing)/console/page.tsx', 'src/app/(marketing)/console/panes/agent-detail.tsx', 'src/app/(marketing)/console/panes/agents-pane.tsx', 'src/app/(marketing)/console/panes/anchors-pane.tsx', 'src/app/(marketing)/console/panes/audit-pane.tsx', 'src/app/(marketing)/console/panes/coming-soon.tsx', 'src/app/(marketing)/console/panes/compliance-pane.tsx', 'src/app/(marketing)/console/panes/vc-pane.tsx', 'src/app/(marketing)/demo-call/page.tsx', 'src/app/(marketing)/demo/compliance-checker/compliance-checker.tsx', 'src/app/(marketing)/demo/compliance-checker/page.tsx', 'src/app/(marketing)/demo/compliance-checker/risk-engine.ts', 'src/app/(marketing)/demo/compliance-checker/step-deployment-context.tsx', 'src/app/(marketing)/demo/compliance-checker/step-result.tsx', 'src/app/(marketing)/demo/compliance-checker/step-system-type.tsx', 'src/app/(marketing)/demo/demo-grid.tsx', 'src/app/(marketing)/demo/fine-calculator/fine-calculator.tsx', 'src/app/(marketing)/demo/fine-calculator/page.tsx', 'src/app/(marketing)/demo/identity-explorer/identity-explorer.tsx', 'src/app/(marketing)/demo/identity-explorer/page.tsx', 'src/app/(marketing)/demo/page.tsx', 'src/app/(marketing)/demo/reputation-dashboard/data.ts', 'src/app/(marketing)/demo/reputation-dashboard/page.tsx', 'src/app/(marketing)/demo/reputation-dashboard/reputation-dashboard.tsx', 'src/app/(marketing)/faq/page.tsx', 'src/app/(marketing)/india/page.tsx', 'src/app/(marketing)/layout.tsx', 'src/app/(marketing)/platform/page.tsx', 'src/app/(marketing)/pricing/page.tsx', 'src/app/(marketing)/research/page.tsx', 'src/app/(marketing)/research/paper/page.tsx', 'src/app/(marketing)/sbom/page.tsx', 'src/app/(marketing)/security/page.tsx', 'src/app/(marketing)/spec/bundle/v1/page.tsx', 'src/app/(marketing)/uk/page.tsx', 'src/app/(marketing)/verify/page.tsx', 'src/app/(marketing)/verify/verify-client.tsx', 'src/app/api/search/route.ts', 'src/app/cross-post/page.tsx', 'src/app/docs/[[...slug]]/page.tsx', 'src/app/docs/layout.tsx', 'src/app/feed.json/route.ts', 'src/app/feed.xml/route.ts', 'src/app/globals.css', 'src/app/layout.tsx', 'src/app/legal/cookies/page.tsx', 'src/app/legal/layout.tsx', 'src/app/legal/privacy/page.tsx', 'src/app/legal/terms/page.tsx', 'src/app/page.tsx', 'src/app/robots.ts', 'src/app/sitemap.ts', 'src/components/article-aside.tsx', 'src/components/atx/atx-command-palette.tsx', 'src/components/atx/atx-cookie-consent.tsx', 'src/components/atx/atx-copy-text.tsx', 'src/components/atx/atx-countdown.tsx', 'src/components/atx/atx-create-identity-modal.tsx', 'src/components/atx/atx-eyebrow.tsx', 'src/components/atx/atx-icons.tsx', 'src/components/atx/atx-substack-subscribe.tsx', 'src/components/atx/console-tour.tsx', 'src/components/blog-author.tsx', 'src/components/blog-card.tsx', 'src/components/icons.tsx', 'src/components/mermaid.tsx', 'src/components/mobile-drawer.tsx', 'src/components/post-list.tsx', 'src/components/search.tsx', 'src/components/sections/community.tsx', 'src/components/sections/faq.tsx', 'src/components/sections/header.tsx', 'src/components/sections/home/home-demo.tsx', 'src/components/sections/home/sections.tsx', 'src/components/sections/v2/benchmarks.tsx', 'src/components/sections/v2/compliance-matrix.tsx', 'src/components/sections/v2/console-preview.tsx', 'src/components/sections/v2/cta-v2.tsx', 'src/components/sections/v2/footer-v2.tsx', 'src/components/sections/v2/frameworks.tsx', 'src/components/sections/v2/hero-cert.tsx', 'src/components/sections/v2/hero-stats.tsx', 'src/components/sections/v2/hero-v2.tsx', 'src/components/sections/v2/modules.tsx', 'src/components/sections/v2/problem.tsx', 'src/components/sections/v2/standards-strip.tsx', 'src/components/sections/v2/use-cases.tsx', 'src/components/sections/v2/validation.tsx', 'src/components/sections/v2/workflow.tsx', 'src/components/tailwind-indicator.tsx', 'src/components/theme-provider.tsx', 'src/components/theme-toggle.tsx', 'src/components/ui/accordion.tsx', 'src/components/ui/badge.tsx', 'src/components/ui/button.tsx', 'src/components/ui/drawer.tsx', 'src/components/ui/input.tsx', 'src/components/ui/label.tsx', 'src/lib/animation.ts', 'src/lib/atx-console-data.ts', 'src/lib/atx-data.ts', 'src/lib/atx-frameworks.ts', 'src/lib/billing.ts', 'src/lib/blog.ts', 'src/lib/config.tsx', 'src/lib/credential-boundary.ts', 'src/lib/samples/sample-tampered-vc.json', 'src/lib/samples/sample-valid-vc.json', 'src/lib/source.ts', 'src/lib/utils.ts', 'src/lib/verify-samples.ts', 'tsconfig.json']
+          CODES = {'ENOMEM', 'ENOSPC', 'EACCES', 'EPERM', 'ENOENT', 'ETIMEDOUT', 'ECONNRESET', 'EAI_AGAIN', 'ENOTFOUND', 'E404', 'E429', 'E502', 'E503', 'E504', 'ELIFECYCLE', 'EBADENGINE', 'ETARGET', 'ERR_MODULE_NOT_FOUND', 'ERR_PNPM_FETCH_404', 'ERR_PNPM_FETCH_429', 'ERR_PNPM_FETCH_502', 'ERR_PNPM_FETCH_503', 'ERR_PNPM_FETCH_504'}
+          PATTERNS = {
+              'network_timeout': r'ETIMEDOUT|UND_ERR_CONNECT_TIMEOUT|ConnectTimeoutError|connection timed out',
+              'dns_resolution': r'ENOTFOUND|EAI_AGAIN|getaddrinfo',
+              'connection_reset': r'ECONNRESET|socket hang up',
+              'registry_rate_limit': r'E429|429 Too Many Requests|ERR_PNPM_FETCH_429',
+              'registry_unavailable': r'E50[234]|ERR_PNPM_FETCH_50[234]',
+              'package_missing': r'E404|ERR_PNPM_FETCH_404|No matching version found|ETARGET',
+              'install_failure': r'npm ERR!|npm error|ELIFECYCLE|ERR_PNPM_',
+              'compile_failure': r'Failed to compile|Module build failed|Compilation failed',
+              'typescript_error': r'error TS[0-9]{3,5}|Type error:',
+              'module_not_found': r'Module not found|Cannot find module|Cannot resolve module|Can.t resolve',
+              'prerender_failure': r'Error occurred prerendering|Failed to collect page data',
+              'memory_exhaustion': r'heap out of memory|SIGKILL|out of memory',
+              'build_timeout': r'Build exceeded|build.*timed out|maximum build time',
+              'disk_exhaustion': r'ENOSPC|No space left on device',
+              'unsupported_runtime': r'EBADENGINE|Unsupported engine|requires Node.js',
+              'platform_error': r'Internal error|internal build error|platform error',
+              'deployment_limit': r'too many builds|quota exceeded|deployment limit|build limit',
+              'worker_startup_cpu_limit': r'Script startup exceeded CPU time limit',
+              'canceled': r'Build cancel[le]+d|deployment cancel[le]+d',
+              'git_checkout_error': r'Failed to clone|could not fetch|git.*exit.*128',
+              'lint_error': r'Linting failed|lint error',
+              'vulnerable_next_version': r'vulnerable version of Next.js detected',
+          }
 
-      - name: Install dependencies
-        run: npm ci --legacy-peer-deps
 
-      - name: Build static export
-        run: npm run build
+          class NoRedirect(urllib.request.HTTPRedirectHandler):
+              def redirect_request(self, req, fp, code, msg, headers, newurl):
+                  return None
 
-      - name: Deploy to Cloudflare Pages
-        uses: cloudflare/wrangler-action@ebbaa1584979971c8614a24965b4405ff95890e0 # v4.0.0
-        with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          workingDirectory: website
-          command: pages deploy out --project-name=attestix --branch=main
+
+          def emit(http_status, category, **fields):
+              print(json.dumps({'http_status': http_status, 'category': category, **fields}, sort_keys=True, ensure_ascii=True))
+
+
+          def main():
+              if os.environ.get('CF_DIAGNOSTIC_ACCOUNT') != ACCOUNT or not os.environ.get('CF_DIAGNOSTIC_TOKEN'):
+                  emit(None, 'credential_or_account_scope_unavailable')
+                  return 1
+              request = urllib.request.Request(URL, headers={'Authorization': 'Bearer ' + os.environ['CF_DIAGNOSTIC_TOKEN']}, method='GET')
+              opener = urllib.request.build_opener(NoRedirect())
+              try:
+                  with opener.open(request, timeout=30) as response:
+                      status = response.status
+                      body = response.read(MAX_BYTES + 1)
+              except urllib.error.HTTPError as error:
+                  emit(error.code, 'redirect_blocked' if 300 <= error.code < 400 else 'http_error')
+                  return 1
+              except (urllib.error.URLError, TimeoutError):
+                  emit(None, 'transport_error')
+                  return 1
+              if len(body) > MAX_BYTES:
+                  emit(status, 'response_size_limit')
+                  return 1
+              payload = json.loads(body)
+              if not isinstance(payload, dict) or payload.get('success') is not True:
+                  emit(status, 'api_reported_failure')
+                  return 1
+              result = payload.get('result')
+              if not isinstance(result, dict) or not isinstance(result.get('data'), list):
+                  emit(status, 'response_shape_unavailable')
+                  return 1
+              lines = [row['line'] for row in result['data'] if isinstance(row, dict) and isinstance(row.get('line'), str)]
+              lines = [line for line in lines if not re.search(r'\b[A-Z][A-Z0-9_]*\s*=', line)]
+              text = re.sub(r'https?://\S+', '', '\n'.join(lines))
+              categories = sorted(name for name, pattern in PATTERNS.items() if re.search(pattern, text, re.I))
+              codes = sorted(code for code in CODES if re.search(r'(?<![A-Z0-9_])' + re.escape(code) + r'(?![A-Z0-9_])', text))
+              paths = sorted(path for path in PATHS if path in text or 'website/' + path in text)
+              stage = result.get('stage')
+              state = result.get('status')
+              emit(status, 'classified_log_summary', log_count=len(result['data']),
+                   stage=stage if stage in {'queued', 'initialize', 'clone_repo', 'build', 'deploy'} else 'unavailable',
+                   status=state if state in {'idle', 'active', 'success', 'failure', 'canceled'} else 'unavailable',
+                   error_categories=categories, error_codes=codes, known_relative_paths=paths)
+              return 0
+
+
+          try:
+              sys.exit(main())
+          except Exception:
+              emit(None, 'unexpected_response_or_parser_failure')
+              sys.exit(1)
+          PY
