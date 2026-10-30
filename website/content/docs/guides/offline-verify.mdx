@@ -80,11 +80,26 @@ If the signature is valid, you have cryptographic proof that the issuer controll
 
 If the supplier sent a Verifiable Presentation that bundles several credentials, verify it in one call. `verify_presentation` checks the presentation signature plus every embedded credential.
 
+Use the challenge and domain retained from your verifier's presentation request.
+The fixed values below illustrate a synthetic request; never take expected values
+from the received presentation or its proof. In production, generate a fresh
+unpredictable nonce for each request and consume it once after successful
+verification. Single-use nonce storage and consumption are the caller's responsibility.
+
 ```python
+expected_challenge = "example-verifier-nonce-1"
+expected_domain = "did:web:verifier.example"
+
 with open("presentation.json") as f:
     vp = json.load(f)
 
-result = credential_svc.verify_presentation(vp)
+result = credential_svc.verify_presentation(
+    vp,
+    expected_challenge=expected_challenge,
+    expected_domain=expected_domain,
+)
+if result.get("valid") is not True or result.get("checks", {}).get("replay_protection") != "context_checked":
+    raise ValueError("Presentation verification or request-context binding failed")
 # result -> {
 #   "valid": True,
 #   "holder": "attestix:f9bdb7a94ccb40f1",
@@ -94,6 +109,7 @@ result = credential_svc.verify_presentation(vp)
 #       "vp_signature_valid": True,
 #       "credentials_valid": True,
 #       "holder_matches_subjects": True,
+#       "replay_protection": "context_checked",
 #       ...
 #   },
 # }
