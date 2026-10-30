@@ -9,8 +9,10 @@ You're evaluating whether Attestix can sit inside an enterprise platform as a de
 
 ## 60-second install
 
+Requires Python 3.11 or later.
+
 ```bash
-pip install --pre 'attestix[api]'
+pip install 'attestix[api]==0.5.0'
 ```
 
 Run as a service:
@@ -19,10 +21,10 @@ Run as a service:
 uvicorn attestix.api.main:app --host 0.0.0.0 --port 8000
 ```
 
-Or as an MCP server over HTTP for AI workloads:
+Or as an MCP server over stdio for AI workloads:
 
 ```bash
-attestix mcp --transport http --port 8501
+python -m attestix.main
 ```
 
 ## First 30 lines that actually do something
@@ -30,11 +32,12 @@ attestix mcp --transport http --port 8501
 ```python
 # A default single-tenant call against the running service.
 # Idempotency is honoured via the Idempotency-Key header (Stripe-style).
-import os, requests, uuid
+import os, uuid
+import httpx
 
 BASE = os.environ.get("ATTESTIX_URL", "http://localhost:8000")
 
-resp = requests.post(
+resp = httpx.post(
     f"{BASE}/v1/identities",
     json={
         "display_name": "platform-issued-agent",
@@ -54,7 +57,7 @@ agent = resp.json()
 print(agent["agent_id"], agent["issuer"]["did"])
 
 # Read from the same authenticated single-tenant service.
-trail = requests.get(
+trail = httpx.get(
     f"{BASE}/v1/provenance/audit-trail/{agent['agent_id']}",
     headers={"X-API-Key": os.environ["ATTESTIX_API_KEY"], "X-Attestix-Tenant": "default"},
 ).json()

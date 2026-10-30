@@ -18,7 +18,7 @@ No network calls. Everything verifies from the JSON blob, because the issuer's E
 ## Prerequisites
 
 ```bash
-pip install attestix==0.4.3
+pip install attestix==0.5.0
 ```
 
 ## Step 1 / Fetch the artefacts
@@ -76,15 +76,30 @@ The credential is valid only when `signature_valid` AND `not_expired` AND `not_r
 
 If the signature is valid, you have cryptographic proof that the issuer controlled the private key at signing time.
 
-## Step 3 / Verify a presentation (optional)
+## Step 3 / Verify a presentation in its configured issuer service (optional)
 
-If the supplier sent a Verifiable Presentation that bundles several credentials, verify it in one call. `verify_presentation` checks the presentation signature plus every embedded credential.
+`verify_presentation` checks the presentation signature against the service's configured signer DID. It separately verifies each embedded credential against that credential's own issuer DID through `verify_credential_external`. This step applies to an existing service configured for the presentation's issuer. A fresh verifier with a different signing key rejects that presentation, even when the challenge and domain match. This is not a general independent-supplier presentation verifier; use Step 2 for independent credential verification. Do not copy a supplier's private key to make verification pass.
+
+Use the challenge and domain retained from your verifier's presentation request.
+The fixed values below illustrate a synthetic request; never take expected values
+from the received presentation or its proof. In production, generate a fresh
+unpredictable nonce for each request and consume it once after successful
+verification. Single-use nonce storage and consumption are the caller's responsibility.
 
 ```python
+expected_challenge = "example-verifier-nonce-1"
+expected_domain = "did:web:verifier.example"
+
 with open("presentation.json") as f:
     vp = json.load(f)
 
-result = credential_svc.verify_presentation(vp)
+result = credential_svc.verify_presentation(
+    vp,
+    expected_challenge=expected_challenge,
+    expected_domain=expected_domain,
+)
+if result.get("valid") is not True or result.get("checks", {}).get("replay_protection") != "context_checked":
+    raise ValueError("Presentation verification or request-context binding failed")
 # result -> {
 #   "valid": True,
 #   "holder": "attestix:f9bdb7a94ccb40f1",
@@ -94,6 +109,7 @@ result = credential_svc.verify_presentation(vp)
 #       "vp_signature_valid": True,
 #       "credentials_valid": True,
 #       "holder_matches_subjects": True,
+#       "replay_protection": "context_checked",
 #       ...
 #   },
 # }
@@ -232,4 +248,4 @@ The same verification is what a peer agent runs when it decides whether to trust
 
 ## Browser and package release status
 
-Python/PyPI 0.4.3 is published. Current Python source prepares 0.5.0, requiring Python 3.11; verify registry availability before pinning that release. JavaScript/npm, Go and Java/Maven have independent release schedules. Rust and R have GitHub 0.4.2 releases; crates.io and CRAN remain at 0.4.1 at this cutoff. The browser page uses npm `attestix` 0.4.2 with the retained boundary guards. Offline results do not check live revocation.
+Python/PyPI 0.5.0 is published and requires Python 3.11 or later. Verify the [release files](https://pypi.org/project/attestix/0.5.0/) before changing a pinned installation. JavaScript/npm, Go and Java/Maven have independent release schedules. Rust and R have GitHub 0.4.2 releases; crates.io and CRAN remain at 0.4.1 at this cutoff. The browser page uses npm `attestix` 0.4.2 with the retained boundary guards. Offline results do not check live revocation.

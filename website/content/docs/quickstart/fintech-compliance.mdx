@@ -9,15 +9,19 @@ You're a compliance engineer on a fintech / trading-agent stack. Use the runnabl
 
 ## 60-second install
 
+Requires Python 3.11 or later.
+
 ```bash
-pip install --pre attestix
+pip install attestix==0.5.0
 ```
 
 If you want the FastAPI surface for an internal service:
 
+Set `ATTESTIX_API_KEY` in the server environment using your secret manager before startup. Send that same key in the `X-API-Key` header when calling protected REST endpoints; requests without a valid key are rejected by default.
+
 ```bash
-pip install --pre 'attestix[api]'
-attestix mcp --transport http --port 8501
+pip install 'attestix[api]==0.5.0'
+uvicorn attestix.api.main:app --host 127.0.0.1 --port 8000
 ```
 
 ## First 30 lines that actually do something
