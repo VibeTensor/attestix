@@ -15,7 +15,12 @@ shape, positive verification, tampered message, wrong key, malformed signature,
 DID derivation and custom Attestix canonical-JSON roundtrip checks before timing.
 Keys exist only in worker memory. No signing-key loader or storage-backed service
 fixture is invoked. Workers reject network/subprocess activity, protected-file
-opens and file writes. These Python audit hooks are not an OS security sandbox.
+opens and arbitrary file writes. The exact hash-reviewed filelock3.32.7 import
+capability probe may create only its known temporary discovery/source/link files
+inside fresh worker-owned scratch storage, then clean them up. Its allowed
+operations are recorded separately; the comparison does not claim zero filesystem
+writes. All key writes remain blocked. These Python audit hooks are not an OS
+security sandbox.
 
 - Fresh-process crypto import and installed CLI entry-point `--help`: 3 warmups
   and 30 samples per version, deterministic alternating order. CLI comparison

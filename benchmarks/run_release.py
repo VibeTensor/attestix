@@ -23,6 +23,10 @@ def require(condition, message):
         raise RuntimeError(message)
 
 
+def progress(phase, **details):
+    print(json.dumps({'phase': phase, **details}, ensure_ascii=True), flush=True)
+
+
 def version(value):
     require(re.fullmatch(r'[0-9]+\.[0-9]+\.[0-9]+', value), 'Stable numeric version required')
     return value
@@ -75,6 +79,7 @@ def prepare(args):
     output.mkdir(parents=True, exist_ok=False)
     records = {}
     for label, release in [('baseline', version(args.baseline)), ('candidate', version(args.candidate))]:
+        progress('prepare_release', release=label, version=release)
         metadata = json.loads(fetch('https://pypi.org/pypi/attestix/' + release + '/json', 2_000_000))
         wheels = [item for item in metadata['urls'] if item['packagetype'] == 'bdist_wheel']
         require(len(wheels) == 1, 'Expected one published Attestix wheel')
@@ -110,6 +115,7 @@ def prepare(args):
         command([str(python), '-m', 'pip', 'check'])
         identity = json.loads(command([str(python), '-I', '-c', 'import json,sys; print(json.dumps({"version":sys.version,"base_prefix":sys.base_prefix,"base_executable":sys._base_executable}))']))
         records[label] = {'version': release, 'python_relative': str(python.relative_to(output)), 'wheel': {'filename': artifact['filename'], 'sha256': digest, 'url': artifact['url']}, 'resolved_dependencies': packages, 'interpreter': identity}
+        progress('installed_and_hash_locked', release=label)
     require(records['baseline']['interpreter'] == records['candidate']['interpreter'], 'Interpreter mismatch')
     setup = {'schema_version': 1, 'package': 'attestix', 'baseline': records['baseline'], 'candidate': records['candidate']}
     (output / 'setup.json').write_text(json.dumps(setup, indent=2), encoding='ascii')
@@ -123,10 +129,14 @@ def isolated_worker(output, item, mode, **parameters):
         require(scratch.parent == Path(tempfile.gettempdir()).resolve(), 'Unexpected temporary root')
         data = scratch / 'data'
         data.mkdir()
-        request = {'mode': mode, 'version': item['version'], 'data_directory': str(data), **parameters}
+        probe_directory = scratch / 'probe-tmp'
+        probe_directory.mkdir()
+        request = {'mode': mode, 'version': item['version'], 'data_directory': str(data),
+                   'probe_directory': str(probe_directory), **parameters}
         allowed = {'PATH', 'SYSTEMROOT', 'WINDIR', 'LD_LIBRARY_PATH', 'LANG', 'LC_ALL', 'TMPDIR', 'TEMP', 'TMP'}
         environment = {key: value for key, value in os.environ.items() if key.upper() in allowed}
         environment.update({'ATTESTIX_DATA_DIR': str(data), 'PYTHONDONTWRITEBYTECODE': '1', 'NO_COLOR': '1', 'TERM': 'dumb'})
+        environment.update({name: str(probe_directory) for name in ['TMPDIR', 'TEMP', 'TMP']})
         start = time.perf_counter_ns()
         result = subprocess.run([str(python), '-I', '-B', str(Path(__file__).with_name('worker.py').resolve())], input=json.dumps(request), cwd=scratch, env=environment, capture_output=True, text=True, encoding='utf-8', timeout=90)
         elapsed = time.perf_counter_ns() - start
@@ -144,14 +154,21 @@ def run(args):
     setup = json.loads((output / 'setup.json').read_text())
     labels = ['baseline', 'candidate']
     probes, cli_probes = {}, {}
+    policy_observations = []
     for label in labels:
+        progress('installed_correctness_probe', release=label)
         probe, _ = isolated_worker(output, setup[label], 'probe')
         expected = {'valid_signature', 'tampered_payload_rejected', 'wrong_key_rejected',
                     'malformed_signature_rejected', 'did_derivation', 'json_roundtrip', 'tampered_json_rejected'}
         checks = probe.get('correctness', {})
+        if not probe.get('ok'):
+            print(json.dumps({'failed_release': label, 'probe': probe}, ensure_ascii=True), flush=True)
         require(probe.get('ok') and set(checks) == expected and all(value is True for value in checks.values()), 'Both installed APIs must pass before timing')
         probes[label] = probe
+        progress('installed_cli_help_probe', release=label)
         cli_probes[label], _ = isolated_worker(output, setup[label], 'cli_help')
+        policy_observations.extend([{'release': label, 'phase': 'probe', 'policy': probe['policy']},
+                                    {'release': label, 'phase': 'cli_compatibility', 'policy': cli_probes[label].get('policy')}])
     require(probes['baseline']['namespace'] == probes['candidate']['namespace'], 'Namespace mismatch needs explicit review')
     modes = ['crypto_import']
     if all(record.get('ok') for record in cli_probes.values()):
@@ -162,8 +179,11 @@ def run(args):
         inner = {label: [] for label in labels}
         for index in range(3 + args.startup_samples):
             for label in labels if index % 2 == 0 else list(reversed(labels)):
+                progress('startup_invocation', release=label, workload=mode, index=index, warmup=index < 3)
                 record, elapsed = isolated_worker(output, setup[label], mode)
                 require(record.get('ok'), 'Startup correctness/policy failure')
+                policy_observations.append({'release': label, 'phase': mode, 'index': index,
+                                            'warmup': index < 3, 'policy': record['policy']})
                 if index >= 3:
                     raw[label].append(elapsed)
                     inner[label].append(record['import_or_entrypoint_elapsed_ns'])
@@ -174,8 +194,10 @@ def run(args):
     order = []
     for block in range(10):
         for label in labels if block % 2 == 0 else list(reversed(labels)):
+            progress('crypto_operation_block', release=label, block=block)
             record, _ = isolated_worker(output, setup[label], 'operations', warmups=5, samples=10, batch_size=100)
             require(record.get('ok'), 'Timed operation correctness/policy failure')
+            policy_observations.append({'release': label, 'phase': 'operations', 'block': block, 'policy': record['policy']})
             order.append({'block': block, 'release': label})
             for measurement in record['measurements']:
                 key = (measurement['workload'], measurement['payload_bytes'])
@@ -194,10 +216,11 @@ def run(args):
               'resolved_dependencies': {label: setup[label]['resolved_dependencies'] for label in labels},
               'environment': {'python': sys.version, 'implementation': platform.python_implementation(), 'platform': platform.platform(), 'cpu': cpu, 'logical_cpus': os.cpu_count(), 'runner_image': os.environ.get('ImageVersion'), 'harness_source_sha': os.environ.get('GITHUB_SHA'), 'run_id': os.environ.get('GITHUB_RUN_ID')},
               'correctness': probes, 'cli_compatibility': cli_probes, 'block_order': order,
+              'policy_observations': policy_observations,
               'measurements': measurements, 'performance_threshold': None,
               'coverage': ['canonical installed crypto API', 'memory-only Ed25519', 'custom Attestix canonical JSON signing', 'CLI help only when both entry points pass offline gates'],
               'not_covered': ['MCP-ready latency', 'VC service persistence', 'audit-chain workload', 'Merkle proof API', 'network/cloud/model/payment/customer workflows'],
-              'limitations': ['One shared virtual runner; no SLA or causal attribution', 'Dependency versions differ and are recorded', 'Crypto p95 is p95 of batch-average latency, not individual-operation tail latency', 'Python audit hooks are not an OS security sandbox', 'Process timing includes common harness/guard overhead; inside-process timing is separate', 'No customer data, key serialization or key logging']}
+              'limitations': ['One shared virtual runner; no SLA or causal attribution', 'Dependency versions differ and are recorded', 'Crypto p95 is p95 of batch-average latency, not individual-operation tail latency', 'Python audit hooks are not an OS security sandbox', 'Hash-reviewed filelock capability-probe temporary filesystem operations are allowed and recorded', 'Process timing includes harness/guard overhead; inside-process timing is separate', 'No customer data, key serialization or key logging']}
     (output / 'result.json').write_text(json.dumps(result, indent=2), encoding='ascii')
     lines = ['# Installed Attestix release comparison', '', 'Observed samples, not an SLA or a claim that every product example ran.', '', '| Release | Workload | Bytes | Median ms | p95 ms | p95 scope |', '| --- | --- | --- | --- | --- | --- |']
     for item in measurements:
