@@ -1,48 +1,230 @@
-name: Deploy Website to Cloudflare Pages
-
-# The main Next.js site (attestix.io) deploys through this Actions workflow
-# rather than Cloudflare's native GitHub build, which has been failing in the
-# CF build environment. Building here (Ubuntu, pinned install) and uploading
-# the static export via wrangler keeps the build logs visible and reproducible.
+name: Preflight one source-bound Attestix preview retry
 
 on:
   workflow_dispatch:
-  push:
-    branches: [main, ci/website-deploy]
-    paths:
-      - 'website/**'
-      - '.github/workflows/website.yml'
+    inputs:
+      execute_preview_retry:
+        description: Enable only after root has reviewed the read-only preflight result
+        required: true
+        type: boolean
+        default: false
 
 permissions:
   contents: read
 
 concurrency:
-  group: website-deploy
-  cancel-in-progress: true
+  group: attestix-preview-retry-e090
+  cancel-in-progress: false
 
 jobs:
-  deploy:
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: website
+  retry_preview:
+    if: github.repository == 'VibeTensor/attestix' && github.ref == 'refs/heads/fix/cloudflare-preview-retry-20261030'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 3
     steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - name: Preflight the approved preview; no retry by default
+        env:
+          CF_DIAGNOSTIC_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CF_DIAGNOSTIC_ACCOUNT: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          EXECUTE_PREVIEW_RETRY: ${{ inputs.execute_preview_retry }}
+        run: |
+          python3 - <<'PY'
+          """One guarded preview retry; ambiguous outcomes require read reconciliation."""
+          from datetime import datetime, timezone
+          import json
+          import os
+          import re
+          import sys
+          import urllib.error
+          import urllib.request
+          import uuid
 
-      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
-        with:
-          node-version: '24'
+          ACCOUNT = '8f976964427710aa2c2b28f3eb2d62d2'
+          FAILED_ID = '58156f8c-07aa-4bbe-982f-7cf9be22dc8a'
+          SOURCE = 'e090ddcc726af8ecec9726a65541f6e9319dbec4'
+          BRANCH = 'release/python-0.5.0'
+          BASE = f'https://api.cloudflare.com/client/v4/accounts/{ACCOUNT}/pages/projects/attestix/deployments'
+          TARGET = f'{BASE}/{FAILED_ID}'
+          RECENT = f'{BASE}?env=preview&page=1&per_page=100'
+          RETRY = f'{TARGET}/retry'
+          MAX_BYTES = 2 * 1024 * 1024
+          STAGES = {'queued', 'initialize', 'clone_repo', 'build', 'deploy'}
+          STATES = {'idle', 'active', 'success', 'failure', 'canceled'}
+          SKIPS = {'commit_message', 'preview_deployments_disabled', 'production_deployments_disabled',
+                   'path_config', 'branch_config', 'pages_to_workers_conversion', 'superseded_queued_build'}
 
-      - name: Install dependencies
-        run: npm ci --legacy-peer-deps
 
-      - name: Build static export
-        run: npm run build
+          class NoRedirect(urllib.request.HTTPRedirectHandler):
+              def redirect_request(self, req, fp, code, msg, headers, newurl):
+                  return None
 
-      - name: Deploy to Cloudflare Pages
-        uses: cloudflare/wrangler-action@ebbaa1584979971c8614a24965b4405ff95890e0 # v4.0.0
-        with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          workingDirectory: website
-          command: pages deploy out --project-name=attestix --branch=main
+
+          class ReadFailure(Exception):
+              def __init__(self, event, status=None):
+                  self.event = event
+                  self.status = status
+
+
+          def emit(event, **fields):
+              print(json.dumps({'event': event, **fields}, sort_keys=True, ensure_ascii=True), flush=True)
+
+
+          def identity(value):
+              if not isinstance(value, str) or not re.fullmatch(r'[0-9a-fA-F-]{36}', value):
+                  raise ReadFailure('invalid_deployment_identity')
+              try:
+                  return str(uuid.UUID(value))
+              except ValueError:
+                  raise ReadFailure('invalid_deployment_identity') from None
+
+
+          def scope_matches(deployment):
+              if not isinstance(deployment, dict):
+                  return False
+              trigger = deployment.get('deployment_trigger')
+              metadata = trigger.get('metadata') if isinstance(trigger, dict) else None
+              return (isinstance(metadata, dict) and deployment.get('environment') == 'preview'
+                      and metadata.get('branch') == BRANCH and metadata.get('commit_hash') == SOURCE)
+
+
+          def stage(deployment):
+              latest = deployment.get('latest_stage')
+              if (not isinstance(latest, dict) or latest.get('name') not in STAGES
+                      or latest.get('status') not in STATES):
+                  raise ReadFailure('unknown_deployment_state')
+              return latest['name'], latest['status']
+
+
+          def created(deployment):
+              value = deployment.get('created_on')
+              if not isinstance(value, str):
+                  raise ReadFailure('recent_window_timestamp_unavailable')
+              result = datetime.fromisoformat(value.replace('Z', '+00:00'))
+              if result.tzinfo is None:
+                  raise ReadFailure('recent_window_timestamp_unavailable')
+              return result
+
+
+          def request(address, method='GET'):
+              if (method not in {'GET', 'POST'} or (method == 'GET' and address not in {TARGET, RECENT})
+                      or (method == 'POST' and address != RETRY)):
+                  raise ReadFailure('request_scope_refused')
+              return urllib.request.Request(address, method=method,
+                                            headers={'Authorization': 'Bearer ' + os.environ['CF_DIAGNOSTIC_TOKEN'],
+                                                     'Cache-Control': 'no-cache'})
+
+
+          def read(opener, address):
+              try:
+                  with opener.open(request(address), timeout=30) as response:
+                      status = response.status
+                      body = response.read(MAX_BYTES + 1)
+              except urllib.error.HTTPError as error:
+                  raise ReadFailure('read_redirect_blocked' if 300 <= error.code < 400 else 'read_http_failure', error.code) from None
+              except (urllib.error.URLError, TimeoutError):
+                  raise ReadFailure('read_transport_failure') from None
+              if len(body) > MAX_BYTES:
+                  raise ReadFailure('read_response_size_limit', status)
+              payload = json.loads(body)
+              if not isinstance(payload, dict) or payload.get('success') is not True:
+                  raise ReadFailure('read_api_failure', status)
+              return payload
+
+
+          def post_once(opener):
+              # This journal must reach the runner log before a possibly accepted write.
+              emit('preview_retry_attempt', deployment_id=FAILED_ID,
+                   utc=datetime.now(timezone.utc).isoformat(), preview_scope_verified=True,
+                   stage='initialize', status='failure', automatic_post_retries=0)
+              status = None
+              try:
+                  with opener.open(request(RETRY, 'POST'), timeout=30) as response:
+                      status = response.status
+                      body = response.read(MAX_BYTES + 1)
+                  if not 200 <= status < 300 or len(body) > MAX_BYTES:
+                      raise ValueError
+                  payload = json.loads(body)
+                  result = payload.get('result') if isinstance(payload, dict) and payload.get('success') is True else None
+                  if not scope_matches(result):
+                      raise ValueError
+                  deployment_id = identity(result.get('id'))
+                  name, state = stage(result)
+              except urllib.error.HTTPError as error:
+                  emit('retry_not_confirmed_reconcile_reads', http_status=error.code, post_attempts=1)
+                  return 1
+              except Exception:
+                  emit('retry_ambiguous_reconcile_reads', http_status=status, post_attempts=1)
+                  return 1
+              emit('preview_retry_accepted', http_status=status, deployment_id=deployment_id,
+                   stage=name, status=state, post_attempts=1)
+              return 0
+
+
+          def main():
+              if os.environ.get('CF_DIAGNOSTIC_ACCOUNT') != ACCOUNT or not os.environ.get('CF_DIAGNOSTIC_TOKEN'):
+                  emit('credential_or_account_scope_unavailable')
+                  return 1
+              opener = urllib.request.build_opener(NoRedirect())
+              original = read(opener, TARGET).get('result')
+              if not scope_matches(original) or identity(original.get('id')) != FAILED_ID:
+                  emit('target_scope_refused')
+                  return 1
+              name, state = stage(original)
+              if (name, state) != ('initialize', 'failure'):
+                  emit('target_state_refused', stage=name, status=state)
+                  return 1
+              skipped = original.get('skip_reason')
+              if skipped not in {None, ''}:
+                  emit('target_policy_skip_refused', deployment_id=FAILED_ID, stage=name, status=state,
+                       environment='preview', source_verified=True,
+                       skip_reason=skipped if skipped in SKIPS else 'unavailable', post_attempts=0)
+                  return 1
+              emit('preview_target_preflight', deployment_id=FAILED_ID, stage=name, status=state,
+                   environment='preview', source_verified=True, skip_reason='none', post_attempts=0)
+              recent = read(opener, RECENT).get('result')
+              if not isinstance(recent, list) or not recent or len(recent) > 100:
+                  raise ReadFailure('recent_window_unavailable')
+              timestamps = [created(item) for item in recent]
+              if timestamps != sorted(timestamps, reverse=True):
+                  raise ReadFailure('recent_window_order_unverified')
+              listed_target = next((item for item in recent if isinstance(item, dict) and item.get('id') == FAILED_ID), None)
+              if listed_target is None:
+                  raise ReadFailure('target_missing_from_recent_window')
+              if not scope_matches(listed_target) or created(listed_target) != created(original):
+                  raise ReadFailure('recent_target_scope_inconsistent')
+              listed_name, listed_state = stage(listed_target)
+              if listed_state in {'idle', 'active', 'success'}:
+                  emit('matching_active_or_successful_preview_exists', deployment_id=FAILED_ID,
+                       stage=listed_name, status=listed_state, post_attempts=0)
+                  return 0
+              if (listed_name, listed_state) != ('initialize', 'failure'):
+                  raise ReadFailure('recent_target_state_changed')
+              for candidate in recent:
+                  if not scope_matches(candidate) or candidate.get('id') == FAILED_ID:
+                      continue
+                  deployment_id = identity(candidate.get('id'))
+                  candidate_name, candidate_state = stage(candidate)
+                  if candidate_state in {'idle', 'active', 'success'}:
+                      emit('matching_active_or_successful_preview_exists', deployment_id=deployment_id,
+                           stage=candidate_name, status=candidate_state, post_attempts=0)
+                      return 0
+                  if created(candidate) >= created(original):
+                      emit('newer_terminal_match_requires_read_reconciliation', deployment_id=deployment_id,
+                           stage=candidate_name, status=candidate_state, post_attempts=0)
+                      return 1
+              if os.environ.get('EXECUTE_PREVIEW_RETRY') != 'true':
+                  emit('preview_retry_preflight_only', deployment_id=FAILED_ID, source_verified=True,
+                       stage='initialize', status='failure', skip_reason='none', post_attempts=0, post_enabled=False)
+                  return 0
+              return post_once(opener)
+
+
+          try:
+              sys.exit(main())
+          except ReadFailure as error:
+              emit(error.event, http_status=error.status, post_attempts=0)
+              sys.exit(1)
+          except Exception:
+              emit('preflight_unexpected_failure', post_attempts=0)
+              sys.exit(1)
+          PY
