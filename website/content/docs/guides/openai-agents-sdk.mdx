@@ -19,13 +19,14 @@ Verified against `openai-agents` SDK v0.14.x.
 
 ```python
 import asyncio
+import sys
 from agents import Agent, Runner
 from agents.mcp import MCPServerStdio
 
 async def main():
     async with MCPServerStdio(
         name="Attestix",
-        params={"command": "python", "args": ["-m", "attestix.main"]},
+        params={"command": sys.executable, "args": ["-m", "attestix.main"]},
     ) as attestix:
         agent = Agent(
             name="quarterly-analyst",
@@ -43,6 +44,8 @@ asyncio.run(main())
 Use `tool_filter` with `create_static_tool_filter` to scope the Attestix tool surface for a given agent.
 
 ```python
+import sys
+
 from agents.mcp import MCPServerStdio, create_static_tool_filter
 
 attestix_filter = create_static_tool_filter(
@@ -55,7 +58,7 @@ attestix_filter = create_static_tool_filter(
 
 async with MCPServerStdio(
     name="Attestix",
-    params={"command": "python", "args": ["-m", "attestix.main"]},
+    params={"command": sys.executable, "args": ["-m", "attestix.main"]},
     tool_filter=attestix_filter,
     cache_tools_list=True,
 ) as attestix:
@@ -91,9 +94,11 @@ Use the stdio configurations above with the bundled Attestix 0.5.0 MCP entry poi
 Wire Attestix into every agent in an orchestration so the entire graph is attestable. Role hand-offs are recorded as first-class audit events.
 
 ```python
+import sys
+
 async with MCPServerStdio(
     name="Attestix",
-    params={"command": "python", "args": ["-m", "attestix.main"]},
+    params={"command": sys.executable, "args": ["-m", "attestix.main"]},
 ) as attestix:
     analyst = Agent(name="analyst", mcp_servers=[attestix])
     summarizer = Agent(name="summarizer", mcp_servers=[attestix])
