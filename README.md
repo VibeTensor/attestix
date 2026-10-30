@@ -56,9 +56,11 @@ PyPI currently publishes Python `attestix` 0.4.3 with Python 3.10 or later. This
 Current source and the next release require Python 3.11 or later for the patched file-locking dependency. Previously published releases retain their own Python requirements; this source change does not publish a new package.
 
 ```bash
-# Reviewed release (check release notes before upgrading):
+# Published release (check release notes before upgrading):
 pip install attestix==0.4.3
 ```
+
+Version 0.4.3 requires `filelock<4.0.0` and cannot install patched Filelock 4.2.1. On Unix, keep the Attestix data directory private and prevent other users from replacing its lock path. This limits the conditional local file-truncation risk described in the [Filelock advisory](https://github.com/tox-dev/filelock/security/advisories/GHSA-69hj-f68j-2879). Upgrade to a reviewed Attestix release with Filelock 4.2.1 or later when published.
 
 > Since 0.4.0, the supported namespace is the canonical
 > `attestix.*` namespace. The older flat layout (`from services... import`,
