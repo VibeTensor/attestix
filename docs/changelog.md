@@ -6,6 +6,11 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Security
+- Require Python 3.11 or later to use the supported patched Filelock 4.2.1 release. Python 3.10 is no longer supported by current source.
+- Raise MCP 1.x, aiohttp and Certifi security floors and refresh hash-pinned dependency locks, including the CI MessagePack dependency.
+- Keep Windows dependency installation attached to the selected Python interpreter so updating pip does not abort the test matrix.
+
 ### Changed
 - Document the readiness changes merged to main: issuer/proof binding, presentation challenge/domain checks, NFC ambiguity rejection, serialized storage updates, REST tenant configuration, redacted metadata, and local purge boundaries.
 - Describe generated declarations and status fields as documentation-workflow evidence, not legal conformity or certification.

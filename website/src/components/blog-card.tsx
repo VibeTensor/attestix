@@ -1,7 +1,6 @@
 import { Post } from "@/lib/blog";
 import { formatDate } from "@/lib/utils";
 import Image from "next/image";
-import Link from "next/link";
 
 export default function BlogCard({
   data,
@@ -11,7 +10,7 @@ export default function BlogCard({
   priority?: boolean;
 }) {
   return (
-    <Link
+    <a
       href={`/blog/${data.slug}`}
       className="group flex flex-col overflow-hidden rounded-atx-md border border-atx-line-soft bg-atx-panel transition-colors hover:border-atx-accent/60 hover:bg-atx-panel-hi"
     >
@@ -44,6 +43,6 @@ export default function BlogCard({
           read article <span className="inline-block transition-transform group-hover:translate-x-0.5">&rarr;</span>
         </div>
       </div>
-    </Link>
+    </a>
   );
 }

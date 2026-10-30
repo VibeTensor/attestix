@@ -8,7 +8,7 @@ version = "0.4.3"
 description = "Attestix - AI agent identity and signed evidence tooling. DID-based identity, W3C Verifiable Credentials, governance evidence, delegation chains, and reputation scoring."
 readme = "README.md"
 license = {file = "LICENSE"}
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 authors = [
     {name = "VIBETENSOR PRIVATE LIMITED", email = "info@vibetensor.com"},
 ]
@@ -47,8 +47,8 @@ dependencies = [
     # prevent silent breakage from major-version drift (mcp 2.x, PyJWT 3.x,
     # cryptography 47.x, etc.) on fresh `pip install attestix`. See
     # paper/internal/dependency-audit-v0.3.0-2026-04-17.md for the rationale.
-    # mcp >=1.28.1 closes the 1.27.x / <1.28.1 advisories flagged by Dependabot.
-    "mcp[cli]>=1.28.1,<2.0.0",
+    # mcp >=1.30.0 closes the transport, OAuth and schema-validation advisories.
+    "mcp[cli]>=1.30.0,<2.0.0",
     # cryptography >=48.0.1 closes GHSA-537c-gmf6-5ccf (in addition to the
     # earlier CVE-2026-34073 name-constraints bypass and CVE-2026-39892
     # Hash.update buffer overflow closed in 46.0.7).
@@ -66,7 +66,9 @@ dependencies = [
     # python-json-logger 4.x is already pulled transitively in our env; keep
     # the upper bound generous so we do not break existing installs.
     "python-json-logger>=3.3.0,<5.0.0",
-    "filelock>=3.13.0,<4.0.0",
+    "filelock>=4.2.1,<5.0.0",
+    # Use the current CA bundle security floor for transitive HTTP clients.
+    "certifi>=2026.10.19",
     "click>=8.1.0,<9.0.0",
     # Transitive pin: mcp pulls python-multipart. Versions <0.0.26 are
     # vulnerable to CVE-2026-40347 (DoS via large multipart preamble/epilogue)
@@ -78,8 +80,8 @@ dependencies = [
 
 [project.optional-dependencies]
 # Transitive pin: web3 pulls aiohttp. Versions <=3.14.2 carry the two
-# advisories flagged by Dependabot, so force the floor here.
-blockchain = ["web3>=7.0.0,<8.0.0", "aiohttp>=3.14.3,<4.0.0", "multidict>=6.9.1,<7.0.0", "urllib3>=2.8.0,<3.0.0"]
+# earlier advisories. The 3.14.4 floor also closes the subsequent HTTP parser fixes.
+blockchain = ["web3>=7.0.0,<8.0.0", "aiohttp>=3.14.4,<4.0.0", "multidict>=6.9.1,<7.0.0", "urllib3>=2.8.0,<3.0.0"]
 reports = ["weasyprint>=62.0"]
 # Post-quantum signing (FIPS 204 ML-DSA-65 + hybrid Ed25519+ML-DSA). Optional,
 # never required: the default install stays classical Ed25519. dilithium-py is
@@ -205,7 +207,7 @@ markers = [
 
 [tool.ruff]
 line-length = 120
-target-version = "py310"
+target-version = "py311"
 extend-exclude = [
     "build",
     "dist",
@@ -242,7 +244,7 @@ ignore = [
 "demo/**" = ["F401", "E402", "E401"]
 
 [tool.mypy]
-python_version = "3.10"
+python_version = "3.11"
 ignore_missing_imports = true
 follow_imports = "silent"
 warn_unused_ignores = false

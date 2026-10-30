@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useEffect, useState } from "react";
 import type { Heading } from "@/lib/blog";
 
@@ -46,9 +45,10 @@ export function ArticleAside({
   const share = encodeURIComponent(url);
   return (
     <div className="lg:sticky lg:top-24">
-      <Link href="/blog" className="text-[14px] text-atx-ink-dim transition-colors duration-200 hover:text-atx-ink">
+      {/* oxlint-disable-next-line next/no-html-link-for-pages -- Full document navigation avoids the static RSC transport fallback. */}
+      <a href="/blog" className="text-[14px] text-atx-ink-dim transition-colors duration-200 hover:text-atx-ink">
         &larr; All posts
-      </Link>
+      </a>
 
       {headings.length > 1 && (
         <nav aria-label="Table of contents" className="mt-8 hidden lg:block">

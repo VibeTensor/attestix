@@ -53,6 +53,8 @@ Published runtime hardening is available in Python `attestix` 0.4.2 on PyPI. Thi
 
 ## Install
 
+Current source and the next release require Python 3.11 or later for the patched file-locking dependency. Previously published releases retain their own Python requirements; this source change does not publish a new package.
+
 ```bash
 # Reviewed release (check release notes before upgrading):
 pip install attestix==0.4.2

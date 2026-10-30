@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useState } from "react";
 
 type Row = { slug: string; title: string; category?: string; date: string };
@@ -38,7 +37,7 @@ export function PostList({ rows }: { rows: Row[] }) {
       </div>
       <div className="mt-6 divide-y divide-atx-line-soft border-y border-atx-line-soft">
         {shown.map((r) => (
-          <Link
+          <a
             key={r.slug}
             href={`/blog/${r.slug}`}
             className="group grid items-baseline gap-1 py-4 transition-colors duration-200 md:grid-cols-[1fr_auto_140px] md:gap-6"
@@ -46,7 +45,7 @@ export function PostList({ rows }: { rows: Row[] }) {
             <span className="text-[17px] text-atx-ink-mid transition-colors group-hover:text-atx-ink">{r.title}</span>
             <span className="text-[13px] text-atx-accent">{r.category}</span>
             <span className="text-[13px] text-atx-ink-dim md:text-right">{r.date}</span>
-          </Link>
+          </a>
         ))}
       </div>
     </div>

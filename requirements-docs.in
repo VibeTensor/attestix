@@ -2,3 +2,7 @@
 # .github/workflows/docs.yml). Regenerate with:
 #   pip-compile --generate-hashes --output-file=requirements-docs.txt requirements-docs.in
 mkdocs-material>=9.5
+
+# Keep the CA bundle used by installed documentation HTTP clients current.
+# This does not update pip's separately vendored trust store.
+certifi>=2026.10.19

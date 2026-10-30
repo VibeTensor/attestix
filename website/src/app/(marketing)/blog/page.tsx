@@ -54,7 +54,7 @@ export default async function Blog() {
           <h2 className="mt-2 text-[32px] font-medium tracking-[-0.8px] text-atx-ink">Latest updates</h2>
           <div className="mt-6 grid gap-3 md:grid-cols-2 lg:grid-cols-4">
             {latest.map((p) => (
-              <Link
+              <a
                 key={p.slug}
                 href={`/blog/${p.slug}`}
                 className="group flex min-h-[230px] flex-col rounded-2xl border border-atx-accent/25 bg-atx-accent/[0.05] p-5 transition-colors duration-200 hover:border-atx-accent/60"
@@ -63,7 +63,7 @@ export default async function Blog() {
                 <span className="mt-2 text-[18px] font-medium leading-[1.3] tracking-[-0.4px] text-atx-ink">{p.title}</span>
                 <span className="mt-2 line-clamp-2 text-[14px] leading-[1.5] text-atx-ink-mid">{p.summary}</span>
                 <span className="mt-auto pt-4 text-[14px] font-medium text-atx-ink-mid group-hover:text-atx-ink">Read more &rarr;</span>
-              </Link>
+              </a>
             ))}
           </div>
         </div>

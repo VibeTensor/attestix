@@ -6,7 +6,7 @@ Thank you for your interest in contributing to Attestix. This guide covers how t
 
 ### Prerequisites
 
-- Python 3.10+
+- Python 3.11+
 - Git
 
 ### Setup

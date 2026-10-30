@@ -43,7 +43,7 @@ jobs:
       # hash). `requirements-ci.txt` is generated from pyproject.toml's
       # [dev,blockchain,security] extras + requirements-api.txt via:
       #
-      #   python -m piptools compile --generate-hashes --strip-extras \
+      #   uv pip compile --universal --python-version 3.11 --generate-hashes \
       #     --extra dev --extra blockchain --extra security \
       #     --output-file requirements-ci.txt pyproject.toml requirements-api.txt
       #
@@ -54,10 +54,10 @@ jobs:
       # cannot be hashed). See .github/scorecard-pinned-deps.md for the full
       # workflow coverage matrix.
       - name: Install hash-pinned dependencies
-        run: pip install --require-hashes -r requirements-ci.txt
+        run: python -m pip install --require-hashes -r requirements-ci.txt
 
       - name: Install attestix in editable mode (no deps)
-        run: pip install -e . --no-deps
+        run: python -m pip install -e . --no-deps
 
       - name: Run pytest with coverage
         env:

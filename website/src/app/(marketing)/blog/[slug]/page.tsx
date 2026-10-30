@@ -2,7 +2,6 @@ import { ArticleAside } from "@/components/article-aside";
 import { getBlogPosts, getPost } from "@/lib/blog";
 import { siteConfig } from "@/lib/config";
 import type { Metadata } from "next";
-import Link from "next/link";
 import { notFound } from "next/navigation";
 
 export async function generateStaticParams() {
@@ -134,7 +133,7 @@ export default async function Page(props: {
             <h2 className="mt-2 text-[32px] font-medium tracking-[-0.8px] text-atx-ink">More from Attestix</h2>
             <div className="mt-8 grid gap-4 md:grid-cols-3">
               {more.map((p) => (
-                <Link
+                <a
                   key={p.slug}
                   href={`/blog/${p.slug}`}
                   className="group flex flex-col rounded-2xl border border-atx-accent/25 bg-atx-accent/[0.04] p-6 transition-colors duration-200 hover:border-atx-accent/60"
@@ -143,7 +142,7 @@ export default async function Page(props: {
                   <span className="mt-2 text-[19px] font-medium leading-[1.3] tracking-[-0.4px] text-atx-ink">{p.title}</span>
                   <span className="mt-2 line-clamp-3 text-[14px] leading-[1.55] text-atx-ink-mid">{p.summary}</span>
                   <span className="mt-auto pt-5 text-[14px] font-medium text-atx-ink-mid group-hover:text-atx-ink">Read more &rarr;</span>
-                </Link>
+                </a>
               ))}
             </div>
           </div>
