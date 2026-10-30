@@ -57,6 +57,20 @@ class BenchmarkContractTests(unittest.TestCase):
             with self.subTest(event=event), self.assertRaises(BenchmarkError):
                 policy.audit(event, arguments)
 
+    def test_foreign_mkdir_directory_fd_fails_before_path_resolution(self):
+        policy = OfflinePolicy(Path.cwd() / 'data')
+        with patch('worker.Path.resolve', side_effect=AssertionError('Filesystem resolution forbidden')):
+            with self.assertRaises(BenchmarkError):
+                policy.audit('os.mkdir', ('data', 0o700, 12345))
+        self.assertEqual(policy.denied, ['directory-fd-write'])
+
+    def test_owned_mkdir_with_default_directory_fd_is_allowed(self):
+        data = Path.cwd() / 'data'
+        policy = OfflinePolicy(data)
+        for directory_fd in [None, -1]:
+            policy.audit('os.mkdir', (str(data), 0o700, directory_fd))
+        self.assertEqual(policy.denied, [])
+
     def test_versions_and_registry_origins_are_not_command_inputs(self):
         with self.assertRaises(RuntimeError):
             run_release.version('0.5.0; bad')

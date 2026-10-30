@@ -119,6 +119,8 @@ class OfflinePolicy:
         raise BenchmarkError('Offline policy rejected ' + kind)
 
     def audit(self, event, args):
+        if event == 'os.mkdir' and len(args) > 2 and args[2] not in (None, -1):
+            self.deny('directory-fd-write')
         if event.startswith('socket.') or event in {'subprocess.Popen', 'os.system', 'os.posix_spawn', 'os.fork'}:
             self.deny('network-or-subprocess')
         if event == 'open':
