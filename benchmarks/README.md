@@ -36,9 +36,12 @@ release attachment.
 
 ## Workloads and gates
 
-Both installed canonical `attestix.auth.crypto` APIs must pass import, signature
-shape, positive verification, tampered message, wrong key, malformed signature,
-DID derivation and custom Attestix canonical-JSON roundtrip checks before timing.
+Both installed canonical `attestix.auth.crypto` APIs must first pass separate
+import, distribution-version, module-origin and all seven API-signature
+compatibility gates. They must then pass seven correctness checks before timing:
+valid signature verification, tampered-message rejection, wrong-key rejection,
+malformed-signature rejection, DID derivation, custom Attestix canonical-JSON
+roundtrip verification and tampered-JSON rejection.
 Keys exist only in worker memory. No signing-key loader or storage-backed service
 fixture is invoked. Workers reject network/subprocess activity, protected-file
 opens and arbitrary file writes. The exact hash-reviewed filelock3.32.7 import
