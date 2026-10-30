@@ -19,7 +19,7 @@ If you want the FastAPI surface for an internal service:
 
 ```bash
 pip install 'attestix[api]==0.5.0'
-attestix mcp --transport http --port 8501
+uvicorn attestix.api.main:app --host 127.0.0.1 --port 8000
 ```
 
 ## First 30 lines that actually do something

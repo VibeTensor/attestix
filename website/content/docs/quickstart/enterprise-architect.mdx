@@ -21,10 +21,10 @@ Run as a service:
 uvicorn attestix.api.main:app --host 0.0.0.0 --port 8000
 ```
 
-Or as an MCP server over HTTP for AI workloads:
+Or as an MCP server over stdio for AI workloads:
 
 ```bash
-attestix mcp --transport http --port 8501
+python -m attestix.main
 ```
 
 ## First 30 lines that actually do something

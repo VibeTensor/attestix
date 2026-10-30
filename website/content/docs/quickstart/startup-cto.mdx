@@ -84,7 +84,7 @@ ProvenanceService().log_action(
 | W3C VC issuance + offline verification | `CredentialService.issue_credential` / `verify_credential` |
 | UCAN-style capability delegation w/ attenuation | `DelegationService.create_delegation` (parent token check is enforced) |
 | EU AI Act risk profile + Annex V declaration | `ComplianceService.create_compliance_profile` + `generate_declaration_of_conformity` |
-| MCP server exposing all of the above as tools | `attestix mcp` (MCP tools, stdio or HTTP) |
+| MCP server exposing all of the above as tools | `python -m attestix.main` (MCP tools, stdio) |
 | REST surface for an internal service | `uvicorn attestix.api.main:app` (44 endpoints) |
 
 That's roughly 5 services and 3-5 engineer-months of work to get to the same surface area.

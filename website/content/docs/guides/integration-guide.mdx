@@ -63,20 +63,16 @@ All services share the same Ed25519 signing key (auto-generated on first use) an
 {
   "mcpServers": {
     "attestix": {
-      "command": "attestix",
-      "args": ["mcp"]
+      "command": "python",
+      "args": ["-m", "attestix.main"]
     }
   }
 }
 ```
 
-## As an MCP server (HTTP)
+## MCP transport support
 
-```bash
-attestix mcp --transport http --port 8501
-```
-
-Then connect any MCP client to `http://localhost:8501/mcp`.
+The bundled Attestix 0.5.0 MCP entry point runs over stdio with `python -m attestix.main`. It does not provide an MCP HTTP startup command. The [REST API setup](/docs/quickstart/enterprise-architect) is a separate HTTP interface.
 
 ## Next
 
