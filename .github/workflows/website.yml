@@ -173,14 +173,20 @@ jobs:
               if (name, state) != ('initialize', 'failure'):
                   emit('target_state_refused', stage=name, status=state)
                   return 1
+              raw_skipped = original.get('is_skipped')
+              is_skipped = raw_skipped if isinstance(raw_skipped, bool) else None
+              if is_skipped is not False:
+                  emit('target_skip_state_refused', deployment_id=FAILED_ID, environment='preview',
+                       source_verified=True, stage=name, status=state, is_skipped=is_skipped, post_attempts=0)
+                  return 1
               skipped = original.get('skip_reason')
               if skipped not in {None, ''}:
                   emit('target_policy_skip_refused', deployment_id=FAILED_ID, stage=name, status=state,
-                       environment='preview', source_verified=True,
+                       environment='preview', source_verified=True, is_skipped=False,
                        skip_reason=skipped if skipped in SKIPS else 'unavailable', post_attempts=0)
                   return 1
               emit('preview_target_preflight', deployment_id=FAILED_ID, stage=name, status=state,
-                   environment='preview', source_verified=True, skip_reason='none', post_attempts=0)
+                   environment='preview', source_verified=True, is_skipped=False, skip_reason='none', post_attempts=0)
               recent = read(opener, RECENT).get('result')
               if not isinstance(recent, list) or not recent or len(recent) > 20:
                   raise ReadFailure('recent_window_unavailable')
@@ -214,7 +220,7 @@ jobs:
                       return 1
               if os.environ.get('EXECUTE_PREVIEW_RETRY') != 'true':
                   emit('preview_retry_preflight_only', deployment_id=FAILED_ID, source_verified=True,
-                       stage='initialize', status='failure', skip_reason='none', post_attempts=0, post_enabled=False)
+                       stage='initialize', status='failure', is_skipped=False, skip_reason='none', post_attempts=0, post_enabled=False)
                   return 0
               return post_once(opener)
 
