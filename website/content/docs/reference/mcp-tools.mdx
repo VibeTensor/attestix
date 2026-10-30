@@ -8,8 +8,8 @@ MCP tools exposed via the Model Context Protocol. Grouped by the 9 modules. For 
 Every tool is discoverable by any MCP-compatible client (Claude Desktop, Cursor, Continue, VS Code, Windsurf) once Attestix is installed:
 
 ```bash
-pip install attestix
-attestix mcp
+pip install attestix==0.5.0
+python -m attestix.main
 ```
 
 ## 01 / Identity
@@ -130,13 +130,13 @@ Clients that support MCP servers can add Attestix via `stdio`:
 {
   "mcpServers": {
     "attestix": {
-      "command": "attestix",
-      "args": ["mcp"]
+      "command": "python",
+      "args": ["-m", "attestix.main"]
     }
   }
 }
 ```
 
-Or connect over HTTP with `attestix mcp --transport http --port 8501`.
+The bundled Attestix 0.5.0 MCP entry point supports stdio. It does not provide an MCP HTTP startup command; the REST API is a separate interface.
 
 See the [integration guides](/docs/guides/integration-guide) for framework-specific wiring into LangChain, OpenAI Agents SDK, and CrewAI.

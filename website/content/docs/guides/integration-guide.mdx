@@ -3,7 +3,9 @@ title: Integration Guide
 description: How to use Attestix with LangChain, OpenAI Agents SDK, CrewAI, plain Python, and other MCP clients.
 ---
 
-Attestix integrates with three agent frameworks as real (not example) integrations shipped in v0.3.0 (LangChain, OpenAI Agents SDK, and CrewAI) and with any MCP-compatible client through the generic MCP server. v0.4.0 is the current stable release; treat the integrations as you would any pre-1.0 OSS crypto stack and pin the version you depend on.
+Attestix integrates with three agent frameworks as real (not example) integrations shipped in v0.3.0 (LangChain, OpenAI Agents SDK, and CrewAI) and with any MCP-compatible client through the generic MCP server. 0.5.0 is the current published Python release (Python 3.11 or later); treat the integrations as you would any pre-1.0 OSS crypto stack and pin the version you depend on.
+
+The full [LangChain](/docs/guides/langchain) and [CrewAI](/docs/guides/crewai) framework recipes are unsupported under the current 0.5.0 dependency constraints pending a separately reviewed migration. Their historical code is reference material, not a clean-install or production recipe. Base MCP setup is a separate path.
 
 ## Shipped integrations
 
@@ -57,24 +59,22 @@ All services share the same Ed25519 signing key (auto-generated on first use) an
 
 ## As an MCP server (stdio)
 
+The `python` command must resolve to the environment where `attestix==0.5.0` is installed. If needed, use that environment's interpreter path: `/path/to/.venv/bin/python` on macOS/Linux, or `C:\\path\\to\\.venv\\Scripts\\python.exe` in Windows JSON (backslashes escaped).
+
 ```json
 {
   "mcpServers": {
     "attestix": {
-      "command": "attestix",
-      "args": ["mcp"]
+      "command": "python",
+      "args": ["-m", "attestix.main"]
     }
   }
 }
 ```
 
-## As an MCP server (HTTP)
+## MCP transport support
 
-```bash
-attestix mcp --transport http --port 8501
-```
-
-Then connect any MCP client to `http://localhost:8501/mcp`.
+The bundled Attestix 0.5.0 MCP entry point runs over stdio with `python -m attestix.main`. It does not provide an MCP HTTP startup command. The [REST API setup](/docs/quickstart/enterprise-architect) is a separate HTTP interface.
 
 ## Next
 
