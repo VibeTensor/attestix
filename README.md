@@ -83,7 +83,7 @@ attestix credential --list               # List W3C Verifiable Credentials
 ### REST API
 
 ```bash
-pip install 'attestix[api]'
+pip install 'attestix[api]==0.5.0'
 # Configure ATTESTIX_API_KEY in your environment before starting the API.
 uvicorn attestix.api.main:app --reload   # Swagger docs at http://localhost:8000/docs
 ```
@@ -289,7 +289,7 @@ Remote DID resolution, hosted signers and blockchain integrations require their 
 ## Architecture
 
 ```
-attestix/                  # Canonical Python package (v0.4.0)
+attestix/                  # Canonical Python package
   main.py                  # MCP server entry point (MCP tools)
   cli.py                   # `attestix` console script
   config.py                # Environment-based configuration
