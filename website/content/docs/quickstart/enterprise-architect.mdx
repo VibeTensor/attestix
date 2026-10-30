@@ -32,11 +32,12 @@ attestix mcp --transport http --port 8501
 ```python
 # A default single-tenant call against the running service.
 # Idempotency is honoured via the Idempotency-Key header (Stripe-style).
-import os, requests, uuid
+import os, uuid
+import httpx
 
 BASE = os.environ.get("ATTESTIX_URL", "http://localhost:8000")
 
-resp = requests.post(
+resp = httpx.post(
     f"{BASE}/v1/identities",
     json={
         "display_name": "platform-issued-agent",
@@ -56,7 +57,7 @@ agent = resp.json()
 print(agent["agent_id"], agent["issuer"]["did"])
 
 # Read from the same authenticated single-tenant service.
-trail = requests.get(
+trail = httpx.get(
     f"{BASE}/v1/provenance/audit-trail/{agent['agent_id']}",
     headers={"X-API-Key": os.environ["ATTESTIX_API_KEY"], "X-Attestix-Tenant": "default"},
 ).json()

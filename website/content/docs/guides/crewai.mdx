@@ -1,17 +1,17 @@
 ---
 title: CrewAI Integration
-description: Attach Attestix to every CrewAI agent via MCPServerAdapter. Real (not example) integration shipped in v0.3.0; install examples target Attestix 0.5.0 on Python 3.11 or later. Crews become attestable by default.
+description: Historical CrewAI framework wiring. The full recipe is unsupported under Attestix 0.5.0 dependency constraints pending a reviewed migration.
 ---
 
-CrewAI agents receive Attestix tools through the `tools` field, populated by the `MCPServerAdapter`. Every agent in the crew discovers MCP tools, and role hand-offs are recorded as UCAN delegations.
+The historical recipe below passes tools from `MCPServerAdapter` into CrewAI agents. It is not a supported Attestix 0.5.0 installation path.
 
-## Install
+## Dependency compatibility
 
-```bash
-pip install 'attestix[crewai]==0.5.0'
-```
+Attestix 0.5.0 constrains its CrewAI extra to `crewai<0.200`, and that extra does not supply the `crewai_tools.MCPServerAdapter` used below. Versions of `crewai-tools` below 1.15.1 are affected by the [SSRF redirect-bypass advisory](https://github.com/advisories/GHSA-mr4r-hcgx-8p4h).
 
-## Minimal wiring
+No safely resolved and audited dependency set has been established for this full recipe under the current constraints. Do not install an older vulnerable adapter to make the import pass. A separate runtime and extras migration must be reviewed before this framework path is supported. Base [MCP setup](/docs/getting-started) is a separate installation path.
+
+## Historical wiring (unsupported for 0.5.0)
 
 `MCPServerAdapter` is a context manager that yields the discovered tool list. Pass it into the agent's `tools` field.
 
