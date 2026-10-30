@@ -45,7 +45,7 @@ jobs:
           BRANCH = 'release/python-0.5.0'
           BASE = f'https://api.cloudflare.com/client/v4/accounts/{ACCOUNT}/pages/projects/attestix/deployments'
           TARGET = f'{BASE}/{FAILED_ID}'
-          RECENT = f'{BASE}?env=preview&page=1&per_page=100'
+          RECENT = f'{BASE}?env=preview&page=1&per_page=20'
           RETRY = f'{TARGET}/retry'
           MAX_BYTES = 2 * 1024 * 1024
           STAGES = {'queued', 'initialize', 'clone_repo', 'build', 'deploy'}
@@ -182,7 +182,7 @@ jobs:
               emit('preview_target_preflight', deployment_id=FAILED_ID, stage=name, status=state,
                    environment='preview', source_verified=True, skip_reason='none', post_attempts=0)
               recent = read(opener, RECENT).get('result')
-              if not isinstance(recent, list) or not recent or len(recent) > 100:
+              if not isinstance(recent, list) or not recent or len(recent) > 20:
                   raise ReadFailure('recent_window_unavailable')
               timestamps = [created(item) for item in recent]
               if timestamps != sorted(timestamps, reverse=True):
