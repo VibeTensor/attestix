@@ -20,7 +20,7 @@ from attestix.storage.memory_repository import MemoryRepository
 
 
 @pytest.mark.parametrize('optimization', [0, 2])
-@pytest.mark.parametrize('scenario', ['matching', 'wrong_nonce', 'tampered', 'unchecked'])
+@pytest.mark.parametrize('scenario', ['matching', 'wrong_nonce', 'wrong_domain', 'tampered', 'unchecked', 'untrusted_issuer'])
 def test_documented_verification_rejects_untrusted_context(tmp_path, monkeypatch, optimization, scenario):
     def refuse_network(*args, **kwargs):
         raise AssertionError('The documentation smoke must remain offline')
@@ -44,20 +44,30 @@ def test_documented_verification_rejects_untrusted_context(tmp_path, monkeypatch
     service = CredentialService(signer=signer, emitter=emitter)
     credential = service.issue_credential(agent_id=identity['agent_id'], credential_type='AgentIdentityCredential')
     presentation = service.create_verifiable_presentation(
-        identity['agent_id'], [credential['id']], audience_did=domain,
+        identity['agent_id'], [credential['id']],
+        audience_did='did:web:other-verifier.example' if scenario == 'wrong_domain' else domain,
         challenge='another-request' if scenario == 'wrong_nonce' else challenge,
     )
     if scenario == 'tampered':
         presentation = deepcopy(presentation)
         presentation['challenge'] = 'modified-after-signing'
+    verifier_key = Ed25519PrivateKey.generate()
+    configured_signer = (
+        InProcessSigner(private_key=verifier_key, did=public_key_to_did_key(verifier_key.public_key()))
+        if scenario == 'untrusted_issuer' else signer
+    )
+    verifier = CredentialService(signer=configured_signer, emitter=AuditEventEmitter(repository=MemoryRepository()))
+    if scenario == 'untrusted_issuer':
+        rejected = verifier.verify_presentation(presentation, expected_challenge=challenge, expected_domain=domain)
+        assert rejected['valid'] is False
+        assert rejected['checks']['vp_signature_valid'] is False
     if scenario == 'unchecked':
-        unchecked = service.verify_presentation(presentation)
+        unchecked = verifier.verify_presentation(presentation)
         assert unchecked['valid'] is True
         assert unchecked['checks']['replay_protection'] == 'unchecked'
         # An adapter that drops the trusted request context must not bypass the guard.
-        verifier = SimpleNamespace(verify_presentation=lambda value, **kwargs: service.verify_presentation(value))
-    else:
-        verifier = service
+        unchecked_verifier = verifier
+        verifier = SimpleNamespace(verify_presentation=lambda value, **kwargs: unchecked_verifier.verify_presentation(value))
     (tmp_path / 'presentation.json').write_text(json.dumps(presentation), encoding='utf-8')
     namespace = {'credential_svc': verifier, 'json': json}
     example = compile(snippet, str(document), 'exec', optimize=optimization)

@@ -76,9 +76,9 @@ The credential is valid only when `signature_valid` AND `not_expired` AND `not_r
 
 If the signature is valid, you have cryptographic proof that the issuer controlled the private key at signing time.
 
-## Step 3 / Verify a presentation (optional)
+## Step 3 / Verify a presentation in its configured issuer service (optional)
 
-If the supplier sent a Verifiable Presentation that bundles several credentials, verify it in one call. `verify_presentation` checks the presentation signature plus every embedded credential.
+`verify_presentation` checks the presentation signature against the service's configured signer DID. It separately verifies each embedded credential against that credential's own issuer DID through `verify_credential_external`. This step applies to an existing service configured for the presentation's issuer. A fresh verifier with a different signing key rejects that presentation, even when the challenge and domain match. This is not a general independent-supplier presentation verifier; use Step 2 for independent credential verification. Do not copy a supplier's private key to make verification pass.
 
 Use the challenge and domain retained from your verifier's presentation request.
 The fixed values below illustrate a synthetic request; never take expected values
