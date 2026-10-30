@@ -210,21 +210,38 @@ def test_wheel_layout_and_install_smoke(tmp_path):
         OTEL_SDK_DISABLED="true", DO_NOT_TRACK="1",
     )
 
-    async def initialize_candidate_console():
+    async def initialize_candidate_console(command, arguments):
         from mcp import ClientSession, StdioServerParameters
         from mcp.client.stdio import stdio_client
 
+        parse_errors = []
+
+        async def message_handler(message):
+            if isinstance(message, Exception):
+                parse_errors.append(message)
+
         parameters = StdioServerParameters(
-            command=console, args=[argument["value"] for argument in fixed_arguments],
+            command=command, args=arguments,
             env=environment, cwd=tmp_path,
         )
         async with asyncio.timeout(60):
             async with stdio_client(parameters) as (reader, writer):
-                async with ClientSession(reader, writer) as session:
+                async with ClientSession(reader, writer, message_handler=message_handler) as session:
                     initialized = await session.initialize()
                     tools = await session.list_tools()
                     assert initialized.serverInfo.name == "attestix"
                     assert tools.tools
+        assert not parse_errors, "MCP stdout contained malformed protocol frames"
 
-    asyncio.run(initialize_candidate_console())
+    asyncio.run(initialize_candidate_console(console, [argument["value"] for argument in fixed_arguments]))
+    # SDK initialization alone also succeeds after malformed stdout; prove this
+    # smoke guard rejects that regression using the same installed candidate.
+    noisy_fixture = (
+        "import sys\n"
+        "sys.stdout.write('synthetic malformed frame\\n'); sys.stdout.flush()\n"
+        "from attestix.cli import cli\n"
+        "cli(args=['mcp'], prog_name='attestix')\n"
+    )
+    with pytest.raises(AssertionError, match="MCP stdout contained malformed protocol frames"):
+        asyncio.run(initialize_candidate_console(py, ["-I", "-c", noisy_fixture]))
     assert not (data_dir / ".signing_key.json").exists()
