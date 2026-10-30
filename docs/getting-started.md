@@ -10,7 +10,7 @@ Get your first AI agent identity in under 5 minutes.
 ## Installation
 
 ```bash
-pip install attestix
+pip install attestix==0.5.0
 ```
 
 Or install from source:

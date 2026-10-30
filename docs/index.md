@@ -63,8 +63,10 @@ The AI Act applies in stages. The current EU timeline includes 2 December 2027 f
 
 === "pip install"
 
+    Requires Python 3.11 or later.
+
     ```bash
-    pip install attestix
+    pip install attestix==0.5.0
     ```
 
 === "From Source"

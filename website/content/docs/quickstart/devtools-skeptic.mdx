@@ -1,6 +1,6 @@
 ---
 title: DevTools / DX skeptic Quickstart
-description: Does the package actually import? Yes, in v0.4.0-rc.5. Here's the smallest possible test you can run in 60 seconds to verify the DX claim before reading anything else.
+description: Does the package actually import? The install below targets 0.5.0 on Python 3.11 or later. Here's the smallest possible test you can run in 60 seconds to verify the DX claim before reading anything else.
 ---
 
 ## You're here because...
@@ -12,7 +12,7 @@ You're a senior DX-minded developer and the funnel evaluation said the previous 
 ```bash
 python -m venv /tmp/attestix-smoketest && \
   . /tmp/attestix-smoketest/bin/activate && \
-  pip install --pre attestix
+  pip install attestix==0.5.0
 ```
 
 Windows PowerShell:
@@ -20,7 +20,7 @@ Windows PowerShell:
 ```powershell
 python -m venv $env:TEMP\attestix-smoketest
 & $env:TEMP\attestix-smoketest\Scripts\Activate.ps1
-pip install --pre attestix
+pip install attestix==0.5.0
 ```
 
 ## First 30 lines that actually do something
@@ -65,7 +65,7 @@ If you see `canonical ok` and zero stderr, the import surface is clean. If you s
 
 ## Honest things you should know before sending this to your team
 
-- v0.4.0-rc.5 is a release candidate. The legacy flat top-level packages (`services/`, `auth/`, `storage/`, ...) are still installed as deprecation shims and **remain deprecated in 0.5.0**.
+- Attestix 0.5.0 is a published pre-1.0 release. The legacy flat top-level packages (`services/`, `auth/`, `storage/`, ...) are still installed as deprecation shims and **remain deprecated in 0.5.0**.
 - Single maintainer, ~15 GitHub stars, no third-party security audit. The package is functional but not yet enterprise-hardened. See the [enterprise architect quickstart](/docs/quickstart/enterprise-architect) for the explicit gap list.
 - The signing key lives in `.signing_key.json` in the working directory and is plaintext by default. Set `ATTESTIX_KEY_PASSPHRASE` to enable AES-256-GCM encryption at rest.
 

@@ -1,6 +1,6 @@
 # Examples
 
-Runnable examples for every Attestix module. All examples work standalone after `pip install attestix`.
+Runnable examples for every Attestix module. All examples work standalone after `pip install attestix==0.5.0`.
 
 ## 1. Create and Verify an Agent Identity
 

@@ -9,14 +9,16 @@ You're a compliance engineer on a fintech / trading-agent stack. Use the runnabl
 
 ## 60-second install
 
+Requires Python 3.11 or later.
+
 ```bash
-pip install --pre attestix
+pip install attestix==0.5.0
 ```
 
 If you want the FastAPI surface for an internal service:
 
 ```bash
-pip install --pre 'attestix[api]'
+pip install 'attestix[api]==0.5.0'
 attestix mcp --transport http --port 8501
 ```
 

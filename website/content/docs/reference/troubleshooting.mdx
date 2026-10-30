@@ -5,7 +5,7 @@ description: Common errors and solutions when working with Attestix
 
 ## Installation Issues
 
-### `pip install attestix` fails with dependency conflicts
+### `pip install attestix==0.5.0` fails with dependency conflicts
 
 ```
 ERROR: Cannot install attestix because these package versions have conflicting dependencies.
@@ -17,7 +17,7 @@ ERROR: Cannot install attestix because these package versions have conflicting d
 python -m venv attestix-env
 source attestix-env/bin/activate  # Linux/macOS
 attestix-env\Scripts\activate     # Windows
-pip install attestix
+pip install attestix==0.5.0
 ```
 
 ### Python version error
