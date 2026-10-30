@@ -1,0 +1,69 @@
+# Installed-release benchmark evidence
+
+This comparison runs actual published `attestix` wheels, not the checkout's
+product implementation. The initial pair is 0.4.3 and 0.5.0 on one Python 3.12
+Ubuntu runner. Registry hashes and fully hashed dependency locks are recorded.
+The fixed 0.4.3 baseline is selected explicitly; it is not an automatically
+discovered previous release.
+Different supported dependency versions are part of the release comparison;
+results do not isolate a single code change's causal effect.
+
+## Workloads and gates
+
+Both installed canonical `attestix.auth.crypto` APIs must pass import, signature
+shape, positive verification, tampered message, wrong key, malformed signature,
+DID derivation and custom Attestix canonical-JSON roundtrip checks before timing.
+Keys exist only in worker memory. No signing-key loader or storage-backed service
+fixture is invoked. Workers reject network/subprocess activity, protected-file
+opens and file writes. These Python audit hooks are not an OS security sandbox.
+
+- Fresh-process crypto import and installed CLI entry-point `--help`: 3 warmups
+  and 30 samples per version, deterministic alternating order. CLI comparison
+  is included only when both entry points pass offline gates. Process timings
+  include common harness/guard overhead; inside-process timings are separate
+  and include installed-distribution/API identity checks alongside the import.
+  These are warm-filesystem observations, not machine-cold or MCP-ready latency.
+- Key generation; sign, verify and sign+verify for 256, 1024 and 4096 bytes;
+  custom canonical-JSON sign+verify: 10 alternating blocks per version, 5 warmup
+  batches per block, then 10 measured batches of 100 operations per case.
+  This yields 100 measured batch-average samples. The reported crypto p95 is
+  the p95 of batch-average latency, never individual-operation tail latency.
+
+No timing threshold gates a release. Correctness, identity, missing samples and
+offline-policy violations fail explicitly. Raw elapsed samples, medians, p95,
+artifact/dependency hashes, host/runtime metadata and exclusions are retained.
+No key, signature, credential payload or customer data is included in evidence.
+
+## Reproduce
+
+```sh
+python -m unittest discover -s tests -p test_release_benchmark_harness.py
+python benchmarks/run_release.py prepare --baseline 0.4.3 --candidate 0.5.0 --output /new/empty/evidence-path
+python benchmarks/run_release.py run --output /new/empty/evidence-path --startup-samples 30
+```
+
+The prepare phase uses public PyPI for artifact/dependency setup. Timed workers
+do not use external product APIs. The workflow verifies the successful publisher
+run and its small typed source record; it never checks out producer source or
+executes artifact scripts. PR runs use the verified 0.5.0 publisher run. Manual
+and successful-publication runs reuse the same harness on trusted main code.
+
+Actions evidence is retained for 90 days; it is not a permanent release asset.
+Any release-asset attachment requires a separate reviewed write-permission job.
+This workflow has no release/package publication or deployment permission.
+
+## Evidence contract and coverage
+
+`result.json` is the machine-readable record; `summary.md` is an observed-results
+table. Store `setup.json`, both `.lock` files and `publisher.json` with them.
+Consumers must keep source/artifact identities, runtime, raw samples, operation
+counts, percentile scope, correctness and exclusions together. Never compare
+different runner reports as though they were a controlled same-host experiment.
+
+This minimal contract covers offline crypto and conditional CLI help only.
+VC persistence, audit-chain timing, Merkle inclusion proofs, on-chain throughput,
+cloud/API/model/payment workflows and SDK examples are not measured here.
+The older pytest timing suite uses service fixtures and is not a substitute for
+an installed-release/environment/raw-sample report; `-s` shows its captured prints.
+Private-product evidence must remain in its own private repository/store, even
+when reusing this contract.
