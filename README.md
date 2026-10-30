@@ -42,7 +42,7 @@
 
 ## Source and verification status
 
-This source targets Python `attestix` 0.5.0, requiring Python 3.11 or later. Confirm the release files on [PyPI](https://pypi.org/project/attestix/0.5.0/) before installing; source metadata alone is not proof of publication. Python 0.4.3 is a previously published release with the Filelock constraint described below. Language SDKs have independent release schedules; verify each registry and pin the version you reviewed.
+Python `attestix` 0.5.0 is published on PyPI and requires Python 3.11 or later. Confirm the release files on [PyPI](https://pypi.org/project/attestix/0.5.0/) before installing; source metadata alone is not proof of publication. Python 0.4.3 is a previously published release with the Filelock constraint described below. Language SDKs have independent release schedules; verify each registry and pin the version you reviewed.
 
 - Credential verification binds the stated issuer to the supported proof controller. Ambiguous NFC-normalized keys fail before signing or verification.
 - Presentation verification requires the caller's expected challenge and domain. A signature alone does not provide replay protection.
@@ -110,7 +110,7 @@ Cryptographic validity is separate from issuer trust, authorization, revocation 
 
 | Language | Install | Status |
 |----------|---------|--------|
-| **Python** | `pip install attestix==0.5.0` | Python 0.5.0 target; verify PyPI publication |
+| **Python** | `pip install attestix==0.5.0` | PyPI 0.5.0 published; verify release files |
 | **JS / TS** | `npm install attestix@0.4.2` | npm 0.4.2; verifier source ([attestix-js](https://github.com/VibeTensor/attestix-js)) |
 | **Go** | `go get github.com/VibeTensor/attestix-go@v0.4.2` | Go module v0.4.2; verifier source ([attestix-go](https://github.com/VibeTensor/attestix-go)) |
 | **Rust** | `cargo add attestix` | crates.io 0.4.1; GitHub v0.4.2 source ([attestix-rs](https://github.com/VibeTensor/attestix-rs)) |

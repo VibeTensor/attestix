@@ -1,21 +1,19 @@
 ---
 title: Indie AI-agent dev Quickstart
-description: For the solo founder shipping a LangChain RAG agent fast. Skip the boilerplate, get a hash-chained audit trail and a signed VC on every chain completion.
+description: Historical LangChain agent recipe, unsupported under Attestix 0.5.0 dependency constraints pending a reviewed migration.
 ---
 
 ## You're here because...
 
-You're a solo or small-team dev shipping a LangChain agent and you don't have time to hand-roll an audit trail before launch. Use the runnable example and the source limitations below to assess whether this workflow meets your requirements.
+The full LangChain recipe on this page is historical reference and is unsupported under Attestix 0.5.0 dependency constraints. For base identity and credential operations, use [Getting Started](/docs/getting-started).
 
-## 60-second install
+## Dependency compatibility
 
-```bash
-pip install --pre 'attestix[langchain]'
-```
+No current installation command is offered for this full framework recipe. Attestix 0.5.0 constrains `langchain-core<0.5`, excluding the patched versions in the [core prompt-loader advisory](https://github.com/advisories/GHSA-qh6h-p6c9-ff54). Its older full framework and OpenAI adapter also have [filesystem-boundary](https://github.com/advisories/GHSA-gr75-jv2w-4656) and [image token-counting SSRF](https://github.com/advisories/GHSA-r7w7-9xr2-qq2r) advisories.
 
-That installs v0.4.0-rc.5 plus the `langchain-core` extra. Drop the `--pre` once v0.4.0 GA ships.
+Do not force older vulnerable dependencies into a current deployment. The framework and extras migration needs separate compatibility testing and security review.
 
-## First 30 lines that actually do something
+## Historical wiring (unsupported for 0.5.0)
 
 ```python
 from langchain.agents import AgentExecutor, create_react_agent
@@ -53,7 +51,7 @@ result = executor.invoke({"input": "Summarise our Q4 board pack."})
 print(result["output"])
 ```
 
-## What you just got
+## Intended behavior of the historical recipe
 
 - A row in the local hash-chained audit trail for every callback event (`on_chain_start`, `on_tool_start`, `on_llm_end`, `on_chain_end`).
 - A signed `ChainExecutionCredential` (W3C VC, `Ed25519Signature2020`) auto-issued on chain completion. Verify it offline with `attestix credential --verify <cred_id>`.

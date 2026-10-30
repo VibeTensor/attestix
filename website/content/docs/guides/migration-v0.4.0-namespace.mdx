@@ -127,17 +127,17 @@ to catch every remaining legacy import in one pass.
 
 ## Pin a stable release
 
-Python 0.4.3 is published and provides the canonical namespace:
+Attestix 0.5.0 is published and provides the canonical namespace:
 
 ```bash
-pip install attestix==0.4.3
+pip install attestix==0.5.0
 ```
 
-Version 0.4.3 requires `filelock<4.0.0` and cannot install patched Filelock 4.2.1. On Unix, keep the Attestix data directory private and prevent other users from replacing its lock path. This limits the conditional local file-truncation risk described in the [Filelock advisory](https://github.com/tox-dev/filelock/security/advisories/GHSA-69hj-f68j-2879). Upgrade to a reviewed Attestix release with Filelock 4.2.1 or later when published.
+Version 0.4.3 requires `filelock<4.0.0` and cannot install patched Filelock 4.2.1. On Unix, keep the Attestix data directory private and prevent other users from replacing its lock path. This limits the conditional local file-truncation risk described in the [Filelock advisory](https://github.com/tox-dev/filelock/security/advisories/GHSA-69hj-f68j-2879). Attestix 0.5.0 permits the patched Filelock dependency and requires Python 3.11 or later.
 
-Current source prepares 0.5.0 with a Python 3.11 minimum. Check PyPI and the
-release notes before changing a pinned deployment; source metadata alone does
-not establish publication.
+Attestix 0.5.0 is published on PyPI with a Python 3.11 minimum. Check the
+[release files](https://pypi.org/project/attestix/0.5.0/) and release notes before
+changing a pinned deployment; source metadata alone does not establish publication.
 
 ## See also
 

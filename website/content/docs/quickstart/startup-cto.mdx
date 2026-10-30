@@ -9,8 +9,10 @@ You're a startup CTO doing a build-vs-buy on agent governance. Use the runnable 
 
 ## 60-second install
 
+Requires Python 3.11 or later.
+
 ```bash
-pip install --pre attestix
+pip install attestix==0.5.0
 ```
 
 ## First 30 lines that actually do something
@@ -82,14 +84,14 @@ ProvenanceService().log_action(
 | W3C VC issuance + offline verification | `CredentialService.issue_credential` / `verify_credential` |
 | UCAN-style capability delegation w/ attenuation | `DelegationService.create_delegation` (parent token check is enforced) |
 | EU AI Act risk profile + Annex V declaration | `ComplianceService.create_compliance_profile` + `generate_declaration_of_conformity` |
-| MCP server exposing all of the above as tools | `attestix mcp` (MCP tools, stdio or HTTP) |
+| MCP server exposing all of the above as tools | `python -m attestix.main` (MCP tools, stdio) |
 | REST surface for an internal service | `uvicorn attestix.api.main:app` (44 endpoints) |
 
 That's roughly 5 services and 3-5 engineer-months of work to get to the same surface area.
 
 ## Honest things to weigh before you decide to buy
 
-- **Maturity:** beta, single maintainer, ~15 GitHub stars, no third-party security audit. The trade-off is "buy a primitive, audit it yourself" vs. "build it yourself and own the audit anyway."
+- **Maturity:** beta, single maintainer, no third-party security audit. The trade-off is "buy a primitive, audit it yourself" vs. "build it yourself and own the audit anyway."
 - **Storage:** flat JSON files. Production multi-tenant deployment needs the pluggable Postgres/S3 backend (planned, not in v0.4.0).
 - **Key management:** `.signing_key.json` plaintext by default. KMS / HSM / Vault integration is on the [roadmap](/docs/project/roadmap).
 - **Anchoring:** Base L2 **testnet** only in v0.4.0. Mainnet schema registration planned.

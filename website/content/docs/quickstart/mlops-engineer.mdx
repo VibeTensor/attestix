@@ -5,20 +5,20 @@ description: Wire Attestix into a CI/CD pipeline so every model promotion produc
 
 ## You're here because…
 
-You're an MLOps engineer and the funnel evaluation flagged that your peers dropped at integration because the tool felt CLI-first / single-user, with no idempotent declarative API, no Terraform / Ansible module, and file-based state. This page accepts that gap and shows the realistic CI path today: a deterministic CLI plus the idempotency-aware REST surface for a CI runner. The pluggable storage backend and IaC modules are on the [roadmap](/docs/project/roadmap); what's below works against v0.4.0 (stable) unchanged.
+You're an MLOps engineer and the funnel evaluation flagged that your peers dropped at integration because the tool felt CLI-first / single-user, with no idempotent declarative API, no Terraform / Ansible module, and file-based state. This page accepts that gap and shows the realistic CI path today: a deterministic CLI plus the idempotency-aware REST surface for a CI runner. The pluggable storage backend and IaC modules are on the [roadmap](/docs/project/roadmap); the install below targets Attestix 0.5.0 on Python 3.11 or later.
 
 ## 60-second install
 
 Pin the version in `requirements-attestix.txt` so the CI run is reproducible:
 
 ```text
-attestix==0.4.0
+attestix==0.5.0
 ```
 
 Then in the CI step:
 
 ```bash
-pip install --pre -r requirements-attestix.txt
+pip install -r requirements-attestix.txt
 ```
 
 ## First 30 lines that actually do something
