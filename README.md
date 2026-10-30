@@ -42,7 +42,7 @@
 
 ## Source and verification status
 
-Published runtime hardening is available in Python `attestix` 0.4.2 on PyPI. This source also prepares the 0.4.3 website/documentation update; source metadata is not proof of registry publication. The JavaScript offline verifier is also published as npm `attestix` 0.4.2. Main may contain later changes; compare release notes and pin the version you reviewed. Go and Java 0.4.2 are published. R and Rust have GitHub 0.4.2 releases, while CRAN and crates.io still serve 0.4.1 at this release cutoff.
+This source targets Python `attestix` 0.5.0, requiring Python 3.11 or later. Confirm the release files on [PyPI](https://pypi.org/project/attestix/0.5.0/) before installing; source metadata alone is not proof of publication. Python 0.4.3 is a previously published release with the Filelock constraint described below. Language SDKs have independent release schedules; verify each registry and pin the version you reviewed.
 
 - Credential verification binds the stated issuer to the supported proof controller. Ambiguous NFC-normalized keys fail before signing or verification.
 - Presentation verification requires the caller's expected challenge and domain. A signature alone does not provide replay protection.
@@ -53,18 +53,20 @@ Published runtime hardening is available in Python `attestix` 0.4.2 on PyPI. Thi
 
 ## Install
 
-Current source and the next release require Python 3.11 or later for the patched file-locking dependency. Previously published releases retain their own Python requirements; this source change does not publish a new package.
+Attestix 0.5.0 requires Python 3.11 or later for the patched file-locking dependency. Earlier releases retain their own Python requirements; check the registry files for the version you install.
 
 ```bash
-# Reviewed release (check release notes before upgrading):
-pip install attestix==0.4.2
+# Confirm this release is available on PyPI before installing:
+pip install attestix==0.5.0
 ```
+
+Version 0.4.3 requires `filelock<4.0.0` and cannot install patched Filelock 4.2.1. On Unix, keep the Attestix data directory private and prevent other users from replacing its lock path. This limits the conditional local file-truncation risk described in the [Filelock advisory](https://github.com/tox-dev/filelock/security/advisories/GHSA-69hj-f68j-2879). Moving from 0.4.3 to 0.5.0 requires Python 3.11 or later; review the release files before upgrading.
 
 > Since 0.4.0, the supported namespace is the canonical
 > `attestix.*` namespace. The older flat layout (`from services... import`,
 > `from auth... import`, ...) keeps working via thin deprecation shims that
-> emit a `DeprecationWarning` on first import and are scheduled for removal in
-> v0.5.0. Update imports to `from attestix.services... import` at your earliest
+> emit a `DeprecationWarning` on first import and may be removed in
+> a future release. Update imports to `from attestix.services... import` at your earliest
 > convenience.
 
 ### CLI
@@ -81,7 +83,7 @@ attestix credential --list               # List W3C Verifiable Credentials
 ### REST API
 
 ```bash
-pip install 'attestix[api]'
+pip install 'attestix[api]==0.5.0'
 # Configure ATTESTIX_API_KEY in your environment before starting the API.
 uvicorn attestix.api.main:app --reload   # Swagger docs at http://localhost:8000/docs
 ```
@@ -108,7 +110,7 @@ Cryptographic validity is separate from issuer trust, authorization, revocation 
 
 | Language | Install | Status |
 |----------|---------|--------|
-| **Python** | `pip install attestix==0.4.2` | Published hardening baseline: PyPI 0.4.2 |
+| **Python** | `pip install attestix==0.5.0` | Python 0.5.0 target; verify PyPI publication |
 | **JS / TS** | `npm install attestix@0.4.2` | npm 0.4.2; verifier source ([attestix-js](https://github.com/VibeTensor/attestix-js)) |
 | **Go** | `go get github.com/VibeTensor/attestix-go@v0.4.2` | Go module v0.4.2; verifier source ([attestix-go](https://github.com/VibeTensor/attestix-go)) |
 | **Rust** | `cargo add attestix` | crates.io 0.4.1; GitHub v0.4.2 source ([attestix-rs](https://github.com/VibeTensor/attestix-rs)) |
@@ -287,7 +289,7 @@ Remote DID resolution, hosted signers and blockchain integrations require their 
 ## Architecture
 
 ```
-attestix/                  # Canonical Python package (v0.4.0)
+attestix/                  # Canonical Python package
   main.py                  # MCP server entry point (MCP tools)
   cli.py                   # `attestix` console script
   config.py                # Environment-based configuration
@@ -321,7 +323,7 @@ attestix/                  # Canonical Python package (v0.4.0)
 The pre-v0.4.0 flat layout (`services/`, `auth/`, `storage/`, ...) is
 preserved as deprecation shims at the same paths. They re-export from the
 canonical `attestix.*` namespace and emit a `DeprecationWarning` on first
-import. The shims are scheduled for removal in v0.5.0.
+import. The shims are deprecated and retained in 0.5.0.
 
 ---
 

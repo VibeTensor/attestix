@@ -1918,6 +1918,7 @@ packaging==25.0 \
     #   pip-audit
     #   pip-requirements-parser
     #   pytest
+    #   wheel
 parsimonious==0.10.0 \
     --hash=sha256:8281600da180ec8ae35427a4ab4f7b82bfec1e3d1e52f80cb60ea82b9512501c \
     --hash=sha256:982ab435fabe86519b57f6b35610aa4e4e977e9f02a14353edf4bbc75369fc0f
@@ -2729,6 +2730,10 @@ ruff==0.15.14 \
     --hash=sha256:f3707da619a143a2e8830e2abab8224478d69ace2d28cb6c20543ae97c36bf61 \
     --hash=sha256:ff47b90a9ef6a40c9e2f3b479c1fb78531adf055b94c1eba0a7ba04b31951826
     # via attestix (pyproject.toml)
+setuptools==84.2.1 \
+    --hash=sha256:3ff8b3b5492a0aa66960f4419365a86b84e013070d4313e4d4a6894f5d64d6bc \
+    --hash=sha256:ca140b45d5325a9478f880e351484f62fef15f336462e449ca0c03c873d589c2
+    # via attestix (pyproject.toml)
 shellingham==1.5.4 \
     --hash=sha256:7ecfff8f2fd72616f7481040475a65b2bf8af90a56c89140852d1120324e8686 \
     --hash=sha256:8dbca0739d487e5bd35ab3ca4b36e11c4078f3a234bfce294b0a0291363404de
@@ -3129,6 +3134,10 @@ websockets==15.0.1 \
     # via
     #   uvicorn
     #   web3
+wheel==0.48.0 \
+    --hash=sha256:3217dcc807155e45db462d7ef2431f5ddda0d7273b700d05a67b271ceb1287ab \
+    --hash=sha256:94800765601e9171bf5d58d066e640662842bcedcbab982b2c90787a2c987322
+    # via attestix (pyproject.toml)
 yarl==1.25.1 \
     --hash=sha256:0136d640dfa9b0523853e411430a99f8a91eca85774c6420285a33b755bc6de3 \
     --hash=sha256:03dd38de09bc213e9a8b29761eec33ee1d5318dac0e49d8af36e4d27830e23a7 \

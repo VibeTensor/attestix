@@ -1,6 +1,6 @@
 """Legacy shim for :mod:`attestix.auth.ssrf`.
 
-This module is deprecated and will be removed in Attestix v0.5.0. Update to::
+This module is deprecated and may be removed in a future Attestix release. Update to::
 
     from attestix.auth.ssrf import ...
 """

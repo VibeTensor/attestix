@@ -4,7 +4,7 @@ Canonical, installable namespace package. v0.4.0-rc.2 promoted all source
 modules into the ``attestix.*`` namespace so a ``pip install attestix`` wheel
 no longer drops flat top-level packages (``services/``, ``auth/``, ``storage/``,
 ...) into site-packages. The pre-rc.2 flat imports keep working via thin
-deprecation shims and are scheduled for removal in v0.5.0.
+deprecation shims and are retained for compatibility in this release.
 
 Canonical import paths (recommended)::
 
@@ -29,7 +29,7 @@ Modules:
     - attestix.errors: Centralized error categories and structured logging
 """
 
-__version__ = "0.4.3"
+__version__ = "0.5.0"
 
 # Re-export submodules for convenient access
 from attestix import services

@@ -4,7 +4,7 @@ All notable changes to Attestix are documented here.
 
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
-## [Unreleased]
+## [0.5.0] - 2026-10-30
 
 ### Security
 - Require Python 3.11 or later to use the supported patched Filelock 4.2.1 release. Python 3.10 is no longer supported by current source.
@@ -12,6 +12,8 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Keep Windows dependency installation attached to the selected Python interpreter so updating pip does not abort the test matrix.
 
 ### Changed
+- Keep deprecated flat import shims in 0.5.0; migrate to the canonical `attestix.*` namespace before a future removal.
+- Couple package, runtime and MCP versions; reject reused versions, mismatched tags and unexpected distribution files before publishing. Verify published file hashes and test installed wheels outside the source tree.
 - Document the readiness changes merged to main: issuer/proof binding, presentation challenge/domain checks, NFC ambiguity rejection, serialized storage updates, REST tenant configuration, redacted metadata, and local purge boundaries.
 - Describe generated declarations and status fields as documentation-workflow evidence, not legal conformity or certification.
 - Correct AI Act application dates and separate source changes from registry publication and deployment acceptance.
@@ -449,7 +451,7 @@ ICP funnel evaluation flagged on rc.1.
 
 ### Changed
 
-- **Honesty pass on rc.1 marketing copy.** Use the runnable example and the source limitations below to assess whether this workflow meets your requirements.
+- **Honesty pass on rc.1 marketing copy.** The funnel evaluation flagged
   pairings of "production-ready" / "battle-tested" / "Production ready"
   framework labels with our actual maturity (15 GitHub stars, single
   maintainer, no third-party security audit). The numbers themselves

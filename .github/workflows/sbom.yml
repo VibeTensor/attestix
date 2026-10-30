@@ -3,8 +3,9 @@ name: SBOM
 on:
   push:
     branches: [main]
-  release:
-    types: [published]
+  workflow_run:
+    workflows: [Publish to PyPI]
+    types: [completed]
   workflow_dispatch:
 
 permissions:
@@ -17,14 +18,54 @@ concurrency:
 jobs:
   cyclonedx:
     name: Generate CycloneDX SBOM
+    if: github.event_name != 'workflow_run' || (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_repository.full_name == 'VibeTensor/attestix' && (github.event.workflow_run.event == 'release' || github.event.workflow_run.event == 'workflow_dispatch'))
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     # contents: write is required to upload the SBOM as a release asset via
     # the gh CLI when this workflow runs on a published release.
     permissions:
       contents: write
+      actions: read
     steps:
+      - name: Download exact upstream verified source metadata
+        if: github.event_name == 'workflow_run'
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: python-release-source
+          path: ${{ runner.temp }}/release-source
+          repository: ${{ github.repository }}
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ github.token }}
+
+      - name: Validate upstream source selector without executing repository code
+        if: github.event_name == 'workflow_run'
+        id: release-source
+        env:
+          SOURCE_EVENT: ${{ github.event.workflow_run.event }}
+        run: |
+          python3 - <<'PY'
+          import json, os, re
+          from pathlib import Path
+          record = json.loads(Path(os.environ['RUNNER_TEMP'], 'release-source', 'release-source.json').read_text())
+          if set(record) != {'release_tag', 'source_sha', 'source_event'}:
+              raise SystemExit('Unexpected release source metadata keys')
+          if not isinstance(record['release_tag'], str) or not re.fullmatch(r'v[0-9]+\.[0-9]+\.[0-9]+', record['release_tag']):
+              raise SystemExit('Invalid stable release tag')
+          if not isinstance(record['source_sha'], str) or not re.fullmatch(r'[0-9a-f]{40}', record['source_sha']):
+              raise SystemExit('Invalid source commit')
+          if record['source_event'] not in {'release', 'workflow_dispatch'} or record['source_event'] != os.environ['SOURCE_EVENT']:
+              raise SystemExit('Upstream event does not match verified metadata')
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as output:
+              for key, value in record.items():
+                  print(f'{key}={value}', file=output)
+          PY
+
       - name: Checkout repository
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          ref: ${{ steps.release-source.outputs.source_sha || github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
 
       - name: Set up Python
         uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
@@ -33,10 +74,21 @@ jobs:
           cache: 'pip'
           cache-dependency-path: pyproject.toml
 
+      - name: Verify registry metadata before attaching release evidence
+        if: github.event_name == 'workflow_run'
+        env:
+          RELEASE_TAG: ${{ steps.release-source.outputs.release_tag }}
+          SOURCE_SHA: ${{ steps.release-source.outputs.source_sha }}
+        run: |
+          git merge-base --is-ancestor HEAD origin/main
+          test "$(git rev-parse HEAD)" = "$SOURCE_SHA"
+          test "$(git rev-parse HEAD)" = "$(git rev-parse "refs/tags/$RELEASE_TAG^{commit}")"
+          python release_guard.py published --tag "$RELEASE_TAG"
+
       - name: Install package and cyclonedx-bom
         run: |
-          pip install --require-hashes -r requirements-runtime.txt
-          pip install -e . --no-deps
+          python -m pip install --require-hashes -r requirements-runtime.txt
+          python -m pip install -e . --no-deps
 
       - name: Generate CycloneDX SBOM (JSON)
         run: |
@@ -61,11 +113,11 @@ jobs:
           retention-days: 30
 
       - name: Attach SBOM to the GitHub release
-        if: github.event_name == 'release'
+        if: github.event_name == 'workflow_run' && steps.release-source.outputs.source_event == 'release'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RELEASE_TAG: ${{ steps.release-source.outputs.release_tag }}
         run: |
-          gh release upload "${{ github.event.release.tag_name }}" \
+          gh release upload "$RELEASE_TAG" \
             attestix-sbom.cyclonedx.json \
-            attestix-sbom.cyclonedx.json.sha256 \
-            --clobber
+            attestix-sbom.cyclonedx.json.sha256

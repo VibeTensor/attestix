@@ -9,7 +9,7 @@ keeps working after the v0.4.0-rc.2 packaging fix that promoted the canonical
 location to :mod:`attestix.tenancy`. Importing this module (or any of its submodules)
 emits a single ``DeprecationWarning`` directing callers at the new path.
 
-The flat-namespace shim is scheduled for removal in Attestix v0.5.0. Update to::
+The flat-namespace shim is retained for compatibility in this release. Update to::
 
     from attestix.tenancy import ...
 """
@@ -18,7 +18,7 @@ import warnings as _warnings
 
 _warnings.warn(
     "Importing from the top-level `tenancy` package is deprecated and will be "
-    "removed in Attestix v0.5.0. Update your imports to "
+    "removed in a future Attestix release. Update your imports to "
     "`from attestix.tenancy...` (canonical namespace).",
     DeprecationWarning,
     stacklevel=2,

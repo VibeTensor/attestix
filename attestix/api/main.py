@@ -17,11 +17,7 @@ from collections import OrderedDict
 from contextlib import asynccontextmanager
 from typing import Optional
 
-try:
-    from importlib.metadata import version as _pkg_version
-    __version__ = _pkg_version("attestix")
-except Exception:
-    __version__ = "0.3.0"
+from attestix import __version__
 
 try:
     from fastapi import FastAPI, Request

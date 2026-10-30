@@ -18,7 +18,7 @@ No network calls. Everything verifies from the JSON blob, because the issuer's E
 ## Prerequisites
 
 ```bash
-pip install attestix==0.4.2
+pip install attestix==0.4.3
 ```
 
 ## Step 1 / Fetch the artefacts
@@ -232,4 +232,4 @@ The same verification is what a peer agent runs when it decides whether to trust
 
 ## Browser and package release status
 
-Python/PyPI and JavaScript/npm, Go and Java/Maven 0.4.2 are published. The 0.4.3 source prepares a website/documentation update; verify registry availability before pinning that release. Rust and R have GitHub 0.4.2 releases; crates.io and CRAN remain at 0.4.1 at this cutoff. The browser page uses npm `attestix` 0.4.2 with the retained boundary guards. Offline results do not check live revocation.
+Python/PyPI 0.4.3 is published. Current Python source prepares 0.5.0, requiring Python 3.11; verify registry availability before pinning that release. JavaScript/npm, Go and Java/Maven have independent release schedules. Rust and R have GitHub 0.4.2 releases; crates.io and CRAN remain at 0.4.1 at this cutoff. The browser page uses npm `attestix` 0.4.2 with the retained boundary guards. Offline results do not check live revocation.
