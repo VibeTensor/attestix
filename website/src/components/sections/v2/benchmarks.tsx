@@ -5,71 +5,34 @@ interface Bench {
   value: string;
   unit: string;
   detail: string;
-  spark: number[];
 }
 
 const BENCHES: Bench[] = [
   {
     label: "Ed25519 sign + verify",
-    value: "0.22",
-    unit: "ms median",
-    detail: "1,000 iterations on commodity hardware",
-    spark: [14, 15, 13, 14, 15, 14, 14, 13, 14, 14, 13, 14],
+    value: "See run",
+    unit: "release evidence",
+    detail: "Installed-wheel comparison with raw samples and environment metadata.",
   },
   {
-    label: "Merkle batch anchor",
-    value: "1000",
-    unit: "artifacts / tx",
-    detail: "Proof: 32 bytes per artifact. Depth log2(n).",
-    spark: [4, 6, 8, 10, 12, 14, 16, 20, 24, 30, 40, 64],
+    label: "Crypto import",
+    value: "See run",
+    unit: "release evidence",
+    detail: "Fresh-process crypto import; this does not measure MCP readiness.",
   },
   {
-    label: "VC issuance end-to-end",
-    value: "21",
-    unit: "ms median",
-    detail: "Canonicalise (JCS) + sign (Ed25519) + persist JSON store",
-    spark: [23, 22, 21, 22, 21, 21, 20, 21, 20, 21, 20, 21],
+    label: "JSON sign + verify",
+    value: "See run",
+    unit: "release evidence",
+    detail: "Custom Attestix canonical JSON and memory-only signing keys.",
   },
   {
-    label: "Audit chain verify",
-    value: "42",
-    unit: "ms / 10k entries",
-    detail: "SHA-256 re-chain + signature batch verify",
-    spark: [30, 32, 34, 34, 36, 38, 38, 40, 40, 41, 41, 42],
+    label: "CLI help startup",
+    value: "See run",
+    unit: "release evidence",
+    detail: "Installed console entry point, when both releases pass offline gates.",
   },
 ];
-
-function Sparkline({ data }: { data: number[] }) {
-  const max = Math.max(...data, 1);
-  const min = Math.min(...data);
-  const range = max - min || 1;
-  const w = 140;
-  const h = 36;
-  const step = w / (data.length - 1);
-  const points = data
-    .map((v, i) => {
-      const x = i * step;
-      const y = h - ((v - min) / range) * h;
-      return `${x.toFixed(1)},${y.toFixed(1)}`;
-    })
-    .join(" ");
-  return (
-    <svg
-      width={w}
-      height={h}
-      viewBox={`0 0 ${w} ${h}`}
-      aria-hidden
-      className="text-atx-accent"
-    >
-      <polyline
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.25"
-        points={points}
-      />
-    </svg>
-  );
-}
 
 export function BenchmarksSection() {
   return (
@@ -79,22 +42,25 @@ export function BenchmarksSection() {
           <div>
             <AtxEyebrow number="08">Benchmarks</AtxEyebrow>
             <h2 className="mt-3 font-serif text-[clamp(28px,3.2vw,40px)] leading-[1.15] tracking-[-0.01em] text-atx-ink">
-              Fast enough
+              Measurements
               <br />
-              to sit in the
+              linked to
               <br />
-              <em className="italic text-atx-accent">hot path.</em>
+              <em className="italic text-atx-accent">evidence.</em>
             </h2>
           </div>
           <p className="text-[15px] leading-[1.65] text-atx-ink-mid">
-            Representative medians from the conformance benchmark suite.
-            Attestix stays under a millisecond for sign-verify, around
-            21 ms end-to-end for credential issuance, and verifies a
-            10k-entry audit chain in under 50 ms on commodity hardware. Run{" "}
-            <code className="rounded-atx-xs border border-atx-line-soft bg-atx-bg-sunken px-1.5 py-0.5 font-mono-atx text-[12px] text-atx-accent">
-              pytest tests/benchmarks/
-            </code>{" "}
-            to reproduce on your own machine.
+            Release comparisons require verified installed artifacts, offline
+            correctness checks, raw samples and a recorded environment. See the{" "}
+            <a href="https://github.com/VibeTensor/attestix/tree/main/benchmarks" className="underline">
+              benchmark methodology
+            </a>{" "}
+            for workloads and exclusions, and the{" "}
+            <a href="https://github.com/VibeTensor/attestix/actions/runs/41106422757" className="underline">
+              dated 0.5.0 reference run
+            </a>{" "}
+            for observed measurements and raw evidence. These measurements are
+            not a service SLA.
           </p>
         </div>
 
@@ -115,7 +81,6 @@ export function BenchmarksSection() {
                   {b.unit}
                 </span>
               </div>
-              <Sparkline data={b.spark} />
               <p className="text-[12.5px] leading-[1.55] text-atx-ink-mid">
                 {b.detail}
               </p>

@@ -1,0 +1,91 @@
+name: Release benchmark evidence
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'benchmarks/**'
+      - 'tests/test_release_benchmark_harness.py'
+      - '.github/workflows/release-evidence.yml'
+  workflow_run:
+    workflows: ['Publish to PyPI']
+    types: [completed]
+  workflow_dispatch:
+    inputs:
+      publisher_run_id:
+        description: Successful verified publisher run
+        required: true
+        default: '41093763880'
+        type: string
+      candidate_version:
+        description: Already published candidate version
+        required: true
+        default: '0.5.0'
+        type: string
+      baseline_version:
+        description: Already published comparison baseline
+        required: true
+        default: '0.4.3'
+        type: string
+
+permissions: {}
+
+concurrency:
+  group: release-evidence-${{ github.event.pull_request.number || github.event.workflow_run.id || github.run_id }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  compare:
+    if: >-
+      github.repository == 'VibeTensor/attestix' &&
+      ((github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository) ||
+       (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main') ||
+       (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success'))
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    permissions:
+      contents: read
+      actions: read
+    steps:
+      # workflow_run executes the trusted default-branch event SHA, never the
+      # producer head or executable files from a producer artifact.
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
+        with:
+          python-version: '3.12'
+      - name: Test harness without product installs or network
+        run: python -m unittest discover -s tests -p test_release_benchmark_harness.py
+      - name: Require verified published candidate and merged source
+        id: release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SOURCE_RUN_ID: ${{ github.event.workflow_run.id || inputs.publisher_run_id || '41093763880' }}
+          REQUESTED_CANDIDATE: ${{ github.event_name == 'pull_request' && '0.5.0' || inputs.candidate_version }}
+          EVIDENCE_DIRECTORY: ${{ runner.temp }}/release-publisher-evidence
+        run: python benchmarks/verify_publisher.py
+      - name: Install actual published artifacts and record hashed dependency locks
+        env:
+          BASELINE_VERSION: ${{ inputs.baseline_version || '0.4.3' }}
+          CANDIDATE_VERSION: ${{ steps.release.outputs.candidate }}
+        run: >-
+          python benchmarks/run_release.py prepare
+          --baseline "$BASELINE_VERSION" --candidate "$CANDIDATE_VERSION"
+          --output "$RUNNER_TEMP/release-benchmark"
+      - name: Run offline installed-product comparison
+        run: python benchmarks/run_release.py run --output "$RUNNER_TEMP/release-benchmark" --startup-samples 30
+      - name: Upload public timing and test evidence only
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: attestix-release-evidence-${{ steps.release.outputs.candidate }}-${{ github.run_id }}
+          if-no-files-found: error
+          retention-days: 90
+          path: |
+            ${{ runner.temp }}/release-benchmark/result.json
+            ${{ runner.temp }}/release-benchmark/summary.md
+            ${{ runner.temp }}/release-benchmark/setup.json
+            ${{ runner.temp }}/release-benchmark/baseline.lock
+            ${{ runner.temp }}/release-benchmark/candidate.lock
+            ${{ runner.temp }}/release-publisher-evidence/publisher.json
