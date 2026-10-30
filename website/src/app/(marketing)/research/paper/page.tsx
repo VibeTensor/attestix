@@ -41,8 +41,12 @@ export default function ResearchPaperPage() {
           Verifiable Credentials 1.1, W3C DID 1.0, UCAN v0.9, MCP 1.8) through
           91 automated conformance benchmarks, and against ten EU AI Act
           articles plus Annex III and Annex V through compliance-workflow tests.
-          Ed25519 sign + verify runs at 0.22 ms median. End-to-end credential
-          issuance runs at 21 ms median on commodity hardware.
+          Historical latency figures are not presented as release measurements
+          because their raw samples and environment were not recorded. The{" "}
+          <a href="https://github.com/VibeTensor/attestix/tree/main/benchmarks" className="underline">
+            release benchmark methodology
+          </a>{" "}
+          defines installed-artifact comparisons and their limits.
         </p>
         <p>
           The artefact and all tests are open-source under Apache 2.0 and

@@ -90,7 +90,7 @@ A VC contains:
 **What it is:** The cryptographic algorithm Attestix uses for all signatures.
 
 **Why Ed25519:**
-- Fast (64K signatures per second)
+- Signing and verification performance depends on the release, workload and host; see the [release benchmark methodology](https://github.com/VibeTensor/attestix/tree/main/benchmarks) for the evidence contract
 - Small signatures (64 bytes)
 - Small keys (32 bytes)
 - Deterministic (same input = same signature)

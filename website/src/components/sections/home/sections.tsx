@@ -243,8 +243,16 @@ export function HomeResults() {
           ))}
         </div>
         <p className="mx-auto mt-6 max-w-[720px] text-center text-[13px] leading-[1.6] text-atx-ink-dim">
-          The recorded core suite passed 626 local tests, with 4 skipped. Verifier
-          implementations share selected fixtures, with different trust and API boundaries. The
+          Core 0.5.0 passed the{" "}
+          <a href="https://github.com/VibeTensor/attestix/actions/runs/41093470647" className="underline">
+            Linux and Windows Python 3.11-3.13 release checks
+          </a>{" "}
+          and the{" "}
+          <a href="https://github.com/VibeTensor/attestix/actions/runs/41093763880" className="underline">
+            published-wheel smoke check
+          </a>.
+          These checks do not cover every optional integration. Verifier implementations
+          share selected fixtures, with different trust and API boundaries. The
           browser verifier at /verify uploads nothing. Apache 2.0:
           self-host free, forever.
         </p>
