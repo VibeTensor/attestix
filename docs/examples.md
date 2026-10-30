@@ -1,6 +1,6 @@
 # Examples
 
-Runnable examples for every Attestix module. All examples work standalone after `pip install attestix==0.5.0`.
+These examples target Attestix 0.5.0 on Python 3.11 or later: `pip install attestix==0.5.0`. Integrations require their documented extras, credentials, and services.
 
 ## 1. Create and Verify an Agent Identity
 

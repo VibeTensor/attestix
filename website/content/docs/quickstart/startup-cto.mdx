@@ -91,7 +91,7 @@ That's roughly 5 services and 3-5 engineer-months of work to get to the same sur
 
 ## Honest things to weigh before you decide to buy
 
-- **Maturity:** beta, single maintainer, ~15 GitHub stars, no third-party security audit. The trade-off is "buy a primitive, audit it yourself" vs. "build it yourself and own the audit anyway."
+- **Maturity:** beta, single maintainer, no third-party security audit. The trade-off is "buy a primitive, audit it yourself" vs. "build it yourself and own the audit anyway."
 - **Storage:** flat JSON files. Production multi-tenant deployment needs the pluggable Postgres/S3 backend (planned, not in v0.4.0).
 - **Key management:** `.signing_key.json` plaintext by default. KMS / HSM / Vault integration is on the [roadmap](/docs/project/roadmap).
 - **Anchoring:** Base L2 **testnet** only in v0.4.0. Mainnet schema registration planned.
