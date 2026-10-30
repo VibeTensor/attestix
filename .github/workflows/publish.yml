@@ -94,6 +94,7 @@ jobs:
           skip-existing: false
 
   verify-published:
+    if: github.repository == 'VibeTensor/attestix' && (github.event_name == 'release' || github.ref == 'refs/heads/main')
     needs: [build, publish]
     runs-on: ubuntu-24.04
     timeout-minutes: 15
@@ -101,7 +102,16 @@ jobs:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           ref: ${{ needs.build.outputs.source_sha }}
+          fetch-depth: 0
           persist-credentials: false
+      - name: Recheck reviewed source before executing repository code
+        env:
+          EXPECTED_SHA: ${{ needs.build.outputs.source_sha }}
+        run: |
+          git merge-base --is-ancestor HEAD origin/main
+          SOURCE_SHA="$(git rev-parse HEAD)"
+          test "$SOURCE_SHA" = "$EXPECTED_SHA"
+          test "$SOURCE_SHA" = "$(git rev-parse "refs/tags/$RELEASE_TAG^{commit}")"
       - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
         with:
           python-version: '3.12'
