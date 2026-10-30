@@ -9,15 +9,23 @@ import json
 from pathlib import Path, PurePosixPath
 import re
 import tarfile
+import time
 import tomllib
 import urllib.error
 import urllib.parse
 import urllib.request
 import zipfile
 
+MCP_MARKER_BYTES = re.compile(rb'mcp-name:\s*io\.github\.VibeTensor/attestix(?=\s|<|-->|$)')
+MCP_MARKER_TEXT = re.compile(r'mcp-name:\s*io\.github\.VibeTensor/attestix(?=\s|<|-->|$)')
+
 
 class ReleaseError(ValueError):
     """A release gate failed; publishing must stop."""
+
+
+class PublishedPending(ReleaseError):
+    """Registry propagation may recover within the bounded verification window."""
 
 
 def project_metadata(root: Path, tag: str) -> dict:
@@ -55,7 +63,8 @@ def registry_metadata(version: str) -> dict | None:
     except urllib.error.HTTPError as error:
         if error.code == 404:
             return None
-        raise ReleaseError(f'Registry metadata request failed with HTTP {error.code}') from None
+        error_type = PublishedPending if error.code == 429 or error.code >= 500 else ReleaseError
+        raise error_type(f'Registry metadata request failed with HTTP {error.code}') from None
 
 
 def require_unpublished(version: str) -> None:
@@ -83,7 +92,7 @@ def check_core_metadata(data: bytes, project: dict) -> None:
     if any(message.get(key) != value for key, value in expected.items()):
         raise ReleaseError('Built distribution metadata differs from reviewed source')
     description = message.get_payload(decode=True) or b''
-    if b'mcp-name: io.github.VibeTensor/attestix' not in description:
+    if not MCP_MARKER_BYTES.search(description):
         raise ReleaseError('Built description lacks MCP ownership marker')
 
 
@@ -119,28 +128,44 @@ def require_published(project: dict, expected: dict[str, str] | None = None) -> 
     """Verify the registry's exact files, not merely a successful upload job."""
     published = registry_metadata(project['version'])
     if not published or not published.get('urls'):
-        raise ReleaseError('Expected release is not available on PyPI')
-    info = published.get('info', {})
-    if info.get('version') != project['version'] or info.get('requires_python') != project['requires-python']:
-        raise ReleaseError('Published version or Python requirement differs')
-    if not re.search(r'mcp-name:\s*io\.github\.VibeTensor/attestix(?=\s|<|-->|$)', info.get('description') or ''):
-        raise ReleaseError('Published description lacks MCP ownership marker')
+        raise PublishedPending('Expected release is not available on PyPI')
     if any(file.get('yanked') for file in published['urls']):
         raise ReleaseError('Refusing a yanked registry release')
+    if expected is not None:
+        for file in published['urls']:
+            address = urllib.parse.urlsplit(file['url'])
+            if (address.scheme != 'https' or address.hostname != 'files.pythonhosted.org'
+                    or address.username is not None or address.password is not None
+                    or address.port not in {None, 443}):
+                raise ReleaseError('Unexpected registry artifact origin')
+    info = published.get('info', {})
+    if info.get('version') != project['version'] or info.get('requires_python') != project['requires-python']:
+        raise PublishedPending('Published version or Python requirement differs')
+    if not MCP_MARKER_TEXT.search(info.get('description') or ''):
+        raise PublishedPending('Published description lacks MCP ownership marker')
     actual = {file['filename']: file['digests']['sha256'] for file in published['urls']}
     if expected is not None and actual != expected:
-        raise ReleaseError('PyPI files or digests differ from the uploaded artifacts')
+        raise PublishedPending('PyPI files or digests differ from the uploaded artifacts')
     for file in published['urls'] if expected is not None else []:
-        address = urllib.parse.urlsplit(file['url'])
-        if address.scheme != 'https' or address.hostname != 'files.pythonhosted.org' or address.username:
-            raise ReleaseError('Unexpected registry artifact origin')
         digest = hashlib.sha256()
         with urllib.request.urlopen(file['url'], timeout=30) as response:
             while chunk := response.read(1024 * 1024):
                 digest.update(chunk)
         if digest.hexdigest() != expected[file['filename']]:
-            raise ReleaseError('Downloaded registry artifact digest differs')
+            raise PublishedPending('Downloaded registry artifact digest differs')
     return actual
+
+
+def wait_for_published(project: dict, expected: dict[str, str] | None = None, attempts: int = 5) -> dict:
+    """Retry propagation failures without weakening any final validation gate."""
+    for attempt in range(attempts):
+        try:
+            return require_published(project, expected)
+        except (PublishedPending, urllib.error.URLError, TimeoutError):
+            if attempt + 1 == attempts:
+                raise
+            time.sleep(2 ** (attempt + 1))
+    raise ReleaseError('Published verification requires at least one attempt')
 
 
 def main() -> None:
@@ -158,7 +183,7 @@ def main() -> None:
     if args.phase == 'artifacts' and artifacts is None:
         raise ReleaseError('Artifact validation requires --dist')
     if args.phase == 'published':
-        artifacts = require_published(project, artifacts)
+        artifacts = wait_for_published(project, artifacts)
     print(json.dumps({'version': project['version'], 'requires_python': project['requires-python'], 'artifacts': artifacts}, sort_keys=True))
 
 

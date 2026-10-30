@@ -25,6 +25,8 @@ jobs:
     if: github.repository == 'VibeTensor/attestix' && (github.event_name == 'release' || github.ref == 'refs/heads/main')
     runs-on: ubuntu-24.04
     timeout-minutes: 15
+    outputs:
+      source_sha: ${{ steps.source.outputs.sha }}
     steps:
       - name: Validate stable release selector
         shell: bash
@@ -39,7 +41,10 @@ jobs:
           persist-credentials: false
 
       - name: Require source already merged to main
-        run: git merge-base --is-ancestor HEAD origin/main
+        id: source
+        run: |
+          git merge-base --is-ancestor HEAD origin/main
+          echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
 
       - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
         with:
@@ -53,7 +58,8 @@ jobs:
 
       - name: Build package
         run: |
-          export SOURCE_DATE_EPOCH="$(git log -1 --format=%ct)"
+          SOURCE_DATE_EPOCH="$(git log -1 --format=%ct)"
+          export SOURCE_DATE_EPOCH
           python -m build --no-isolation
           python release_guard.py artifacts --tag "$RELEASE_TAG" --dist dist
 
@@ -94,7 +100,7 @@ jobs:
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
-          ref: refs/tags/${{ env.RELEASE_TAG }}
+          ref: ${{ needs.build.outputs.source_sha }}
           persist-credentials: false
       - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
         with:
@@ -114,3 +120,23 @@ jobs:
         run: |
           cd "$RUNNER_TEMP"
           python -I -c "import attestix; from importlib.metadata import version; from attestix.auth.crypto import generate_ed25519_keypair, sign_message, verify_signature; assert attestix.__version__ == version('attestix'); k,p=generate_ed25519_keypair(); s=sign_message(k,b'release-smoke'); assert verify_signature(p,s,b'release-smoke'); print('Installed registry-matched wheel passed')"
+
+      - name: Record verified release source for downstream evidence
+        env:
+          SOURCE_EVENT: ${{ github.event_name }}
+        run: |
+          python - <<'PY'
+          import json, os, subprocess
+          from pathlib import Path
+          record = {'release_tag': os.environ['RELEASE_TAG'],
+                    'source_sha': subprocess.check_output(['git', 'rev-parse', 'HEAD'], text=True).strip(),
+                    'source_event': os.environ['SOURCE_EVENT']}
+          Path(os.environ['RUNNER_TEMP'], 'release-source.json').write_text(json.dumps(record))
+          PY
+      - name: Upload verified release source
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: python-release-source
+          path: ${{ runner.temp }}/release-source.json
+          if-no-files-found: error
+          retention-days: 30

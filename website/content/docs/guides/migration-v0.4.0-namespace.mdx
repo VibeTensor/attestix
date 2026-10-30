@@ -28,7 +28,7 @@ Both import paths resolve successfully in v0.4.0-rc.2:
 | Import path | Status in v0.4.0-rc.2 |
 |-------------|-----------------------|
 | `from attestix.services.identity_service import IdentityService` | Canonical. Recommended. |
-| `from services.identity_service import IdentityService` | Works. Emits `DeprecationWarning`. Removed in v0.5.0. |
+| `from services.identity_service import IdentityService` | Works. Emits `DeprecationWarning`. Retained and deprecated in v0.5.0. |
 
 The legacy paths re-export from the canonical namespace, so the runtime
 behavior is identical. The `DeprecationWarning` fires once per legacy
@@ -39,11 +39,11 @@ path in the message.
 
 | Version | Behavior |
 |---------|----------|
-| v0.4.0-rc.2 (current) | Both paths work. Legacy paths warn. |
+| v0.4.0-rc.2 | Both paths work. Legacy paths warn. |
 | v0.4.0 GA | Both paths work. Legacy paths warn. |
-| v0.5.0 | **Legacy paths removed.** Only `attestix.*` resolves. |
+| v0.5.0 | Both paths work. Legacy paths remain deprecated. |
 
-Migrate before v0.5.0 to avoid `ImportError` on upgrade.
+Migrate to the canonical namespace now. Any future removal will be announced separately.
 
 ## Mechanical migration
 
@@ -125,24 +125,17 @@ python -W error::DeprecationWarning -c "from services.identity_service import Id
 Run your own test suite under the same `-W error::DeprecationWarning` flag
 to catch every remaining legacy import in one pass.
 
-## Pin to rc.2 explicitly
+## Pin a reviewed stable release
 
-If you want to pin the exact version (recommended for any environment that
-isn't tracking the release-candidate line):
-
-```bash
-pip install --pre attestix==0.4.0rc2
-```
-
-For the rolling rc:
+Python 0.4.3 is published and provides the canonical namespace:
 
 ```bash
-pip install --pre attestix
+pip install attestix==0.4.3
 ```
 
-Stable 0.3.0 (still on the pre-rc.2 flat layout, no namespace) remains
-available via `pip install attestix` without `--pre` until v0.4.0 GA promotes
-the canonical wheel to default.
+Current source prepares 0.5.0 with a Python 3.11 minimum. Check PyPI and the
+release notes before changing a pinned deployment; source metadata alone does
+not establish publication.
 
 ## See also
 

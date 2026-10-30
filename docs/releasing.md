@@ -22,8 +22,10 @@ Due: Before publishing
    hashes against the validated artifacts, then pass an installed-wheel smoke
    test outside the checkout. If publishing partially succeeds, inspect registry
    files before any retry; duplicate files deliberately fail rather than skip.
-6. Confirm the successful publisher triggers the SBOM workflow and its release
-   attachment. Existing release evidence is never overwritten automatically.
+6. Confirm the successful publisher triggers the SBOM workflow using the exact
+   upstream run metadata and selected tag commit. Release events attach the SBOM
+   to that release; manual publisher dispatches retain workflow artifacts and
+   skip attachment. Existing release evidence is never overwritten automatically.
 7. Dispatch `Publish to MCP Registry` from main only after the exact Python
    release is available, non-yanked and has the expected compatibility metadata.
    The workflow retains its existing GitHub OIDC authentication.
