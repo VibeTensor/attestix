@@ -1,7 +1,7 @@
 """Legacy flat-namespace shim for :mod:`attestix.errors`.
 
 Importing this module emits a single ``DeprecationWarning``. The shim is
-scheduled for removal in Attestix v0.5.0. Update to::
+retained for compatibility in this release. Update to::
 
     from attestix.errors import ErrorCategory, log_and_format_error
 """
@@ -10,7 +10,7 @@ import warnings as _warnings
 
 _warnings.warn(
     "Importing from the top-level `errors` module is deprecated and will be "
-    "removed in Attestix v0.5.0. Update your imports to "
+    "removed in a future Attestix release. Update your imports to "
     "`from attestix.errors import ...` (canonical namespace).",
     DeprecationWarning,
     stacklevel=2,

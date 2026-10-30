@@ -8,7 +8,7 @@ keeps working after the v0.4.0-rc.2 packaging fix that promoted the canonical
 location to :mod:`attestix.config`. Importing this module emits a single
 ``DeprecationWarning`` directing callers at the new path.
 
-The flat-namespace shim is scheduled for removal in Attestix v0.5.0. Update to::
+The flat-namespace shim is retained for compatibility in this release. Update to::
 
     from attestix.config import DEFAULT_EXPIRY_DAYS, load_identities
 """
@@ -17,7 +17,7 @@ import warnings as _warnings
 
 _warnings.warn(
     "Importing from the top-level `config` module is deprecated and will be "
-    "removed in Attestix v0.5.0. Update your imports to "
+    "removed in a future Attestix release. Update your imports to "
     "`from attestix.config import ...` (canonical namespace).",
     DeprecationWarning,
     stacklevel=2,
