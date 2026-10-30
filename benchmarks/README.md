@@ -67,6 +67,16 @@ No key, signature, credential payload or customer data is included in evidence.
 
 ## Reproduce
 
+For complete reference evidence, use the [release-evidence workflow](https://github.com/VibeTensor/attestix/blob/main/.github/workflows/release-evidence.yml)
+after it is merged to main. Its manual inputs select the verified publisher run,
+candidate and fixed comparison baseline. It validates and retains `publisher.json`
+and records the executed harness revision in `result.json` automatically. Own-repo
+PR runs exercise the same contract before merge.
+
+The following local commands are exploratory only. They do not verify or retain
+publisher evidence, and outside Actions they do not record a harness source SHA.
+Their output alone does not satisfy the complete reference evidence contract.
+
 ```sh
 python -m unittest discover -s tests -p test_release_benchmark_harness.py
 python benchmarks/run_release.py prepare --baseline 0.4.3 --candidate 0.5.0 --output /new/empty/evidence-path

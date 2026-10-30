@@ -154,15 +154,24 @@ def summary(raw, operations=1):
             'raw_sample_elapsed_ns': raw}
 
 
+def validate_api(module):
+    expected = {'generate_ed25519_keypair': [], 'sign_message': ['private_key', 'message'],
+                'verify_signature': ['public_key', 'signature', 'message'],
+                'public_key_to_did_key': ['public_key'], 'canonicalize_json': ['payload'],
+                'sign_json_payload': ['private_key', 'payload'],
+                'verify_json_signature': ['public_key', 'payload', 'signature_b64']}
+    for name, parameters in expected.items():
+        function = getattr(module, name, None)
+        require(callable(function), 'Public API absent: ' + name)
+        require(list(inspect.signature(function).parameters) == parameters, 'Public API signature mismatch')
+
+
 def product_api(version):
     require(importlib.metadata.version('attestix') == version, 'Installed distribution version mismatch')
     module = importlib.import_module('attestix.auth.crypto')
     site = Path(importlib.metadata.distribution('attestix').locate_file('')).resolve()
     require(Path(module.__file__).resolve().is_relative_to(site), 'Source-tree import rejected')
-    expected = {'generate_ed25519_keypair': [], 'sign_message': ['private_key', 'message'],
-                'verify_signature': ['public_key', 'signature', 'message']}
-    for name, parameters in expected.items():
-        require(list(inspect.signature(getattr(module, name)).parameters) == parameters, 'Public API signature mismatch')
+    validate_api(module)
     return module
 
 

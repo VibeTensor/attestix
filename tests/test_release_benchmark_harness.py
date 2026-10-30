@@ -6,6 +6,7 @@ import os
 from pathlib import Path
 import sys
 import tempfile
+from types import SimpleNamespace
 import unittest
 from unittest.mock import patch
 import zipfile
@@ -14,7 +15,7 @@ BENCHMARKS = Path(__file__).resolve().parents[1] / 'benchmarks'
 sys.path.insert(0, str(BENCHMARKS))
 import run_release
 import verify_publisher
-from worker import BenchmarkError, OfflinePolicy, protected, summary
+from worker import BenchmarkError, OfflinePolicy, protected, summary, validate_api
 
 
 class BenchmarkContractTests(unittest.TestCase):
@@ -27,6 +28,18 @@ class BenchmarkContractTests(unittest.TestCase):
     def test_empty_samples_fail(self):
         with self.assertRaises(BenchmarkError):
             summary([])
+
+    def test_incompatible_canonicalizer_is_rejected_before_measurement(self):
+        api = SimpleNamespace(generate_ed25519_keypair=lambda: None,
+                              sign_message=lambda private_key, message: None,
+                              verify_signature=lambda public_key, signature, message: None,
+                              public_key_to_did_key=lambda public_key: None,
+                              sign_json_payload=lambda private_key, payload: None,
+                              verify_json_signature=lambda public_key, payload, signature_b64: None)
+        for value in [None, lambda renamed_payload: None]:
+            api.canonicalize_json = value
+            with self.subTest(value=value), self.assertRaises(BenchmarkError):
+                validate_api(api)
 
     def test_protected_paths_rejected_before_open(self):
         policy = OfflinePolicy(Path.cwd() / 'synthetic-data')
