@@ -7,18 +7,22 @@ import { RootProvider } from "fumadocs-ui/provider";
 import SearchDialog from "@/components/search";
 import { GeistMono } from "geist/font/mono";
 import { GeistSans } from "geist/font/sans";
-import { JetBrains_Mono } from "next/font/google";
+import localFont from "next/font/local";
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 
 // No display serif: headings site-wide use Geist sans; the --font-serif token
 // is mapped to it in globals.css so existing `font-serif` classes follow.
 
-const jetbrainsMono = JetBrains_Mono({
-  subsets: ["latin"],
-  weight: ["400", "500", "600"],
+const jetbrainsMono = localFont({
+  src: [
+    { path: "./fonts/jetbrains-mono/JetBrainsMono-Regular.woff2", weight: "400", style: "normal" },
+    { path: "./fonts/jetbrains-mono/JetBrainsMono-Medium.woff2", weight: "500", style: "normal" },
+    { path: "./fonts/jetbrains-mono/JetBrainsMono-SemiBold.woff2", weight: "600", style: "normal" },
+  ],
   variable: "--font-mono-atx",
   display: "swap",
+  preload: false,
 });
 
 const homeTitle = "Attestix - Cryptographic evidence for AI agents";
