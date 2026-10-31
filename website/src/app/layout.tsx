@@ -22,6 +22,7 @@ const jetbrainsMono = localFont({
   ],
   variable: "--font-mono-atx",
   display: "swap",
+  preload: false,
 });
 
 const homeTitle = "Attestix - Cryptographic evidence for AI agents";
