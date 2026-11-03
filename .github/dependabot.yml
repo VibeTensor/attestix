@@ -23,6 +23,13 @@ updates:
       python-dependencies:
         patterns:
           - "*"
+        # Keep majors OUT of the grouped PR: a single incompatible major
+        # (chardet 5->7 in PR #169) made the whole 35-package group
+        # unresolvable and failed CI. Majors must be individual, tested PRs
+        # (mirrors the npm group policy below).
+        update-types:
+          - "minor"
+          - "patch"
     labels:
       - "dependencies"
       - "python"
