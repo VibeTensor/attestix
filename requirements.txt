@@ -4,7 +4,7 @@
 # Requires Python 3.11 or later.
 
 # MCP Framework
-mcp[cli]>=1.30.0,<2.0.0
+mcp[cli]>=1.30.0,<3.0.0
 
 # Cryptography
 # Floors MUST match pyproject.toml: cryptography>=48.0.1 closes
