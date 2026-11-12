@@ -5,7 +5,7 @@
 # 2026-05-28. Dependabot's docker ecosystem (configured in .github/
 # dependabot.yml) refreshes the digest when a newer python:3.12-slim is
 # published. See .github/scorecard-pinned-deps.md for the coverage matrix.
-FROM python:3.12-slim@sha256:090ba77e2958f6af52a5341f788b50b032dd4ca28377d2893dcf1ecbdfdfe203
+FROM python:3.15-slim@sha256:65a65fc7b30b06cb6df4930fd4650697cb23f4c2698ab81fc87e4b031bc36928
 
 WORKDIR /app
 
