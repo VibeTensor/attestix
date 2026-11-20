@@ -1,0 +1,68 @@
+{
+  "$schema": "https://fundingjson.org/schema/v1.1.0.json",
+  "version": "v1.4.0",
+  "entity": {
+    "type": "organisation",
+    "role": "owner",
+    "name": "VIBETENSOR PRIVATE LIMITED",
+    "email": "pkd@vibetensor.com",
+    "description": "VibeTensor is an India-based AI tooling company maintaining Attestix Core and its open-source verification foundation. This request supports public Apache-2.0 code, tests, release engineering and documentation. Registered office: 5-11-755/2, Sagara Colony Road No.2, Vidyaranyapuri, Warangal, Hanumakonda, Telangana, India - 506009. CIN: U74909TS2025PTC197692. Company contact: info@vibetensor.com; www.vibetensor.com.",
+    "webpageUrl": {
+      "url": "https://github.com/VibeTensor"
+    }
+  },
+  "projects": [
+    {
+      "guid": "attestix",
+      "name": "Attestix Core",
+      "description": "Open-source AI-agent identity, signed credentials, bounded delegated authority and portable governance evidence, with Python core and offline verification tooling. The maintenance plan will strengthen reproducible verifier tests, release compatibility, security review and self-hosted documentation. It supports existing public code and proposed maintenance work, with no completed independent security audit claimed.",
+      "webpageUrl": {
+        "url": "https://github.com/VibeTensor/attestix"
+      },
+      "repositoryUrl": {
+        "url": "https://github.com/VibeTensor/attestix"
+      },
+      "licenses": [
+        "spdx:Apache-2.0"
+      ],
+      "tags": [
+        "security",
+        "developer-tools",
+        "identity",
+        "cryptography",
+        "ai-agents",
+        "python"
+      ]
+    }
+  ],
+  "funding": {
+    "channels": [
+      {
+        "guid": "company-bank",
+        "type": "bank",
+        "description": "Corporate bank-transfer details and any required tax documentation will be supplied privately after verification of the grantor. No bank account information is published in this manifest."
+      },
+      {
+        "guid": "github-sponsors-org",
+        "type": "payment-provider",
+        "address": "https://github.com/sponsors/VibeTensor",
+        "description": "Organisation sponsorship channel for VibeTensor open-source work. The grant disbursement method would be agreed with the funder."
+      }
+    ],
+    "plans": [
+      {
+        "guid": "core-maintenance-six-months",
+        "status": "active",
+        "name": "Six-month Attestix Core maintenance and interoperability plan",
+        "description": "Proposed six-month grant budget: INR 7,20,000 for 600 hours of Python-core maintenance and release hardening at INR 1,200/hour; INR 1,80,000 for 120 hours of independent security review at INR 1,500/hour; INR 1,20,000 for 120 hours of reproducible core-verifier testing at INR 1,000/hour; INR 1,20,000 for 120 hours of API and self-hosted reference documentation at INR 1,000/hour; INR 60,000 for capped test infrastructure and release tooling; INR 1,80,000 for 120 hours of cross-runtime verifier/SDK interoperability tests at INR 1,500/hour; INR 1,20,000 for 80 hours of community reproduction sessions, contributor feedback and public quarterly updates at INR 1,500/hour. Total INR 15,00,000 and 1,160 planned labour hours. Rates and staffing are prospective assumptions, not historical expenses or contracted reviewer commitments. Months 1-2: baseline, issue triage and release matrix. Months 3-4: core-verifier hardening, independent review and cross-runtime conformance. Months 5-6: compatibility releases, documentation and public maintenance report. At least one public community engagement/update is planned per quarter. Original deliverables remain Apache-2.0. Scope, rates, milestones and partial-funding arrangements will be agreed with the funder before work begins. Acceptance evidence: versioned positive and negative verifier fixtures with expected outcomes; a compatibility matrix stating tested and unsupported combinations; tracked review findings and remediation; reference instructions reproducible on the supported environments; and two public quarterly updates.",
+        "amount": 1500000,
+        "currency": "INR",
+        "frequency": "one-time",
+        "channels": [
+          "company-bank",
+          "github-sponsors-org"
+        ]
+      }
+    ]
+  }
+}
