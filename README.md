@@ -544,6 +544,12 @@ Attestix is free and open-source. If you or your organization benefit from it, p
 
 ---
 
+### Open-source programme support
+
+<a href="https://neon.com"><img src="docs/assets/neon-logo.svg" alt="Neon" height="32" /></a> &nbsp;&nbsp; <a href="https://e2b.dev/startups"><img src="docs/assets/e2b-startups-orange.svg" alt="E2B for Startups" height="32" /></a>
+
+---
+
 ## Contributing
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for development setup and guidelines.
