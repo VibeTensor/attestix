@@ -1,0 +1,146 @@
+{
+  "$schema": "https://fundingjson.org/schema/v1.1.0.json",
+  "version": "v1.5.0",
+  "entity": {
+    "type": "organisation",
+    "role": "owner",
+    "name": "VIBETENSOR PRIVATE LIMITED",
+    "email": "pkd@vibetensor.com",
+    "description": "VibeTensor is an India-based AI tooling company maintaining Attestix Core and its open-source verification foundation. This request supports public Apache-2.0 code, tests, release engineering and documentation. Registered office: 5-11-755/2, Sagara Colony Road No.2, Vidyaranyapuri, Warangal, Hanumakonda, Telangana, India - 506009. CIN: U74909TS2025PTC197692. Company contact: info@vibetensor.com; www.vibetensor.com. This is one INR 15,00,000 request over six months, expressed as seven complementary work packages below, totalling 1,160 planned labour hours plus capped infrastructure. The work-package amounts are cumulative components of this single request. Rates and staffing are prospective; the independent reviewer is not yet contracted. Scope and acceptance criteria would be agreed with the funder before delivery.",
+    "webpageUrl": {
+      "url": "https://github.com/VibeTensor"
+    }
+  },
+  "projects": [
+    {
+      "guid": "attestix",
+      "name": "Attestix Core",
+      "description": "Open-source AI-agent identity, signed credentials, bounded delegated authority and portable governance evidence, with Python core and offline verification tooling. The maintenance plan will strengthen reproducible verifier tests, release compatibility, security review and self-hosted documentation. It supports existing public code and proposed maintenance work, with no completed independent security audit claimed.",
+      "webpageUrl": {
+        "url": "https://github.com/VibeTensor/attestix"
+      },
+      "repositoryUrl": {
+        "url": "https://github.com/VibeTensor/attestix"
+      },
+      "licenses": [
+        "spdx:Apache-2.0"
+      ],
+      "tags": [
+        "security",
+        "developer-tools",
+        "identity",
+        "cryptography",
+        "ai-agents",
+        "python"
+      ]
+    }
+  ],
+  "funding": {
+    "channels": [
+      {
+        "guid": "company-bank",
+        "type": "bank",
+        "description": "Corporate bank-transfer details and any required tax documentation will be supplied privately after verification of the grantor. No bank account information is published in this manifest."
+      },
+      {
+        "guid": "github-sponsors-org",
+        "type": "payment-provider",
+        "address": "https://github.com/sponsors/VibeTensor",
+        "description": "Organisation sponsorship channel for VibeTensor open-source work. The grant disbursement method would be agreed with the funder."
+      }
+    ],
+    "plans": [
+      {
+        "guid": "core-maintenance",
+        "status": "active",
+        "name": "Python-core maintenance and release hardening",
+        "description": "600 planned hours at INR 1,200/hour. Maintain the public Python core, triage issues, harden releases and publish a supported-version matrix. Months 1-2 establish the baseline and release matrix; months 3-4 address verifier hardening; months 5-6 deliver compatibility releases. Acceptance: versioned changes, release notes and reproducible build/test instructions.",
+        "amount": 720000,
+        "currency": "INR",
+        "frequency": "one-time",
+        "channels": [
+          "company-bank",
+          "github-sponsors-org"
+        ]
+      },
+      {
+        "guid": "independent-review",
+        "status": "active",
+        "name": "Independent security review",
+        "description": "120 planned hours at INR 1,500/hour. Independent review of an agreed threat model and code scope, principally in months 3-4, with findings and tracked remediation through the final release. Reviewer engagement is prospective and not yet contracted. Acceptance: documented scope, review findings and remediation status, with responsible disclosure for sensitive findings.",
+        "amount": 180000,
+        "currency": "INR",
+        "frequency": "one-time",
+        "channels": [
+          "company-bank",
+          "github-sponsors-org"
+        ]
+      },
+      {
+        "guid": "verifier-tests",
+        "status": "active",
+        "name": "Reproducible core-verifier testing",
+        "description": "120 planned hours at INR 1,000/hour. Create versioned positive, negative and malformed-input credential fixtures and repeatable verifier checks. Establish the test inventory in months 1-2; extend and run it during hardening and final releases. Acceptance: public fixtures, expected outcomes and test logs tied to the release baseline.",
+        "amount": 120000,
+        "currency": "INR",
+        "frequency": "one-time",
+        "channels": [
+          "company-bank",
+          "github-sponsors-org"
+        ]
+      },
+      {
+        "guid": "reference-docs",
+        "status": "active",
+        "name": "API and self-hosted reference documentation",
+        "description": "120 planned hours at INR 1,000/hour. Produce API and self-hosted reference documentation, reproduction instructions and runnable examples for agreed supported environments. Publish alongside compatibility releases in months 5-6. Acceptance: documentation and examples that downstream developers can reproduce against the stated release.",
+        "amount": 120000,
+        "currency": "INR",
+        "frequency": "one-time",
+        "channels": [
+          "company-bank",
+          "github-sponsors-org"
+        ]
+      },
+      {
+        "guid": "release-infrastructure",
+        "status": "active",
+        "name": "Test infrastructure and release tooling",
+        "description": "Capped INR 60,000 estimate for test infrastructure and release tooling over the six-month maintenance period. This line is infrastructure expenditure rather than labour hours. It supports reproducible builds, verifier checks and compatibility evidence for the public project. Scope and approved expenditure would be agreed before delivery.",
+        "amount": 60000,
+        "currency": "INR",
+        "frequency": "one-time",
+        "channels": [
+          "company-bank",
+          "github-sponsors-org"
+        ]
+      },
+      {
+        "guid": "interoperability",
+        "status": "active",
+        "name": "Cross-runtime verifier and SDK interoperability",
+        "description": "120 planned hours at INR 1,500/hour. Define an agreed runtime/interface/version matrix and create cross-runtime verifier/SDK conformance checks. Test during months 3-4 and publish compatibility evidence with releases in months 5-6. Acceptance: conformance fixtures and a report identifying tested, failing and unsupported combinations.",
+        "amount": 180000,
+        "currency": "INR",
+        "frequency": "one-time",
+        "channels": [
+          "company-bank",
+          "github-sponsors-org"
+        ]
+      },
+      {
+        "guid": "community-updates",
+        "status": "active",
+        "name": "Community reproduction, feedback and public updates",
+        "description": "80 planned hours at INR 1,500/hour. Run community reproduction sessions, collect contributor feedback and publish at least one public engagement/update per quarter, including a final maintenance report. Acceptance: public session material or progress posts, feedback records and the six-month maintenance report. Funded original code, tests and documentation remain Apache-2.0.",
+        "amount": 120000,
+        "currency": "INR",
+        "frequency": "one-time",
+        "channels": [
+          "company-bank",
+          "github-sponsors-org"
+        ]
+      }
+    ]
+  }
+}
